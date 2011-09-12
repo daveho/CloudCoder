@@ -24,73 +24,33 @@ import org.cloudcoder.app.client.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
  * Common superclass for all NetCoder "pages".
- * Handles creation of containing LayoutPanel and common UI elements
- * (such as the TopBar).  Also provides helper methods for
- * managing session data and event subscribers.
+ * Provides helper methods for managing session data and event subscribers.
  */
-public abstract class CloudCoderPage extends Composite {
+public abstract class CloudCoderPage extends LayoutPanel {
 	private List<Object> sessionObjectList;
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
 
 	private Session session;
 	
-	private LayoutPanel layoutPanel;
-//	private TopBar topBar;
-
-//	private LoginServiceAsync loginService = GWT.create(LoginService.class);
-	
 	/**
 	 * Constructor.
+	 */
+	public CloudCoderPage() {
+		this.sessionObjectList = new ArrayList<Object>();
+		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+	}
+
+	/**
+	 * Set the Session object that the page should use.
 	 * 
 	 * @param session the Session object
 	 */
-	public CloudCoderPage(Session session) {
-		this.sessionObjectList = new ArrayList<Object>();
-		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
-		
+	public void setSession(Session session) {
 		this.session = session;
-		this.layoutPanel = new LayoutPanel();
-		
-//		this.topBar = new TopBar();
-//		layoutPanel.add(topBar);
-//		layoutPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
-//		topBar.setSession(session);
-		
-//		topBar.setLogoutHandler(new Runnable() {
-//			@Override
-//			public void run() {
-//				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
-//					@Override
-//					public void onFailure(Throwable caught) {
-//						GWT.log("Could not log out?", caught);
-//						
-//						// well, at least we tried
-//						clearSessionData();
-//					}
-//					
-//					@Override
-//					public void onSuccess(Void result) {
-//						// server has purged the session
-//						clearSessionData();
-//					}
-//
-//					protected void clearSessionData() {
-//						// Clear the User object from the session.
-//						getSession().remove(User.class);
-//						
-//						// Publish the LOGOUT event.
-//						getSession().notifySubscribers(Session.Event.LOGOUT, null);
-//					}
-//				};
-//				
-//				loginService.logout(callback);
-//			}
-//		});
 	}
 	
 	/**
@@ -147,13 +107,6 @@ public abstract class CloudCoderPage extends Composite {
 	 * @return the overall LayoutPanel which should contain all view UI elements 
 	 */
 	protected LayoutPanel getLayoutPanel() {
-		return layoutPanel;
+		return this;
 	}
-	
-//	/**
-//	 * @return the view's TopBar
-//	 */
-//	public TopBar getTopBar() {
-//		return topBar;
-//	}
 }

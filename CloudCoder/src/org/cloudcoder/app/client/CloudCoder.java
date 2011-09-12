@@ -20,9 +20,12 @@ public class CloudCoder implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		Session session = new Session();
+		
 		RootLayoutPanel rootLayoutPanel = RootLayoutPanel.get();
 		
 		LoginPage loginPage = new LoginPage();
+		loginPage.setSession(session);
 		rootLayoutPanel.add(loginPage);
 	}
 }

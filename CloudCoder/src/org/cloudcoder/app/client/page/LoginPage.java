@@ -1,15 +1,14 @@
 package org.cloudcoder.app.client.page;
 
-import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.client.ui.TextBox;
 
-public class LoginPage extends LayoutPanel {
+public class LoginPage extends CloudCoderPage {
 	public LoginPage() {
 		setSize("640px", "480px");
 		
@@ -52,5 +51,13 @@ public class LoginPage extends LayoutPanel {
 		add(errorLabel);
 		setWidgetLeftWidth(errorLabel, 57.0, Unit.PX, 484.0, Unit.PX);
 		setWidgetTopHeight(errorLabel, 374.0, Unit.PX, 73.0, Unit.PX);
+	}
+
+	@Override
+	public void activate() {
+	}
+
+	@Override
+	public void deactivate() {
 	}
 }
