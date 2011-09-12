@@ -27,7 +27,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
- * Common superclass for all NetCoder "pages".
+ * Common superclass for all CloudCoder "pages".
  * Provides helper methods for managing session data and event subscribers.
  */
 public abstract class CloudCoderPage extends LayoutPanel {
@@ -73,14 +73,14 @@ public abstract class CloudCoderPage extends LayoutPanel {
 	}
 	
 	/**
-	 * This method is called after a NetCoderView has been instantiated
+	 * This method is called after a CloudCoderView has been instantiated
 	 * in the client web page.  Subclasses may override this to do any
 	 * initialization that requires that the view is part of the DOM tree.
 	 */
 	public abstract void activate();
 	
 	/**
-	 * This method is called just before a NetCoderView is removed
+	 * This method is called just before a CloudCoderView is removed
 	 * from the client web page.  Subclasses may override this
 	 * to do cleanup.
 	 */
