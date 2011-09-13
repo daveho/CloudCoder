@@ -27,5 +27,7 @@ public class CloudCoder implements EntryPoint {
 		LoginPage loginPage = new LoginPage();
 		loginPage.setSession(session);
 		rootLayoutPanel.add(loginPage);
+		
+		loginPage.activate();
 	}
 }

@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.server.persist;
 
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -25,6 +27,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public interface IDatabase {
+	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	public User authenticateUser(String userName, String password);
 
 //	public Problem getProblem(User user, int problemId);

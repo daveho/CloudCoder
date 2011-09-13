@@ -7,9 +7,17 @@
 
   <!-- Servlets -->
   <servlet>
+    <servlet-name>ConfigurationSetting</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.rpc.ConfigurationSettingServiceImpl</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>Login</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.LoginServiceImpl</servlet-class>
   </servlet>
+  <servlet-mapping>
+    <servlet-name>ConfigurationSetting</servlet-name>
+    <url-pattern>/cloudcoder/configurationSetting</url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>Login</servlet-name>
     <url-pattern>/cloudcoder/login</url-pattern>

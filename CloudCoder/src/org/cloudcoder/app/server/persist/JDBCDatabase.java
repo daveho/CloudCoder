@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -31,7 +33,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-	private static final String JDBC_URL = "jdbc:mysql://localhost/netcoder2?user=root&password=root";
+	private static final String JDBC_URL = "jdbc:mysql://localhost/cloudcoder?user=root&password=root";
 	
 	static {
 		try {
@@ -72,6 +74,29 @@ public class JDBCDatabase implements IDatabase {
 			c.conn.close();
 			threadLocalConnection.set(null);
 		}
+	}
+	
+	@Override
+	public ConfigurationSetting getConfigurationSetting(final ConfigurationSettingName name) {
+		return databaseRun(new AbstractDatabaseRunnable<ConfigurationSetting>() {
+			@Override
+			public ConfigurationSetting run(Connection conn)
+					throws SQLException {
+				PreparedStatement stmt = prepareStatement(conn, "select s.* from configuration_settings as s where s.name = ?");
+				stmt.setString(1, name.toString());
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return null;
+				}
+				ConfigurationSetting configurationSetting = new ConfigurationSetting();
+				load(configurationSetting, resultSet, 1);
+				return configurationSetting;
+			}
+			@Override
+			public String getDescription() {
+				return "retrieving configuration setting";
+			}
+		});
 	}
 	
 	@Override
@@ -342,7 +367,12 @@ public class JDBCDatabase implements IDatabase {
 			throw new PersistenceException("Exception " + databaseRunnable.getDescription(), e);
 		}
 	}
-	
+
+	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
+		configurationSetting.setName(resultSet.getString(index++));
+		configurationSetting.setValue(resultSet.getString(index++));
+	}
+
 	private void load(User user, ResultSet resultSet, int index) throws SQLException {
 		user.setId(resultSet.getInt(index++));
 		user.setUserName(resultSet.getString(index++));

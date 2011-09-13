@@ -1,7 +1,11 @@
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -9,6 +13,7 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class LoginPage extends CloudCoderPage {
+	private InlineLabel pageTitleLabel;
 	public LoginPage() {
 		setSize("640px", "480px");
 		
@@ -51,10 +56,31 @@ public class LoginPage extends CloudCoderPage {
 		add(errorLabel);
 		setWidgetLeftWidth(errorLabel, 57.0, Unit.PX, 484.0, Unit.PX);
 		setWidgetTopHeight(errorLabel, 374.0, Unit.PX, 73.0, Unit.PX);
+		
+		pageTitleLabel = new InlineLabel("");
+		pageTitleLabel.setStylePrimaryName("cc-pageTitle");
+		add(pageTitleLabel);
+		setWidgetLeftWidth(pageTitleLabel, 57.0, Unit.PX, 533.0, Unit.PX);
+		setWidgetTopHeight(pageTitleLabel, 44.0, Unit.PX, 31.0, Unit.PX);
+		
+		InlineLabel welcomeLabel = new InlineLabel("Welcome to CloudCoder at");
+		add(welcomeLabel);
+		setWidgetLeftWidth(welcomeLabel, 57.0, Unit.PX, 313.0, Unit.PX);
+		setWidgetTopHeight(welcomeLabel, 23.0, Unit.PX, 15.0, Unit.PX);
 	}
 
 	@Override
 	public void activate() {
+		RPC.configurationSettingService.getConfigurationSettingValue(ConfigurationSettingName.PUB_TEXT_INSTITUTION, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			
+			@Override
+			public void onSuccess(String result) {
+				pageTitleLabel.setText(result);
+			}
+		});
 	}
 
 	@Override
