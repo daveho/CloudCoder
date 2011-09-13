@@ -26,8 +26,8 @@ import org.cloudcoder.app.shared.util.Publisher;
  * Client-side session object.
  * Can hold any number of objects, but only one object of any given
  * class is allowed.  The session is also used to distribute events
- * (such as logging in, logging out, switching views, etc.)
- * that various view objects will want to know about.
+ * (such as logging in, logging out, switching pages, etc.)
+ * that various page objects will want to know about.
  */
 public class Session extends Publisher {
 	private Map<Class<?>, Object> data;

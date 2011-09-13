@@ -15,13 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client;
+package org.cloudcoder.app.shared.util;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cloudcoder.app.shared.util.Subscriber;
-import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 /**
  * Default SubscriptionRegistrar implementation.

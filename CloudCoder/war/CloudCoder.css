@@ -33,6 +33,11 @@ h1 {
   margin: 15px 6px 6px;
 }
 .cc-pageTitle {
-	font-size: 120%;
+	font-size: 140%;
 	font-weight: bold;
 }
+.cc-errorText {
+	color: red;
+	font-style: italic;
+}
+
