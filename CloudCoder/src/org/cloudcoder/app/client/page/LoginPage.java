@@ -15,6 +15,9 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
 
 public class LoginPage extends CloudCoderPage {
 	private InlineLabel pageTitleLabel;
@@ -31,6 +34,14 @@ public class LoginPage extends CloudCoderPage {
 		setWidgetTopHeight(usernameLabel, 127.0, Unit.PX, 15.0, Unit.PX);
 		
 		usernameTextBox = new TextBox();
+		usernameTextBox.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					passwordTextBox.setFocus(true);
+				}
+			}
+		});
 		add(usernameTextBox);
 		setWidgetLeftWidth(usernameTextBox, 57.0, Unit.PX, 200.0, Unit.PX);
 		setWidgetTopHeight(usernameTextBox, 148.0, Unit.PX, 31.0, Unit.PX);
@@ -41,6 +52,14 @@ public class LoginPage extends CloudCoderPage {
 		setWidgetTopHeight(passwordLabel, 185.0, Unit.PX, 15.0, Unit.PX);
 		
 		passwordTextBox = new PasswordTextBox();
+		passwordTextBox.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					attemptLogin();
+				}
+			}
+		});
 		add(passwordTextBox);
 		setWidgetLeftWidth(passwordTextBox, 57.0, Unit.PX, 200.0, Unit.PX);
 		setWidgetTopHeight(passwordTextBox, 206.0, Unit.PX, 33.0, Unit.PX);
@@ -105,9 +124,13 @@ public class LoginPage extends CloudCoderPage {
 			
 			@Override
 			public void onSuccess(User result) {
-				// Successful login!
-				getSession().add(result);
-				getSession().notifySubscribers(Session.Event.LOGIN, result);
+				if (result == null) {
+					errorLabel.setText("Username and password not found");
+				} else {
+					// Successful login!
+					getSession().add(result);
+					getSession().notifySubscribers(Session.Event.LOGIN, result);
+				}
 			}
 		});
 	}
@@ -122,6 +145,7 @@ public class LoginPage extends CloudCoderPage {
 			@Override
 			public void onSuccess(String result) {
 				pageTitleLabel.setText(result);
+				usernameTextBox.setFocus(true);
 			}
 		});
 	}
