@@ -17,32 +17,37 @@
 
 package org.cloudcoder.app.shared.util;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Default SubscriptionRegistrar implementation.
- * Uses a HashSet to keep track of Event subscribers.
  * 
  * @author David Hovemeyer
  */
 public class DefaultSubscriptionRegistrar implements SubscriptionRegistrar {
-	private Set<Subscriber> eventSubscriberSet;
+	private static class Subscription {
+		Publisher publisher;
+		Subscriber subscriber;
+		Object key;
+	}
 	
-	public DefaultSubscriptionRegistrar() {
-		this.eventSubscriberSet = new HashSet<Subscriber>();
+	private List<Subscription> subscriptionList = new ArrayList<DefaultSubscriptionRegistrar.Subscription>();
+
+	@Override
+	public void addToSubscriptionRegistry(Publisher publisher, Subscriber subscriber, Object key) {
+		Subscription s = new Subscription();
+		s.publisher = publisher;
+		s.subscriber = subscriber;
+		s.key = key;
+		subscriptionList.add(s);
 	}
 
 	@Override
-	public void addToSubscriptionRegistry(Subscriber subscriber) {
-		eventSubscriberSet.add(subscriber);
-	}
-
-	@Override
-	public void unsubscribeAllEventSubscribers() {
-		for (Subscriber subscriber : eventSubscriberSet) {
-			subscriber.unsubscribeFromAll();
+	public void cancelAllSubscriptions() {
+		for (Subscription s : subscriptionList) {
+			s.publisher.unsubscribe(s.key, s.subscriber);
 		}
 	}
 }

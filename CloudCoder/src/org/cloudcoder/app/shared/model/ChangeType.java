@@ -1,4 +1,4 @@
-// CloudCoder - a web-based pedagogical programming environment
+// NetCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
@@ -15,26 +15,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.shared.util;
+package org.cloudcoder.app.shared.model;
 
 /**
- * A SubscriptionRegistrar object keeps track of a set of
- * subscriptions.  The unsubscribe() method cancels
- * all of the subscriptions that the SubscriptionRegistrar has
- * recorded.
+ * Type of textual change.
  */
-public interface SubscriptionRegistrar {
+public enum ChangeType {
+	/** Insertion of text within a particular line */
+	INSERT_TEXT,
+	
+	/** Removal of text within a particular line. */
+	REMOVE_TEXT,
+	
+	/** Insertion of one or more lines. */
+	INSERT_LINES,
+	
+	/** Removal of one or more lines. */
+	REMOVE_LINES,
+	
 	/**
-	 * Record a subscription.
-	 * 
-	 * @param publisher  a Publisher
-	 * @param subscriber a Subscriber
-	 * @param key        object indicating the type of event the Subscriber is interested in
+	 * The full text of the document.
+	 * Not really a change, but provides a convenient synchronization
+	 * point for incremental changes.
 	 */
-	public void addToSubscriptionRegistry(Publisher publisher, Subscriber subscriber, Object key);
-
-	/**
-	 * Cancel all recorded subscriptions.
-	 */
-	public void cancelAllSubscriptions();
+	FULL_TEXT;
 }

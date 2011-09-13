@@ -22,9 +22,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -136,223 +143,223 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
-//	@Override
-//	public Problem getProblem(final User user, final int problemId) {
-//		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
-//			@Override
-//			public Problem run(Connection conn) throws SQLException {
-//				/*
-//        		"select p from Problem p, Course c, CourseRegistration r " +
-//        		" where p.id = :id " +
-//        		"   and c.id = p.courseId " +
-//        		"   and r.courseId = c.id " +
-//        		"   and r.userId = :userId", 
-//				 */
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select problems.* from problems, courses, course_registrations " +
-//						" where problems.id = ? " +
-//						"   and courses.id = problems.course_id " +
-//						"   and course_registrations.course_id = courses.id " +
-//						"   and course_registrations.user_id = ?"
-//				);
-//				stmt.setInt(1, problemId);
-//				stmt.setInt(2, user.getId());
-//				
-//				ResultSet resultSet = executeQuery(stmt);
-//				
-//				if (!resultSet.next()) {
-//					// no such problem, or user is not authorized to see this problem
-//					return null;
-//				}
-//				
-//				Problem problem = new Problem();
-//				load(problem, resultSet, 1);
-//				return problem;
-//			}
-//			
-//			@Override
-//			public String getDescription() {
-//				return "retrieving problem";
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public Change getMostRecentChange(final User user, final int problemId) {
-//		return databaseRun(new AbstractDatabaseRunnable<Change>() {
-//			@Override
-//			public Change run(Connection conn) throws SQLException {
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select c.* from changes as c, events as e " +
-//						" where c.event_id = e.id " +
-//						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
-//						"                where cc.event_id = ee.id " +
-//						"                  and ee.problem_id = ? " +
-//						"                  and ee.user_id = ?)"
-//				);
-//				stmt.setInt(1, problemId);
-//				stmt.setInt(2, user.getId());
-//				
-//				ResultSet resultSet = executeQuery(stmt);
-//				if (!resultSet.next()) {
-//					return null;
-//				}
-//				
-//				Change change = new Change();
-//				load(change, resultSet, 1);
-//				return change;
-//			}
-//			public String getDescription() {
-//				return "retrieving latest code change";
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public Change getMostRecentFullTextChange(final User user, final int problemId) {
-//		return databaseRun(new AbstractDatabaseRunnable<Change>() {
-//			@Override
-//			public Change run(Connection conn) throws SQLException {
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select c.* from changes as c, events as e " +
-//						" where c.event_id = e.id " +
-//						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
-//						"                where cc.event_id = ee.id " +
-//						"                  and ee.problem_id = ? " +
-//						"                  and ee.user_id = ? " +
-//						"                  and cc.type = ?)"
-//				);
-//				stmt.setInt(1, problemId);
-//				stmt.setInt(2, user.getId());
-//				stmt.setInt(3, ChangeType.FULL_TEXT.ordinal());
-//
-//				ResultSet resultSet = executeQuery(stmt);
-//				if (!resultSet.next()) {
-//					return null;
-//				}
-//				Change change = new Change();
-//				load(change, resultSet, 1);
-//				return change;
-//			}
-//			@Override
-//			public String getDescription() {
-//				return " retrieving most recent full text change";
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
-//		return databaseRun(new AbstractDatabaseRunnable<List<Change>>() {
-//			@Override
-//			public List<Change> run(Connection conn) throws SQLException {
-//				List<Change> result = new ArrayList<Change>();
-//				
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select c.* from changes as c, events as e " +
-//						" where c.event_id = e.id " +
-//						"   and e.id > ? " +
-//						"   and e.user_id = ? " +
-//						"   and e.problem_id = ? " +
-//						" order by e.id asc"
-//				);
-//				stmt.setInt(1, baseRev);
-//				stmt.setInt(2, user.getId());
-//				stmt.setInt(3, problemId);
-//				
-//				ResultSet resultSet = executeQuery(stmt);
-//				while (resultSet.next()) {
-//					Change change = new Change();
-//					load(change, resultSet, 1);
-//					result.add(change);
-//				}
-//				
-//				return result;
-//			}
-//			@Override
-//			public String getDescription() {
-//				return " retrieving most recent text changes";
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public List<? extends Object[]> getCoursesForUser(final User user) {
-//		return databaseRun(new AbstractDatabaseRunnable<List<? extends Object[]>>() {
-//			@Override
-//			public List<? extends Object[]> run(Connection conn) throws SQLException {
-//				List<Object[]> result = new ArrayList<Object[]>();
-//
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select c.*, t.* from courses as c, terms as t, course_registrations as r " +
-//						" where c.id = r.course_id " + 
-//						"   and c.term_id = t.id " +
-//						"   and r.user_id = ? " +
-//						" order by c.year desc, t.seq desc"
-//				);
-//				stmt.setInt(1, user.getId());
-//				
-//				ResultSet resultSet = executeQuery(stmt);
-//				
-//				while (resultSet.next()) {
-//					Course course = new Course();
-//					load(course, resultSet, 1);
-//					Term term = new Term();
-//					load(term, resultSet, Course.NUM_FIELDS + 1);
-//					result.add(new Object[]{course, term});
-//				}
-//				
-//				return result;
-//			}
-//			@Override
-//			public String getDescription() {
-//				return " retrieving courses for user";
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public List<Problem> getProblemsInCourse(final User user, final Course course) {
-//		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
-//			@Override
-//			public List<Problem> run(Connection conn) throws SQLException {
-//				//
-//				// Note that we have to join on course registrations to ensure
-//				// that we return courses that the user is actually registered for.
-//				//
-//				PreparedStatement stmt = prepareStatement(
-//						conn,
-//						"select p.* from problems as p, courses as c, course_registrations as r " +
-//						" where p.course_id = c.id " +
-//						"   and r.course_id = c.id " +
-//						"   and r.user_id = ? " +
-//						"   and c.id = ?"
-//				);
-//				stmt.setInt(1, user.getId());
-//				stmt.setInt(2, course.getId());
-//				
-//				ResultSet resultSet = executeQuery(stmt);
-//				
-//				List<Problem> resultList = new ArrayList<Problem>();
-//				while (resultSet.next()) {
-//					Problem problem = new Problem();
-//					load(problem, resultSet, 1);
-//					resultList.add(problem);
-//				}
-//				
-//				return resultList;
-//			}
-//			@Override
-//			public String getDescription() {
-//				return "retrieving problems for course";
-//			}
-//		});
-//	}
+	@Override
+	public Problem getProblem(final User user, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
+			@Override
+			public Problem run(Connection conn) throws SQLException {
+				/*
+        		"select p from Problem p, Course c, CourseRegistration r " +
+        		" where p.id = :id " +
+        		"   and c.id = p.courseId " +
+        		"   and r.courseId = c.id " +
+        		"   and r.userId = :userId", 
+				 */
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select problems.* from problems, courses, course_registrations " +
+						" where problems.id = ? " +
+						"   and courses.id = problems.course_id " +
+						"   and course_registrations.course_id = courses.id " +
+						"   and course_registrations.user_id = ?"
+				);
+				stmt.setInt(1, problemId);
+				stmt.setInt(2, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				if (!resultSet.next()) {
+					// no such problem, or user is not authorized to see this problem
+					return null;
+				}
+				
+				Problem problem = new Problem();
+				load(problem, resultSet, 1);
+				return problem;
+			}
+			
+			@Override
+			public String getDescription() {
+				return "retrieving problem";
+			}
+		});
+	}
+	
+	@Override
+	public Change getMostRecentChange(final User user, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<Change>() {
+			@Override
+			public Change run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select c.* from changes as c, events as e " +
+						" where c.event_id = e.id " +
+						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
+						"                where cc.event_id = ee.id " +
+						"                  and ee.problem_id = ? " +
+						"                  and ee.user_id = ?)"
+				);
+				stmt.setInt(1, problemId);
+				stmt.setInt(2, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return null;
+				}
+				
+				Change change = new Change();
+				load(change, resultSet, 1);
+				return change;
+			}
+			public String getDescription() {
+				return "retrieving latest code change";
+			}
+		});
+	}
+	
+	@Override
+	public Change getMostRecentFullTextChange(final User user, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<Change>() {
+			@Override
+			public Change run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select c.* from changes as c, events as e " +
+						" where c.event_id = e.id " +
+						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
+						"                where cc.event_id = ee.id " +
+						"                  and ee.problem_id = ? " +
+						"                  and ee.user_id = ? " +
+						"                  and cc.type = ?)"
+				);
+				stmt.setInt(1, problemId);
+				stmt.setInt(2, user.getId());
+				stmt.setInt(3, ChangeType.FULL_TEXT.ordinal());
+
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return null;
+				}
+				Change change = new Change();
+				load(change, resultSet, 1);
+				return change;
+			}
+			@Override
+			public String getDescription() {
+				return " retrieving most recent full text change";
+			}
+		});
+	}
+	
+	@Override
+	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
+		return databaseRun(new AbstractDatabaseRunnable<List<Change>>() {
+			@Override
+			public List<Change> run(Connection conn) throws SQLException {
+				List<Change> result = new ArrayList<Change>();
+				
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select c.* from changes as c, events as e " +
+						" where c.event_id = e.id " +
+						"   and e.id > ? " +
+						"   and e.user_id = ? " +
+						"   and e.problem_id = ? " +
+						" order by e.id asc"
+				);
+				stmt.setInt(1, baseRev);
+				stmt.setInt(2, user.getId());
+				stmt.setInt(3, problemId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					Change change = new Change();
+					load(change, resultSet, 1);
+					result.add(change);
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " retrieving most recent text changes";
+			}
+		});
+	}
+	
+	@Override
+	public List<? extends Object[]> getCoursesForUser(final User user) {
+		return databaseRun(new AbstractDatabaseRunnable<List<? extends Object[]>>() {
+			@Override
+			public List<? extends Object[]> run(Connection conn) throws SQLException {
+				List<Object[]> result = new ArrayList<Object[]>();
+
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select c.*, t.* from courses as c, terms as t, course_registrations as r " +
+						" where c.id = r.course_id " + 
+						"   and c.term_id = t.id " +
+						"   and r.user_id = ? " +
+						" order by c.year desc, t.seq desc"
+				);
+				stmt.setInt(1, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				while (resultSet.next()) {
+					Course course = new Course();
+					load(course, resultSet, 1);
+					Term term = new Term();
+					load(term, resultSet, Course.NUM_FIELDS + 1);
+					result.add(new Object[]{course, term});
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " retrieving courses for user";
+			}
+		});
+	}
+	
+	@Override
+	public List<Problem> getProblemsInCourse(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
+			@Override
+			public List<Problem> run(Connection conn) throws SQLException {
+				//
+				// Note that we have to join on course registrations to ensure
+				// that we return courses that the user is actually registered for.
+				//
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select p.* from problems as p, courses as c, course_registrations as r " +
+						" where p.course_id = c.id " +
+						"   and r.course_id = c.id " +
+						"   and r.user_id = ? " +
+						"   and c.id = ?"
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, course.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				List<Problem> resultList = new ArrayList<Problem>();
+				while (resultSet.next()) {
+					Problem problem = new Problem();
+					load(problem, resultSet, 1);
+					resultList.add(problem);
+				}
+				
+				return resultList;
+			}
+			@Override
+			public String getDescription() {
+				return "retrieving problems for course";
+			}
+		});
+	}
 
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
@@ -380,37 +387,37 @@ public class JDBCDatabase implements IDatabase {
 		user.setSalt(resultSet.getString(index++));
 	}
 
-//	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
-//		problem.setProblemId(resultSet.getInt(index++));
-//		problem.setCourseId(resultSet.getInt(index++));
-//		problem.setTestName(resultSet.getString(index++));
-//		problem.setBriefDescription(resultSet.getString(index++));
-//		problem.setDescription(resultSet.getString(index++));
-//	}
-//
-//	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-//		change.setId(resultSet.getInt(index++));
-//		change.setEventId(resultSet.getInt(index++));
-//		change.setType(resultSet.getInt(index++));
-//		change.setStartRow(resultSet.getInt(index++));
-//		change.setEndRow(resultSet.getInt(index++));
-//		change.setStartColumn(resultSet.getInt(index++));
-//		change.setEndColumn(resultSet.getInt(index++));
-//		change.setText(resultSet.getString(index++));
-//	}
-//
-//	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
-//		course.setId(resultSet.getInt(index++));
-//		course.setName(resultSet.getString(index++));
-//		course.setTitle(resultSet.getString(index++));
-//		course.setUrl(resultSet.getString(index++));
-//		course.setTermId(resultSet.getInt(index++));
-//		course.setYear(resultSet.getInt(index++));
-//	}
-//
-//	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
-//		term.setId(resultSet.getInt(index++));
-//		term.setName(resultSet.getString(index++));
-//		term.setSeq(resultSet.getInt(index++));
-//	}
+	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
+		problem.setProblemId(resultSet.getInt(index++));
+		problem.setCourseId(resultSet.getInt(index++));
+		problem.setTestName(resultSet.getString(index++));
+		problem.setBriefDescription(resultSet.getString(index++));
+		problem.setDescription(resultSet.getString(index++));
+	}
+
+	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
+		change.setId(resultSet.getInt(index++));
+		change.setEventId(resultSet.getInt(index++));
+		change.setType(resultSet.getInt(index++));
+		change.setStartRow(resultSet.getInt(index++));
+		change.setEndRow(resultSet.getInt(index++));
+		change.setStartColumn(resultSet.getInt(index++));
+		change.setEndColumn(resultSet.getInt(index++));
+		change.setText(resultSet.getString(index++));
+	}
+
+	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
+		course.setId(resultSet.getInt(index++));
+		course.setName(resultSet.getString(index++));
+		course.setTitle(resultSet.getString(index++));
+		course.setUrl(resultSet.getString(index++));
+		course.setTermId(resultSet.getInt(index++));
+		course.setYear(resultSet.getInt(index++));
+	}
+
+	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
+		term.setId(resultSet.getInt(index++));
+		term.setName(resultSet.getString(index++));
+		term.setSeq(resultSet.getInt(index++));
+	}
 }

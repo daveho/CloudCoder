@@ -53,7 +53,7 @@ public abstract class Publisher {
 	 */
 	public void subscribe(Object key, Subscriber subscriber, SubscriptionRegistrar registrar) {
 		registrationList.add(new Registration(key, subscriber));
-		registrar.addToSubscriptionRegistry(subscriber);
+		registrar.addToSubscriptionRegistry(this, subscriber, key);
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public abstract class Publisher {
 	public void subscribeToAll(Object[] keyList, Subscriber subscriber, SubscriptionRegistrar registrar) {
 		for (Object key : keyList) {
 			registrationList.add(new Registration(key, subscriber));
-			registrar.addToSubscriptionRegistry(subscriber);
+			registrar.addToSubscriptionRegistry(this, subscriber, key);
 		}
 	}
 	

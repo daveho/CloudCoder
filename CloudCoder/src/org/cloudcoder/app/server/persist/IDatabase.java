@@ -17,8 +17,13 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.util.List;
+
+import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -30,15 +35,15 @@ public interface IDatabase {
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	public User authenticateUser(String userName, String password);
 
-//	public Problem getProblem(User user, int problemId);
-//
-//	public Change getMostRecentChange(User user, int problemId);
-//
-//	public Change getMostRecentFullTextChange(User user, int problemId);
-//
-//	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
-//
-//	public List<? extends Object[]> getCoursesForUser(User user);
-//
-//	public List<Problem> getProblemsInCourse(User user, Course course);
+	public Problem getProblem(User user, int problemId);
+
+	public Change getMostRecentChange(User user, int problemId);
+
+	public Change getMostRecentFullTextChange(User user, int problemId);
+
+	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
+
+	public List<? extends Object[]> getCoursesForUser(User user);
+
+	public List<Problem> getProblemsInCourse(User user, Course course);
 }

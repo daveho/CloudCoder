@@ -29,10 +29,4 @@ public interface Subscriber {
 	 * @param hint       additional information about the event
 	 */
 	public void eventOccurred(Object key, Publisher publisher, Object hint);
-	
-	/**
-	 * When this method is called, the Subscriber should unsubscribe from
-	 * all events it has registered for.
-	 */
-	public void unsubscribeFromAll();
 }

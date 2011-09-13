@@ -1,4 +1,4 @@
-// CloudCoder - a web-based pedagogical programming environment
+// NetCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
@@ -15,26 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.shared.util;
+package org.cloudcoder.app.client.rpc;
 
-/**
- * A SubscriptionRegistrar object keeps track of a set of
- * subscriptions.  The unsubscribe() method cancels
- * all of the subscriptions that the SubscriptionRegistrar has
- * recorded.
- */
-public interface SubscriptionRegistrar {
-	/**
-	 * Record a subscription.
-	 * 
-	 * @param publisher  a Publisher
-	 * @param subscriber a Subscriber
-	 * @param key        object indicating the type of event the Subscriber is interested in
-	 */
-	public void addToSubscriptionRegistry(Publisher publisher, Subscriber subscriber, Object key);
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 
-	/**
-	 * Cancel all recorded subscriptions.
-	 */
-	public void cancelAllSubscriptions();
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+public interface GetCoursesAndProblemsServiceAsync {
+
+	void getCourses(AsyncCallback<Course[]> callback);
+
+	void getProblems(Course course, AsyncCallback<Problem[]> callback);
+
 }

@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -9,17 +26,10 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Image;
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * CloudCoder entry point class.
  */
 public class CloudCoder implements EntryPoint, Subscriber {
 	private Session session;
@@ -32,11 +42,9 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	public void onModuleLoad() {
 		session = new Session();
 		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
-		
-		// subscribe to session events
-		for (Session.Event eventType : Session.Event.values()) {
-			session.subscribe(eventType, this, subscriptionRegistrar);
-		}
+
+		// Subscribe to all Session events
+		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
 
 		changePage(new LoginPage());
 	}
@@ -58,10 +66,5 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			Window.alert("Successful login!");
 		}
 		
-	}
-	
-	@Override
-	public void unsubscribeFromAll() {
-		subscriptionRegistrar.unsubscribeAllEventSubscribers();
 	}
 }
