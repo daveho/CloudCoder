@@ -18,10 +18,12 @@ public class CoursesAndProblemsPage extends CloudCoderPage {
 		// Create the UI
 		ui = new CoursesAndProblemsPageUI();
 		ui.setPage(this);
+		ui.activate();
 		
 		// Subscribe the UI to Session events
 		getSession().subscribeToAll(Session.Event.values(), ui, getSubscriptionRegistrar());
 		
+		// Load courses
 		RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
 			@Override
 			public void onSuccess(Course[] result) {
