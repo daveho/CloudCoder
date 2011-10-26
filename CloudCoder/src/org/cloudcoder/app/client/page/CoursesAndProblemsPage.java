@@ -1,19 +1,25 @@
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.TreeItem;
 
 public class CoursesAndProblemsPage extends CloudCoderPage implements Subscriber {
+	private Tree tree;
+	
 	public CoursesAndProblemsPage() {
 		setSize("640px", "480px");
 		
@@ -21,7 +27,7 @@ public class CoursesAndProblemsPage extends CloudCoderPage implements Subscriber
 		add(dockLayoutPanel);
 		dockLayoutPanel.setSize("100%", "100%");
 		
-		Tree tree = new Tree();
+		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 18.2);
 		
 		InlineLabel problemDescriptionLabel = new InlineLabel("");
@@ -54,9 +60,29 @@ public class CoursesAndProblemsPage extends CloudCoderPage implements Subscriber
 		removeAllSessionObjects();
 	}
 	
+	private static class CourseTreeItem extends TreeItem {
+		private Course course;
+		
+		public CourseTreeItem(Course course) {
+			this.course = course;
+		}
+		
+		public Course getCourse() {
+			return course;
+		}
+	}
+	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		// TODO Auto-generated method stub
-		
+		if (key == Session.Event.ADDED_OBJECT && hint.getClass() == Course[].class) {
+			Window.alert("Loading courses...");
+			// Courses loaded
+			tree.clear();
+			Course[] courseList = (Course[]) hint;
+			for (Course course : courseList) {
+				tree.addItem(new CourseTreeItem(course));
+				GWT.log("Added course " + course.getName());
+			}
+		}
 	}
 }

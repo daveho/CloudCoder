@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.page.CoursesAndProblemsPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -52,18 +53,19 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private void changePage(CloudCoderPage page) {
 		if (currentPage != null) {
 			currentPage.deactivate();
-			RootLayoutPanel.get().remove(page);
+			RootLayoutPanel.get().remove(currentPage);
 		}
-		RootLayoutPanel.get().add(page);
 		page.setSession(session);
 		page.activate();
 		currentPage = page;
+		RootLayoutPanel.get().add(page);
 	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-			Window.alert("Successful login!");
+//			Window.alert("Successful login!");
+			changePage(new CoursesAndProblemsPage());
 		}
 		
 	}
