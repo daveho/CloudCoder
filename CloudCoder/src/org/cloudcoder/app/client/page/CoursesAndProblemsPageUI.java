@@ -44,6 +44,7 @@ public class CoursesAndProblemsPageUI extends DockLayoutPanel implements Subscri
 		private Course course;
 		
 		public CourseTreeItem(Course course) {
+			super(course.getName());
 			this.course = course;
 		}
 		
