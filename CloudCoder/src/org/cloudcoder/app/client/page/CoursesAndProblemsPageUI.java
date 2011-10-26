@@ -10,30 +10,32 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 
-public class CoursesAndProblemsPageUI extends DockLayoutPanel implements Subscriber {
+public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
 	
 	private Tree tree;
 	
 	public CoursesAndProblemsPageUI() {
-		super(Unit.EM);
-		
-		setSize("640px", "480px");
+		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
+		dockLayoutPanel.setSize("640px", "480px");
 		
 		tree = new Tree();
-		addWest(tree, 18.2);
+		dockLayoutPanel.addWest(tree, 18.2);
 		
 		InlineLabel problemDescriptionLabel = new InlineLabel("");
-		addNorth(problemDescriptionLabel, 7.7);
+		dockLayoutPanel.addNorth(problemDescriptionLabel, 7.7);
 		
 		DataGrid<Problem> cellTable = new DataGrid<Problem>();
-		add(cellTable);
+		dockLayoutPanel.add(cellTable);
 		cellTable.setSize("100%", "100%");
+		
+		initWidget(dockLayoutPanel);
 	}
 	
 	public void setPage(CloudCoderPage page) {
