@@ -25,15 +25,15 @@ import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Common superclass for all CloudCoder "pages".
  * Provides helper methods for managing session data and event subscribers.
  */
-public abstract class CloudCoderPage extends LayoutPanel {
+public abstract class CloudCoderPage {
 	private List<Object> sessionObjectList;
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
-
 	private Session session;
 	
 	/**
@@ -85,6 +85,11 @@ public abstract class CloudCoderPage extends LayoutPanel {
 	 * to do cleanup.
 	 */
 	public abstract void deactivate();
+
+	/**
+	 * @return the Widget that is the UI for this page 
+	 */
+	public abstract Widget getWidget();
 	
 	/**
 	 * @return the Session object
@@ -101,12 +106,5 @@ public abstract class CloudCoderPage extends LayoutPanel {
 	 */
 	public SubscriptionRegistrar getSubscriptionRegistrar() {
 		return subscriptionRegistrar;
-	}
-	
-	/**
-	 * @return the overall LayoutPanel which should contain all view UI elements 
-	 */
-	protected LayoutPanel getLayoutPanel() {
-		return this;
 	}
 }

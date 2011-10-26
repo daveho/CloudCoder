@@ -19,14 +19,15 @@ package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage;
+import org.cloudcoder.app.client.page.CoursesAndProblemsPageUI;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.page.LoginPageUI;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
@@ -53,18 +54,17 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private void changePage(CloudCoderPage page) {
 		if (currentPage != null) {
 			currentPage.deactivate();
-			RootLayoutPanel.get().remove(currentPage);
+			RootLayoutPanel.get().remove(currentPage.getWidget());
 		}
 		page.setSession(session);
 		page.activate();
 		currentPage = page;
-		RootLayoutPanel.get().add(page);
+		RootLayoutPanel.get().add(page.getWidget());
 	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-//			Window.alert("Successful login!");
 			changePage(new CoursesAndProblemsPage());
 		}
 		
