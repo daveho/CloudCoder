@@ -17,7 +17,7 @@
 
 package org.cloudcoder.app.shared.model;
 
-public class TermAndYear {
+public class TermAndYear implements Comparable<TermAndYear> {
 	private Term term;
 	private int year;
 	
@@ -66,5 +66,15 @@ public class TermAndYear {
 	@Override
 	public String toString() {
 		return term.toString() + " " + year;
+	}
+	
+	@Override
+	public int compareTo(TermAndYear o) {
+		// order descending (most recent term/year first)
+		int cmp = this.year - o.year;
+		if (cmp != 0) {
+			return cmp * -1;
+		}
+		return (this.term.getSeq() - o.term.getSeq()) * -1;
 	}
 }

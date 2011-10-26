@@ -106,4 +106,8 @@ public class Course implements IsSerializable {
 	public String toString() {
 		return name + " - " + title;
 	}
+
+	public TermAndYear getTermAndYear() {
+		return new TermAndYear(term, year);
+	}
 }
