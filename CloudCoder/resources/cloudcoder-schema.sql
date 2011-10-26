@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 3.3.10deb1
+-- version 3.3.7deb5build0.10.10.1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 09, 2011 at 09:25 AM
--- Server version: 5.1.54
--- PHP Version: 5.3.5-1ubuntu7.2
+-- Generation Time: Oct 26, 2011 at 04:02 PM
+-- Server version: 5.1.49
+-- PHP Version: 5.3.3-1ubuntu9.5
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
@@ -16,7 +16,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `netcoder2`
+-- Database: `cloudcoder`
 --
 
 -- --------------------------------------------------------
@@ -63,6 +63,25 @@ CREATE TABLE IF NOT EXISTS `changes` (
 -- Dumping data for table `changes`
 --
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `configuration_settings`
+--
+
+CREATE TABLE IF NOT EXISTS `configuration_settings` (
+  `name` varchar(64) NOT NULL,
+  `value` varchar(128) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `configuration_settings`
+--
+
+INSERT INTO `configuration_settings` (`name`, `value`) VALUES
+('pub.text.institution', 'York College of Pennsylvania');
 
 -- --------------------------------------------------------
 
