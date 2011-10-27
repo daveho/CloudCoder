@@ -11,17 +11,11 @@ import org.cloudcoder.app.shared.model.TermAndYear;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -35,6 +29,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
 
 	private Tree tree;
+	private InlineLabel problemDescriptionLabel;
 	private DataGrid<Problem> cellTable;
 
 	private static class TestNameColumn extends TextColumn<Problem> {
@@ -58,7 +53,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
 
-		InlineLabel problemDescriptionLabel = new InlineLabel("");
+		problemDescriptionLabel = new InlineLabel("");
 		dockLayoutPanel.addNorth(problemDescriptionLabel, 7.7);
 
 		cellTable = new DataGrid<Problem>();
@@ -108,7 +103,8 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 			public void onSelectionChange(SelectionChangeEvent event) {
 				Problem problem = selectionModel.getSelectedObject();
 				if (problem != null) {
-					Window.alert("Problem selected: " + problem.getTestName());
+					//Window.alert("Problem selected: " + problem.getTestName());
+					displayProblemDescription(problem);
 				}
 			}
 		});
@@ -180,5 +176,9 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		
 		cellTable.setRowCount(problemList.length);
 		cellTable.setRowData(0, Arrays.asList(problemList));
+	}
+
+	private void displayProblemDescription(Problem problem) {
+		problemDescriptionLabel.setText(problem.getDescription());
 	}
 }
