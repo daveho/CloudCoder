@@ -14,6 +14,8 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -24,13 +26,18 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.HTML;
 
 public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
 
 	private Tree tree;
-	private InlineLabel problemDescriptionLabel;
 	private DataGrid<Problem> cellTable;
+	private LayoutPanel layoutPanel;
+	private Label problemNameLabel;
+	private HTML problemDescriptionHtml;
 
 	private static class TestNameColumn extends TextColumn<Problem> {
 		@Override
@@ -52,9 +59,22 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
-
-		problemDescriptionLabel = new InlineLabel("");
-		dockLayoutPanel.addNorth(problemDescriptionLabel, 7.7);
+		
+		layoutPanel = new LayoutPanel();
+		dockLayoutPanel.addNorth(layoutPanel, 7.7);
+		
+		problemNameLabel = new Label("");
+		problemNameLabel.setStyleName("cc-problemName");
+		layoutPanel.add(problemNameLabel);
+		problemNameLabel.setWidth("100%");
+		layoutPanel.setWidgetLeftWidth(problemNameLabel, 0.0, Unit.PX, 302.0, Unit.PX);
+		layoutPanel.setWidgetTopHeight(problemNameLabel, 0.0, Unit.PX, 24.0, Unit.PX);
+		
+		problemDescriptionHtml = new HTML("", true);
+		layoutPanel.add(problemDescriptionHtml);
+		problemDescriptionHtml.setWidth("100%");
+		layoutPanel.setWidgetLeftWidth(problemDescriptionHtml, 0.0, Unit.PX, 436.0, Unit.PX);
+		layoutPanel.setWidgetTopHeight(problemDescriptionHtml, 30.0, Unit.PX, 70.0, Unit.PX);
 
 		cellTable = new DataGrid<Problem>();
 		dockLayoutPanel.add(cellTable);
@@ -179,6 +199,8 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	}
 
 	private void displayProblemDescription(Problem problem) {
-		problemDescriptionLabel.setText(problem.getDescription());
+		//problemDescriptionLabel.setText(problem.getDescription());
+		problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
+		problemDescriptionHtml.setHTML(SafeHtmlUtils.fromString(problem.getDescription()));
 	}
 }
