@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 3.3.7deb5build0.10.10.1
+-- version 3.3.10deb1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Oct 26, 2011 at 04:02 PM
--- Server version: 5.1.49
--- PHP Version: 5.3.3-1ubuntu9.5
+-- Generation Time: Oct 27, 2011 at 12:13 PM
+-- Server version: 5.1.54
+-- PHP Version: 5.3.5-1ubuntu7.3
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
@@ -71,10 +71,10 @@ CREATE TABLE IF NOT EXISTS `changes` (
 --
 
 CREATE TABLE IF NOT EXISTS `configuration_settings` (
-  `name` varchar(64) NOT NULL,
-  `value` varchar(128) NOT NULL,
+  `name` varchar(60) NOT NULL,
+  `value` text NOT NULL,
   PRIMARY KEY (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `configuration_settings`
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `course_registrations` (
   `user_id` int(11) NOT NULL,
   `registration_type` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
 
 --
 -- Dumping data for table `course_registrations`
@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `problems` (
 --
 
 INSERT INTO `problems` (`problem_id`, `course_id`, `testname`, `brief_description`, `description`) VALUES
-(1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
+(1, 1, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
 
 -- --------------------------------------------------------
 

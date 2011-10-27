@@ -19,9 +19,7 @@ package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage;
-import org.cloudcoder.app.client.page.CoursesAndProblemsPageUI;
 import org.cloudcoder.app.client.page.LoginPage;
-import org.cloudcoder.app.client.page.LoginPageUI;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;

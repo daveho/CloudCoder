@@ -1,5 +1,6 @@
 package org.cloudcoder.app.client.page;
 
+import java.util.Arrays;
 import java.util.TreeSet;
 
 import org.cloudcoder.app.client.Session;
@@ -11,7 +12,6 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 
 import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -20,48 +20,37 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.Header;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.view.client.SelectionChangeEvent;
+import com.google.gwt.view.client.SingleSelectionModel;
 
 public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
 
 	private Tree tree;
 	private DataGrid<Problem> cellTable;
-	
-	private static class BriefDescriptionCell extends AbstractCell<String> {
 
+	private static class TestNameColumn extends TextColumn<Problem> {
 		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context, String value, SafeHtmlBuilder sb) {
-			if (value == null) {
-				return;
-			}
-			SafeHtml safeValue = SafeHtmlUtils.fromString(value);
-			sb.appendHtmlConstant("<span>");
-			sb.append(safeValue);
-			sb.appendHtmlConstant("</span");
+		public String getValue(Problem object) {
+			return object.getTestName();
 		}
-		
 	}
 	
-	private static class BriefDescriptionColumn extends Column<Problem, String> {
-
-		public BriefDescriptionColumn() {
-			super(new BriefDescriptionCell());
-		}
-
+	private static class BriefDescriptionColumn extends TextColumn<Problem> {
 		@Override
 		public String getValue(Problem object) {
 			return object.getBriefDescription();
 		}
-		
 	}
-
+	
 	public CoursesAndProblemsPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
 		dockLayoutPanel.setSize("800px", "600px");
@@ -109,17 +98,20 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		});
 		
 		// Configure the DataGrid that will show the problems
+		cellTable.addColumn(new TestNameColumn(), "Name");
+		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
 		
-//		cellTable.addColumn(new ProblemNameColumn(new Cell<String>()), new Header());
-//		cellTable.addColumn(new BriefDescriptionColumn(), new Header<String>() {
-//
-//			@Override
-//			public String getValue() {
-//				// TODO Auto-generated method stub
-//				return null;
-//			}
-//			
-//		});
+		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
+		cellTable.setSelectionModel(selectionModel);
+		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+			@Override
+			public void onSelectionChange(SelectionChangeEvent event) {
+				Problem problem = selectionModel.getSelectedObject();
+				if (problem != null) {
+					Window.alert("Problem selected: " + problem.getTestName());
+				}
+			}
+		});
 	}
 
 	private static class TermAndYearTreeItem extends TreeItem {
@@ -186,6 +178,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private void displayLoadedProblems(Object hint) {
 		Problem[] problemList = (Problem[]) hint;
 		
-		
+		cellTable.setRowCount(problemList.length);
+		cellTable.setRowData(0, Arrays.asList(problemList));
 	}
 }
