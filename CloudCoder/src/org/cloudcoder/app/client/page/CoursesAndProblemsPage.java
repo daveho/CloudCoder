@@ -12,12 +12,16 @@ public class CoursesAndProblemsPage extends CloudCoderPage {
 	
 	public CoursesAndProblemsPage() {
 	}
-	
+
 	@Override
-	public void activate() {
+	public void createWidget() {
 		// Create the UI
 		ui = new CoursesAndProblemsPageUI();
 		ui.setPage(this);
+	}
+	
+	@Override
+	public void activate() {
 		ui.activate(getSession(), getSubscriptionRegistrar());
 		
 		// Load courses
@@ -33,7 +37,7 @@ public class CoursesAndProblemsPage extends CloudCoderPage {
 			}
 		});
 	}
-
+	
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();

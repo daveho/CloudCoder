@@ -13,6 +13,7 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <!-- Other module inherits                                      -->
+  <inherits name='edu.ycp.cs.dh.acegwt.AceGWT'/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.cloudcoder.app.client.CloudCoder'/>

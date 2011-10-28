@@ -13,6 +13,8 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.DataGrid;
@@ -25,6 +27,7 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.user.client.ui.Button;
 
 public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
@@ -32,6 +35,8 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private Tree tree;
 	private DataGrid<Problem> cellTable;
 	private ProblemDescriptionView problemDescriptionView;
+	private LayoutPanel layoutPanel;
+	private Button loadProblemButton;
 
 	private static class TestNameColumn extends TextColumn<Problem> {
 		@Override
@@ -56,10 +61,20 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		
 		problemDescriptionView = new ProblemDescriptionView();
 		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
+		
+		layoutPanel = new LayoutPanel();
+		dockLayoutPanel.add(layoutPanel);
+		
+		loadProblemButton = new Button("Load Problem!");
+		layoutPanel.add(loadProblemButton);
+		layoutPanel.setWidgetLeftWidth(loadProblemButton, 316.0, Unit.PX, 120.0, Unit.PX);
+		layoutPanel.setWidgetTopHeight(loadProblemButton, 0.0, Unit.PX, 40.0, Unit.PX);
+		loadProblemButton.setSize("120px", "40px");
 
 		cellTable = new DataGrid<Problem>();
-		dockLayoutPanel.add(cellTable);
-		cellTable.setSize("100%", "100%");
+		layoutPanel.add(cellTable);
+		layoutPanel.setWidgetTopBottom(cellTable, 46.0, Unit.PX, 0.0, Unit.PX);
+		layoutPanel.setWidgetLeftRight(cellTable, 0.0, Unit.PX, 0.0, Unit.PX);
 
 		initWidget(dockLayoutPanel);
 	}
@@ -117,6 +132,17 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		
 		// Subscribe the ProblemDescriptionView to Session events
 		session.subscribeToAll(Session.Event.values(), problemDescriptionView, subscriptionRegistrar);
+		
+		// Add handler for load problem button
+		loadProblemButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Problem problem = session.get(Problem.class);
+				if (problem != null) {
+					session.notifySubscribers(Session.Event.PROBLEM_CHOSEN, problem);
+				}
+			}
+		});
 	}
 
 	private static class TermAndYearTreeItem extends TreeItem {

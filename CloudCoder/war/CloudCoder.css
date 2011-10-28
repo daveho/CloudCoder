@@ -44,4 +44,8 @@ h1 {
 	font-weight: bold;
 	font-size: 20px;
 }
+.cc-centered {
+	margin-left: 0 auto;
+	margin-right: 0 auto;
+}
 

@@ -10,10 +10,13 @@ public class LoginPage extends CloudCoderPage {
 	private LoginPageUI ui;
 
 	@Override
-	public void activate() {
+	public void createWidget() {
 		ui = new LoginPageUI();
 		ui.setPage(this);
-		
+	}
+	
+	@Override
+	public void activate() {
 		RPC.configurationSettingService.getConfigurationSettingValue(ConfigurationSettingName.PUB_TEXT_INSTITUTION, new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -34,5 +37,4 @@ public class LoginPage extends CloudCoderPage {
 	public Widget getWidget() {
 		return ui;
 	}
-
 }

@@ -19,6 +19,7 @@ package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage;
+import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -63,15 +64,20 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			layoutPanel.remove(currentPage.getWidget());
 		}
 		page.setSession(session);
+		// Create the page's Widget and add it to the DOM tree
+		page.createWidget();
+		layoutPanel.add(page.getWidget());
+		// Now it is safe to activate the page
 		page.activate();
 		currentPage = page;
-		layoutPanel.add(page.getWidget());
 	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
 			changePage(new CoursesAndProblemsPage());
+		} else if (key == Session.Event.PROBLEM_CHOSEN) {
+			changePage(new DevelopmentPage());
 		}
 		
 	}

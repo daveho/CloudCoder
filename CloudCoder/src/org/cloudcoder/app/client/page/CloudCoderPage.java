@@ -24,7 +24,6 @@ import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -71,16 +70,20 @@ public abstract class CloudCoderPage {
 			session.remove(obj.getClass());
 		}
 	}
+
+	/**
+	 * Create this page's widget.
+	 */
+	public abstract void createWidget();
 	
 	/**
-	 * This method is called after a CloudCoderView has been instantiated
-	 * in the client web page.  Subclasses may override this to do any
-	 * initialization that requires that the view is part of the DOM tree.
+	 * This method is called after the page's UI has been
+	 * added to the DOM tree.
 	 */
 	public abstract void activate();
 	
 	/**
-	 * This method is called just before a CloudCoderView is removed
+	 * This method is called just before the UI is removed
 	 * from the client web page.  Subclasses may override this
 	 * to do cleanup.
 	 */
