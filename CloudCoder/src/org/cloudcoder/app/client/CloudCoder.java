@@ -26,7 +26,9 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * CloudCoder entry point class.
@@ -35,6 +37,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private Session session;
 	private SubscriptionRegistrar subscriptionRegistrar;
 	private CloudCoderPage currentPage;
+	
+	private LayoutPanel layoutPanel;
 
 	/**
 	 * This is the entry point method.
@@ -46,18 +50,22 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		// Subscribe to all Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
 
+		layoutPanel = new LayoutPanel();
+		layoutPanel.setSize("100%", "100%");
+		RootPanel.get("cc-content").add(layoutPanel);
+		
 		changePage(new LoginPage());
 	}
 	
 	private void changePage(CloudCoderPage page) {
 		if (currentPage != null) {
 			currentPage.deactivate();
-			RootLayoutPanel.get().remove(currentPage.getWidget());
+			layoutPanel.remove(currentPage.getWidget());
 		}
 		page.setSession(session);
 		page.activate();
 		currentPage = page;
-		RootLayoutPanel.get().add(page.getWidget());
+		layoutPanel.add(page.getWidget());
 	}
 	
 	@Override
