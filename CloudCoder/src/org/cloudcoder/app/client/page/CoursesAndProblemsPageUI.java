@@ -10,34 +10,28 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TermAndYear;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
-import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.HTML;
 
 public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 	private CloudCoderPage page;
 
 	private Tree tree;
 	private DataGrid<Problem> cellTable;
-	private LayoutPanel layoutPanel;
-	private Label problemNameLabel;
-	private HTML problemDescriptionHtml;
+	private ProblemDescriptionView problemDescriptionView;
 
 	private static class TestNameColumn extends TextColumn<Problem> {
 		@Override
@@ -60,21 +54,8 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
 		
-		layoutPanel = new LayoutPanel();
-		dockLayoutPanel.addNorth(layoutPanel, 7.7);
-		
-		problemNameLabel = new Label("");
-		problemNameLabel.setStyleName("cc-problemName");
-		layoutPanel.add(problemNameLabel);
-		problemNameLabel.setWidth("100%");
-		layoutPanel.setWidgetLeftWidth(problemNameLabel, 0.0, Unit.PX, 302.0, Unit.PX);
-		layoutPanel.setWidgetTopHeight(problemNameLabel, 0.0, Unit.PX, 24.0, Unit.PX);
-		
-		problemDescriptionHtml = new HTML("", true);
-		layoutPanel.add(problemDescriptionHtml);
-		problemDescriptionHtml.setWidth("100%");
-		layoutPanel.setWidgetLeftWidth(problemDescriptionHtml, 0.0, Unit.PX, 436.0, Unit.PX);
-		layoutPanel.setWidgetTopHeight(problemDescriptionHtml, 30.0, Unit.PX, 70.0, Unit.PX);
+		problemDescriptionView = new ProblemDescriptionView();
+		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
 
 		cellTable = new DataGrid<Problem>();
 		dockLayoutPanel.add(cellTable);
@@ -87,7 +68,11 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		this.page = page;
 	}
 
-	public void activate() {
+	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// Subscribe to Session events
+		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
+		
+		// When a course is selected in the tree, load its problems
 		tree.addSelectionHandler(new SelectionHandler<TreeItem>() {
 			@Override
 			public void onSelection(SelectionEvent<TreeItem> event) {
@@ -116,6 +101,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		cellTable.addColumn(new TestNameColumn(), "Name");
 		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
 		
+		// When a problem is selected, add it to the session
 		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
 		cellTable.setSelectionModel(selectionModel);
 		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
@@ -123,11 +109,14 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 			public void onSelectionChange(SelectionChangeEvent event) {
 				Problem problem = selectionModel.getSelectedObject();
 				if (problem != null) {
-					//Window.alert("Problem selected: " + problem.getTestName());
-					displayProblemDescription(problem);
+					// Add the problem to the Session
+					session.add(problem);
 				}
 			}
 		});
+		
+		// Subscribe the ProblemDescriptionView to Session events
+		session.subscribeToAll(Session.Event.values(), problemDescriptionView, subscriptionRegistrar);
 	}
 
 	private static class TermAndYearTreeItem extends TreeItem {
@@ -196,11 +185,5 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 		
 		cellTable.setRowCount(problemList.length);
 		cellTable.setRowData(0, Arrays.asList(problemList));
-	}
-
-	private void displayProblemDescription(Problem problem) {
-		//problemDescriptionLabel.setText(problem.getDescription());
-		problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
-		problemDescriptionHtml.setHTML(SafeHtmlUtils.fromString(problem.getDescription()));
 	}
 }
