@@ -22,7 +22,8 @@ public class DevelopmentPageUI extends Composite {
 	
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
-		dockLayoutPanel.setSize("800px", "600px");
+		//dockLayoutPanel.setSize("800px", "600px");
+		dockLayoutPanel.setSize("100%", "100%");
 		
 		problemDescriptionView = new ProblemDescriptionView();
 		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
