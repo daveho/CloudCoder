@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.User;
@@ -360,18 +362,81 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public void storeChanges(final Change[] changeList) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				// Store Events
+				PreparedStatement insertEvent = prepareStatement(
+						conn,
+						"insert into events values (NULL, ?, ?, ?, ?)", 
+						Statement.RETURN_GENERATED_KEYS
+				);
+				for (Change change : changeList) {
+					storeNoId(change.getEvent(), insertEvent, 1);
+					insertEvent.addBatch();
+				}
+				insertEvent.executeBatch();
+				
+				// Get the generated ids of the newly inserted Events
+				ResultSet genKeys = super.getGeneratedKeys(insertEvent);
+				int count = 0;
+				while (genKeys.next()) {
+					int id = genKeys.getInt(1);
+					changeList[count].getEvent().setId(id);
+					changeList[count].setEventId(id);
+					count++;
+				}
+				if (count != changeList.length) {
+					throw new SQLException("Did not get all generated keys for inserted events");
+				}
+				
+				// Store Changes
+				PreparedStatement insertChange = prepareStatement(
+						conn,
+						"insert into changes values (?, ?, ?, ?, ?, ?, ?)"
+				);
+				for (Change change : changeList) {
+					storeNoId(change, insertChange, 1);
+					insertChange.addBatch();
+				}
+				insertChange.executeBatch();
+				
+				return true;
+			}
+			@Override
+			public String getDescription() {
+				return "storing text changes";
+			}
+		});
+	}
 
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
-			Connection conn = getConnection();
+			Connection conn = null;
+			boolean committed = false;
 			try {
-				return databaseRunnable.run(conn);
+				conn = getConnection();
+				conn.setAutoCommit(false);
+				// FIXME: should retry if deadlock is detected
+				E result = databaseRunnable.run(conn);
+				conn.commit();
+				committed = true;
+				return result;
 			} finally {
-				databaseRunnable.cleanup();
-				releaseConnection();
+				if (conn != null) {
+					if (!committed) {
+						conn.rollback();
+					}
+					databaseRunnable.cleanup();
+					conn.setAutoCommit(true);
+					releaseConnection();
+				}
 			}
 		} catch (SQLException e) {
-			throw new PersistenceException("Exception " + databaseRunnable.getDescription(), e);
+			throw new PersistenceException("SQLException", e);
 		}
 	}
 
@@ -419,5 +484,22 @@ public class JDBCDatabase implements IDatabase {
 		term.setId(resultSet.getInt(index++));
 		term.setName(resultSet.getString(index++));
 		term.setSeq(resultSet.getInt(index++));
+	}
+
+	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, event.getUserId());
+		stmt.setInt(index++, event.getProblemId());
+		stmt.setInt(index++, event.getType());
+		stmt.setLong(index++, event.getTimestamp());
+	}
+
+	protected void storeNoId(Change change, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, change.getEventId());
+		stmt.setInt(index++, change.getType().ordinal());
+		stmt.setInt(index++, change.getStartRow());
+		stmt.setInt(index++, change.getEndRow());
+		stmt.setInt(index++, change.getStartColumn());
+		stmt.setInt(index++, change.getEndColumn());
+		stmt.setString(index++, change.getText());
 	}
 }

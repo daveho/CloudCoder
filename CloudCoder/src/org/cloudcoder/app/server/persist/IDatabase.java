@@ -34,16 +34,11 @@ import org.cloudcoder.app.shared.model.User;
 public interface IDatabase {
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	public User authenticateUser(String userName, String password);
-
 	public Problem getProblem(User user, int problemId);
-
 	public Change getMostRecentChange(User user, int problemId);
-
 	public Change getMostRecentFullTextChange(User user, int problemId);
-
 	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
-
 	public List<? extends Object[]> getCoursesForUser(User user);
-
 	public List<Problem> getProblemsInCourse(User user, Course course);
+	public void storeChanges(Change[] changeList);
 }

@@ -125,6 +125,15 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 				throw new NetCoderAuthenticationException();
 			}
 		}
+
+		// Insert changes
+		Database.getInstance().storeChanges(changeList);
+		
+		//
+		// TODO: we don't really need to keep a complete copy
+		// of the TextDocument in the session - this is mostly
+		// for debugging
+		//
 		
 		HttpServletRequest req = this.getThreadLocalRequest();
 		HttpSession session = req.getSession();
@@ -134,36 +143,13 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 			doc = new TextDocument();
 			session.setAttribute("doc", doc);
 		}
+		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+		for (Change change : changeList) {
+			applicator.apply(change, doc);
+		}
 		
-		// FIXME: reimplement this using IDatabase
-
-//		EntityManager eman = HibernateUtil.getManager();
-//
-//		boolean successfulCommit = false;
-//		try {
-//
-//			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-//			eman.getTransaction().begin();
-//			for (Change change : changeList) {
-//				applicator.apply(change, doc);
-//
-//				// Insert the generic Event object
-//				Event event = change.getEvent();
-//				eman.persist(event);
-//
-//				// Link the Change object to the Event, and insert it
-//				change.setEventId(event.getId());
-//				eman.persist(change);
-//			}
-//			eman.getTransaction().commit();
-//			successfulCommit = true;
-//		} finally {
-//			if (!successfulCommit) {
-//				eman.getTransaction().rollback();
-//			}
-//		}
-//		
-//		System.out.println("Document is now:\n" + doc.getText());
+		
+		System.out.println("Document is now:\n" + doc.getText());
 		
 		return true;
 	}

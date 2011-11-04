@@ -41,8 +41,20 @@ public abstract class AbstractDatabaseRunnable<E> implements DatabaseRunnable<E>
 		return stmt;
 	}
 	
+	protected PreparedStatement prepareStatement(Connection conn, String sql, int options) throws SQLException {
+		PreparedStatement stmt = conn.prepareStatement(sql, options);
+		cleanupStack.push(stmt);
+		return stmt;
+	}
+	
 	protected ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
 		ResultSet resultSet = stmt.executeQuery();
+		cleanupStack.push(resultSet);
+		return resultSet;
+	}
+
+	public ResultSet getGeneratedKeys(PreparedStatement stmt) throws SQLException {
+		ResultSet resultSet = stmt.getGeneratedKeys();
 		cleanupStack.push(resultSet);
 		return resultSet;
 	}
