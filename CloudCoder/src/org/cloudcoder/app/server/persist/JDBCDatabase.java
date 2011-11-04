@@ -160,7 +160,7 @@ public class JDBCDatabase implements IDatabase {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select problems.* from problems, courses, course_registrations " +
-						" where problems.id = ? " +
+						" where problems.problem_id = ? " +
 						"   and courses.id = problems.course_id " +
 						"   and course_registrations.course_id = courses.id " +
 						"   and course_registrations.user_id = ?"
@@ -196,7 +196,7 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select c.* from changes as c, events as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)"
@@ -228,7 +228,7 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select c.* from changes as c, events as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(events.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ? " +
@@ -396,7 +396,7 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into changes values (?, ?, ?, ?, ?, ?, ?)"
+						"insert into changes values (NULL, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
 					storeNoId(change, insertChange, 1);

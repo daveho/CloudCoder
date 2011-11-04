@@ -15,6 +15,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	
 	@Override
 	public void activate() {
+		addSessionObject(new ChangeList());
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
