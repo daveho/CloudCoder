@@ -139,6 +139,12 @@ public class DevelopmentPageUI extends Composite {
 				aceEditor.setText(result);
 				aceEditor.setReadOnly(false);
 				mode = Mode.EDITING;
+				
+				// Workaround for GWT/ACE weirdness: the editor contents do not render
+				// correctly (they appear blank.)  Manually resizing the window causes
+				// the correct contents to appear, and so does setting the AceEditor
+				// font size.
+				aceEditor.setFontSize("14px");
 			}
 
 			@Override
