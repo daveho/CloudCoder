@@ -24,6 +24,25 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 public class DevelopmentPageUI extends Composite {
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
+	
+	private enum Mode {
+		/** Loading problem and current text - editing not allowed. */
+		LOADING,
+		
+		/** Normal state - user is allowed to edit the program text. */
+		EDITING,
+		
+		/**
+		 * Submit in progress.
+		 * Editing disallowed until server response is received.
+		 */
+		SUBMIT_IN_PROGRESS,
+		
+		/**
+		 * Logging out.
+		 */
+		LOGOUT,
+	}
 
 	private ProblemDescriptionView problemDescriptionView;
 	private LayoutPanel southLayoutPanel;
@@ -31,6 +50,7 @@ public class DevelopmentPageUI extends Composite {
 
 	private AceEditor aceEditor;
 	private Timer flushPendingChangeEventsTimer;
+	private Mode mode;
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -50,6 +70,8 @@ public class DevelopmentPageUI extends Composite {
 	}
 
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+		mode = Mode.LOADING;
+		
 		session.subscribeToAll(Session.Event.values(), problemDescriptionView, subscriptionRegistrar);
 		// FIXME: need better way to connect view to Problem
 		session.notifySubscribers(Session.Event.ADDED_OBJECT, session.get(Problem.class));
@@ -73,6 +95,14 @@ public class DevelopmentPageUI extends Composite {
 			@Override
 			public void invokeAceCallback(JavaScriptObject obj) {
 				try {
+					// If the initial problem text hasn't been loaded yet,
+					// then don't send any changes.  Otherwise we will send the
+					// initial text as a change, which is definitely not what
+					// we want.
+					if (mode == Mode.LOADING) {
+						return;
+					}
+					
 					Change change = ChangeFromAceOnChangeEvent.convert(obj, user.getId(), problem.getProblemId());
 					changeList.addChange(change);
 				} catch (Exception e) {
@@ -108,6 +138,7 @@ public class DevelopmentPageUI extends Composite {
 			public void onSuccess(String result) {
 				aceEditor.setText(result);
 				aceEditor.setReadOnly(false);
+				mode = Mode.EDITING;
 			}
 
 			@Override
