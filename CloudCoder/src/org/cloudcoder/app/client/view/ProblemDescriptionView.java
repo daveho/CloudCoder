@@ -1,4 +1,4 @@
-package org.cloudcoder.app.client.page;
+package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.shared.model.Problem;

@@ -5,6 +5,7 @@ import java.util.TreeSet;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TermAndYear;

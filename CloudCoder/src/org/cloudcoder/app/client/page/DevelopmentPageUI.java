@@ -2,6 +2,7 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
