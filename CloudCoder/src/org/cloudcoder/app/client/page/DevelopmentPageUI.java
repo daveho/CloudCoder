@@ -46,7 +46,7 @@ public class DevelopmentPageUI extends Composite {
 	}
 
 	private ProblemDescriptionView problemDescriptionView;
-	private LayoutPanel southLayoutPanel;
+	private DockLayoutPanel southLayoutPanel;
 	private LayoutPanel centerLayoutPanel;
 
 	private AceEditor aceEditor;
@@ -61,7 +61,7 @@ public class DevelopmentPageUI extends Composite {
 		problemDescriptionView = new ProblemDescriptionView();
 		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
 
-		southLayoutPanel = new LayoutPanel();
+		southLayoutPanel = new DockLayoutPanel(Unit.PX);
 		dockLayoutPanel.addSouth(southLayoutPanel, 7.7);
 
 		centerLayoutPanel = new LayoutPanel();
