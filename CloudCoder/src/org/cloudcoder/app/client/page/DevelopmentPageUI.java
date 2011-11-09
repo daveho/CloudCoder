@@ -135,6 +135,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI {
 			}
 		});
 		
+		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+		// TODO: add a back handler
+		
 		// Tell the server which problem we want to work on
 		RPC.editCodeService.setProblem(problem.getProblemId(), new AsyncCallback<Problem>() {
 			@Override

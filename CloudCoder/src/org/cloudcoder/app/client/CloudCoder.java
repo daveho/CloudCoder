@@ -85,6 +85,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			changePage(new CoursesAndProblemsPage());
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
+		} else if (key == Session.Event.LOGOUT) {
+			changePage(new LoginPage());
 		}
 		
 	}
