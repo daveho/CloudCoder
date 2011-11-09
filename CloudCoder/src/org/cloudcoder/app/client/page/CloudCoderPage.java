@@ -92,7 +92,7 @@ public abstract class CloudCoderPage {
 	/**
 	 * @return the Widget that is the UI for this page 
 	 */
-	public abstract Widget getWidget();
+	public abstract CloudCoderPageUI getWidget();
 	
 	/**
 	 * @return the Session object

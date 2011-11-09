@@ -4,7 +4,6 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Widget;
 
 public class LoginPage extends CloudCoderPage {
 	private LoginPageUI ui;
@@ -17,16 +16,7 @@ public class LoginPage extends CloudCoderPage {
 	
 	@Override
 	public void activate() {
-		RPC.configurationSettingService.getConfigurationSettingValue(ConfigurationSettingName.PUB_TEXT_INSTITUTION, new AsyncCallback<String>() {
-			@Override
-			public void onFailure(Throwable caught) {
-			}
-			
-			@Override
-			public void onSuccess(String result) {
-				ui.setPubTextInstitution(result);
-			}
-		});
+		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
@@ -34,7 +24,7 @@ public class LoginPage extends CloudCoderPage {
 	}
 
 	@Override
-	public Widget getWidget() {
+	public CloudCoderPageUI getWidget() {
 		return ui;
 	}
 }

@@ -1,7 +1,5 @@
 package org.cloudcoder.app.client.page;
 
-import com.google.gwt.user.client.ui.Widget;
-
 public class DevelopmentPage extends CloudCoderPage {
 	private DevelopmentPageUI ui;
 	
@@ -25,7 +23,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	}
 
 	@Override
-	public Widget getWidget() {
+	public CloudCoderPageUI getWidget() {
 		return ui;
 	}
 

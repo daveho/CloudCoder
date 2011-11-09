@@ -30,7 +30,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.user.client.ui.Button;
 
-public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
+public class CoursesAndProblemsPageUI extends Composite implements Subscriber, CloudCoderPageUI {
 	private CloudCoderPage page;
 
 	private Tree tree;
@@ -142,6 +142,19 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber {
 				if (problem != null) {
 					session.notifySubscribers(Session.Event.PROBLEM_CHOSEN, problem);
 				}
+			}
+		});
+		
+		// Load courses
+		RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
+			@Override
+			public void onSuccess(Course[] result) {
+				page.addSessionObject(result);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				// FIXME: display error
 			}
 		});
 	}

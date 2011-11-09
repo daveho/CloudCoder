@@ -2,7 +2,9 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -19,7 +21,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 
-public class LoginPageUI extends LayoutPanel {
+public class LoginPageUI extends LayoutPanel implements CloudCoderPageUI {
 	private CloudCoderPage page;
 	
 	private InlineLabel pageTitleLabel;
@@ -112,6 +114,22 @@ public class LoginPageUI extends LayoutPanel {
 	
 	public void setPage(CloudCoderPage page) {
 		this.page = page;
+	}
+	
+	@Override
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// Load and display the institution name
+		RPC.configurationSettingService.getConfigurationSettingValue(ConfigurationSettingName.PUB_TEXT_INSTITUTION, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				// FIXME: display error
+			}
+			
+			@Override
+			public void onSuccess(String result) {
+				setPubTextInstitution(result);
+			}
+		});
 	}
 
 	protected void attemptLogin() {

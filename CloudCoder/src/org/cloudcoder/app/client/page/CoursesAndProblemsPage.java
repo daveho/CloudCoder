@@ -1,11 +1,8 @@
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.Session;
-import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Widget;
 
 public class CoursesAndProblemsPage extends CloudCoderPage {
 	private CoursesAndProblemsPageUI ui;
@@ -22,20 +19,12 @@ public class CoursesAndProblemsPage extends CloudCoderPage {
 	
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		// Populate initial empty lists of courses and problems.
+		// The UI will initiate dynamically loading them.
+		addSessionObject(new Course[0]);
+		addSessionObject(new Problem[0]);
 		
-		// Load courses
-		RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
-			@Override
-			public void onSuccess(Course[] result) {
-				addSessionObject(result);
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				// FIXME: display error
-			}
-		});
+		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 	
 	@Override
@@ -45,7 +34,7 @@ public class CoursesAndProblemsPage extends CloudCoderPage {
 	}
 	
 	@Override
-	public Widget getWidget() {
+	public CloudCoderPageUI getWidget() {
 		return ui;
 	}
 }
