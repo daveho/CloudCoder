@@ -7,4 +7,5 @@ public abstract class RPC {
 	public static final LoginServiceAsync loginService = GWT.create(LoginService.class);
 	public static final GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService = GWT.create(GetCoursesAndProblemsService.class);
 	public static final EditCodeServiceAsync editCodeService = GWT.create(EditCodeService.class);
+	public static final SubmitServiceAsync submitService = GWT.create(SubmitService.class);
 }

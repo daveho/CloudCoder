@@ -7,7 +7,10 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.util.Publisher;
+import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
@@ -25,7 +28,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
-public class DevelopmentPageUI extends Composite implements CloudCoderPageUI {
+public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Subscriber {
 	public static final double NORTH_PANEL_HEIGHT = 7.7;
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	
@@ -100,26 +103,90 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI {
 	}
 
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+		final Problem problem = session.get(Problem.class);
+
 		mode = Mode.LOADING;
 		
-		session.subscribeToAll(Session.Event.values(), problemDescriptionView, subscriptionRegistrar);
-		// FIXME: need better way to connect view to Problem
-		session.notifySubscribers(Session.Event.ADDED_OBJECT, session.get(Problem.class));
+		// Activate problem description view
+		problemDescriptionView.activate(session, subscriptionRegistrar);
+		
+		// Subscribe to ChangeList events
+		session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, subscriptionRegistrar);
 
 		// Create AceEditor instance
+		createEditor();
+
+		// editor will be readonly until problem text is loaded
+		aceEditor.setReadOnly(true);
+
+		// add a handler for editor change events
+		addEditorChangeEventHandler(session, problem);
+		
+		// Add logout handler
+		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+		// TODO: add a back handler
+		
+		// Add submit handler
+		devActionsPanel.setSubmitHandler(new Runnable() {
+			@Override
+			public void run() {
+				mode = Mode.SUBMIT_IN_PROGRESS;
+				// No editing is allowed until a response is received from the server
+				aceEditor.setReadOnly(true);
+			}
+		});
+		
+		// Tell the server which problem we want to work on
+		setProblem(session, problem);
+	}
+	
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (hint == ChangeList.State.CLEAN && mode == Mode.SUBMIT_IN_PROGRESS) {
+			// Full text of submission has arrived at server,
+			// and because the editor is read-only, we know that the
+			// local text is in-sync.  So, submit the code!
+
+			Problem problem = page.getSession().get(Problem.class);
+			String text = aceEditor.getText();
+			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<TestResult[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					final String msg = "Error sending submission to server for compilation"; 
+//					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
+					GWT.log(msg, caught);
+					// TODO: should set editor back to read/write?
+				}
+
+				@Override
+				public void onSuccess(TestResult[] results) {
+					// Great, got results back from server!
+					page.getSession().add(results);
+					
+					// Add a status message about the results
+//					page.getSession().add(new StatusMessage(
+//							StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
+					
+					// Can resume editing now
+//					startEditing();
+					mode = Mode.EDITING;
+					aceEditor.setReadOnly(false);
+				}
+			});
+		}
+	}
+
+	public void createEditor() {
 		aceEditor = new AceEditor();
 		aceEditor.setSize("100%", "100%");
 		centerLayoutPanel.add(aceEditor);
 		aceEditor.startEditor();
 		aceEditor.setMode(AceEditorMode.JAVA);
 		aceEditor.setTheme(AceEditorTheme.TWILIGHT);
+	}
 
-		// editor will be readonly until problem text is loaded
-		aceEditor.setReadOnly(true);
-
-		// add a handler for editor change events
+	public void addEditorChangeEventHandler(final Session session, final Problem problem) {
 		final User user = session.get(User.class);
-		final Problem problem = session.get(Problem.class);
 		final ChangeList changeList = session.get(ChangeList.class);
 		aceEditor.addOnChangeHandler(new AceEditorCallback() {
 			@Override
@@ -140,11 +207,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI {
 				}
 			}
 		});
-		
-		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-		// TODO: add a back handler
-		
-		// Tell the server which problem we want to work on
+	}
+
+	public void setProblem(final Session session, final Problem problem) {
 		RPC.editCodeService.setProblem(problem.getProblemId(), new AsyncCallback<Problem>() {
 			@Override
 			public void onFailure(Throwable caught) {

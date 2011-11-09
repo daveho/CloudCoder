@@ -1,5 +1,6 @@
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Button;
@@ -18,6 +19,7 @@ public class DevActionsPanel extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (submitHandler != null) {
+					Window.alert("Running submit handler!");
 					submitHandler.run();
 				}
 			}

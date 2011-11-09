@@ -4,6 +4,7 @@ import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -34,13 +35,25 @@ public class ProblemDescriptionView extends Composite implements Subscriber {
 		
 		initWidget(layoutPanel);
 	}
+
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		Problem problem = session.get(Problem.class);
+		if (problem != null) {
+			displayProblemDescription(problem);
+		}
+	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint instanceof Problem) {
 			Problem problem = (Problem) hint;
-			problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
-			problemDescriptionHtml.setHTML(SafeHtmlUtils.fromString(problem.getDescription()));
+			displayProblemDescription(problem);
 		}
+	}
+
+	public void displayProblemDescription(Problem problem) {
+		problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
+		problemDescriptionHtml.setHTML(SafeHtmlUtils.fromString(problem.getDescription()));
 	}
 }

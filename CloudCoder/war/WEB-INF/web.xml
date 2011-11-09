@@ -22,6 +22,10 @@
     <servlet-name>EditCode</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.EditCodeServiceImpl</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>Submit</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.rpc.SubmitServiceImpl</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>ConfigurationSetting</servlet-name>
     <url-pattern>/cloudcoder/configurationSetting</url-pattern>
@@ -37,6 +41,10 @@
   <servlet-mapping>
     <servlet-name>EditCode</servlet-name>
     <url-pattern>/cloudcoder/editCode</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Submit</servlet-name>
+    <url-pattern>/cloudcoder/submit</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
