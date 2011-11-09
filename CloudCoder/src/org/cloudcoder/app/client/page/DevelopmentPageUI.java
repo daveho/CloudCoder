@@ -2,6 +2,7 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
@@ -24,6 +25,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 public class DevelopmentPageUI extends Composite {
+	public static final double NORTH_PANEL_HEIGHT = 7.7;
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	
 	private enum Mode {
@@ -45,9 +47,12 @@ public class DevelopmentPageUI extends Composite {
 		LOGOUT,
 	}
 
+	private LayoutPanel northLayoutPanel;
 	private ProblemDescriptionView problemDescriptionView;
-	private DockLayoutPanel southLayoutPanel;
+	private PageNavPanel pageNavPanel;
+	private LayoutPanel southLayoutPanel;
 	private LayoutPanel centerLayoutPanel;
+	private LayoutPanel buttonsLayoutPanel;
 
 	private AceEditor aceEditor;
 	private Timer flushPendingChangeEventsTimer;
@@ -55,14 +60,26 @@ public class DevelopmentPageUI extends Composite {
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
-		//dockLayoutPanel.setSize("800px", "600px");
-		dockLayoutPanel.setSize("100%", "100%");
+		dockLayoutPanel.setSize("800px", "600px");
+		//dockLayoutPanel.setSize("100%", "100%");
 
+		northLayoutPanel = new LayoutPanel();
+		dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT);
 		problemDescriptionView = new ProblemDescriptionView();
-		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
+		northLayoutPanel.add(problemDescriptionView);
+		northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 350.0, Unit.PX);
+		buttonsLayoutPanel = new LayoutPanel();
+		pageNavPanel = new PageNavPanel();
+		buttonsLayoutPanel.add(pageNavPanel);
+		buttonsLayoutPanel.setWidgetLeftRight(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+		buttonsLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
+		
+		northLayoutPanel.add(buttonsLayoutPanel);
+		northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, 350.0, Unit.PX);
+		northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT, Unit.EM);
 
-		southLayoutPanel = new DockLayoutPanel(Unit.PX);
-		dockLayoutPanel.addSouth(southLayoutPanel, 7.7);
+		southLayoutPanel = new LayoutPanel();
+		dockLayoutPanel.addSouth(southLayoutPanel, 10.0);
 
 		centerLayoutPanel = new LayoutPanel();
 		dockLayoutPanel.add(centerLayoutPanel);
