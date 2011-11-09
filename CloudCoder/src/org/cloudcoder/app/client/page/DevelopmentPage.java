@@ -9,6 +9,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public void createWidget() {
 		ui = new DevelopmentPageUI();
+		ui.setPage(this);
 	}
 	
 	@Override

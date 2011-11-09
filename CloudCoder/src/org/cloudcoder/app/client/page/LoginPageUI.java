@@ -31,7 +31,7 @@ public class LoginPageUI extends LayoutPanel implements CloudCoderPageUI {
 	private InlineLabel loggingInLabel;
 	
 	public LoginPageUI() {
-		setSize("640px", "480px");
+		//setSize("640px", "480px");
 		
 		InlineLabel usernameLabel = new InlineLabel("User name:");
 		add(usernameLabel);

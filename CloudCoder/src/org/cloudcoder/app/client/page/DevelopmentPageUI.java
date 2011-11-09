@@ -40,7 +40,14 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		EDITING,
 		
 		/**
-		 * Submit in progress.
+		 * A submit has been requested, but it must wait until
+		 * the change list is clean.
+		 * Editing disallowed until server response is received.
+		 */
+		SUBMIT_PENDING_CLEAN_CHANGE_LIST,
+		
+		/**
+		 * A submit has been initiated.
 		 * Editing disallowed until server response is received.
 		 */
 		SUBMIT_IN_PROGRESS,
@@ -66,7 +73,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
-		dockLayoutPanel.setSize("800px", "600px");
+		//dockLayoutPanel.setSize("800px", "600px");
 		//dockLayoutPanel.setSize("100%", "100%");
 
 		northLayoutPanel = new LayoutPanel();
@@ -130,7 +137,17 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		devActionsPanel.setSubmitHandler(new Runnable() {
 			@Override
 			public void run() {
-				mode = Mode.SUBMIT_IN_PROGRESS;
+				ChangeList changeList = session.get(ChangeList.class);
+				
+				 if (changeList.getState() == ChangeList.State.CLEAN) {
+					mode = Mode.SUBMIT_IN_PROGRESS;
+					doSubmit();
+				 } else {
+					 // As soon as the change list is clean, we'll be able
+					 // to submit
+					 mode = Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST;
+				 }
+				 
 				// No editing is allowed until a response is received from the server
 				aceEditor.setReadOnly(true);
 			}
@@ -142,38 +159,45 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (hint == ChangeList.State.CLEAN && mode == Mode.SUBMIT_IN_PROGRESS) {
-			// Full text of submission has arrived at server,
-			// and because the editor is read-only, we know that the
-			// local text is in-sync.  So, submit the code!
+		if (hint == ChangeList.State.CLEAN && mode == Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST) {
+			// The change list just became clean - initiate the submit
+			mode = Mode.SUBMIT_IN_PROGRESS;
+			doSubmit();
+		}
+	}
 
-			Problem problem = page.getSession().get(Problem.class);
-			String text = aceEditor.getText();
-			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<TestResult[]>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					final String msg = "Error sending submission to server for compilation"; 
+	public void doSubmit() {
+		// Full text of submission has arrived at server,
+		// and because the editor is read-only, we know that the
+		// local text is in-sync.  So, submit the code!
+
+		Session session = page.getSession();
+		Problem problem = session.get(Problem.class);
+		String text = aceEditor.getText();
+		RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<TestResult[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				final String msg = "Error sending submission to server for compilation"; 
 //					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
-					GWT.log(msg, caught);
-					// TODO: should set editor back to read/write?
-				}
+				GWT.log(msg, caught);
+				// TODO: should set editor back to read/write?
+			}
 
-				@Override
-				public void onSuccess(TestResult[] results) {
-					// Great, got results back from server!
-					page.getSession().add(results);
-					
-					// Add a status message about the results
+			@Override
+			public void onSuccess(TestResult[] results) {
+				// Great, got results back from server!
+				page.getSession().add(results);
+				
+				// Add a status message about the results
 //					page.getSession().add(new StatusMessage(
 //							StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
-					
-					// Can resume editing now
+				
+				// Can resume editing now
 //					startEditing();
-					mode = Mode.EDITING;
-					aceEditor.setReadOnly(false);
-				}
-			});
-		}
+				mode = Mode.EDITING;
+				aceEditor.setReadOnly(false);
+			}
+		});
 	}
 
 	public void createEditor() {

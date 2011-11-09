@@ -28,6 +28,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
@@ -73,7 +74,10 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		page.setSession(session);
 		// Create the page's Widget and add it to the DOM tree
 		page.createWidget();
-		layoutPanel.add(page.getWidget());
+		IsWidget w = page.getWidget();
+		layoutPanel.add(w);
+		layoutPanel.setWidgetLeftRight(w, 0.0, Unit.PX, 0.0, Unit.PX);
+		layoutPanel.setWidgetTopBottom(w, 0.0, Unit.PX, 0.0, Unit.PX);
 		// Now it is safe to activate the page
 		page.activate();
 		currentPage = page;

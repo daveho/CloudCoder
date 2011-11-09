@@ -55,7 +55,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 	
 	public CoursesAndProblemsPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
-		dockLayoutPanel.setSize("800px", "600px");
+		//dockLayoutPanel.setSize("800px", "600px");
 
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
