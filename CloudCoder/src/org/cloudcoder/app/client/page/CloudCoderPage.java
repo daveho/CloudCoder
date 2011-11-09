@@ -24,8 +24,6 @@ import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.user.client.ui.Widget;
-
 /**
  * Common superclass for all CloudCoder "pages".
  * Provides helper methods for managing session data and event subscribers.

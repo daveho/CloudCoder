@@ -1,9 +1,9 @@
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.dom.client.Style.Unit;
 
 public class PageNavPanel extends Composite {
 	public static final double WIDTH = 350.0;
