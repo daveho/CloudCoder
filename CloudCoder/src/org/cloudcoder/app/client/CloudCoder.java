@@ -27,6 +27,7 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -51,9 +52,16 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		// Subscribe to all Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
 
+//		layoutPanel = new LayoutPanel();
+//		layoutPanel.setSize("100%", "100%");
+//		RootPanel.get("cc-content").add(layoutPanel);
+		
+		RootLayoutPanel rootLayoutPanel = RootLayoutPanel.get();
+		
 		layoutPanel = new LayoutPanel();
-		layoutPanel.setSize("100%", "100%");
-		RootPanel.get("cc-content").add(layoutPanel);
+		rootLayoutPanel.add(layoutPanel);
+		rootLayoutPanel.setWidgetLeftRight(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+		rootLayoutPanel.setWidgetTopBottom(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
 		
 		changePage(new LoginPage());
 	}
