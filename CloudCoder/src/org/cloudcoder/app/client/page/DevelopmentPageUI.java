@@ -129,9 +129,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		// add a handler for editor change events
 		addEditorChangeEventHandler(session, problem);
 		
-		// Add logout handler
+		// Add logout and back handlers
 		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-		// TODO: add a back handler
+		pageNavPanel.setBackHandler(new BackHomeHandler(session));
 		
 		// Add submit handler
 		devActionsPanel.setSubmitHandler(new Runnable() {

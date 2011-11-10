@@ -68,7 +68,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		
 		loadProblemButton = new Button("Load Problem!");
 		layoutPanel.add(loadProblemButton);
-		layoutPanel.setWidgetLeftWidth(loadProblemButton, 316.0, Unit.PX, 120.0, Unit.PX);
+		layoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 120.0, Unit.PX);
 		layoutPanel.setWidgetTopHeight(loadProblemButton, 0.0, Unit.PX, 40.0, Unit.PX);
 		loadProblemButton.setSize("120px", "40px");
 

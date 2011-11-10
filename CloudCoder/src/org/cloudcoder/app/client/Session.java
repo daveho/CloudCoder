@@ -50,6 +50,9 @@ public class Session extends Publisher {
 		
 		/** A Problem was chosen.  Hint is the problem. */
 		PROBLEM_CHOSEN,
+		
+		/** The user has requested to return to the home page. */
+		BACK_HOME,
 	}
 	
 	/**

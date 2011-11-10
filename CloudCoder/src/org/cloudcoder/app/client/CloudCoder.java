@@ -85,7 +85,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (key == Session.Event.LOGIN) {
+		if (key == Session.Event.LOGIN || key == Session.Event.BACK_HOME) {
 			changePage(new CoursesAndProblemsPage());
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
