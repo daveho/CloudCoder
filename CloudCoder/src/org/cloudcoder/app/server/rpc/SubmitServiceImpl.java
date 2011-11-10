@@ -18,6 +18,9 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		System.out.println("Submitted code:");
 		System.out.println(programText);
 		
-		return new TestResult[0];
+		//return new TestResult[0];
+		TestResult aResult = new TestResult("passed", "You rule, dude", "Hello, world", "Oh yeah");
+		
+		return new TestResult[]{ aResult };
 	}
 }

@@ -5,6 +5,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -71,6 +72,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	private AceEditor aceEditor;
 	private Timer flushPendingChangeEventsTimer;
 	private Mode mode;
+	private TestResultListView testResultListView;
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -97,6 +99,10 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_EM, Unit.EM);
 
 		southLayoutPanel = new LayoutPanel();
+		this.testResultListView = new TestResultListView();
+		southLayoutPanel.add(testResultListView);
+		southLayoutPanel.setWidgetLeftRight(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
+		southLayoutPanel.setWidgetTopBottom(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
 		dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_EM);
 
 		centerLayoutPanel = new LayoutPanel();
@@ -117,6 +123,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		
 		// Activate problem description view
 		problemDescriptionView.activate(session, subscriptionRegistrar);
+		
+		// Activate TestResultListView
+		testResultListView.activate(session, subscriptionRegistrar);
 		
 		// Subscribe to ChangeList events
 		session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, subscriptionRegistrar);

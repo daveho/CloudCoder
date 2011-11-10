@@ -3,6 +3,7 @@ package org.cloudcoder.app.client.view;
 import java.util.Arrays;
 
 import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
@@ -17,7 +18,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
-public class ProblemListView extends Composite implements Subscriber {
+public class ProblemListView extends Composite implements SessionObserver, Subscriber {
 	private DataGrid<Problem> cellTable;
 
 	public ProblemListView() {

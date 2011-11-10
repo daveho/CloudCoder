@@ -1,6 +1,7 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -13,7 +14,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
-public class ProblemDescriptionView extends Composite implements Subscriber {
+public class ProblemDescriptionView extends Composite implements SessionObserver, Subscriber {
 	private Label problemNameLabel;
 	private HTML problemDescriptionHtml;
 

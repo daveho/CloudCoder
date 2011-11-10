@@ -1,10 +1,5 @@
 package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.client.Session;
-import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.client.page.CloudCoderPageUI;
-import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
