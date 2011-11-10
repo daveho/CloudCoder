@@ -1,11 +1,11 @@
 package org.cloudcoder.app.client.page;
 
-import java.util.Arrays;
 import java.util.TreeSet;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.ProblemListView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TermAndYear;
@@ -18,8 +18,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -27,31 +25,16 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
-import com.google.gwt.view.client.SelectionChangeEvent;
-import com.google.gwt.view.client.SingleSelectionModel;
 
 public class CoursesAndProblemsPageUI extends Composite implements Subscriber, CloudCoderPageUI {
 	private CloudCoderPage page;
 
 	private Tree tree;
-	private DataGrid<Problem> cellTable;
+	//private DataGrid<Problem> cellTable;
+	private ProblemListView problemListView;
 	private ProblemDescriptionView problemDescriptionView;
 	private LayoutPanel layoutPanel;
 	private Button loadProblemButton;
-
-	private static class TestNameColumn extends TextColumn<Problem> {
-		@Override
-		public String getValue(Problem object) {
-			return object.getTestName();
-		}
-	}
-	
-	private static class BriefDescriptionColumn extends TextColumn<Problem> {
-		@Override
-		public String getValue(Problem object) {
-			return object.getBriefDescription();
-		}
-	}
 	
 	public CoursesAndProblemsPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -72,10 +55,11 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		layoutPanel.setWidgetTopHeight(loadProblemButton, 0.0, Unit.PX, 40.0, Unit.PX);
 		loadProblemButton.setSize("120px", "40px");
 
-		cellTable = new DataGrid<Problem>();
-		layoutPanel.add(cellTable);
-		layoutPanel.setWidgetTopBottom(cellTable, 46.0, Unit.PX, 0.0, Unit.PX);
-		layoutPanel.setWidgetLeftRight(cellTable, 0.0, Unit.PX, 0.0, Unit.PX);
+		//cellTable = new DataGrid<Problem>();
+		problemListView = new ProblemListView();
+		layoutPanel.add(problemListView);
+		layoutPanel.setWidgetTopBottom(problemListView, 46.0, Unit.PX, 0.0, Unit.PX);
+		layoutPanel.setWidgetLeftRight(problemListView, 0.0, Unit.PX, 0.0, Unit.PX);
 
 		initWidget(dockLayoutPanel);
 	}
@@ -88,6 +72,10 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		// Subscribe to Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
 		
+		// Activate views
+		problemListView.activate(session, subscriptionRegistrar);
+		problemDescriptionView.activate(session, subscriptionRegistrar);
+		
 		// When a course is selected in the tree, load its problems
 		tree.addSelectionHandler(new SelectionHandler<TreeItem>() {
 			@Override
@@ -97,42 +85,10 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 					CourseTreeItem courseTreeItem = (CourseTreeItem) item;
 					Course course = courseTreeItem.getCourse();
 
-					// Load problems for this course
-					RPC.getCoursesAndProblemsService.getProblems(course, new AsyncCallback<Problem[]>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							// FIXME: display error
-						}
-
-						@Override
-						public void onSuccess(Problem[] result) {
-							page.getSession().add(result);
-						}
-					});
+					session.add(course);
 				}
 			}
 		});
-		
-		// Configure the DataGrid that will show the problems
-		cellTable.addColumn(new TestNameColumn(), "Name");
-		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
-		
-		// When a problem is selected, add it to the session
-		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
-		cellTable.setSelectionModel(selectionModel);
-		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-			@Override
-			public void onSelectionChange(SelectionChangeEvent event) {
-				Problem problem = selectionModel.getSelectedObject();
-				if (problem != null) {
-					// Add the problem to the Session
-					session.add(problem);
-				}
-			}
-		});
-		
-		// Subscribe the ProblemDescriptionView to Session events
-		session.subscribeToAll(Session.Event.values(), problemDescriptionView, subscriptionRegistrar);
 		
 		// Add handler for load problem button
 		loadProblemButton.addClickHandler(new ClickHandler() {
@@ -190,8 +146,6 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		if (key == Session.Event.ADDED_OBJECT) {
 			if (hint.getClass() == Course[].class) {
 				displayLoadedCourses(hint);
-			} else if (hint.getClass() == Problem[].class) {
-				displayLoadedProblems(hint);
 			}
 		}
 	}
@@ -218,12 +172,5 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 				}
 			}
 		}
-	}
-
-	private void displayLoadedProblems(Object hint) {
-		Problem[] problemList = (Problem[]) hint;
-		
-		cellTable.setRowCount(problemList.length);
-		cellTable.setRowData(0, Arrays.asList(problemList));
 	}
 }

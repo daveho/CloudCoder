@@ -29,7 +29,8 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Subscriber {
-	public static final double NORTH_PANEL_HEIGHT = 7.7;
+	public static final double SOUTH_PANEL_HEIGHT_EM = 10.0;
+	public static final double NORTH_PANEL_HEIGHT_EM = 7.7;
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	
 	private enum Mode {
@@ -77,7 +78,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		//dockLayoutPanel.setSize("100%", "100%");
 
 		northLayoutPanel = new LayoutPanel();
-		dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT);
+		dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_EM);
 		problemDescriptionView = new ProblemDescriptionView();
 		northLayoutPanel.add(problemDescriptionView);
 		northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 350.0, Unit.PX);
@@ -93,10 +94,10 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		
 		northLayoutPanel.add(buttonsLayoutPanel);
 		northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, 350.0, Unit.PX);
-		northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT, Unit.EM);
+		northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_EM, Unit.EM);
 
 		southLayoutPanel = new LayoutPanel();
-		dockLayoutPanel.addSouth(southLayoutPanel, 10.0);
+		dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_EM);
 
 		centerLayoutPanel = new LayoutPanel();
 		dockLayoutPanel.add(centerLayoutPanel);
