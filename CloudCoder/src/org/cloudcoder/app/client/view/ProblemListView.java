@@ -65,8 +65,11 @@ public class ProblemListView extends Composite implements SessionObserver, Subsc
 		
 		// If there is already a Course selected, load its problems
 		Course course = session.get(Course.class);
+		Problem[] problemList = session.get(Problem[].class);
 		if (course != null) {
 			loadProblemsForCourse(course);
+		} else if (problemList != null) {
+			displayLoadedProblems(problemList);
 		}
 	}
 	

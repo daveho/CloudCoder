@@ -1,5 +1,7 @@
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.shared.model.TestResult;
+
 public class DevelopmentPage extends CloudCoderPage {
 	private DevelopmentPageUI ui;
 	
@@ -15,6 +17,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public void activate() {
 		addSessionObject(new ChangeList());
+		addSessionObject(new TestResult[0]);
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
