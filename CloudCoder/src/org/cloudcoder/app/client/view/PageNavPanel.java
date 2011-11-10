@@ -8,11 +8,12 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 public class PageNavPanel extends Composite {
-	public static final double WIDTH = 350.0;
+	public static final double WIDTH = 250.0;
 	public static final Unit WIDTH_UNIT = Unit.PX;
 	public static final double HEIGHT = 40.0;
 	public static final Unit HEIGHT_UNIT = Unit.PX;
 	
+	private LayoutPanel layoutPanel;
 	private Button backPageButton;
 	private Button logOutButton;
 	
@@ -20,7 +21,7 @@ public class PageNavPanel extends Composite {
 	private Runnable logoutHandler;
 	
 	public PageNavPanel() {
-		LayoutPanel layoutPanel = new LayoutPanel();
+		this.layoutPanel = new LayoutPanel();
 		
 		//layoutPanel.setSize(WIDTH + WIDTH_UNIT.toString(), HEIGHT + HEIGHT_UNIT.toString());
 		
@@ -49,6 +50,12 @@ public class PageNavPanel extends Composite {
 		layoutPanel.setWidgetTopHeight(backPageButton, 0.0, Unit.PX, 27.0, Unit.PX);
 		
 		initWidget(layoutPanel);
+	}
+
+	public void setShowBackButton(boolean b) {
+		if (!b) {
+			layoutPanel.remove(backPageButton);
+		}
 	}
 	
 	public void setBackHandler(Runnable backHandler) {

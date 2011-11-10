@@ -4,6 +4,7 @@ import java.util.TreeSet;
 
 import org.cloudcoder.app.client.Session;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView;
 import org.cloudcoder.app.shared.model.Course;
@@ -30,11 +31,12 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 	private CloudCoderPage page;
 
 	private Tree tree;
-	//private DataGrid<Problem> cellTable;
 	private ProblemListView problemListView;
 	private ProblemDescriptionView problemDescriptionView;
+	private PageNavPanel pageNavPanel;
 	private LayoutPanel layoutPanel;
 	private Button loadProblemButton;
+
 	
 	public CoursesAndProblemsPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -43,8 +45,18 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
 		
+		LayoutPanel northLayoutPanel = new LayoutPanel();
+		dockLayoutPanel.addNorth(northLayoutPanel, 7.7);
+		
 		problemDescriptionView = new ProblemDescriptionView();
-		dockLayoutPanel.addNorth(problemDescriptionView, 7.7);
+		northLayoutPanel.add(problemDescriptionView);
+		northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
+		northLayoutPanel.setWidgetTopBottom(problemDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
+		pageNavPanel = new PageNavPanel();
+		pageNavPanel.setShowBackButton(false);
+		northLayoutPanel.add(pageNavPanel);
+		northLayoutPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
+		northLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
 		
 		layoutPanel = new LayoutPanel();
 		dockLayoutPanel.add(layoutPanel);
@@ -75,6 +87,9 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		// Activate views
 		problemListView.activate(session, subscriptionRegistrar);
 		problemDescriptionView.activate(session, subscriptionRegistrar);
+		
+		// Set a logout handler
+		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 		
 		// When a course is selected in the tree, load its problems
 		tree.addSelectionHandler(new SelectionHandler<TreeItem>() {
