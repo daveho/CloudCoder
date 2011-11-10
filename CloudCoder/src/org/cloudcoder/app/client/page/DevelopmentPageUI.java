@@ -30,7 +30,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Subscriber {
-	public static final double SOUTH_PANEL_HEIGHT_EM = 10.0;
+	public static final double SOUTH_PANEL_HEIGHT_EM = 15.0;
 	public static final double NORTH_PANEL_HEIGHT_EM = 7.7;
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	
@@ -67,12 +67,12 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	private LayoutPanel southLayoutPanel;
 	private LayoutPanel centerLayoutPanel;
 	private LayoutPanel buttonsLayoutPanel;
+	private TestResultListView testResultListView;
 
 	private CloudCoderPage page;
 	private AceEditor aceEditor;
 	private Timer flushPendingChangeEventsTimer;
 	private Mode mode;
-	private TestResultListView testResultListView;
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);

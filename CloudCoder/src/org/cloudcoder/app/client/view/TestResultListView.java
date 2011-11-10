@@ -19,6 +19,7 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	
 	public TestResultListView() {
 		cellTable = new CellTable<TestResult>();
+		cellTable.setSize("100%", "100%");
 		
 		initWidget(cellTable);
 	}
