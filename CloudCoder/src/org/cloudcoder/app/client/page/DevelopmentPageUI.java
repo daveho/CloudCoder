@@ -222,8 +222,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		centerLayoutPanel.add(aceEditor);
 		aceEditor.startEditor();
 		aceEditor.setMode(AceEditorMode.JAVA);
-		//aceEditor.setTheme(AceEditorTheme.TWILIGHT);
-		aceEditor.setTheme(AceEditorTheme.COBALT);
+		//aceEditor.setTheme(AceEditorTheme.ECLIPSE);
+		aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
+		aceEditor.setShowPrintMargin(false);
 	}
 
 	public void addEditorChangeEventHandler(final Session session, final Problem problem) {
