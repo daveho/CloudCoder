@@ -2,7 +2,7 @@ package org.cloudcoder.app.client.page;
 
 import java.util.TreeSet;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
@@ -42,9 +42,11 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
 		//dockLayoutPanel.setSize("800px", "600px");
 
+		// west: term/course tree
 		tree = new Tree();
 		dockLayoutPanel.addWest(tree, 28.0);
 		
+		// north: problem description, page nav panel, and load problem button
 		LayoutPanel northLayoutPanel = new LayoutPanel();
 		dockLayoutPanel.addNorth(northLayoutPanel, 7.7);
 		
@@ -57,20 +59,18 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		northLayoutPanel.add(pageNavPanel);
 		northLayoutPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
 		northLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
-		
+
+		loadProblemButton = new Button("Load Problem!");
+		northLayoutPanel.add(loadProblemButton);
+		northLayoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 120.0, Unit.PX);
+		northLayoutPanel.setWidgetBottomHeight(loadProblemButton, 6.0, Unit.PX, 32.0, Unit.PX);
+
+		// center: problem list for currently-selected course
 		layoutPanel = new LayoutPanel();
 		dockLayoutPanel.add(layoutPanel);
-		
-		loadProblemButton = new Button("Load Problem!");
-		layoutPanel.add(loadProblemButton);
-		layoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 120.0, Unit.PX);
-		layoutPanel.setWidgetTopHeight(loadProblemButton, 0.0, Unit.PX, 40.0, Unit.PX);
-		loadProblemButton.setSize("120px", "40px");
-
-		//cellTable = new DataGrid<Problem>();
 		problemListView = new ProblemListView();
 		layoutPanel.add(problemListView);
-		layoutPanel.setWidgetTopBottom(problemListView, 46.0, Unit.PX, 0.0, Unit.PX);
+		layoutPanel.setWidgetTopBottom(problemListView, 0.0, Unit.PX, 0.0, Unit.PX);
 		layoutPanel.setWidgetLeftRight(problemListView, 0.0, Unit.PX, 0.0, Unit.PX);
 
 		initWidget(dockLayoutPanel);

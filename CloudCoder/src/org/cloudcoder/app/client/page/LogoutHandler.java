@@ -1,6 +1,6 @@
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.User;
 

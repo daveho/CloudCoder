@@ -48,4 +48,10 @@ h1 {
 	margin-left: 0 auto;
 	margin-right: 0 auto;
 }
-
+.cc-statusMessageInformation {
+	font-size: 16px;
+}
+.cc-statusMessageError {
+	font-size: 16px;
+	color: red;
+}

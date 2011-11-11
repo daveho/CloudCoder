@@ -1,6 +1,6 @@
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 
 public class BackHomeHandler implements Runnable {
 

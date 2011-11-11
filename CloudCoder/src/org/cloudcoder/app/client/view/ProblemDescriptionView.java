@@ -1,6 +1,6 @@
 package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;

@@ -3,7 +3,7 @@ package org.cloudcoder.app.client.view;
 import java.util.Arrays;
 import java.util.List;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.util.Publisher;

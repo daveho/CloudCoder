@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.page;
+package org.cloudcoder.app.client.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class ChangeFromAceOnChangeEvent {
 	public native static Change convert(JavaScriptObject obj, int userId, int problemId) /*-{
 		var action = obj.data.action;
 		if (action == "insertText" || action == "removeText") {
-			return @org.cloudcoder.app.client.page.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;II)(
+			return @org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,
@@ -67,7 +67,7 @@ public class ChangeFromAceOnChangeEvent {
 				problemId
 			);
 		} else {
-			return @org.cloudcoder.app.client.page.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;II)(
+			return @org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,

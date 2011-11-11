@@ -2,7 +2,7 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;

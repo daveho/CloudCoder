@@ -20,7 +20,7 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cloudcoder.app.client.Session;
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
