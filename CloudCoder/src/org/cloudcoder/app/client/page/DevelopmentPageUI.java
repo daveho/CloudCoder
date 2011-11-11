@@ -3,10 +3,12 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
@@ -69,6 +71,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	private LayoutPanel southLayoutPanel;
 	private LayoutPanel centerLayoutPanel;
 	private LayoutPanel buttonsLayoutPanel;
+	private StatusMessageView statusMessageView;
 	private TestResultListView testResultListView;
 
 	private CloudCoderPage page;
@@ -78,8 +81,6 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 
 	public DevelopmentPageUI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
-		//dockLayoutPanel.setSize("800px", "600px");
-		//dockLayoutPanel.setSize("100%", "100%");
 
 		northLayoutPanel = new LayoutPanel();
 		dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_EM);
@@ -101,10 +102,16 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_EM, Unit.EM);
 
 		southLayoutPanel = new LayoutPanel();
+		
+		this.statusMessageView = new StatusMessageView();
+		southLayoutPanel.add(statusMessageView);
+		southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+		southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+		
 		this.testResultListView = new TestResultListView();
 		southLayoutPanel.add(testResultListView);
+		southLayoutPanel.setWidgetTopBottom(testResultListView, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
 		southLayoutPanel.setWidgetLeftRight(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
-		southLayoutPanel.setWidgetTopBottom(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
 		dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_EM);
 
 		centerLayoutPanel = new LayoutPanel();
@@ -123,11 +130,10 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 
 		mode = Mode.LOADING;
 		
-		// Activate problem description view
+		// Activate views
 		problemDescriptionView.activate(session, subscriptionRegistrar);
-		
-		// Activate TestResultListView
 		testResultListView.activate(session, subscriptionRegistrar);
+		statusMessageView.activate(session, subscriptionRegistrar);
 		
 		// Subscribe to ChangeList events
 		session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, subscriptionRegistrar);
@@ -190,8 +196,8 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 			@Override
 			public void onFailure(Throwable caught) {
 				final String msg = "Error sending submission to server for compilation"; 
-//					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
 				GWT.log(msg, caught);
+				page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
 				// TODO: should set editor back to read/write?
 			}
 
@@ -201,11 +207,9 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 				page.getSession().add(results);
 				
 				// Add a status message about the results
-//					page.getSession().add(new StatusMessage(
-//							StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
+				page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
 				
 				// Can resume editing now
-//					startEditing();
 				mode = Mode.EDITING;
 				aceEditor.setReadOnly(false);
 			}
@@ -218,7 +222,8 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		centerLayoutPanel.add(aceEditor);
 		aceEditor.startEditor();
 		aceEditor.setMode(AceEditorMode.JAVA);
-		aceEditor.setTheme(AceEditorTheme.TWILIGHT);
+		//aceEditor.setTheme(AceEditorTheme.TWILIGHT);
+		aceEditor.setTheme(AceEditorTheme.COBALT);
 	}
 
 	public void addEditorChangeEventHandler(final Session session, final Problem problem) {
@@ -250,6 +255,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 			@Override
 			public void onFailure(Throwable caught) {
 				GWT.log("Could not set problem", caught);
+				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problem on server: " + caught.getMessage()));
 			}
 			
 			@Override
@@ -309,8 +315,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 						public void onFailure(Throwable caught) {
 							changeList.endTransmit(false);
 							GWT.log("Failed to send change batch to server");
-
-							//session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
+							session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
 						}
 
 						@Override

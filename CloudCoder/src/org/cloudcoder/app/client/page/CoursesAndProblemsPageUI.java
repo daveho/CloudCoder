@@ -3,10 +3,12 @@ package org.cloudcoder.app.client.page;
 import java.util.TreeSet;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TermAndYear;
@@ -14,6 +16,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -33,6 +36,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 	private Tree tree;
 	private ProblemListView problemListView;
 	private ProblemDescriptionView problemDescriptionView;
+	private StatusMessageView statusMessageView;
 	private PageNavPanel pageNavPanel;
 	private LayoutPanel layoutPanel;
 	private Button loadProblemButton;
@@ -65,12 +69,18 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		northLayoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 120.0, Unit.PX);
 		northLayoutPanel.setWidgetBottomHeight(loadProblemButton, 6.0, Unit.PX, 32.0, Unit.PX);
 
-		// center: problem list for currently-selected course
+		// center: status message view, problem list for currently-selected course
 		layoutPanel = new LayoutPanel();
 		dockLayoutPanel.add(layoutPanel);
+		
+		statusMessageView = new StatusMessageView();
+		layoutPanel.add(statusMessageView);
+		layoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+		layoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+		
 		problemListView = new ProblemListView();
 		layoutPanel.add(problemListView);
-		layoutPanel.setWidgetTopBottom(problemListView, 0.0, Unit.PX, 0.0, Unit.PX);
+		layoutPanel.setWidgetTopBottom(problemListView, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
 		layoutPanel.setWidgetLeftRight(problemListView, 0.0, Unit.PX, 0.0, Unit.PX);
 
 		initWidget(dockLayoutPanel);
@@ -87,6 +97,7 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 		// Activate views
 		problemListView.activate(session, subscriptionRegistrar);
 		problemDescriptionView.activate(session, subscriptionRegistrar);
+		statusMessageView.activate(session, subscriptionRegistrar);
 		
 		// Set a logout handler
 		pageNavPanel.setLogoutHandler(new LogoutHandler(session));
@@ -125,7 +136,8 @@ public class CoursesAndProblemsPageUI extends Composite implements Subscriber, C
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				// FIXME: display error
+				GWT.log("Error loading courses", caught);
+				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading courses: " + caught.getMessage()));
 			}
 		});
 	}

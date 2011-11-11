@@ -12,13 +12,14 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.InlineLabel;
 
 public class StatusMessageView extends Composite implements Subscriber, SessionObserver {
-	public static final double HEIGHT = 24.0;
+	public static final double HEIGHT = 32.0;
 	public static final Unit HEIGHT_UNIT = Unit.PX;
 	
 	private InlineLabel label;
 
 	public StatusMessageView() {
 		label = new InlineLabel();
+		label.setSize("100%", "100%");
 		label.setStylePrimaryName("ccStatusMessageInformation");
 		initWidget(label);
 	}

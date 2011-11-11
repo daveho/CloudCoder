@@ -50,8 +50,10 @@ h1 {
 }
 .cc-statusMessageInformation {
 	font-size: 16px;
+	vertical-align: middle;
 }
 .cc-statusMessageError {
 	font-size: 16px;
+	vertical-align: middle;
 	color: red;
 }
