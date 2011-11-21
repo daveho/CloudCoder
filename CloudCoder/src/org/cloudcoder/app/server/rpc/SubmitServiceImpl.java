@@ -12,6 +12,7 @@ import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 
@@ -25,6 +26,10 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		// Make sure that client is authenticated and has permission to edit the given problem
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		Problem problem = Database.getInstance().getProblem(user, problemId);
+		if (problem == null) {
+			throw new NetCoderAuthenticationException();
+		}
+		List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(problemId);
 		
 //		// For now, a dummy implementation
 //		
@@ -39,7 +44,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		ISubmitService submitService = DefaultSubmitService.getInstance();
 		try {
 			System.out.println("Passing submission to submit service...");
-			List<TestResult> testResultList = submitService.submit(problem, programText);
+			List<TestResult> testResultList = submitService.submit(problem, testCaseList, programText);
 			System.out.println("  Done, got " + testResultList.size() + " test results");
 			return testResultList.toArray(new TestResult[testResultList.size()]);
 		} catch (SubmissionException e) {

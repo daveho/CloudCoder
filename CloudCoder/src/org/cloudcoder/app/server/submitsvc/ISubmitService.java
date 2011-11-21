@@ -20,6 +20,7 @@ package org.cloudcoder.app.server.submitsvc;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
 /**
@@ -40,5 +41,5 @@ public interface ISubmitService {
 	 * @param programText  program text
 	 * @return List of TestResults describing test outcomes
 	 */
-	public List<TestResult> submit(Problem problem, String programText) throws SubmissionException;
+	public List<TestResult> submit(Problem problem, List<TestCase> testCaseList, String programText) throws SubmissionException;
 }

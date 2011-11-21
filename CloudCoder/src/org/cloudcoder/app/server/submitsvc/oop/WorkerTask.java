@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
 public class WorkerTask implements Runnable {
@@ -59,6 +60,7 @@ public class WorkerTask implements Runnable {
 
 	private void sendSubmissionForTesting(Submission submission) throws IOException, ClassNotFoundException {
 		Problem problem = submission.getProblem();
+		List<TestCase> testCaseList = submission.getTestCaseList();
 		String programText = submission.getProgramText();
 		
 		// Tell client which Problem to test
@@ -66,10 +68,11 @@ public class WorkerTask implements Runnable {
 		out.flush();
 		
 		// Client will send back a boolean indicating whether or not it
-		// has this problem already: if not, send it.
+		// has this problem already: if not, send it (and its test cases).
 		Boolean response = (Boolean) in.readObject();
 		if (!response) {
 			out.writeObject(problem);
+			out.writeObject(testCaseList);
 			out.flush();
 		}
 		

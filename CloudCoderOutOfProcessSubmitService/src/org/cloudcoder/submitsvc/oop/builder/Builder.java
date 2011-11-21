@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
 /**
@@ -28,6 +29,7 @@ public class Builder implements Runnable {
 	private String host;
 	private int port;
 	private Map<Integer, Problem> problemIdToProblemMap;
+	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
 	private Socket socket;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -37,6 +39,7 @@ public class Builder implements Runnable {
 		this.host = host;
 		this.port = port;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
+		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 	}
 
 	public void run() {
@@ -53,6 +56,7 @@ public class Builder implements Runnable {
 					working = true;
 
 					Problem problem = problemIdToProblemMap.get(problemId);
+					List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
 
 					// let the server know whether or not we have this
 					// problem cached
@@ -63,12 +67,13 @@ public class Builder implements Runnable {
 					// send it to us
 					if (problem == null) {
 						problem = safeReadObject();
+						testCaseList = safeReadObject();
 					}
 
 					// read program text
 					String programText = safeReadObject();
 
-					List<TestResult> testResultList = testSubmission(problem, programText);
+					List<TestResult> testResultList = testSubmission(problem, testCaseList, programText);
 					out.writeObject(testResultList);
 					out.flush();
 				} catch (IOException e) {
@@ -125,7 +130,7 @@ public class Builder implements Runnable {
 		}
 	}
 
-	private List<TestResult> testSubmission(Problem problem, String programText) {
+	private List<TestResult> testSubmission(Problem problem, List<TestCase> testCaseList, String programText) {
 		List<TestResult> testResultList = new ArrayList<TestResult>();
 
 		// FIXME: fake implementation for now

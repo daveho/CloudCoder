@@ -5,23 +5,32 @@ import java.util.List;
 
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
 public class Submission {
 	private Object lock = new Object();
 	private Problem problem;
+	private List<TestCase> testCaseList;
 	private String programText;
 	private List<TestResult> testResultList;
 	private IOException error;
 	
-	public Submission(Problem problem, String programText) {
+	public Submission(Problem problem, List<TestCase> testCaseList, String programText) {
 		this.problem = problem;
+		this.testCaseList = testCaseList;
 		this.programText = programText;
 	}
 	
 	public Problem getProblem() {
 		synchronized (lock) {
 			return problem;
+		}
+	}
+	
+	public List<TestCase> getTestCaseList() {
+		synchronized (lock) {
+			return testCaseList;
 		}
 	}
 	

@@ -24,6 +24,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -41,4 +42,5 @@ public interface IDatabase {
 	public List<? extends Object[]> getCoursesForUser(User user);
 	public List<Problem> getProblemsInCourse(User user, Course course);
 	public void storeChanges(Change[] changeList);
+	public List<TestCase> getTestCasesForProblem(int problemId);
 }

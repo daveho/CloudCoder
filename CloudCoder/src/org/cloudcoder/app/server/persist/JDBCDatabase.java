@@ -34,6 +34,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Term;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -412,6 +413,31 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public List<TestCase> getTestCasesForProblem(final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<List<TestCase>>() {
+			@Override
+			public List<TestCase> run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from test_cases where problem_id = ?");
+				stmt.setInt(1, problemId);
+				List<TestCase> result = new ArrayList<TestCase>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					TestCase testCase = new TestCase();
+					load(testCase, resultSet, 1);
+				}
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
+	}
 
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
@@ -484,6 +510,14 @@ public class JDBCDatabase implements IDatabase {
 		term.setId(resultSet.getInt(index++));
 		term.setName(resultSet.getString(index++));
 		term.setSeq(resultSet.getInt(index++));
+	}
+
+	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
+		testCase.setId(resultSet.getInt(index++));
+		testCase.setProblemId(resultSet.getInt(index++));
+		testCase.setTestCaseName(resultSet.getString(index++));
+		testCase.setInput(resultSet.getString(index++));
+		testCase.setOutput(resultSet.getString(index++));
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
