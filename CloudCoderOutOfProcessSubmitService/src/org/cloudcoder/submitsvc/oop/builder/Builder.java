@@ -132,6 +132,14 @@ public class Builder implements Runnable {
 		TestResult testResult = new TestResult("passed", "You rule, dude", "Hello, world", "Oh yeah");
 		testResultList.add(testResult);
 
+		/*
+		// I *TEST* it!!!
+		StringBuilder buf = new StringBuilder();
+		// TODO: build a test class
+		
+		// TODO: use reflection to call test methods
+		*/
+		
 		return testResultList;
 	}
 
