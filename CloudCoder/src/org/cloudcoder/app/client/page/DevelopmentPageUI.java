@@ -221,6 +221,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		aceEditor.setSize("100%", "100%");
 		centerLayoutPanel.add(aceEditor);
 		aceEditor.startEditor();
+		aceEditor.setFontSize("14px");
 		aceEditor.setMode(AceEditorMode.JAVA);
 		//aceEditor.setTheme(AceEditorTheme.ECLIPSE);
 		aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
@@ -281,11 +282,16 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 				aceEditor.setReadOnly(false);
 				mode = Mode.EDITING;
 				
+				// DHH - disabling this workaround, since I think I may have
+				// found an actual solution that can be implemented in
+				// AceEditor.startEditor().
+				/*
 				// Workaround for GWT/ACE weirdness: the editor contents do not render
 				// correctly (they appear blank.)  Manually resizing the window causes
 				// the correct contents to appear, and so does setting the AceEditor
 				// font size.
 				aceEditor.setFontSize("14px");
+				*/
 			}
 
 			@Override
