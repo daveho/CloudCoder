@@ -51,5 +51,10 @@
   <welcome-file-list>
     <welcome-file>CloudCoder.html</welcome-file>
   </welcome-file-list>
+  
+  <!-- Listeners -->
+  <listener>
+    <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
+  </listener>
 
 </web-app>

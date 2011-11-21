@@ -19,9 +19,7 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
-public class TestResult implements Serializable, IsSerializable
+public class TestResult implements Serializable
 {
     public static final long serialVersionUID=1L;
     
