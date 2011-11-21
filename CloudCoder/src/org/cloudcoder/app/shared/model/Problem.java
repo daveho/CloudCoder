@@ -1,4 +1,4 @@
-// NetCoder - a web-based pedagogical programming environment
+// CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
@@ -24,13 +24,15 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 //@Entity
 //@Table(name="problems")
-public class Problem implements IsSerializable
+public class Problem implements Serializable
 {
-//	@Id 
+	private static final long serialVersionUID = 1L;
+
+	//	@Id 
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="problem_id")
 	private Integer problemId;
