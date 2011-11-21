@@ -1,4 +1,4 @@
-// NetCoder - a web-based pedagogical programming environment
+// CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
