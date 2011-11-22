@@ -27,6 +27,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -109,9 +110,12 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
 		
 		this.testResultListView = new TestResultListView();
-		southLayoutPanel.add(testResultListView);
-		southLayoutPanel.setWidgetTopBottom(testResultListView, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
-		southLayoutPanel.setWidgetLeftRight(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
+		this.testResultListView.setSize("100%", "100%");
+		ScrollPanel scrollPanel = new ScrollPanel();
+		scrollPanel.add(testResultListView);
+		southLayoutPanel.add(scrollPanel);
+		southLayoutPanel.setWidgetTopBottom(scrollPanel, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
+		southLayoutPanel.setWidgetLeftRight(scrollPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 		dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_EM);
 
 		centerLayoutPanel = new LayoutPanel();
