@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
+
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -137,13 +141,42 @@ public class Builder implements Runnable {
 		TestResult testResult = new TestResult("passed", "You rule, dude", "Hello, world", "Oh yeah");
 		testResultList.add(testResult);
 
-		/*
 		// I *TEST* it!!!
-		StringBuilder buf = new StringBuilder();
-		// TODO: build a test class
+
+		// The Test class is the subject of the test
+		StringBuilder test = new StringBuilder();
+		test.append("public class Test {\n");
+		test.append(programText + "\n");
+		test.append("}\n");
+		
+		// The Tester class contains the unit tests
+		// FIXME: this could be cached
+		StringBuilder tester = new StringBuilder();
+		tester.append("public class Tester {\n");
+		
+		tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
+		
+		for (TestCase tc : testCaseList) {
+			tester.append("\tpublic static boolean ");
+			tester.append(tc.getTestCaseName());
+			tester.append("() {\n");
+			tester.append("\t\tTest t = new Test();\n");
+			tester.append("\t\treturn eq(" + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
+			tester.append("\t\t}\n");
+		}
+		tester.append("}");
+		
+		// Compile
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
+		sources.add(MemoryFileManager.makeSource("Test", test.toString()));
+		sources.add(MemoryFileManager.makeSource("Tester", tester.toString()));
+		
+		MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
+		// FIXME: should get diagnostics so we can report them
+		compiler.getTask(null, fm, null, null, null, sources);
 		
 		// TODO: use reflection to call test methods
-		*/
 		
 		return testResultList;
 	}
