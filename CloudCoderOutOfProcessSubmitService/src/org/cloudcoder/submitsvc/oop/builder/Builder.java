@@ -3,6 +3,8 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +14,9 @@ import java.util.Scanner;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+import javax.tools.JavaCompiler.CompilationTask;
 
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.Problem;
@@ -77,7 +81,13 @@ public class Builder implements Runnable {
 					// read program text
 					String programText = safeReadObject();
 
-					List<TestResult> testResultList = testSubmission(problem, testCaseList, programText);
+					List<TestResult> testResultList;
+					try {
+						testResultList = testSubmission(problem, testCaseList, programText);
+					} catch (IllegalStateException e) {
+						testResultList = new ArrayList<TestResult>();
+						testResultList.add(new TestResult(TestResult.INTERNAL_ERROR, e.getMessage()));
+					}
 					out.writeObject(testResultList);
 					out.flush();
 				} catch (IOException e) {
@@ -134,12 +144,19 @@ public class Builder implements Runnable {
 		}
 	}
 
+	/*
+	 * This method is basically a giant hack.
+	 * Need to implement a properly sandboxed execution environment
+	 * for tests on the submitted code.
+	 */
 	private List<TestResult> testSubmission(Problem problem, List<TestCase> testCaseList, String programText) {
 		List<TestResult> testResultList = new ArrayList<TestResult>();
 
+		/*
 		// FIXME: fake implementation for now
 		TestResult testResult = new TestResult("passed", "You rule, dude", "Hello, world", "Oh yeah");
 		testResultList.add(testResult);
+		*/
 
 		// I *TEST* it!!!
 
@@ -174,7 +191,43 @@ public class Builder implements Runnable {
 		
 		MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
 		// FIXME: should get diagnostics so we can report them
-		compiler.getTask(null, fm, null, null, null, sources);
+		CompilationTask task = compiler.getTask(null, fm, null, null, null, sources);
+		if (!task.call()) {
+			// FIXME: proper reporting of failure
+			testResultList.add(new TestResult(TestResult.INTERNAL_ERROR, "Compile error"));
+		} else {
+			ClassLoader cl = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
+			
+			try {
+				Class<?> testerCls = cl.loadClass("Tester");
+				
+				// Compilation succeeded: now for the testing
+				for (TestCase tc : testCaseList) {
+					Method m = testerCls.getMethod(tc.getTestCaseName());
+					try {
+						Boolean result = (Boolean) m.invoke(null);
+						// TODO: capture stdout and stderr
+						//testResultList.add(new TestResult(result ? TestResult.PASSED : TestResult.FAILED_ASSERTION, ));
+						if (result) {
+							testResultList.add(new TestResult(TestResult.PASSED, "Passed! input=" + tc.getInput() + ", output=" + tc.getOutput()));
+						} else {
+							testResultList.add(new TestResult(TestResult.FAILED_ASSERTION, "Failed for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
+						}
+					} catch (InvocationTargetException e) {
+//						throw new IllegalStateException("Invocation target exception while testing submission", e);
+						testResultList.add(new TestResult(TestResult.FAILED_WITH_EXCEPTION, "Failed (exception) for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
+					}
+				}
+			} catch (ClassNotFoundException e) {
+				throw new IllegalStateException("Class not found while testing submission", e);
+			} catch (NoSuchMethodException e) {
+				throw new IllegalStateException("Method not found while testing submission", e);
+			} catch (SecurityException e) {
+				throw new IllegalStateException("Security exception while testing submission", e);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException("Illegal access while testing submission", e);
+			}
+		}
 		
 		// TODO: use reflection to call test methods
 		
