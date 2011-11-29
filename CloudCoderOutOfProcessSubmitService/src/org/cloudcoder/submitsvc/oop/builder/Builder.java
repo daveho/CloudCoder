@@ -178,16 +178,24 @@ public class Builder implements Runnable {
 			tester.append(tc.getTestCaseName());
 			tester.append("() {\n");
 			tester.append("\t\tTest t = new Test();\n");
-			tester.append("\t\treturn eq(" + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
+			tester.append("\t\treturn eq(t." + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
 			tester.append("\t\t}\n");
 		}
 		tester.append("}");
+
+		String testCode = test.toString();
+		String testerCode = tester.toString();
+		
+		System.out.println("Test code:");
+		System.out.println(testCode);
+		System.out.println("Tester code:");
+		System.out.println(testerCode);
 		
 		// Compile
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
-		sources.add(MemoryFileManager.makeSource("Test", test.toString()));
-		sources.add(MemoryFileManager.makeSource("Tester", tester.toString()));
+		sources.add(MemoryFileManager.makeSource("Test", testCode));
+		sources.add(MemoryFileManager.makeSource("Tester", testerCode));
 		
 		MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
 		// FIXME: should get diagnostics so we can report them

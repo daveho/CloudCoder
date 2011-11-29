@@ -207,15 +207,20 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 
 			@Override
 			public void onSuccess(TestResult[] results) {
-				// Great, got results back from server!
-				page.getSession().add(results);
-				
-				// Add a status message about the results
-				page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
-				
-				// Can resume editing now
-				mode = Mode.EDITING;
-				aceEditor.setReadOnly(false);
+				if (results == null) {
+					page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+					page.getSession().add(new TestResult[0]);
+				} else {
+					// Great, got results back from server!
+					page.getSession().add(results);
+					
+					// Add a status message about the results
+					page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
+					
+					// Can resume editing now
+					mode = Mode.EDITING;
+					aceEditor.setReadOnly(false);
+				}
 			}
 		});
 	}
