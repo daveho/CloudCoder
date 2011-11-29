@@ -423,18 +423,20 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select * from test_cases where problem_id = ?");
 				stmt.setInt(1, problemId);
+				
 				List<TestCase> result = new ArrayList<TestCase>();
+				
 				ResultSet resultSet = executeQuery(stmt);
 				while (resultSet.next()) {
 					TestCase testCase = new TestCase();
 					load(testCase, resultSet, 1);
+					result.add(testCase);
 				}
 				return result;
 			}
 			@Override
 			public String getDescription() {
-				// TODO Auto-generated method stub
-				return null;
+				return "getting test cases for problem";
 			}
 		});
 	}
