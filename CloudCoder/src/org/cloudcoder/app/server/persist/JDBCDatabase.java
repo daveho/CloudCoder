@@ -151,13 +151,6 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
 			@Override
 			public Problem run(Connection conn) throws SQLException {
-				/*
-        		"select p from Problem p, Course c, CourseRegistration r " +
-        		" where p.id = :id " +
-        		"   and c.id = p.courseId " +
-        		"   and r.courseId = c.id " +
-        		"   and r.userId = :userId", 
-				 */
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select problems.* from problems, courses, course_registrations " +
@@ -483,6 +476,7 @@ public class JDBCDatabase implements IDatabase {
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
 		problem.setProblemId(resultSet.getInt(index++));
 		problem.setCourseId(resultSet.getInt(index++));
+		problem.setProblemType(resultSet.getInt(index++));
 		problem.setTestName(resultSet.getString(index++));
 		problem.setBriefDescription(resultSet.getString(index++));
 		problem.setDescription(resultSet.getString(index++));
