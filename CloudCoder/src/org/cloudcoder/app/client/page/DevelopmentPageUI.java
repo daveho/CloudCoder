@@ -290,17 +290,11 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 				aceEditor.setText(result);
 				aceEditor.setReadOnly(false);
 				mode = Mode.EDITING;
-				
-				// DHH - disabling this workaround, since I think I may have
-				// found an actual solution that can be implemented in
-				// AceEditor.startEditor().
-				/*
-				// Workaround for GWT/ACE weirdness: the editor contents do not render
-				// correctly (they appear blank.)  Manually resizing the window causes
-				// the correct contents to appear, and so does setting the AceEditor
-				// font size.
-				aceEditor.setFontSize("14px");
-				*/
+
+				// Force a redisplay: work around weirdness when an AceEditor
+				// is embedded in a LayoutPanel (or in this case,
+				// a DockLayoutPanel).
+				aceEditor.redisplay();
 			}
 
 			@Override
