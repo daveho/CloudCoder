@@ -17,19 +17,11 @@
 
 package org.cloudcoder.app.shared.model;
 
-/**
- * Problem type enumeration.
- * In general, CloudCoder can support many kinds of problems in
- * many programming languages.  This enumeration represents the
- * various kinds of problems.
- * 
- * @author David Hovemeyer
- */
-public enum ProblemType {
-	/**
-	 * Problem involving writing a complete Java method.
-	 */
-	JAVA_METHOD,
-	PYTHON_FUNCTION,
-	C_FUNCTION,
+public enum TestOutcome {
+    PASSED,
+    FAILED_ASSERTION,
+    FAILED_WITH_EXCEPTION,
+    FAILED_BY_SECURITY_MANAGER,
+    FAILED_FROM_TIMEOUT,
+    INTERNAL_ERROR,
 }

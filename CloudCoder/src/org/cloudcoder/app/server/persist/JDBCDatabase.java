@@ -43,7 +43,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-	private static final String JDBC_URL = "jdbc:mysql://localhost/cloudcoder?user=root&password=root";
+	private static final String JDBC_URL = "jdbc:mysql://localhost:8889/cloudcoder?user=root&password=root";
 	
 	static {
 		try {

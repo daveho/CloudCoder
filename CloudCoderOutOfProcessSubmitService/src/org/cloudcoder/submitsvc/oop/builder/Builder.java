@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.IOException;
@@ -20,7 +37,9 @@ import javax.tools.JavaCompiler.CompilationTask;
 
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 
 /**
@@ -41,6 +60,7 @@ public class Builder implements Runnable {
 	private Socket socket;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
+	private Map<ProblemType, ITester> testerMap;
 
 	public Builder(String host, int port) {
 		this.shutdownRequested = false;
@@ -48,6 +68,26 @@ public class Builder implements Runnable {
 		this.port = port;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
+		this.testerMap=new HashMap<ProblemType, ITester>();
+	}
+	
+	private ITester getTester(ProblemType problemType) {
+	    if (!testerMap.containsKey(problemType)) {
+	        //XXX Could use reflection to create the tester
+	        // could also dynamically replace the testers for a running server
+	        // may need to use JMX for this?
+	        // could somehow encode versions of testers
+	        if (problemType==ProblemType.JAVA_METHOD) {
+	            testerMap.put(problemType, new JavaTester());
+	        } else if (problemType==ProblemType.C_FUNCTION) {
+	            testerMap.put(problemType, new CTester());
+	        } else if (problemType==ProblemType.PYTHON_FUNCTION) {
+	            testerMap.put(ProblemType.PYTHON_FUNCTION, new PythonTester());
+	        } else {
+	            throw new UnsupportedOperationException("problem type "+problemType+" not supported");
+	        }
+	    }
+	    return testerMap.get(problemType);
 	}
 
 	public void run() {
@@ -62,7 +102,7 @@ public class Builder implements Runnable {
 					working = false;
 					Integer problemId = safeReadObject();
 					working = true;
-
+					
 					Problem problem = problemIdToProblemMap.get(problemId);
 					List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
 
@@ -83,10 +123,11 @@ public class Builder implements Runnable {
 
 					List<TestResult> testResultList;
 					try {
-						testResultList = testSubmission(problem, testCaseList, programText);
+					    ITester tester=getTester(problem.getProblemType());
+					    testResultList = tester.testSubmission(problem, testCaseList, programText);
 					} catch (IllegalStateException e) {
 						testResultList = new ArrayList<TestResult>();
-						testResultList.add(new TestResult(TestResult.INTERNAL_ERROR, e.getMessage()));
+						testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, e.getMessage()));
 					}
 					out.writeObject(testResultList);
 					out.flush();
@@ -142,104 +183,6 @@ public class Builder implements Runnable {
 				// TODO: log?
 			}
 		}
-	}
-
-	/*
-	 * This method is basically a giant hack.
-	 * Need to implement a properly sandboxed execution environment
-	 * for tests on the submitted code.
-	 */
-	private List<TestResult> testSubmission(Problem problem, List<TestCase> testCaseList, String programText) {
-		List<TestResult> testResultList = new ArrayList<TestResult>();
-
-		/*
-		// FIXME: fake implementation for now
-		TestResult testResult = new TestResult("passed", "You rule, dude", "Hello, world", "Oh yeah");
-		testResultList.add(testResult);
-		*/
-
-		// I *TEST* it!!!
-
-		// The Test class is the subject of the test
-		StringBuilder test = new StringBuilder();
-		test.append("public class Test {\n");
-		test.append(programText + "\n");
-		test.append("}\n");
-		
-		// The Tester class contains the unit tests
-		// FIXME: this could be cached
-		StringBuilder tester = new StringBuilder();
-		tester.append("public class Tester {\n");
-		
-		tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
-		
-		for (TestCase tc : testCaseList) {
-			tester.append("\tpublic static boolean ");
-			tester.append(tc.getTestCaseName());
-			tester.append("() {\n");
-			tester.append("\t\tTest t = new Test();\n");
-			tester.append("\t\treturn eq(t." + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
-			tester.append("\t\t}\n");
-		}
-		tester.append("}");
-
-		String testCode = test.toString();
-		String testerCode = tester.toString();
-		
-		System.out.println("Test code:");
-		System.out.println(testCode);
-		System.out.println("Tester code:");
-		System.out.println(testerCode);
-		
-		// Compile
-		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
-		sources.add(MemoryFileManager.makeSource("Test", testCode));
-		sources.add(MemoryFileManager.makeSource("Tester", testerCode));
-		
-		MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
-		// FIXME: should get diagnostics so we can report them
-		CompilationTask task = compiler.getTask(null, fm, null, null, null, sources);
-		if (!task.call()) {
-			// FIXME: proper reporting of failure
-			testResultList.add(new TestResult(TestResult.INTERNAL_ERROR, "Compile error"));
-		} else {
-			ClassLoader cl = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
-			
-			try {
-				Class<?> testerCls = cl.loadClass("Tester");
-				
-				// Compilation succeeded: now for the testing
-				for (TestCase tc : testCaseList) {
-					Method m = testerCls.getMethod(tc.getTestCaseName());
-					try {
-						Boolean result = (Boolean) m.invoke(null);
-						// TODO: capture stdout and stderr
-						//testResultList.add(new TestResult(result ? TestResult.PASSED : TestResult.FAILED_ASSERTION, ));
-						if (result) {
-							testResultList.add(new TestResult(TestResult.PASSED, "Passed! input=" + tc.getInput() + ", output=" + tc.getOutput()));
-						} else {
-							testResultList.add(new TestResult(TestResult.FAILED_ASSERTION, "Failed for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
-						}
-					} catch (InvocationTargetException e) {
-//						throw new IllegalStateException("Invocation target exception while testing submission", e);
-						testResultList.add(new TestResult(TestResult.FAILED_WITH_EXCEPTION, "Failed (exception) for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
-					}
-				}
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Class not found while testing submission", e);
-			} catch (NoSuchMethodException e) {
-				throw new IllegalStateException("Method not found while testing submission", e);
-			} catch (SecurityException e) {
-				throw new IllegalStateException("Security exception while testing submission", e);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException("Illegal access while testing submission", e);
-			}
-		}
-		
-		// TODO: use reflection to call test methods
-		
-		return testResultList;
 	}
 
 	public static void main(String[] args) {

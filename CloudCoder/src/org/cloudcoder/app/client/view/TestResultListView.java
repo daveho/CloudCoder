@@ -27,7 +27,7 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	private static class OutcomeColumn extends TextColumn<TestResult> {
 		@Override
 		public String getValue(TestResult object) {
-			return object.getOutcome();
+			return object.getOutcome().toString().toLowerCase();
 		}
 	}
 	
