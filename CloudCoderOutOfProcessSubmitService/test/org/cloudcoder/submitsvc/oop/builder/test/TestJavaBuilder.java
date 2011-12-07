@@ -41,12 +41,13 @@ public class TestJavaBuilder extends GenericTest
         addTestCase("5", "25", TestOutcome.FAILED_ASSERTION);
         addTestCase("9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
         addTestCase("-1", "1", TestOutcome.PASSED);
-        addTestCase("10", "100", TestOutcome.PASSED);
+        addTestCase("10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
 
         // program text will fail two of our test cases
         String programText="public int sq(int x) { \n" +
                 " if (x==5) return 17; \n" +
                 " if (x==9) throw new NullPointerException(); \n" +
+                " if (x==10) while (true); \n" +
                 " return x*x; \n" +
         		    "}";
         runTests(programText);
