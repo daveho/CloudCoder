@@ -36,6 +36,8 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of IDatabase using JDBC.
@@ -43,6 +45,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
+    private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	private static final String JDBC_URL = "jdbc:mysql://localhost:8889/cloudcoder?user=root&password=root";
 	
 	static {
@@ -128,7 +131,7 @@ public class JDBCDatabase implements IDatabase {
 				// Check password
 				String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
 				
-				System.out.println("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
+				logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
 				
 				if (!encryptedPassword.equals(user.getPasswordMD5())) {
 					// Password does not match
