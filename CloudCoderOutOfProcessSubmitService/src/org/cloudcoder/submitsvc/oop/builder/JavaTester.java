@@ -20,7 +20,6 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,30 +45,11 @@ public class JavaTester implements ITester
         List<TestResult> testResultList = new ArrayList<TestResult>();
 
         // The Test class is the subject of the test
-        StringBuilder test = new StringBuilder();
-        test.append("public class Test {\n");
-        test.append(programText + "\n");
-        test.append("}\n");
+        String testCode = createTestClassSource(programText);
         
         // The Tester class contains the unit tests
         // FIXME: this could be cached
-        StringBuilder tester = new StringBuilder();
-        tester.append("public class Tester {\n");
-        
-        tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
-        
-        for (TestCase tc : testCaseList) {
-            tester.append("\tpublic static boolean ");
-            tester.append(tc.getTestCaseName());
-            tester.append("() {\n");
-            tester.append("\t\tTest t = new Test();\n");
-            tester.append("\t\treturn eq(t." + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
-            tester.append("\t\t}\n");
-        }
-        tester.append("}");
-
-        String testCode = test.toString();
-        String testerCode = tester.toString();
+        String testerCode = createTesterClassSource(problem, testCaseList);
         
         System.out.println("Test code:");
         System.out.println(testCode);
@@ -111,7 +91,7 @@ public class JavaTester implements ITester
                                 return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
                             }
                         } catch (InvocationTargetException e) {
-                            return new TestResult(TestOutcome.INTERNAL_ERROR, "Unable to invole test method "+t.getTestCaseName());
+                            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
                         } catch (NoSuchMethodException e) {
                             return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
                         } catch (SecurityException e) {
@@ -119,7 +99,7 @@ public class JavaTester implements ITester
                         } catch (IllegalAccessException e) {
                             return new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission");
                         }
-                        //TODO: Catch Throwable and report an error
+                        //TODO: Catch Throwable and report INTERNAL_ERROR for anything else
                     }
                 });
             }
@@ -155,42 +135,50 @@ public class JavaTester implements ITester
     }
 
     /**
+     * @param problem
      * @param testCaseList
-     * @param testResultList
-     * @param cl
+     * @return
      */
-    private List<TestResult> testSubmission(List<TestCase> testCaseList, ClassLoader cl) 
-    {
-        List<TestResult> testResultList=new LinkedList<TestResult>();
-        try {
-            Class<?> testerCls = cl.loadClass("Tester");
-            
-            // Compilation succeeded: now for the testing
-            for (TestCase tc : testCaseList) {
-                Method m = testerCls.getMethod(tc.getTestCaseName());
-                try {
-                    Boolean result = (Boolean) m.invoke(null);
-                    // TODO: capture stdout and stderr
-                    //testResultList.add(new TestResult(result ? TestResult.PASSED : TestResult.FAILED_ASSERTION, ));
-                    if (result) {
-                        testResultList.add(new TestResult(TestOutcome.PASSED, "Passed! input=" + tc.getInput() + ", output=" + tc.getOutput()));
-                    } else {
-                        testResultList.add(new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
-                    }
-                } catch (InvocationTargetException e) {
-//                      throw new IllegalStateException("Invocation target exception while testing submission", e);
-                    testResultList.add(new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed (exception) for input=" + tc.getInput() + ", expected=" + tc.getOutput()));
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, "Class not found while testing submission"));
-        } catch (NoSuchMethodException e) {
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission"));
-        } catch (SecurityException e) {
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, "Security exception while testing submission"));
-        } catch (IllegalAccessException e) {
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission"));
+    private String createTesterClassSource(Problem problem,
+            List<TestCase> testCaseList) {
+        StringBuilder tester = new StringBuilder();
+        tester.append("public class Tester {\n");
+        tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
+        for (TestCase tc : testCaseList) {
+            tester.append("\tpublic static boolean ");
+            tester.append(tc.getTestCaseName());
+            tester.append("() {\n");
+            tester.append("\t\tTest t = new Test();\n");
+            tester.append("\t\treturn eq(t." + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
+            tester.append("\t\t}\n");
         }
-        return testResultList;
+        tester.append("}");
+        String testerCode = tester.toString();
+        return testerCode;
     }
+
+    /**
+     * @param programText
+     * @return
+     */
+    private String createTestClassSource(String programText) {
+        StringBuilder test = new StringBuilder();
+        test.append("public class Test {\n");
+        test.append(programText + "\n");
+        test.append("}\n");
+        String testCode = test.toString();
+        return testCode;
+    }
+
+    /* (non-Javadoc)
+     * @see org.cloudcoder.submitsvc.oop.builder.ITester#testOneSubmission(org.cloudcoder.app.shared.model.Problem, org.cloudcoder.app.shared.model.TestCase, java.lang.String)
+     */
+    @Override
+    public TestResult testOneSubmission(Problem problem, TestCase testCase,
+            String programText) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    
 }

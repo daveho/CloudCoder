@@ -33,4 +33,14 @@ public class CTester implements ITester
         throw new IllegalStateException("C not yet implemented");
     }
 
+    /* (non-Javadoc)
+     * @see org.cloudcoder.submitsvc.oop.builder.ITester#testOneSubmission(org.cloudcoder.app.shared.model.Problem, org.cloudcoder.app.shared.model.TestCase, java.lang.String)
+     */
+    @Override
+    public TestResult testOneSubmission(Problem problem, TestCase testCase,
+            String programText) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

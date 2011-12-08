@@ -27,10 +27,14 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.submitsvc.oop.builder.ITester;
+import org.junit.Before;
+import org.junit.Test;
 
 public class GenericTest
 {
-    protected static ITester tester;
+    protected ITester tester;
+    protected String programText;
+    
     protected Problem problem;
     protected List<TestCase> testCaseList;
     protected List<TestOutcome> testOutcomeList;
@@ -66,17 +70,20 @@ public class GenericTest
         testOutcomeList.add(outcome);
     }
     
-    public void runTests(String programText) {
+    public void runAllTests() {
         List<TestResult> results=
                 tester.testSubmission(problem, testCaseList, programText);
         for (int i=0; i<results.size(); i++) {
-            Assert.assertEquals(results.get(i).getMessage(),
+            Assert.assertEquals("Test number "+i+" named "+results.get(i).getMessage(),
                     testOutcomeList.get(i),
                     results.get(i).getOutcome());
         }
-        for (TestResult t : results) {
-            System.out.println(t);
-        }
+    }
+
+    public void runOneTest(int testNum) {
+        TestResult res=tester.testOneSubmission(problem, testCaseList.get(testNum), programText);
+        Assert.assertEquals(testOutcomeList.get(testNum),
+                res.getOutcome());
     }
 
 }
