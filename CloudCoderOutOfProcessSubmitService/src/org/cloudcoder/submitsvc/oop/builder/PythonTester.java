@@ -126,34 +126,4 @@ public class PythonTester implements ITester
         }
         return outcomes;
     }
-
-    /* (non-Javadoc)
-     * @see org.cloudcoder.submitsvc.oop.builder.ITester#testOneSubmission(org.cloudcoder.app.shared.model.Problem, org.cloudcoder.app.shared.model.TestCase, java.lang.String)
-     */
-    @Override
-    public TestResult testOneSubmission(Problem problem, TestCase testCase,
-            String programText) 
-    {
-        final PythonInterpreter terp=new PythonInterpreter();
-        final PyObject True=terp.eval("True");
-        
-        List<TestCase> testCaseList=new LinkedList<TestCase>();
-        testCaseList.add(testCase);
-        String s=createTestClassSource(problem, testCaseList, programText);
-        PyCode code=terp.compile(s);
-        terp.eval(code);
-        
-        try {
-            PyObject r=terp.eval("Tester()."+testCase.getTestCaseName()+"()");
-            if (r!=null && r.equals(True)) {
-                return new TestResult(TestOutcome.PASSED, "Passed! input=" + 
-                        testCase.getInput() + ", output=" + testCase.getOutput());
-            } else {
-                return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + 
-                        testCase.getInput() + ", expected=" + testCase.getOutput());
-            }
-        } catch (PyException e) {
-            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
-        }
-    }
 }

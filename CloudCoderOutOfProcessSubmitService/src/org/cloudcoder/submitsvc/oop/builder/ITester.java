@@ -12,7 +12,4 @@ public interface ITester
             List<TestCase> testCaseList, 
             String programText);
     
-    public TestResult testOneSubmission(Problem problem, 
-            TestCase testCase, 
-            String programText);
 }

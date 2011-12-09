@@ -11,7 +11,7 @@ import org.junit.Test;
  * @author jaimespacco
  *
  */
-public class TestJavaBuilder extends GenericTest
+public class TestJavaTester extends GenericTest
 {
     @Before
     public void before() {

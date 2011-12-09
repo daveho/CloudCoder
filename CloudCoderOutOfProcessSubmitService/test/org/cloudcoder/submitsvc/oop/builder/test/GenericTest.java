@@ -18,6 +18,7 @@
 package org.cloudcoder.submitsvc.oop.builder.test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -27,8 +28,6 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.submitsvc.oop.builder.ITester;
-import org.junit.Before;
-import org.junit.Test;
 
 public class GenericTest
 {
@@ -81,9 +80,32 @@ public class GenericTest
     }
 
     public void runOneTest(int testNum) {
-        TestResult res=tester.testOneSubmission(problem, testCaseList.get(testNum), programText);
+        TestResult res=testOneSubmission(problem, testCaseList.get(testNum), programText);
         Assert.assertEquals(testOutcomeList.get(testNum),
                 res.getOutcome());
+    }
+    
+    public void runOneTest(String testName) {
+        TestCase test=null;
+        TestOutcome outcome=null;
+        for (int i=0; i<testCaseList.size(); i++){
+            TestCase t=testCaseList.get(i);
+            if (t.getTestCaseName().equals(testName)) {
+                test=t;
+                outcome=testOutcomeList.get(i);
+                break;
+            }
+        }
+        TestResult res=testOneSubmission(problem, test, programText);
+        Assert.assertEquals(outcome,
+                res.getOutcome());
+    }
+    
+    protected TestResult testOneSubmission(Problem problem, TestCase testCase, String programText) {
+        testCaseList.clear();
+        testCaseList.add(testCase);
+        List<TestResult> results=tester.testSubmission(problem, testCaseList, programText);
+        return results.get(0);
     }
 
 }
