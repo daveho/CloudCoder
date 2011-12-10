@@ -48,10 +48,6 @@ public class Compiler {
     public Compiler(String code, File workDir, String progName) {
         this.progName = progName;
         this.workDir = workDir;
-        if (workDir.exists()) {
-            logger.warn("work directory already exists!  Going to compile in there without looking");
-            //TODO: Crash compiler?
-        }
         this.code = code;
         this.statusMessage = "";
         this.compilerOutput = new LinkedList<String>();
@@ -106,8 +102,6 @@ public class Compiler {
         //return progName + ".elf";
         return progName;
     }
-
-    
 
     private boolean runCommand(File tempDir, String[] cmd) {
         ProcessRunner runner = new ProcessRunner();

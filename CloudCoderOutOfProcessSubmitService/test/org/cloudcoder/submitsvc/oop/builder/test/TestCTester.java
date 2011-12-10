@@ -15,10 +15,6 @@ public class TestCTester extends GenericTest
         problem=createGenericProblem();
         problem.setProblemType(ProblemType.C_FUNCTION);
         problem.setTestName("sq");
-        addTestCase("5", "25", TestOutcome.FAILED_ASSERTION);
-        addTestCase("9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
-        addTestCase("-1", "1", TestOutcome.PASSED);
-        addTestCase("10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
         
         tester=new CTester();
         programText="int sq(int x) { \n" +
@@ -32,23 +28,34 @@ public class TestCTester extends GenericTest
     
     @Test
     public void test1() {
+        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
         runOneTest("test1");
     }
     
     @Test
     public void test2() {
+        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
         runOneTest("test2");
     }
     
     @Test
     public void test3() {
+        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
         runOneTest("test3");
     }
     
     @Test
     public void test4() {
+        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
         runOneTest("test4");
     }
     
-    
+    @Test
+    public void runAllTests() {
+        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
+        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
+        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
+        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
+        super.runAllTests();
+    }
 }

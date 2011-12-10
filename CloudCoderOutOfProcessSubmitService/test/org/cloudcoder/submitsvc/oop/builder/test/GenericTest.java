@@ -18,7 +18,6 @@
 package org.cloudcoder.submitsvc.oop.builder.test;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -56,10 +55,10 @@ public class GenericTest
         testCaseNum=1;
     }
 
-    protected void addTestCase(String input, String output, TestOutcome outcome) {
+    protected void addTestCase(String testName, String input, String output, TestOutcome outcome) {
         TestCase testCase=new TestCase();
         testCase.setId(testCaseNum);
-        testCase.setTestCaseName("test"+testCaseNum);
+        testCase.setTestCaseName(testName);
         testCase.setInput(input);
         testCase.setOutput(output);
         testCase.setProblemId(problem.getProblemId());

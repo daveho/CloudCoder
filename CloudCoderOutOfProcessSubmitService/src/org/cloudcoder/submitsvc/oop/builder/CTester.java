@@ -18,13 +18,10 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudcoder.app.server.submitsvc.oop.WorkerTask;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
@@ -60,6 +57,33 @@ public class CTester implements ITester
         return test.toString();
     }
     
+    private void wait(ProcessRunner[] pool) {
+        int numPauses=7;
+        for (int i=1; i<=numPauses; i++) {
+            if (!pauseAndPoll(TIMEOUT_LIMIT/numPauses, pool)) {
+                // we can stop pausing
+                return;
+            }
+        }
+    }
+    
+    private boolean pauseAndPoll(long time, ProcessRunner[] pool) {
+        try {
+            Thread.sleep(time);
+            for (ProcessRunner p : pool) {
+                if (p.isRunning()) {
+                    return true;
+                }
+            }
+        } catch (InterruptedException e) {
+            // should never happen; to be safe, assume a thread may
+            // still be running.
+            return true;
+        }
+        // no threads are alive, so we can stop waiting
+        return false;
+    }
+    
     @Override
     public List<TestResult> testSubmission(Problem problem,
             List<TestCase> testCaseList, String programText)
@@ -90,12 +114,10 @@ public class CTester implements ITester
             tests[i]=new ProcessRunner();
             tests[i].runAsynchronous(workDir, getTestCommand(workDir.getAbsolutePath()+File.separatorChar+programName, testCaseList.get(i)));
         }
+        
         // wait for the timeout limit
-        try {
-            Thread.sleep(TIMEOUT_LIMIT);
-        } catch (InterruptedException e){
-            // Ignore; never happens
-        }
+        wait(tests);
+        
         for (ProcessRunner p : tests) {
             if (p.isRunning()) {
                 p.killProcess();
@@ -108,6 +130,11 @@ public class CTester implements ITester
                 //6 means core dump, etc
                 if (p.getExitCode()==0) {
                     results.add(new TestResult(TestOutcome.PASSED,
+                            p.getStatusMessage(),
+                            merge(p.getStdout()),
+                            merge(p.getStderr())));
+                } else if (p.getExitCode()==6) {
+                    results.add(new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
                             p.getStatusMessage(),
                             merge(p.getStdout()),
                             merge(p.getStderr())));

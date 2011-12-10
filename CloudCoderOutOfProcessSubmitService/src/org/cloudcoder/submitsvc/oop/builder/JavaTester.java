@@ -33,14 +33,21 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JavaTester implements ITester
 {
+    private static final Logger logger=LoggerFactory.getLogger(JavaTester.class);
     public static final long TIMEOUT_LIMIT=2000;
+    
+    static {
+        System.setSecurityManager(new StudentCodeSecurityManager());
+    }
     
     public List<TestResult> testSubmission(Problem problem, 
             List<TestCase> testCaseList, 
-            String programText)
+            final String programText)
     {
         List<TestResult> testResultList = new ArrayList<TestResult>();
 
@@ -51,10 +58,10 @@ public class JavaTester implements ITester
         // FIXME: this could be cached
         String testerCode = createTesterClassSource(problem, testCaseList);
         
-        System.out.println("Test code:");
-        System.out.println(testCode);
-        System.out.println("Tester code:");
-        System.out.println(testerCode);
+        logger.trace("Test code:");
+        logger.trace(testCode);
+        logger.trace("Tester code:");
+        logger.trace(testerCode);
         
         // Compile
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -91,11 +98,15 @@ public class JavaTester implements ITester
                                 return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
                             }
                         } catch (InvocationTargetException e) {
-                            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
+                            if (e.getCause() instanceof SecurityException) {
+                                logger.warn("Security exception with code: "+programText);
+                                return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
+                            } else {
+                                logger.warn("InvocationTargetException", e);
+                                return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
+                            }
                         } catch (NoSuchMethodException e) {
                             return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
-                        } catch (SecurityException e) {
-                            return new TestResult(TestOutcome.INTERNAL_ERROR, "Security exception while testing submission");
                         } catch (IllegalAccessException e) {
                             return new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission");
                         }
