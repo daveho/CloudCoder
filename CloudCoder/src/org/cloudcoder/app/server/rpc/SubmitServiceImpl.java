@@ -2,9 +2,6 @@ package org.cloudcoder.app.server.rpc;
 
 import java.util.List;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-
 import org.cloudcoder.app.client.rpc.SubmitService;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.submitsvc.DefaultSubmitService;
@@ -15,11 +12,14 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger=LoggerFactory.getLogger(SubmitServiceImpl.class);
 
 	@Override
 	public TestResult[] submit(int problemId, String programText) throws NetCoderAuthenticationException {
@@ -43,9 +43,9 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		
 		ISubmitService submitService = DefaultSubmitService.getInstance();
 		try {
-			System.out.println("Passing submission to submit service...");
+			logger.info("Passing submission to submit service...");
 			List<TestResult> testResultList = submitService.submit(problem, testCaseList, programText);
-			System.out.println("  Done, got " + testResultList.size() + " test results");
+			logger.info("  Done, got " + testResultList.size() + " test results");
 			return testResultList.toArray(new TestResult[testResultList.size()]);
 		} catch (SubmissionException e) {
 			return null; 

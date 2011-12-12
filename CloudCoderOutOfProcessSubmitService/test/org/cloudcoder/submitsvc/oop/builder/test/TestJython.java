@@ -21,33 +21,5 @@ public class TestJython
         
         System.out.println(True==terp.eval("Tester().test1()"));
         System.out.println(False==terp.eval("Tester().test2()"));
-        
-        //System.out.println(terp.eval("Tester().test1()"));
-        
     }
-
-//    private static String executeFunction(String body, 
-//            PythonInterpreter terp, 
-//            String input)
-//    {
-//        terp.exec("theRes=sq("+input+")");
-//        return terp.get("theRes").toString();
-//    }
-//
-//    @Test
-//    public void testInterpreter() throws Exception {
-//        PythonInterpreter terp=new PythonInterpreter();
-//        assertEquals("16", executeFunction(terp, "4"));
-//        //PyCode pyCode=terp.compile(body);
-//        //pyCode.invoke("sq", new PyObject[] {new PyOb"4"});
-//        terp.exec(body);
-//        terp.exec("res=sq(4)");
-//        PyObject res=terp.get("res");
-//        //System.out.println("type: "+res.getType());
-//        //System.out.println("class: "+res.getClass());
-//        //res._eq()
-//        assertEquals("16", res.toString());
-//        System.out.println(res);
-//    }
-
 }

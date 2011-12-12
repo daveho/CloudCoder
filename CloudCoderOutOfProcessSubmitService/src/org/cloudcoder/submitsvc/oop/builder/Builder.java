@@ -33,6 +33,8 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A "Builder" process.  It runs separately from the CloudCoder server,
@@ -43,6 +45,8 @@ import org.cloudcoder.app.shared.model.TestResult;
  * @author David Hovemeyer
  */
 public class Builder implements Runnable {
+    private static final Logger logger=LoggerFactory.getLogger(Builder.class);
+    
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
 	private String host;
@@ -126,7 +130,7 @@ public class Builder implements Runnable {
 				} catch (IOException e) {
 					// Quite possibly, this is a routine shutdown of the CloudCoder server.
 					// We'll try connecting again soon.
-					System.out.println("Error communicating with server");
+					logger.error("Error communicating with server");
 					socket = null;
 					in = null;
 					out = null;
@@ -140,11 +144,11 @@ public class Builder implements Runnable {
 		try {
 			this.socket = new Socket(host, port);
 			this.in = new ObjectInputStream(socket.getInputStream());
-			System.out.println("Connected!");
+			logger.info("Connected!");
 			this.out = new ObjectOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			// ClientCoder server may not be running right now...try again soon
-			System.out.println("Cannot connect to CloudCoder server");
+			logger.error("Cannot connect to CloudCoder server");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException ee) {
@@ -172,7 +176,7 @@ public class Builder implements Runnable {
 					s.close();
 				}
 			} catch (IOException e) {
-				// TODO: log?
+			    logger.error("Unable to close client socket, but Builder is shutting down anyway",e);
 			}
 		}
 	}
@@ -183,7 +187,7 @@ public class Builder implements Runnable {
 		thread.start();
 
 		Scanner keyboard = new Scanner(System.in);
-		System.out.println("Type shutdown to quit");
+		logger.warn("Type shutdown to quit");
 
 		for (;;) {
 			String line = keyboard.nextLine();
@@ -195,7 +199,7 @@ public class Builder implements Runnable {
 		try {
 			builder.shutdown();
 			thread.join();
-			System.out.println("Finished");
+			logger.warn("Finished");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
