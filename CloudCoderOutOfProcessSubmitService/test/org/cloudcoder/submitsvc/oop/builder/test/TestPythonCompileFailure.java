@@ -14,18 +14,34 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package org.cloudcoder.submitsvc.oop.builder;
 
-import java.util.List;
+package org.cloudcoder.submitsvc.oop.builder.test;
 
-import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.submitsvc.oop.builder.PythonTester;
+import org.junit.Test;
 
-public interface ITester
+/**
+ * @author jaimespacco
+ *
+ */
+public class TestPythonCompileFailure extends GenericTest
 {
-    public List<TestResult> testSubmission(Problem problem, 
-            List<TestCase> testCaseList, 
-            String programText);
-    
+    @Test
+    public void testCompileFailed() throws Exception {
+        problem=createGenericProblem();
+        problem.setProblemType(ProblemType.PYTHON_FUNCTION);
+        problem.setTestName("compileWillFail");
+        
+        tester=new PythonTester();
+        
+        programText="def sq(x):\n"+
+                "return x*x";
+        TestCase t=createTestCase("test1", "1", "1");
+        TestResult res=testOneSubmission(problem, t, programText);
+        System.out.println("OUT: "+res.getStdout());
+        System.out.println("ERR: "+res.getStderr());
+    }
 }

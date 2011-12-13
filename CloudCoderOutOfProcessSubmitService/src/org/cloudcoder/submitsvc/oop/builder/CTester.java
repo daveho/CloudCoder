@@ -112,6 +112,9 @@ public class CTester implements ITester
         
         for (int i=0; i<tests.length; i++) {
             tests[i]=new ProcessRunner();
+            //TODO: Use chroot jail
+            //TODO: Use ulimit
+            //Full path to executable is necessary
             tests[i].runAsynchronous(workDir, getTestCommand(workDir.getAbsolutePath()+File.separatorChar+programName, testCaseList.get(i)));
         }
         
@@ -126,14 +129,14 @@ public class CTester implements ITester
                         merge(p.getStdout()),
                         merge(p.getStderr())));
             } else {
-                //TODO: try to distinguish error codes?
-                //6 means core dump, etc
+                //FIXME: try to distinguish other error codes?
                 if (p.getExitCode()==0) {
                     results.add(new TestResult(TestOutcome.PASSED,
                             p.getStatusMessage(),
                             merge(p.getStdout()),
                             merge(p.getStderr())));
                 } else if (p.getExitCode()==6) {
+                    // error code 6 means CORE DUMP
                     results.add(new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
                             p.getStatusMessage(),
                             merge(p.getStdout()),

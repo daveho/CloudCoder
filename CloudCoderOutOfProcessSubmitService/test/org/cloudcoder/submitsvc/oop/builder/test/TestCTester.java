@@ -17,45 +17,68 @@ public class TestCTester extends GenericTest
         problem.setTestName("sq");
         
         tester=new CTester();
-        programText="int sq(int x) { \n" +
+        programText="#include <stdlib.h>\n"+
+                "#include <sys/types.h>\n"+
+                "#include <sys/socket.h>\n"+
+                "int sq(int x) { \n" +
                 " int * crash=NULL; \n" +
-                " if (x==5) return 17; \n" +
-                " if (x==9) *crash=1; \n" +
-                " if (x==10) while (1); \n" +
+                " if (x==1) return 17; \n" +
+                " if (x==2) *crash=1; \n" +
+                " if (x==3) while (1); \n" +
+                " if (x==4) system(\"/bin/ls\");\n" + //currently cannot block illegal operations
+                " if (x==5) return x*x; \n" + // correct
+                " if (x==6) x = socket(AF_INET, SOCK_STREAM, 0);\n" +//currently cannot block illegal operations
                 " return x*x; \n" +
                     "}";
+        //System.err.println(programText);
     }
     
     @Test
     public void test1() {
-        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
+        addTestCase("test1", "1", "1", TestOutcome.FAILED_ASSERTION);
         runOneTest("test1");
     }
     
     @Test
     public void test2() {
-        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
+        addTestCase("test2", "2", "4", TestOutcome.FAILED_WITH_EXCEPTION);
         runOneTest("test2");
     }
     
     @Test
     public void test3() {
-        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
+        addTestCase("test3", "3", "9", TestOutcome.FAILED_FROM_TIMEOUT);
         runOneTest("test3");
     }
     
     @Test
     public void test4() {
-        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
+        //XXX Currently lack a way to make C fail with security problems
+        addTestCase("test4", "4", "16", TestOutcome.FAILED_BY_SECURITY_MANAGER);
         runOneTest("test4");
     }
     
     @Test
+    public void test5() {
+        addTestCase("test5", "5", "25", TestOutcome.PASSED);
+        runOneTest("test5");
+    }
+    
+    @Test
+    public void test6() {
+        //XXX Currently lack a way to make C fail 
+        addTestCase("test6", "6", "36", TestOutcome.FAILED_BY_SECURITY_MANAGER);
+        runOneTest("test6");
+    }
+    
+    @Test
     public void runAllTests() {
-        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
-        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
-        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
-        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
+        addTestCase("test1", "1", "1", TestOutcome.FAILED_ASSERTION);
+        addTestCase("test2", "2", "4", TestOutcome.FAILED_WITH_EXCEPTION);
+        addTestCase("test3", "3", "9", TestOutcome.FAILED_FROM_TIMEOUT);
+        addTestCase("test4", "4", "16", TestOutcome.FAILED_BY_SECURITY_MANAGER);
+        addTestCase("test5", "5", "25", TestOutcome.PASSED);
+        addTestCase("test6", "6", "36", TestOutcome.FAILED_BY_SECURITY_MANAGER);
         super.runAllTests();
     }
 }

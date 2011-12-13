@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
@@ -42,7 +44,7 @@ public class JavaTester implements ITester
     public static final long TIMEOUT_LIMIT=2000;
     
     static {
-        System.setSecurityManager(new StudentCodeSecurityManager());
+        System.setSecurityManager(new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
     }
     
     public List<TestResult> testSubmission(Problem problem, 
@@ -69,12 +71,22 @@ public class JavaTester implements ITester
         sources.add(MemoryFileManager.makeSource("Test", testCode));
         sources.add(MemoryFileManager.makeSource("Tester", testerCode));
         
+        DiagnosticCollector<JavaFileObject> collector=
+                new DiagnosticCollector<JavaFileObject>();
+        
         MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
-        // FIXME: should get diagnostics so we can report them
-        CompilationTask task = compiler.getTask(null, fm, null, null, null, sources);
+        CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
         if (!task.call()) {
-            // FIXME: proper reporting of failure
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, "Compile error"));
+            StringBuilder compilerErrors=new StringBuilder();
+            for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
+                compilerErrors.append(d.toString());
+                compilerErrors.append("\n");
+            }
+            compilerErrors.replace(compilerErrors.length()-1, compilerErrors.length(), "");
+            testResultList.add(new TestResult(TestOutcome.COMPILE_FAILED, 
+                    "Compile error",
+                    compilerErrors.toString(),
+                    null));
             return testResultList;
         }
         ClassLoader cl = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
@@ -101,10 +113,9 @@ public class JavaTester implements ITester
                             if (e.getCause() instanceof SecurityException) {
                                 logger.warn("Security exception with code: "+programText);
                                 return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
-                            } else {
-                                logger.warn("InvocationTargetException", e);
-                                return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
-                            }
+                            } 
+                            logger.warn("InvocationTargetException", e);
+                            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
                         } catch (NoSuchMethodException e) {
                             return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
                         } catch (IllegalAccessException e) {
