@@ -24,6 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * I'm going to use the stop() method in thread.  I feel a little dirty.
  * 
@@ -44,6 +47,7 @@ import java.util.Map;
  */
 public class KillableTaskManager<T>
 {
+    private static final Logger logger=LoggerFactory.getLogger(KillableTaskManager.class);
     /** list of "isolated tasks" to be executed */
     private List<IsolatedTask<T>> tasks;
     /** List of Outcomes; essentially placeholders objects where tasks will put their results */
@@ -234,9 +238,7 @@ public class KillableTaskManager<T>
             } catch (Throwable e) {
                 // Make sure that the thread dies very quietly
                 // "Attaching an exception-catching silencer to my thread-killing gun"
-                // XXX Log this
-                System.err.println("Thread killed in go! "+e);
-                System.out.println("Thread killed in go! "+e);
+                logger.error("Thread killed in go!", e);
             } finally {
                 //System.err.println(System.getSecurityManager());
                 //System.out.println(System.getSecurityManager());

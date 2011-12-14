@@ -1,33 +1,34 @@
 package org.cloudcoder.submitsvc.oop.builder.test;
 
+import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.submitsvc.oop.builder.CTester;
 import org.cloudcoder.submitsvc.oop.builder.JavaTester;
 import org.junit.Test;
 
 public class TestJavaCompileFailure extends GenericTest
 {
     @Test
-    public void test1() {
-        problem=createGenericProblem();
-        problem.setProblemType(ProblemType.JAVA_METHOD);
-        problem.setTestName("compileWillFail");
+    public void testCompileFailed() throws Exception {
+        createProblem("compileTest", ProblemType.JAVA_METHOD);
         
         tester=new JavaTester();
         
-        programText="public int sq(int x)  \n" +
-                " if (x==1) return 17; \n" +
-                " if (x==2) throw new NullPointerException(); \n" +
-                " if (x==3) while (true); \n" +
-                " if (x==4) new Thread() { public void run() {} }.start(); \n" +
-                " if (x==5) return x*x; \n" +
-                " if (x==6) System.exit(1); \n" +
-                " return x*x; \n" +
-                    "}";
-        TestCase t=createTestCase("test1", "1", "1");
-        TestResult res=testOneSubmission(problem, t, programText);
-        System.out.println("OUT: "+res.getStdout());
-        System.out.println("ERR: "+res.getStderr());
+        setProgramText("public int sq(int x) {\n"+
+        "  reutrn x*x;\n"+
+        "}");
+        
+        addTestCase("test1", "1", "1");
+        SubmissionResult result=tester.testSubmission(submission);
+        CompilationResult compres=result.getCompilationResult();
+        for (CompilerDiagnostic d : compres.getCompilerDiagnosticList()) {
+            System.out.println(d);
+        }
+        //System.out.println("OUT: "+compres.getStdout());
+        //System.out.println("ERR: "+res.getStderr());
     }
 }

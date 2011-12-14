@@ -19,11 +19,13 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -82,30 +84,19 @@ public class PythonTester implements ITester
     }
     
     @Override
-    public List<TestResult> testSubmission(final Problem problem,
-            List<TestCase> testCaseList, 
-            final String programText)
+    public SubmissionResult testSubmission(Submission submission)
     {
+        Problem problem=submission.getProblem();
+        final String programText=submission.getProgramText();
+        List<TestCase> testCaseList=submission.getTestCaseList();
+        
         final String s=createTestClassSource(problem, testCaseList, programText);
         final byte[] sBytes=s.getBytes();
         
         //Check if the Python code is syntactically correct
-        try {
-            PythonInterpreter terp=new PythonInterpreter();
-            terp.execfile(new ByteArrayInputStream(s.getBytes()));
-        } catch (PySyntaxError e) {
-            //TODO: Produce cleaner Python compiler error messages
-            logger.info("Failed to compile:\n"+s+"\nwith message: "+e.getMessage());
-            return Arrays.asList(new TestResult(TestOutcome.COMPILE_FAILED,
-                    "compile failed",
-                    e.getMessage(),
-                    e.toString()));
-        } catch (PyException e) {
-            logger.warn("Unexpected PyException (probably compilation failure): ");
-            return Arrays.asList(new TestResult(TestOutcome.COMPILE_FAILED,
-                    "compile probably failed",
-                    e.getMessage(),
-                    e.toString()));
+        CompilationResult compres=compilePythonScript(s);
+        if (compres.getOutcome()!=CompilationOutcome.SUCCESS) {
+            return new SubmissionResult(compres);
         }
         
         List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
@@ -125,23 +116,10 @@ public class PythonTester implements ITester
             tasks.add(new IsolatedTask<TestResult>() {
                 @Override
                 public TestResult execute() {
-                    try {
-                        PyObject r=func.__call__();
-                        if (r!=null && r.equals(True)) {
-                            return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
-                        } else {
-                            logger.warn("Test case failed, result is: "+r.getClass());
-                            return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
-                        }
-                    } catch (PyException e) {
-                        if (e.getCause() instanceof SecurityException) {
-                            logger.warn("Security exception", e.getCause());
-                            return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
-                        }
-                        logger.warn("Exception type was "+e.getClass());
-                        return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
-                    }
+                    return executeTestCase(t, True, func);
                 }
+
+                
             });
         }
         
@@ -160,16 +138,61 @@ public class PythonTester implements ITester
         pool.run();
 
         //merge outcomes with their buffered inputs for stdout/stderr
-        List<TestResult> outcomes=pool.getOutcomes();
-        Map<Integer,String> stdout=pool.getBufferedStdout();
-        Map<Integer,String> stderr=pool.getBufferedStderr();
-        for (int i=0; i<outcomes.size(); i++) {
-            TestResult t=outcomes.get(i);
-            if (t!=null) {
-                t.setStdout(stdout.get(i));
-                t.setStderr(stderr.get(i));
-            }
+        
+        List<TestResult> testResults=TesterUtils.getStdoutStderr(pool);
+        SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
+        result.setTestResults(testResults);
+        return result;
+    }
+
+    /**
+     * @param s
+     */
+    public static CompilationResult compilePythonScript(final String s) {
+        try {
+            PythonInterpreter terp=new PythonInterpreter();
+            terp.execfile(new ByteArrayInputStream(s.getBytes()));
+            return new CompilationResult(CompilationOutcome.SUCCESS);
+        } catch (PySyntaxError e) {
+            
+            logger.info("Failed to compile:\n"+s+"\nwith message: "+e.getMessage());
+            
+            //TODO: Convert Python error message or stack trace into a list of
+            // CompilerDiagnostics to be sent back to the server
+            CompilationResult compres=new CompilationResult(CompilationOutcome.FAILURE);
+            compres.setException(e);
+            return compres;
+        } catch (PyException e) {
+            logger.warn("Unexpected PyException (probably compilation failure): ");
+            CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
+            compres.setException(e);
+            return compres;
         }
-        return outcomes;
+    }
+    
+    /**
+     * @param t
+     * @param True
+     * @param func
+     * @return
+     */
+    static TestResult executeTestCase(final TestCase t,
+            final PyObject True, final PyFunction func) {
+        try {
+            PyObject r=func.__call__();
+            if (r!=null && r.equals(True)) {
+                return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
+            } else {
+                logger.warn("Test case failed, result is: "+r.getClass());
+                return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
+            }
+        } catch (PyException e) {
+            if (e.getCause() instanceof SecurityException) {
+                logger.warn("Security exception", e.getCause());
+                return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
+            }
+            logger.warn("Exception type was "+e.getClass());
+            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
+        }
     }
 }

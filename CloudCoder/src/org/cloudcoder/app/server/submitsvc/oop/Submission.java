@@ -8,7 +8,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
-public class Submission {
+class Submission {
 	private Object lock = new Object();
 	private Problem problem;
 	private List<TestCase> testCaseList;

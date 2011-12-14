@@ -21,18 +21,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestOutcome;
-import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,15 +118,17 @@ public class Builder implements Runnable {
 					// read program text
 					String programText = safeReadObject();
 
-					List<TestResult> testResultList;
+					SubmissionResult result;
 					try {
 					    ITester tester=getTester(problem.getProblemType());
-					    testResultList = tester.testSubmission(problem, testCaseList, programText);
-					} catch (IllegalStateException e) {
-						testResultList = new ArrayList<TestResult>();
-						testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR, e.getMessage()));
+					    Submission submission=new Submission(problem, testCaseList, programText);
+					    result=tester.testSubmission(submission);
+					} catch (Throwable e) {
+						CompilationResult compres=
+						        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
+						result=new SubmissionResult(compres);
 					}
-					out.writeObject(testResultList);
+					out.writeObject(result);
 					out.flush();
 				} catch (IOException e) {
 					// Quite possibly, this is a routine shutdown of the CloudCoder server.

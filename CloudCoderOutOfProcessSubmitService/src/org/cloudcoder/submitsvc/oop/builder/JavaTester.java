@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -31,7 +30,12 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -44,14 +48,20 @@ public class JavaTester implements ITester
     public static final long TIMEOUT_LIMIT=2000;
     
     static {
+        //TODO:  Huge hack!  Somehow TestResult was not being loaded properly
+        try {
+            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestResult");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         System.setSecurityManager(new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
     }
     
-    public List<TestResult> testSubmission(Problem problem, 
-            List<TestCase> testCaseList, 
-            final String programText)
+    public SubmissionResult testSubmission(Submission submission)
     {
-        List<TestResult> testResultList = new ArrayList<TestResult>();
+        Problem problem=submission.getProblem();
+        final String programText=submission.getProgramText();
+        List<TestCase> testCaseList=submission.getTestCaseList();
 
         // The Test class is the subject of the test
         String testCode = createTestClassSource(programText);
@@ -77,83 +87,79 @@ public class JavaTester implements ITester
         MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
         CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
         if (!task.call()) {
-            StringBuilder compilerErrors=new StringBuilder();
+            CompilationResult compileResult=new CompilationResult(CompilationOutcome.FAILURE);
             for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
-                compilerErrors.append(d.toString());
-                compilerErrors.append("\n");
+                // convert Java-specific diagnostics to the language-independent diagnostics
+                // we could also 
+                compileResult.addCompilerDiagnostic(new CompilerDiagnostic(d));
             }
-            compilerErrors.replace(compilerErrors.length()-1, compilerErrors.length(), "");
-            testResultList.add(new TestResult(TestOutcome.COMPILE_FAILED, 
-                    "Compile error",
-                    compilerErrors.toString(),
-                    null));
-            return testResultList;
+            return new SubmissionResult(compileResult);
         }
         ClassLoader cl = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
+        Class<?> testerClass=null;
         
         try {
-            final Class<?> testerCls = cl.loadClass("Tester");
+            testerClass = cl.loadClass("Tester");
+        } catch (ClassNotFoundException e) {
+            CompilationResult compilationResult=new CompilationResult(
+                    CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
+            compilationResult.setException(e);
+            SubmissionResult result=new SubmissionResult(compilationResult);
+            return result;
+        }
 
-            // create a list of tasks to be executed
-            List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
-
-            for (final TestCase t : testCaseList) {
-                tasks.add(new IsolatedTask<TestResult>() {
-                    @Override
-                    public TestResult execute() {
-                        try {
-                            Method m = testerCls.getMethod(t.getTestCaseName());
-                            Boolean result = (Boolean) m.invoke(null);
-                            if (result) {
-                                return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
-                            } else {
-                                return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
-                            }
-                        } catch (InvocationTargetException e) {
-                            if (e.getCause() instanceof SecurityException) {
-                                logger.warn("Security exception with code: "+programText);
-                                return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
-                            } 
-                            logger.warn("InvocationTargetException", e);
-                            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
-                        } catch (NoSuchMethodException e) {
-                            return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
-                        } catch (IllegalAccessException e) {
-                            return new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission");
+        // create a list of tasks to be executed
+        List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
+        final Class<?> testerCls=testerClass;
+        
+        for (final TestCase t : testCaseList) {
+            tasks.add(new IsolatedTask<TestResult>() {
+                @Override
+                public TestResult execute() {
+                    try {
+                        Method m = testerCls.getMethod(t.getTestCaseName());
+                        Boolean result = (Boolean) m.invoke(null);
+                        if (result) {
+                            return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
+                        } else {
+                            return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
                         }
-                        //TODO: Catch Throwable and report INTERNAL_ERROR for anything else
+                    } catch (InvocationTargetException e) {
+                        if (e.getCause() instanceof SecurityException) {
+                            logger.warn("Security exception with code: "+programText);
+                            return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
+                        } 
+                        logger.warn("InvocationTargetException", e);
+                        return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
+                    } catch (NoSuchMethodException e) {
+                        return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
+                    } catch (IllegalAccessException e) {
+                        return new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission");
+                    }
+                    //TODO: Catch Throwable and report INTERNAL_ERROR for anything else
+                }
+            });
+        }
+
+        KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
+                tasks, 
+                TIMEOUT_LIMIT,
+                new KillableTaskManager.TimeoutHandler<TestResult>() {
+                    @Override
+                    public TestResult handleTimeout() {
+                        return new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
+                                "Took too long!  Check for infinite loops, or recursion without a proper base case");
                     }
                 });
-            }
 
-            KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
-                    tasks, 
-                    TIMEOUT_LIMIT,
-                    new KillableTaskManager.TimeoutHandler<TestResult>() {
-                        @Override
-                        public TestResult handleTimeout() {
-                            return new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
-                                    "Took too long!  Check for infinite loops, or recursion without a proper base case");
-                        }
-                    });
+        // run each task in a separate thread
+        pool.run();
 
-            // run each task in a separate thread
-            pool.run();
-
-            //merge outcomes with their buffered inputs for stdout/stderr
-            List<TestResult> outcomes=pool.getOutcomes();
-            Map<Integer,String> stdout=pool.getBufferedStdout();
-            Map<Integer,String> stderr=pool.getBufferedStderr();
-            for (int i=0; i<outcomes.size(); i++) {
-                TestResult t=outcomes.get(i);
-                t.setStdout(stdout.get(i));
-                t.setStderr(stderr.get(i));
-            }
-            return outcomes;
-        } catch (ClassNotFoundException e) {
-            testResultList.add(new TestResult(TestOutcome.INTERNAL_ERROR,"Class not found exception: "+e.getMessage()));
-            return testResultList;
-        }
+        //merge outcomes with their buffered inputs for stdout/stderr
+        List<TestResult> outcomes=TesterUtils.getStdoutStderr(pool);
+        SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
+        result.setTestResults(outcomes);
+        return result;
     }
 
     /**

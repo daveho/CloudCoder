@@ -21,27 +21,24 @@ import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.submitsvc.oop.builder.JavaTester;
-import org.cloudcoder.submitsvc.oop.builder.PythonTester;
+import org.cloudcoder.submitsvc.oop.builder.CTester;
 import org.junit.Test;
 
 /**
  * @author jaimespacco
  *
  */
-public class TestPythonCompileFailure extends GenericTest
+public class TestCCompileFailure extends GenericTest
 {
     @Test
     public void testCompileFailed() throws Exception {
-        createProblem("compileTest", ProblemType.PYTHON_FUNCTION);
-
-        tester=new PythonTester();
+        createProblem("compileTest", ProblemType.C_FUNCTION);
         
-        setProgramText("def sq(x):\n"+
-        "reutrn x*x\n");
+        tester=new CTester();
         
+        setProgramText("int sq(int x) {\n"+
+        "  reutrn x*x;\n"+
+        "}");
         
         addTestCase("test1", "1", "1");
         SubmissionResult result=tester.testSubmission(submission);

@@ -1,36 +1,31 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.cloudcoder.submitsvc.oop.builder.test;
 
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestOutcome;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.submitsvc.oop.builder.JavaTester;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author jaimespacco
  *
  */
-public class TestJavaTester extends GenericTest//TestSq
+public class TestSq extends GenericTest
 {
-    @Before
-    public void before() {
-        createProblem("sq", ProblemType.JAVA_METHOD);
-        
-        tester=new JavaTester();
-
-        setProgramText("public int sq(int x) { \n" +
-                " if (x==1) return 17; \n" +
-                " if (x==2) throw new NullPointerException(); \n" +
-                " if (x==3) while (true); \n" +
-                " if (x==4) new Thread() { public void run() {} }.start(); \n" +
-                " if (x==5) return x*x; \n" +
-                " if (x==6) System.exit(1); \n" +
-                " return x*x; \n" +
-                    "}");
-    }
-    
     @Test
     public void test1() {
         runOneTestCase("test1", "1", "1", TestOutcome.FAILED_ASSERTION);

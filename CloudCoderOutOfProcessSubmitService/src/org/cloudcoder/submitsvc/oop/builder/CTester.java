@@ -22,7 +22,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -85,9 +89,11 @@ public class CTester implements ITester
     }
     
     @Override
-    public List<TestResult> testSubmission(Problem problem,
-            List<TestCase> testCaseList, String programText)
+    public SubmissionResult testSubmission(Submission submission)
     {
+        Problem problem=submission.getProblem();
+        String programText=submission.getProgramText();
+        List<TestCase> testCaseList=submission.getTestCaseList();
         String testerCode=makeCTestFile(problem, testCaseList, programText);
         
         File workDir=new File("builder");
@@ -97,12 +103,10 @@ public class CTester implements ITester
         
         Compiler compiler=new Compiler(testerCode, workDir, programName);
         if (!compiler.compile()) {
-            //TODO: get the compiler error into a format that can be sent to the server
-            logger.error("Unable to compile");
-            return Arrays.asList(new TestResult(TestOutcome.COMPILE_FAILED, 
-                    "Unable to compile", 
-                    compiler.getStatusMessage(),
-                    "stderr"));
+            logger.warn("Unable to compile");
+            CompilationResult compilationRes=new CompilationResult(CompilationOutcome.FAILURE);
+            //TODO: Convert stdout/stderr from the compiler into a list of CompilerDiagnostic
+            return new SubmissionResult(compilationRes);
         }
         logger.info("Compilation successful");
         
@@ -129,7 +133,7 @@ public class CTester implements ITester
                         merge(p.getStdout()),
                         merge(p.getStderr())));
             } else {
-                //FIXME: try to distinguish other error codes?
+                //TODO: figure out return code of process killed by ulimit
                 if (p.getExitCode()==0) {
                     results.add(new TestResult(TestOutcome.PASSED,
                             p.getStatusMessage(),
@@ -149,7 +153,10 @@ public class CTester implements ITester
                 }
             }
         }
-        return results;
+        SubmissionResult result=new SubmissionResult(
+                new CompilationResult(CompilationOutcome.SUCCESS));
+        result.setTestResults(results);
+        return result;
     }
     
     private String merge(List<String> list){
