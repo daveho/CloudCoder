@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
 
 public class WorkerTask implements Runnable {
 	private volatile boolean shutdownRequested;

@@ -32,7 +32,9 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -45,7 +47,11 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-    private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
+    /**
+	 * 
+	 */
+	private static final String INSERT_INTO_EVENTS_NO_ID = "insert into events values (NULL, ?, ?, ?, ?)";
+	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=root";
 	
 	static {
@@ -366,29 +372,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
 				// Store Events
-				PreparedStatement insertEvent = prepareStatement(
-						conn,
-						"insert into events values (NULL, ?, ?, ?, ?)", 
-						Statement.RETURN_GENERATED_KEYS
-				);
-				for (Change change : changeList) {
-					storeNoId(change.getEvent(), insertEvent, 1);
-					insertEvent.addBatch();
-				}
-				insertEvent.executeBatch();
-				
-				// Get the generated ids of the newly inserted Events
-				ResultSet genKeys = super.getGeneratedKeys(insertEvent);
-				int count = 0;
-				while (genKeys.next()) {
-					int id = genKeys.getInt(1);
-					changeList[count].getEvent().setId(id);
-					changeList[count].setEventId(id);
-					count++;
-				}
-				if (count != changeList.length) {
-					throw new SQLException("Did not get all generated keys for inserted events");
-				}
+				storeEvents(changeList, conn, this);
 				
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
@@ -433,6 +417,31 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return "getting test cases for problem";
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#insertSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
+	 */
+	@Override
+	public void insertSubmissionReceipt(SubmissionReceipt receipt) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				
+
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "storing submission receipt";
 			}
 		});
 	}
@@ -534,5 +543,32 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setInt(index++, change.getStartColumn());
 		stmt.setInt(index++, change.getEndColumn());
 		stmt.setString(index++, change.getText());
+	}
+
+	private<E> void storeEvents(final Change[] changeList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
+			throws SQLException {
+		PreparedStatement insertEvent = dbRunnable.prepareStatement(
+				conn,
+				INSERT_INTO_EVENTS_NO_ID, 
+				Statement.RETURN_GENERATED_KEYS
+		);
+		for (IContainsEvent change : changeList) {
+			storeNoId(change.getEvent(), insertEvent, 1);
+			insertEvent.addBatch();
+		}
+		insertEvent.executeBatch();
+		
+		// Get the generated ids of the newly inserted Events
+		ResultSet genKeys = dbRunnable.getGeneratedKeys(insertEvent);
+		int count = 0;
+		while (genKeys.next()) {
+			int id = genKeys.getInt(1);
+			changeList[count].getEvent().setId(id);
+			changeList[count].setEventId(id);
+			count++;
+		}
+		if (count != changeList.length) {
+			throw new SQLException("Did not get all generated keys for inserted events");
+		}
 	}
 }

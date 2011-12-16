@@ -29,7 +29,6 @@ import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

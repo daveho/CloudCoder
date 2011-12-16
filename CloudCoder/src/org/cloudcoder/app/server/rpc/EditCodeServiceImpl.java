@@ -11,6 +11,7 @@ import org.cloudcoder.app.server.model.TextDocument;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
@@ -123,7 +124,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
 		// Make sure all Changes have proper user id
-		for (Change change : changeList) {
+		for (IContainsEvent change : changeList) {
 			if (change.getEvent().getUserId() != user.getId()) {
 				throw new NetCoderAuthenticationException();
 			}

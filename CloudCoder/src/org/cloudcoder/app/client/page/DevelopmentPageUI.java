@@ -13,7 +13,6 @@ import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
-import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -32,7 +31,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 

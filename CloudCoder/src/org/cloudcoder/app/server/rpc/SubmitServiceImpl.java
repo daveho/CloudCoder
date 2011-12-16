@@ -10,6 +10,7 @@ import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -55,8 +56,9 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 			SubmissionResult result = submitService.submit(problem, testCaseList, programText);
 			
 			// Add a SubmissionReceipt to the database
-			createSubmissionReceipt(fullTextChange, result);
+			SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result);
 			// TODO: insert the receipt into the database
+			Database.getInstance().insertSubmissionReceipt(receipt);
 			
 			int numResult=0;
 			if (result!=null && result.getTestResults()!=null) {
@@ -71,7 +73,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		}
 	}
 
-	private SubmissionReceipt createSubmissionReceipt(Change mostRecentChange, SubmissionResult result) {
+	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result) {
 		SubmissionReceipt receipt = new SubmissionReceipt();
 		receipt.setLastEditEventId(mostRecentChange.getEventId());
 		SubmissionStatus status;

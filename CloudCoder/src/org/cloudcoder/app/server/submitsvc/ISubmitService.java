@@ -22,7 +22,6 @@ import java.util.List;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
 
 /**
  * Interface that implementations of problem submission services

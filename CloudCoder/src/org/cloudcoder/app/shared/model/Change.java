@@ -28,7 +28,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 //@Entity
 //@Table(name="changes")
-public class Change implements IsSerializable {
+public class Change implements IsSerializable, IContainsEvent {
 
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -183,10 +183,18 @@ public class Change implements IsSerializable {
 		this.id = id;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEventId(int)
+	 */
+	@Override
 	public void setEventId(int eventId) {
 		this.eventId = eventId;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#getEventId()
+	 */
+	@Override
 	public int getEventId() {
 		return eventId;
 	}
@@ -272,10 +280,18 @@ public class Change implements IsSerializable {
 	//        this.timestamp = timestamp;
 	//    }
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEvent(org.cloudcoder.app.shared.model.Event)
+	 */
+	@Override
 	public void setEvent(Event event) {
 		this.event = event;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#getEvent()
+	 */
+	@Override
 	public Event getEvent() {
 		return event;
 	}

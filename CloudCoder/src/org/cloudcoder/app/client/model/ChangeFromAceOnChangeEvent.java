@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.IContainsEvent;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -80,12 +81,12 @@ public class ChangeFromAceOnChangeEvent {
 		}
 	}-*/;
 	
-	protected static Change convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text, int userId, int problemId) {
+	protected static IContainsEvent convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text, int userId, int problemId) {
 		ChangeType type = fromAceChangeType(aceChangeType);
 		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), userId, problemId, text);
 	}
 
-	protected static Change convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines, int userId, int problemId) {
+	protected static IContainsEvent convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines, int userId, int problemId) {
 		ChangeType type = fromAceChangeType(aceChangeType);
 		String[] lineArr = new String[lines.length()];
 		for (int i = 0; i < lineArr.length; i++) {

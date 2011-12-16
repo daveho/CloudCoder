@@ -9,7 +9,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
