@@ -1,6 +1,7 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.ChangeList;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.TestResult;
 
 public class DevelopmentPage extends CloudCoderPage {
@@ -19,6 +20,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	public void activate() {
 		addSessionObject(new ChangeList());
 		addSessionObject(new TestResult[0]);
+		addSessionObject(new CompilerDiagnostic[0]);
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 

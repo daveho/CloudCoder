@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 
@@ -81,7 +82,7 @@ public class WorkerTask implements Runnable {
 		out.flush();
 		
 		// Read list of TestResults
-		List<TestResult> testResultList = (List<TestResult>) in.readObject();
-		submission.setTestResultList(testResultList);
+		SubmissionResult result= (SubmissionResult) in.readObject();
+		submission.setSubmissionResult(result);
 	}
 }

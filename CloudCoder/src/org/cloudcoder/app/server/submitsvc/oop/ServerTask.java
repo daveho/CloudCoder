@@ -8,10 +8,15 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ServerTask implements Runnable {
+    private static final Logger logger=LoggerFactory.getLogger(ServerTask.class);
+    
 	private static class WorkerThreadAndTaskPair {
 		public Thread thread;
 		public WorkerTask task;
@@ -39,12 +44,12 @@ public class ServerTask implements Runnable {
 		this.shutdownRequested = false;
 	}
 	
-	public List<TestResult> submit(Submission submission) throws SubmissionException {
+	public SubmissionResult submit(Submission submission) throws SubmissionException {
 		// add it to the queue so a worker can grab it	
-		submissionQueue.add(submission);
+	    submissionQueue.add(submission);
 		
 		// wait for results
-		return submission.getTestResultList();
+		return submission.getSubmissionResult();
 	}
 	
 	@Override
@@ -69,7 +74,7 @@ public class ServerTask implements Runnable {
 		
 		} catch (IOException e) {
 			if (!shutdownRequested) {
-				// FIXME: log
+			    
 			}
 		}
 	}
@@ -81,7 +86,7 @@ public class ServerTask implements Runnable {
 		try {
 			serverSocket.close();  // a bit rude, but effective
 		} catch (IOException e) {
-			// ignore (FIXME: log)
+		    logger.error("Exception in ServerTask", e);
 		}
 		
 		// shut down workers
@@ -90,7 +95,7 @@ public class ServerTask implements Runnable {
 			try {
 				pair.thread.join();
 			} catch (InterruptedException e) {
-				// FIXME: log
+			    logger.error("Unable to join", e);
 			}
 		}
 	}

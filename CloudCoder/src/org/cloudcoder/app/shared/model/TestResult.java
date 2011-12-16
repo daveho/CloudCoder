@@ -23,26 +23,17 @@ public class TestResult implements Serializable
 {
     public static final long serialVersionUID=1L;
     
-    //TODO: Replace with enum?  
-    //TODO: Add 6 separate methods for each possible outcome
-    public static final String PASSED="passed";
-    public static final String FAILED_ASSERTION="failed";
-    public static final String FAILED_WITH_EXCEPTION="runtime_exception";
-    public static final String FAILED_BY_SECURITY_MANAGER="security_exception";
-    public static final String FAILED_FROM_TIMEOUT="timeout";
-    public static final String INTERNAL_ERROR="interal_error";
-    
-    private String outcome;
+    private TestOutcome outcome;
     private String message;
     private String stdout;
     private String stderr;
     
-    public TestResult(String outcome, String message) {
+    public TestResult(TestOutcome outcome, String message) {
         this.outcome=outcome;
         this.message=message;
     }
     
-    public TestResult(String outcome, 
+    public TestResult(TestOutcome outcome, 
             String message, 
             String stdout, 
             String stderr)
@@ -59,20 +50,28 @@ public class TestResult implements Serializable
     }
 
     public static TestResult[] error(String msg) {
-        return new TestResult[] {new TestResult(INTERNAL_ERROR, msg)};
+        return new TestResult[] {new TestResult(TestOutcome.INTERNAL_ERROR, msg)};
     }
     /**
      * @return the success
      */
-    public String getOutcome() {
+    public TestOutcome getOutcome() {
         return outcome;
     }
     /**
      * @param success the success to set
      */
-    public void setOutcome(String outcome) {
+    public void setOutcome(TestOutcome outcome) {
         this.outcome= outcome;
     }
+    
+    /**
+     * @param outcomeIndex
+     */
+    public void setOutcome(int outcomeIndex) {
+        this.outcome=TestOutcome.values()[outcomeIndex];
+    }
+    
     /**
      * @return the message
      */

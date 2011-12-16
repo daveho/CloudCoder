@@ -14,11 +14,14 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCodeService {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger=LoggerFactory.getLogger(EditCodeServiceImpl.class);
 
 	@Override
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException {
@@ -67,7 +70,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 
     	if (mostRecent == null) {
     		// Presumably, user has never worked on this problem.
-    		System.out.println("No changes recorded for user " + user.getId() + ", problem " + problemId);
+    		logger.debug("No changes recorded for user " + user.getId() + ", problem " + problemId);
     		return "";
     	} else {
     		Change change = mostRecent; // result.get(0);
@@ -149,7 +152,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		}
 		
 		
-		System.out.println("Document is now:\n" + doc.getText());
+		logger.debug("Document is now:\n" + doc.getText());
 		
 		return true;
 	}

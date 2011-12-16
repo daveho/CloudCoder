@@ -27,8 +27,11 @@ import javax.servlet.ServletContextListener;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of ISubmitService that relies on out-of-process
@@ -39,7 +42,7 @@ import org.cloudcoder.app.shared.model.TestResult;
  */
 public class OutOfProcessSubmitService implements ISubmitService, ServletContextListener {
 	private static volatile OutOfProcessSubmitService instance;
-	
+	private static final Logger logger=LoggerFactory.getLogger(OutOfProcessSubmitService.class);
 	/**
 	 * Get the singleton instance of OutOfProcessSubmitService.
 	 * 
@@ -56,7 +59,9 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private Thread serverThread;
 	
 	@Override
-	public List<TestResult> submit(Problem problem, List<TestCase> testCaseList, String programText) throws SubmissionException {
+	public SubmissionResult submit(Problem problem, List<TestCase> testCaseList, String programText) 
+	throws SubmissionException 
+	{
 		if (serverTask == null) {
 			throw new IllegalStateException();
 		}
@@ -69,7 +74,7 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		serverTask = new ServerTask(serverSocket);
 		serverThread = new Thread(serverTask);
 		serverThread.start();
-		System.out.println("Out of process submit service server thread started");
+		logger.info("Out of process submit service server thread started");
 	}
 	
 	public void shutdown() throws InterruptedException {

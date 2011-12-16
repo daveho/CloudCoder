@@ -36,6 +36,8 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of IDatabase using JDBC.
@@ -43,7 +45,8 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-	private static final String JDBC_URL = "jdbc:mysql://localhost/cloudcoder?user=root&password=root";
+    private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
+	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=root";
 	
 	static {
 		try {
@@ -128,7 +131,7 @@ public class JDBCDatabase implements IDatabase {
 				// Check password
 				String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
 				
-				System.out.println("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
+				logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
 				
 				if (!encryptedPassword.equals(user.getPasswordMD5())) {
 					// Password does not match
@@ -151,13 +154,6 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
 			@Override
 			public Problem run(Connection conn) throws SQLException {
-				/*
-        		"select p from Problem p, Course c, CourseRegistration r " +
-        		" where p.id = :id " +
-        		"   and c.id = p.courseId " +
-        		"   and r.courseId = c.id " +
-        		"   and r.userId = :userId", 
-				 */
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select problems.* from problems, courses, course_registrations " +
@@ -483,6 +479,7 @@ public class JDBCDatabase implements IDatabase {
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
 		problem.setProblemId(resultSet.getInt(index++));
 		problem.setCourseId(resultSet.getInt(index++));
+		problem.setProblemType(resultSet.getInt(index++));
 		problem.setTestName(resultSet.getString(index++));
 		problem.setBriefDescription(resultSet.getString(index++));
 		problem.setDescription(resultSet.getString(index++));

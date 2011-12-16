@@ -17,11 +17,11 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SubmitServiceAsync
 {
-    void submit(int problemId, String programText, AsyncCallback<TestResult[]> callback);
+    void submit(int problemId, String programText, AsyncCallback<SubmissionResult> callback);
 }

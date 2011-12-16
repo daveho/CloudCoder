@@ -5,15 +5,15 @@ import java.util.List;
 
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
 
-public class Submission {
+class Submission {
 	private Object lock = new Object();
 	private Problem problem;
 	private List<TestCase> testCaseList;
 	private String programText;
-	private List<TestResult> testResultList;
+	private SubmissionResult submissionResult;
 	private IOException error;
 	
 	public Submission(Problem problem, List<TestCase> testCaseList, String programText) {
@@ -40,9 +40,9 @@ public class Submission {
 		}
 	}
 	
-	public List<TestResult> getTestResultList() throws SubmissionException {
+	public SubmissionResult getSubmissionResult() throws SubmissionException {
 		synchronized (lock) {
-			while (testResultList == null && error == null) {
+			while (submissionResult == null && error == null) {
 				try {
 					lock.wait();
 				} catch (InterruptedException e) {
@@ -52,13 +52,13 @@ public class Submission {
 			if (error != null) {
 				throw new SubmissionException("Error testing submission", error);
 			}
-			return testResultList;
+			return submissionResult;
 		}
 	}
 	
-	public void setTestResultList(List<TestResult> testResultList) {
+	public void setSubmissionResult(SubmissionResult result) {
 		synchronized (lock) {
-			this.testResultList = testResultList;
+			this.submissionResult = result;
 			lock.notifyAll();
 		}
 	}

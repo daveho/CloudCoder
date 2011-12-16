@@ -39,6 +39,8 @@ public class Problem implements Serializable
 	
 //	@Column(name="course_id")
 	private Integer courseId;
+	
+	private ProblemType problemType;
 
 //	@Column(name="testname")
 	private String testName;
@@ -72,6 +74,18 @@ public class Problem implements Serializable
 	
 	public void setCourseId(Integer courseId) {
 		this.courseId = courseId;
+	}
+	
+	public void setProblemType(ProblemType problemType) {
+		this.problemType = problemType;
+	}
+	
+	public void setProblemType(int problemType) {
+		this.problemType = ProblemType.values()[problemType];
+	}
+	
+	public ProblemType getProblemType() {
+		return problemType;
 	}
 	
 	/**
