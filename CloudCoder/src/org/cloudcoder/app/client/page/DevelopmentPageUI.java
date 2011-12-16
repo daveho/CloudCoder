@@ -137,11 +137,8 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	}
 	
 	private void addResultsTab(Widget tab, String title) {
-		ScrollPanel scrollPanel = new ScrollPanel();
-		scrollPanel.setSize("100%", "100%");
 		tab.setSize("100%", "100%");
-		scrollPanel.add(tab);
-		resultsTabPanel.add(scrollPanel, title);
+		resultsTabPanel.add(tab, title);
 	}
 
 	@Override

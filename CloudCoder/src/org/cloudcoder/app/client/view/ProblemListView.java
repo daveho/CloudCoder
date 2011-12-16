@@ -27,6 +27,10 @@ public class ProblemListView extends Composite implements SessionObserver, Subsc
 	public ProblemListView() {
 		cellTable = new DataGrid<Problem>();
 		
+		// Configure the DataGrid that will show the problems
+		cellTable.addColumn(new TestNameColumn(), "Name");
+		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
+		
 		initWidget(cellTable);
 	}
 
@@ -49,10 +53,6 @@ public class ProblemListView extends Composite implements SessionObserver, Subsc
 		
 		// Subscribe to session ADDED_OBJECT events (so we will see when a course is selected)
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		
-		// Configure the DataGrid that will show the problems
-		cellTable.addColumn(new TestNameColumn(), "Name");
-		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
 
 		// When a problem is selected, add it to the session
 		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();

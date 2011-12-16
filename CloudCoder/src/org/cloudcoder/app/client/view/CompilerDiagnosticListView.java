@@ -26,7 +26,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
 
@@ -36,11 +36,15 @@ import com.google.gwt.user.client.ui.Composite;
  * @author David Hovemeyer
  */
 public class CompilerDiagnosticListView extends Composite implements SessionObserver, Subscriber {
-	private CellTable<CompilerDiagnostic> cellTable;
+	private DataGrid<CompilerDiagnostic> cellTable;
 	
 	public CompilerDiagnosticListView() {
-		cellTable = new CellTable<CompilerDiagnostic>();
+		cellTable = new DataGrid<CompilerDiagnostic>();
 		cellTable.setSize("100%", "100%");
+		
+		// Add columns
+		cellTable.addColumn(new MessageColumn(), "Message");
+		cellTable.addColumn(new LineColumn(), "Line number");
 		
 		initWidget(cellTable);
 	}
@@ -71,10 +75,6 @@ public class CompilerDiagnosticListView extends Composite implements SessionObse
 	@Override
 	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		
-		// Add columns
-		cellTable.addColumn(new MessageColumn(), "Message");
-		cellTable.addColumn(new LineColumn(), "Line number");
 		
 		CompilerDiagnostic[] compilerDiagnosticList = session.get(CompilerDiagnostic[].class);
 		if (compilerDiagnosticList != null) {
