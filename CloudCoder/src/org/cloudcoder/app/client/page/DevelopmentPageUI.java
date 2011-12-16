@@ -137,7 +137,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 	}
 	
 	private void addResultsTab(Widget tab, String title) {
-		tab.setSize("100%", "100%");
+		//tab.setSize("100%", "100%");
 		resultsTabPanel.add(tab, title);
 	}
 

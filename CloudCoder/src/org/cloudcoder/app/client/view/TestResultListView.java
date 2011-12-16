@@ -21,6 +21,11 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		cellTable = new CellTable<TestResult>();
 		cellTable.setSize("100%", "100%");
 		
+		cellTable.addColumn(new OutcomeColumn(), "Outcome");
+		cellTable.addColumn(new MessageColumn(), "Message");
+		cellTable.addColumn(new OutputColumn(), "Output");
+		cellTable.addColumn(new ErrorOutputColumn(), "Error output");
+		
 		initWidget(cellTable);
 	}
 	
@@ -54,11 +59,6 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		
-		cellTable.addColumn(new OutcomeColumn(), "Outcome");
-		cellTable.addColumn(new MessageColumn(), "Message");
-		cellTable.addColumn(new OutputColumn(), "Output");
-		cellTable.addColumn(new ErrorOutputColumn(), "Error output");
 		
 		TestResult[] testResultList = session.get(TestResult[].class);
 		if (testResultList != null) {
