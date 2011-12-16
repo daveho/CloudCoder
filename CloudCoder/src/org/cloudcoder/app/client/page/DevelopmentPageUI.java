@@ -231,6 +231,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 				if (result==null){
 					page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
 					page.getSession().add(new TestResult[0]);
+					page.getSession().add(new CompilerDiagnostic[0]);
 
 				} else {
 					// Add compiler diagnostics.
