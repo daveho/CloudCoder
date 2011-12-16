@@ -29,16 +29,48 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class SubmissionReceipt implements Serializable {
+public class SubmissionReceipt implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
+	private Event event;
 	private long id;
-	private long eventId;
+	private int eventId;
 	private long lastEditEventId;
 	private int status;
 	
 	public SubmissionReceipt() {
-		
+		this.event = new Event();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEvent(org.cloudcoder.app.shared.model.Event)
+	 */
+	@Override
+	public void setEvent(Event event) {
+		this.event = event;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#getEvent()
+	 */
+	@Override
+	public Event getEvent() {
+		return event;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEventId(int)
+	 */
+	@Override
+	public void setEventId(int eventId) {
+		this.eventId = eventId;
+	}
+	
+	/**
+	 * @return the eventId
+	 */
+	public int getEventId() {
+		return this.eventId;
 	}
 	
 	/**
@@ -53,20 +85,6 @@ public class SubmissionReceipt implements Serializable {
 	 */
 	public long getId() {
 		return id;
-	}
-	
-	/**
-	 * @param eventId the eventId to set
-	 */
-	public void setEventId(long eventId) {
-		this.eventId = eventId;
-	}
-	
-	/**
-	 * @return the eventId
-	 */
-	public long getEventId() {
-		return eventId;
 	}
 	
 	/**

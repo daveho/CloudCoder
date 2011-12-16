@@ -10,6 +10,7 @@ import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.EventType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
@@ -56,8 +57,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 			SubmissionResult result = submitService.submit(problem, testCaseList, programText);
 			
 			// Add a SubmissionReceipt to the database
-			SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result);
-			// TODO: insert the receipt into the database
+			SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result, user, problem);
 			Database.getInstance().insertSubmissionReceipt(receipt);
 			
 			int numResult=0;
@@ -73,9 +73,13 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		}
 	}
 
-	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result) {
+	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result, User user, Problem problem) {
 		SubmissionReceipt receipt = new SubmissionReceipt();
+		
+		// Set event id of most recent change
 		receipt.setLastEditEventId(mostRecentChange.getEventId());
+		
+		// Set status
 		SubmissionStatus status;
 		if (result.getCompilationResult().getOutcome() == CompilationOutcome.SUCCESS) {
 			// Check to see whether or not all tests passed
@@ -95,12 +99,12 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		}
 		receipt.setStatus(status);
 		
+		// Fill in user/problem, and other Event details
+		receipt.getEvent().setProblemId(problem.getProblemId());
+		receipt.getEvent().setTimestamp(System.currentTimeMillis());
+		receipt.getEvent().setType(EventType.SUBMIT);
+		receipt.getEvent().setUserId(user.getId());
+
 		return receipt;
-	}
-	
-	@Override
-	public void destroy() {
-		// TODO Auto-generated method stub
-		super.destroy();
 	}
 }

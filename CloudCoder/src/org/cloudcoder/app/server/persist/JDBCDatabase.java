@@ -47,10 +47,6 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-    /**
-	 * 
-	 */
-	private static final String INSERT_INTO_EVENTS_NO_ID = "insert into events values (NULL, ?, ?, ?, ?)";
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=root";
 	
@@ -425,15 +421,27 @@ public class JDBCDatabase implements IDatabase {
 	 * @see org.cloudcoder.app.server.persist.IDatabase#insertSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
 	 */
 	@Override
-	public void insertSubmissionReceipt(SubmissionReceipt receipt) {
+	public void insertSubmissionReceipt(final SubmissionReceipt receipt) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
+				// Store the underlying Event
+				storeEvents(new SubmissionReceipt[]{receipt}, conn, this);
 				
-
+				// Set the SubmissionReceipt's event id to match the event we just inserted
+				receipt.setEventId(receipt.getEvent().getId());
+				
+				// Insert the SubmissionReceipt
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into submission_receipts values (NULL, ?, ?, ?)"
+				);
+				storeNoId(receipt, stmt, 1);
+				stmt.execute();
+				
 				return true;
 			}
 			/* (non-Javadoc)
@@ -545,14 +553,28 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, change.getText());
 	}
 
-	private<E> void storeEvents(final Change[] changeList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
+	protected void storeNoId(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, receipt.getEventId());
+		stmt.setLong(index++, receipt.getLastEditEventId());
+		stmt.setInt(index++, receipt.getStatus().ordinal());
+	}
+
+	/**
+	 * Store the Event objects embedded in the given IContainsEvent objects.
+	 * 
+	 * @param containsEventList list of IContainsEvent objects
+	 * @param conn              database connection
+	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
+	 * @throws SQLException
+	 */
+	private<E> void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
-				INSERT_INTO_EVENTS_NO_ID, 
+				"insert into events values (NULL, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS
 		);
-		for (IContainsEvent change : changeList) {
+		for (IContainsEvent change : containsEventList) {
 			storeNoId(change.getEvent(), insertEvent, 1);
 			insertEvent.addBatch();
 		}
@@ -563,11 +585,11 @@ public class JDBCDatabase implements IDatabase {
 		int count = 0;
 		while (genKeys.next()) {
 			int id = genKeys.getInt(1);
-			changeList[count].getEvent().setId(id);
-			changeList[count].setEventId(id);
+			containsEventList[count].getEvent().setId(id);
+			containsEventList[count].setEventId(id);
 			count++;
 		}
-		if (count != changeList.length) {
+		if (count != containsEventList.length) {
 			throw new SQLException("Did not get all generated keys for inserted events");
 		}
 	}
