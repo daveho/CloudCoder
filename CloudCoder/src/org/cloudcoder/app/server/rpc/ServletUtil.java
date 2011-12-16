@@ -5,8 +5,12 @@ import javax.servlet.http.HttpSession;
 
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServletUtil {
+	private static Logger logger = LoggerFactory.getLogger(ServletUtil.class); 
+	
 	/**
 	 * Check whether or not the client is authenticated.
 	 * 
@@ -17,6 +21,7 @@ public class ServletUtil {
 		HttpSession session = request.getSession();
 		User user = (User) session.getAttribute("user");
 		if (user == null) {
+			logger.info("Authentication failure - no user in session");
 			throw new NetCoderAuthenticationException();
 		}
 		return user;
