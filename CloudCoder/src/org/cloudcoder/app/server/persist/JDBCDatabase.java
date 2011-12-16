@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCDatabase implements IDatabase {
     private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
-	private static final String JDBC_URL = "jdbc:mysql://localhost:8889/cloudcoder?user=root&password=root";
+	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=root";
 	
 	static {
 		try {
