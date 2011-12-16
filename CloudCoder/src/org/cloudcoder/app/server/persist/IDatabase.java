@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -44,5 +45,5 @@ public interface IDatabase {
 	public List<Problem> getProblemsInCourse(User user, Course course);
 	public void storeChanges(Change[] changeList);
 	public List<TestCase> getTestCasesForProblem(int problemId);
-	public void insertSubmissionReceipt(SubmissionReceipt receipt);
+	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
 }

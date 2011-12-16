@@ -55,10 +55,12 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		try {
 			logger.info("Passing submission to submit service...");
 			SubmissionResult result = submitService.submit(problem, testCaseList, programText);
-			
-			// Add a SubmissionReceipt to the database
-			SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result, user, problem);
-			Database.getInstance().insertSubmissionReceipt(receipt);
+
+			if (result != null) {
+				// Add a SubmissionReceipt to the database
+				SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result, user, problem);
+				Database.getInstance().insertSubmissionReceipt(receipt, result.getTestResults());
+			}
 			
 			int numResult=0;
 			if (result!=null && result.getTestResults()!=null) {

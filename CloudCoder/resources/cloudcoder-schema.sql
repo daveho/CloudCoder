@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 3.3.10deb1
+-- version 3.4.5deb1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 02, 2011 at 05:04 PM
--- Server version: 5.1.54
--- PHP Version: 5.3.5-1ubuntu7.3
+-- Generation Time: Dec 16, 2011 at 04:47 PM
+-- Server version: 5.1.58
+-- PHP Version: 5.3.6-13ubuntu3.3
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -35,11 +36,6 @@ CREATE TABLE IF NOT EXISTS `affect_events` (
   KEY `event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
---
--- Dumping data for table `affect_events`
---
-
-
 -- --------------------------------------------------------
 
 --
@@ -57,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `changes` (
   `text` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id` (`event_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=251 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=272 ;
 
 --
 -- Dumping data for table `changes`
@@ -313,7 +309,28 @@ INSERT INTO `changes` (`id`, `event_id`, `type`, `start_row`, `end_row`, `start_
 (247, 285, 0, 1, 1, 33, 34, ' '),
 (248, 286, 0, 1, 1, 34, 35, 'x'),
 (249, 287, 0, 1, 1, 35, 36, ')'),
-(250, 288, 0, 1, 1, 36, 37, ';');
+(250, 288, 0, 1, 1, 36, 37, ';'),
+(251, 289, 1, 1, 1, 34, 35, 'x'),
+(252, 290, 0, 1, 1, 34, 35, 'y'),
+(253, 291, 1, 1, 1, 34, 35, 'y'),
+(254, 292, 0, 1, 1, 34, 35, 'x'),
+(255, 293, 1, 1, 1, 34, 35, 'x'),
+(256, 294, 0, 1, 1, 34, 35, 'y'),
+(257, 295, 1, 1, 1, 34, 35, 'y'),
+(258, 296, 0, 1, 1, 34, 35, 'x'),
+(259, 297, 1, 1, 1, 34, 35, 'x'),
+(260, 298, 0, 1, 1, 34, 35, 'y'),
+(261, 299, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + y);\n    return x * x;\n}\n'),
+(262, 300, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + y);\n    return x * x;\n}\n'),
+(263, 301, 1, 1, 1, 34, 35, 'y'),
+(264, 302, 0, 1, 1, 34, 35, 'x'),
+(265, 303, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(266, 304, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(267, 305, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(268, 306, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(269, 308, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(270, 310, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(271, 312, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n');
 
 -- --------------------------------------------------------
 
@@ -399,7 +416,7 @@ CREATE TABLE IF NOT EXISTS `events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=289 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=314 ;
 
 --
 -- Dumping data for table `events`
@@ -655,7 +672,31 @@ INSERT INTO `events` (`id`, `user_id`, `problem_id`, `type`, `timestamp`) VALUES
 (285, 1, 1, 0, 1322604529550),
 (286, 1, 1, 0, 1322604530171),
 (287, 1, 1, 0, 1322604530349),
-(288, 1, 1, 0, 1322604530466);
+(288, 1, 1, 0, 1322604530466),
+(289, 1, 1, 0, 1324059091623),
+(290, 1, 1, 0, 1324059091637),
+(291, 1, 1, 0, 1324059280718),
+(292, 1, 1, 0, 1324059280817),
+(293, 1, 1, 0, 1324059489575),
+(294, 1, 1, 0, 1324059490054),
+(295, 1, 1, 0, 1324059506596),
+(296, 1, 1, 0, 1324059506700),
+(297, 1, 1, 0, 1324059746969),
+(298, 1, 1, 0, 1324059747458),
+(299, 1, 1, 0, 1324065727440),
+(300, 1, 1, 0, 1324065741283),
+(301, 1, 1, 0, 1324065746762),
+(302, 1, 1, 0, 1324065747049),
+(303, 1, 1, 0, 1324065750032),
+(304, 1, 1, 0, 1324068993808),
+(305, 1, 1, 0, 1324070525561),
+(306, 1, 1, 0, 1324070619323),
+(307, 1, 1, 2, 1324070620120),
+(308, 1, 1, 0, 1324070714812),
+(309, 1, 1, 2, 1324070715588),
+(310, 1, 1, 0, 1324071858141),
+(312, 1, 1, 0, 1324072006881),
+(313, 1, 1, 2, 1324072007659);
 
 -- --------------------------------------------------------
 
@@ -679,6 +720,29 @@ CREATE TABLE IF NOT EXISTS `problems` (
 
 INSERT INTO `problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`) VALUES
 (1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_receipts`
+--
+
+CREATE TABLE IF NOT EXISTS `submission_receipts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_id` int(11) NOT NULL,
+  `last_edit_event_id` int(11) NOT NULL,
+  `status` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `event_id` (`event_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `submission_receipts`
+--
+
+INSERT INTO `submission_receipts` (`id`, `event_id`, `last_edit_event_id`, `status`) VALUES
+(1, 309, 308, 0),
+(3, 313, 312, 0);
 
 -- --------------------------------------------------------
 
@@ -734,6 +798,33 @@ INSERT INTO `test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `input
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `test_results`
+--
+
+CREATE TABLE IF NOT EXISTS `test_results` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `submission_receipt_id` int(11) NOT NULL,
+  `test_outcome` int(11) NOT NULL,
+  `message` varchar(100) NOT NULL,
+  `stdout` varchar(200) NOT NULL,
+  `stderr` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `submission_receipt_id` (`submission_receipt_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+
+--
+-- Dumping data for table `test_results`
+--
+
+INSERT INTO `test_results` (`id`, `submission_receipt_id`, `test_outcome`, `message`, `stdout`, `stderr`) VALUES
+(1, 0, 0, 'Passed! input=5, output=25', '', ''),
+(2, 0, 0, 'Passed! input=-1, output=1', '', ''),
+(3, 0, 0, 'Passed! input=9, output=81', '', ''),
+(4, 0, 0, 'Passed! input=10, output=100', '', '');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -752,3 +843,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`id`, `username`, `password_md5`, `salt`) VALUES
 (1, 'user', '7be1cb12697d993266db952cde9456c6', '5011ffcedffe0a14');
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

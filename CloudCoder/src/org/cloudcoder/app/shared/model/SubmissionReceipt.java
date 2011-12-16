@@ -33,9 +33,9 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
 	private Event event;
-	private long id;
+	private int id;
 	private int eventId;
-	private long lastEditEventId;
+	private int lastEditEventId;
 	private int status;
 	
 	public SubmissionReceipt() {
@@ -76,21 +76,21 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	
 	/**
 	 * @return the id
 	 */
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 	
 	/**
 	 * @param lastEditEventId the lastEditEventId to set
 	 */
-	public void setLastEditEventId(long lastEditEventId) {
+	public void setLastEditEventId(int lastEditEventId) {
 		this.lastEditEventId = lastEditEventId;
 	}
 	

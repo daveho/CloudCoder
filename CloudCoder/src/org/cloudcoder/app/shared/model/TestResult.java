@@ -27,8 +27,8 @@ public class TestResult implements Serializable
 {
     public static final long serialVersionUID=1L;
     
-    private long id;
-    private long submissionReceiptId;
+    private int id;
+    private int submissionReceiptId;
     private TestOutcome outcome;
     private String message;
     private String stdout;
@@ -39,8 +39,8 @@ public class TestResult implements Serializable
     }
     
     public TestResult(TestOutcome outcome, String message) {
-    	this.id = -1L;
-    	this.submissionReceiptId = -1L;
+    	this.id = -1;
+    	this.submissionReceiptId = -1;
         this.outcome=outcome;
         this.message=message;
     }
@@ -58,28 +58,28 @@ public class TestResult implements Serializable
     /**
 	 * @param id the id to set
 	 */
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	
 	/**
 	 * @return the id
 	 */
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 	
 	/**
 	 * @param submissionReceiptId the submissionReceiptId to set
 	 */
-	public void setSubmissionReceiptId(long submissionReceiptId) {
+	public void setSubmissionReceiptId(int submissionReceiptId) {
 		this.submissionReceiptId = submissionReceiptId;
 	}
 	
 	/**
 	 * @return the submissionReceiptId
 	 */
-	public long getSubmissionReceiptId() {
+	public int getSubmissionReceiptId() {
 		return submissionReceiptId;
 	}
 

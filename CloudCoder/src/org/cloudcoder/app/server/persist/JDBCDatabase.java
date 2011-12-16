@@ -37,6 +37,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -421,13 +422,16 @@ public class JDBCDatabase implements IDatabase {
 	 * @see org.cloudcoder.app.server.persist.IDatabase#insertSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
 	 */
 	@Override
-	public void insertSubmissionReceipt(final SubmissionReceipt receipt) {
+	public void insertSubmissionReceipt(final SubmissionReceipt receipt, final TestResult[] testResultList_) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
+				// Get TestResults (ensuring that the array is non-null
+				TestResult[] testResultList = testResultList_ != null ? testResultList_ : new TestResult[0];
+				
 				// Store the underlying Event
 				storeEvents(new SubmissionReceipt[]{receipt}, conn, this);
 				
@@ -441,6 +445,32 @@ public class JDBCDatabase implements IDatabase {
 				);
 				storeNoId(receipt, stmt, 1);
 				stmt.execute();
+				
+				// Store the TestResults
+				for (TestResult testResult : testResultList) {
+					testResult.setSubmissionReceiptId(receipt.getId());
+				}
+				PreparedStatement insertTestResults = prepareStatement(
+						conn,
+						"insert into test_results values (NULL, ?, ?, ?, ?, ?)",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				for (TestResult testResult : testResultList) {
+					storeNoId(testResult, insertTestResults, 1);
+					insertTestResults.addBatch();
+				}
+				insertTestResults.executeBatch();
+				
+				// Get generated TestResult ids
+				ResultSet generatedIds = getGeneratedKeys(insertTestResults);
+				int count = 0;
+				while (generatedIds.next()) {
+					testResultList[count].setId(generatedIds.getInt(1));
+					count++;
+				}
+				if (count != testResultList.length) {
+					throw new SQLException("Wrong number of generated ids for test results");
+				}
 				
 				return true;
 			}
@@ -478,6 +508,41 @@ public class JDBCDatabase implements IDatabase {
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("SQLException", e);
+		}
+	}
+
+	/**
+	 * Store the Event objects embedded in the given IContainsEvent objects.
+	 * 
+	 * @param containsEventList list of IContainsEvent objects
+	 * @param conn              database connection
+	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
+	 * @throws SQLException
+	 */
+	private<E> void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
+			throws SQLException {
+		PreparedStatement insertEvent = dbRunnable.prepareStatement(
+				conn,
+				"insert into events values (NULL, ?, ?, ?, ?)", 
+				Statement.RETURN_GENERATED_KEYS
+		);
+		for (IContainsEvent change : containsEventList) {
+			storeNoId(change.getEvent(), insertEvent, 1);
+			insertEvent.addBatch();
+		}
+		insertEvent.executeBatch();
+		
+		// Get the generated ids of the newly inserted Events
+		ResultSet genKeys = dbRunnable.getGeneratedKeys(insertEvent);
+		int count = 0;
+		while (genKeys.next()) {
+			int id = genKeys.getInt(1);
+			containsEventList[count].getEvent().setId(id);
+			containsEventList[count].setEventId(id);
+			count++;
+		}
+		if (count != containsEventList.length) {
+			throw new SQLException("Did not get all generated keys for inserted events");
 		}
 	}
 
@@ -559,38 +624,11 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setInt(index++, receipt.getStatus().ordinal());
 	}
 
-	/**
-	 * Store the Event objects embedded in the given IContainsEvent objects.
-	 * 
-	 * @param containsEventList list of IContainsEvent objects
-	 * @param conn              database connection
-	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
-	 * @throws SQLException
-	 */
-	private<E> void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
-			throws SQLException {
-		PreparedStatement insertEvent = dbRunnable.prepareStatement(
-				conn,
-				"insert into events values (NULL, ?, ?, ?, ?)", 
-				Statement.RETURN_GENERATED_KEYS
-		);
-		for (IContainsEvent change : containsEventList) {
-			storeNoId(change.getEvent(), insertEvent, 1);
-			insertEvent.addBatch();
-		}
-		insertEvent.executeBatch();
-		
-		// Get the generated ids of the newly inserted Events
-		ResultSet genKeys = dbRunnable.getGeneratedKeys(insertEvent);
-		int count = 0;
-		while (genKeys.next()) {
-			int id = genKeys.getInt(1);
-			containsEventList[count].getEvent().setId(id);
-			containsEventList[count].setEventId(id);
-			count++;
-		}
-		if (count != containsEventList.length) {
-			throw new SQLException("Did not get all generated keys for inserted events");
-		}
+	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, testResult.getSubmissionReceiptId());
+		stmt.setInt(index++, testResult.getOutcome().ordinal());
+		stmt.setString(index++, testResult.getMessage());
+		stmt.setString(index++, testResult.getStdout());
+		stmt.setString(index++, testResult.getStderr());
 	}
 }
