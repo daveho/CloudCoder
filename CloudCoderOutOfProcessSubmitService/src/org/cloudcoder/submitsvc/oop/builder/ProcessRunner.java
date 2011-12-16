@@ -19,8 +19,10 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +39,29 @@ public class ProcessRunner {
 	private Thread exitValueMonitor;
 	private OutputCollector stdoutCollector;
 	private OutputCollector stderrCollector;
-	private String[] envp=null;
+	
+	private Map<String,String> env=new HashMap<String,String>();
 	
 	public ProcessRunner() {
-	    Map<String,String> env=System.getenv();
+	    for (Entry<String,String> entry : System.getenv().entrySet()) {
+	        env.put(entry.getKey(), entry.getValue());
+	    }
+	}
+	
+	private String[] getEnvp() {
+	    String[] envp=new String[env.size()];
+	    int i=0;
+	    for (Entry<String,String> entry : env.entrySet()) {
+	        envp[i]=entry.getKey()+"="+entry.getValue();
+	        i+=1;
+	    }
+	    return envp;
+	}
+	
+	public void addDirToPath(String dir) {
 	    String path=env.get("PATH");
-	    envp=new String[] {"PATH="+path+":."};
+	    path+=File.separatorChar+dir;
+	    env.put("PATH", path);
 	}
 	
 	public String getStatusMessage() {
@@ -52,9 +71,9 @@ public class ProcessRunner {
 	public boolean runSynchronous(File workingDir, String[] command) {
 	 // exec command
         logger.info("Running in {} the command: {} with env: {} ",
-                new Object[] {workingDir.toString(), merge(command), merge(envp)});
+                new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
         try {
-            process = Runtime.getRuntime().exec(command, envp, workingDir);
+            process = Runtime.getRuntime().exec(command, getEnvp(), workingDir);
 
             // collect compiler output
             stdoutCollector = new OutputCollector(process.getInputStream());

@@ -14,12 +14,16 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package org.cloudcoder.submitsvc.oop.builder;
 
-import org.cloudcoder.app.shared.model.Submission;
-import org.cloudcoder.app.shared.model.SubmissionResult;
+package org.cloudcoder.app.shared.model;
 
-public interface ITester
-{
-    public SubmissionResult testSubmission(Submission submission);
+/**
+ * @author jaimespacco
+ *
+ */
+public enum CompilationOutcome {
+    SUCCESS,
+    FAILURE, 
+    UNEXPECTED_COMPILER_ERROR,
+    BUILDER_ERROR,
 }

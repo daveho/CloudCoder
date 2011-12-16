@@ -18,11 +18,15 @@
 package org.cloudcoder.submitsvc.oop.builder.test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -31,80 +35,69 @@ import org.cloudcoder.submitsvc.oop.builder.ITester;
 public class GenericTest
 {
     protected ITester tester;
-    protected String programText;
-    
-    protected Problem problem;
-    protected List<TestCase> testCaseList;
     protected List<TestOutcome> testOutcomeList;
-    protected int testCaseNum;
+    protected Submission submission;
     
-    protected Problem createGenericProblem() {
+    protected void createProblem(String testName, ProblemType problemType) {
         Problem problem=new Problem();
-        problem.setProblemId(1);
-        problem.setTestName("METHOD NAME GOES HERE");
-        problem.setCourseId(1);
+        problem.setTestName(testName);
+        problem.setProblemType(problemType);
         problem.setBriefDescription("Brief Description");
         problem.setDescription("Full Description");
-        return problem;
+        
+        submission=new Submission(problem, new LinkedList<TestCase>(), null);
+
+        testOutcomeList=new ArrayList<TestOutcome>();
     }
     
-    protected void before() {
-        testCaseList=new ArrayList<TestCase>();
-        testOutcomeList=new ArrayList<TestOutcome>();
-        // re-set test case number back to 1
-        testCaseNum=1;
+    protected void setProgramText(String programText) {
+        submission.setProgramText(programText);
     }
 
-    protected void addTestCase(String testName, String input, String output, TestOutcome outcome) {
+    protected TestCase createTestCase(String testName, String input, String output) {
         TestCase testCase=new TestCase();
-        testCase.setId(testCaseNum);
         testCase.setTestCaseName(testName);
         testCase.setInput(input);
         testCase.setOutput(output);
-        testCase.setProblemId(problem.getProblemId());
-        testCaseNum+=1;
-        
-        testCaseList.add(testCase);
+        return testCase;
+    }
+    
+    protected void addTestCase(String testName, String input, String output) {
+        TestCase testCase=createTestCase(testName, input, output);
+        submission.addTestCase(testCase);
+    }
+    
+    protected void addTestCaseAndOutcome(String testName, String input, String output, TestOutcome outcome) {
+        addTestCase(testName, input, output);
         testOutcomeList.add(outcome);
     }
     
+    protected void runOneTestCase(String testName, String input, String output,
+            TestOutcome outcome)
+    {
+        addTestCase(testName, input, output);
+        SubmissionResult result=tester.testSubmission(submission);
+        if (!result.isCompiled()) {
+            Assert.fail("Code should have compiled");
+        }
+        TestResult testResult=result.getTestResults()[0];
+        
+        Assert.assertEquals("Test named "+testResult.getMessage(),
+                outcome,
+                testResult.getOutcome());
+    }
+    
     public void runAllTests() {
-        List<TestResult> results=
-                tester.testSubmission(problem, testCaseList, programText);
-        for (int i=0; i<results.size(); i++) {
-            Assert.assertEquals("Test number "+i+" named "+results.get(i).getMessage(),
-                    testOutcomeList.get(i),
-                    results.get(i).getOutcome());
+        SubmissionResult result=tester.testSubmission(submission);
+        if (!result.isCompiled()) {
+            Assert.fail("Code should have compiled");
+        }
+        TestResult[] results=result.getTestResults();
+        for (int i=0; i<results.length; i++) {
+            TestResult testResult=results[i];
+            TestOutcome outcome=testOutcomeList.get(i);
+            Assert.assertEquals(outcome, testResult.getOutcome());
+            
         }
     }
-
-    public void runOneTest(int testNum) {
-        TestResult res=testOneSubmission(problem, testCaseList.get(testNum), programText);
-        Assert.assertEquals(testOutcomeList.get(testNum),
-                res.getOutcome());
-    }
-    
-    public void runOneTest(String testName) {
-        TestCase test=null;
-        TestOutcome outcome=null;
-        for (int i=0; i<testCaseList.size(); i++){
-            TestCase t=testCaseList.get(i);
-            if (t.getTestCaseName().equals(testName)) {
-                test=t;
-                outcome=testOutcomeList.get(i);
-                break;
-            }
-        }
-        TestResult res=testOneSubmission(problem, test, programText);
-        Assert.assertEquals(outcome,
-                res.getOutcome());
-    }
-    
-    protected TestResult testOneSubmission(Problem problem, TestCase testCase, String programText) {
-        testCaseList.clear();
-        testCaseList.add(testCase);
-        List<TestResult> results=tester.testSubmission(problem, testCaseList, programText);
-        return results.get(0);
-    }
-
 }

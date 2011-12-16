@@ -18,14 +18,12 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
-import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("submit")
 public interface SubmitService extends RemoteService {
-    // FIXME: should return a TestResult and/or CompileResult
-    // probably both
-    public TestResult[] submit(int problemId, String programText) throws NetCoderAuthenticationException;
+    public SubmissionResult submit(int problemId, String programText) throws NetCoderAuthenticationException;
 }

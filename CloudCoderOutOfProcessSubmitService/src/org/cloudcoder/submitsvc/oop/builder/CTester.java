@@ -18,11 +18,15 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -34,9 +38,16 @@ public class CTester implements ITester
     private static final Logger logger=LoggerFactory.getLogger(CTester.class);
     public static final long TIMEOUT_LIMIT=2000;
 
+    private int programTextLength;
+    private int prologueLength;
+    private int epilogueLength;
+    
     private String makeCTestFile(Problem problem,
             List<TestCase> testCaseList, String programText)
     {
+        prologueLength=1;
+        programTextLength=programText.length();
+
         StringBuilder test=new StringBuilder();
         test.append("#include <strings.h>\n");
         test.append(programText);
@@ -54,7 +65,11 @@ public class CTester implements ITester
         }
         test.append("  return 99;\n");
         test.append("}");
-        return test.toString();
+        String result=test.toString();
+        
+        epilogueLength=TesterUtils.countLines(result)-programTextLength-prologueLength;
+        
+        return result;
     }
     
     private void wait(ProcessRunner[] pool) {
@@ -85,9 +100,11 @@ public class CTester implements ITester
     }
     
     @Override
-    public List<TestResult> testSubmission(Problem problem,
-            List<TestCase> testCaseList, String programText)
+    public SubmissionResult testSubmission(Submission submission)
     {
+        Problem problem=submission.getProblem();
+        String programText=submission.getProgramText();
+        List<TestCase> testCaseList=submission.getTestCaseList();
         String testerCode=makeCTestFile(problem, testCaseList, programText);
         
         File workDir=new File("builder");
@@ -97,12 +114,10 @@ public class CTester implements ITester
         
         Compiler compiler=new Compiler(testerCode, workDir, programName);
         if (!compiler.compile()) {
-            //TODO: get the compiler error into a format that can be sent to the server
-            logger.error("Unable to compile");
-            return Arrays.asList(new TestResult(TestOutcome.COMPILE_FAILED, 
-                    "Unable to compile", 
-                    compiler.getStatusMessage(),
-                    "stderr"));
+            logger.warn("Unable to compile");
+            CompilationResult compilationRes=new CompilationResult(CompilationOutcome.FAILURE);
+            compilationRes.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
+            return new SubmissionResult(compilationRes);
         }
         logger.info("Compilation successful");
         
@@ -112,6 +127,9 @@ public class CTester implements ITester
         
         for (int i=0; i<tests.length; i++) {
             tests[i]=new ProcessRunner();
+            //TODO: Use chroot jail
+            //TODO: Use ulimit
+            //Full path to executable is necessary
             tests[i].runAsynchronous(workDir, getTestCommand(workDir.getAbsolutePath()+File.separatorChar+programName, testCaseList.get(i)));
         }
         
@@ -126,14 +144,14 @@ public class CTester implements ITester
                         merge(p.getStdout()),
                         merge(p.getStderr())));
             } else {
-                //TODO: try to distinguish error codes?
-                //6 means core dump, etc
+                //TODO: figure out return code of process killed by ulimit
                 if (p.getExitCode()==0) {
                     results.add(new TestResult(TestOutcome.PASSED,
                             p.getStatusMessage(),
                             merge(p.getStdout()),
                             merge(p.getStderr())));
                 } else if (p.getExitCode()==6) {
+                    // error code 6 means CORE DUMP
                     results.add(new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
                             p.getStatusMessage(),
                             merge(p.getStdout()),
@@ -146,7 +164,10 @@ public class CTester implements ITester
                 }
             }
         }
-        return results;
+        SubmissionResult result=new SubmissionResult(
+                new CompilationResult(CompilationOutcome.SUCCESS));
+        result.setTestResults(results.toArray(new TestResult[results.size()]));
+        return result;
     }
     
     private String merge(List<String> list){

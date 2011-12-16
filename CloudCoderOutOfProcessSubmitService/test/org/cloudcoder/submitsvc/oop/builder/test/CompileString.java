@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.submitsvc.oop.builder;
+package org.cloudcoder.submitsvc.oop.builder.test;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+
+import org.cloudcoder.submitsvc.oop.builder.MemoryFileManager;
 
 /**
  * Compile a String into loadable Java class files.

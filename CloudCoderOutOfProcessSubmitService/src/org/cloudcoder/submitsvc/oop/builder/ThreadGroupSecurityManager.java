@@ -1,21 +1,60 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.security.Permission;
 
-public class StudentCodeSecurityManager extends SecurityManager
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Security Manager that we use for Java and Jython code.  
+ * Each student test case is run in 
+ * a separate thread, and all of those threads are part of the same ThreadGroup,
+ * which is passed into the constructor of this class.
+ * 
+ * Any thread in the checkedThreadGroup is heavily restricted as far as what 
+ * it may do.  This security model is very simple but is effective so far.
+ * 
+ * 
+ * @author jaimespacco
+ *
+ */
+public class ThreadGroupSecurityManager extends SecurityManager
 {
-    private ThreadGroup WORKER_THREAD_GROUP=KillableTaskManager.WORKER_THREAD_GROUP;
+    private static final Logger logger=LoggerFactory.getLogger(ThreadGroupSecurityManager.class);
+    
+    private ThreadGroup checkedThreadGroup;
+    
+    public ThreadGroupSecurityManager(ThreadGroup threadGroup) {
+        super();
+        this.checkedThreadGroup=threadGroup;
+    }
     
     @Override
     public void checkAccess(Thread t) {
-        if (isWorkerThread()) {
+        if (isCheckedThreadGroup()) {
             throw new SecurityException("Cannot access Thread");
         }
     }
     
     @Override
     public void checkAccess(ThreadGroup g) {
-        if (isWorkerThread()) {
+        if (isCheckedThreadGroup()) {
             throw new SecurityException("Cannot access ThreadGroup");
         }
     }
@@ -23,7 +62,6 @@ public class StudentCodeSecurityManager extends SecurityManager
     @Override
     public void checkPermission(Permission perm) {
         check(perm);
-        
     }
     
     @Override
@@ -36,7 +74,7 @@ public class StudentCodeSecurityManager extends SecurityManager
      */
     @Override
     public void checkCreateClassLoader() {
-        if (isWorkerThread()) {
+        if (isCheckedThreadGroup()) {
             throw new SecurityException("Cannot create classloader");
         }
     }
@@ -49,9 +87,9 @@ public class StudentCodeSecurityManager extends SecurityManager
         return super.getThreadGroup();
     }
     
-    private boolean isWorkerThread() {
+    private boolean isCheckedThreadGroup() {
         ThreadGroup group=getThreadGroup();
-        if (group==WORKER_THREAD_GROUP) {
+        if (group==checkedThreadGroup) {
             return true;
         }
         return false;
@@ -65,8 +103,8 @@ public class StudentCodeSecurityManager extends SecurityManager
         if (perm.getName().equals("accessDeclaredMembers")) {
             return;
         }
-        if (isWorkerThread()) {
-            throw new SecurityException("Student code doing " +perm.getName());
+        if (isCheckedThreadGroup()) {
+            throw new SecurityException("Student code does not have permission to: " +perm.getName());
         }
         
     }
@@ -76,7 +114,7 @@ public class StudentCodeSecurityManager extends SecurityManager
      */
     @Override
     public void checkExit(int status) {
-        if (isWorkerThread()) {
+        if (isCheckedThreadGroup()) {
             throw new SecurityException("Student code should not call System.exit(int i)");
         }
     }
@@ -86,7 +124,7 @@ public class StudentCodeSecurityManager extends SecurityManager
      */
     @Override
     public void checkExec(String cmd) {
-        if (isWorkerThread()) {
+        if (isCheckedThreadGroup()) {
             throw new SecurityException("Student code cannot execute commands");
         }
     }

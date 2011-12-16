@@ -1,4 +1,4 @@
-// NetCoder - a web-based pedagogical programming environment
+// CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
@@ -34,6 +34,6 @@ package org.cloudcoder.submitsvc.oop.builder;
  *
  * @param <T>
  */
-interface IsolatedTask<T> {
+public interface IsolatedTask<T> {
     public T execute() throws Throwable;
 }

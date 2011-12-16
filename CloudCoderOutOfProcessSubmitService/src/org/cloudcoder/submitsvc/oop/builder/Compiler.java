@@ -27,15 +27,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Currently, this class is only for compiling a single C file
- * for the Teensy++.
+ * Used to compile C programs.
+ * 
+ * TODO: Make the compiler and the compiler options configurable.
  */
 public class Compiler {
-    private static final String COMPILE_BASE_DIR = "compile";
     private static final Logger logger=LoggerFactory.getLogger(Compiler.class);
 
     private String progName;
@@ -75,6 +76,19 @@ public class Compiler {
         statusMessage = "Compilation succeeded";
         return true;
     }
+    
+    public CompilerDiagnostic[] getCompilerDiagnosticList() {
+        //TODO: Limit to only errors for the functions we're interested in
+        CompilerDiagnostic[] result=new CompilerDiagnostic[compilerOutput.size()-1];
+        if (compilerOutput.size()>1) {
+            for (int i=1; i<compilerOutput.size(); i++) {
+                String s=compilerOutput.get(i);
+                CompilerDiagnostic d=CompilerDiagnostic.diagnosticFromGcc(s);
+                result[i-1]=d;
+            }
+        }
+        return result;
+    }        
 
     private String[] getCompileCmd() {
         return new String[]{

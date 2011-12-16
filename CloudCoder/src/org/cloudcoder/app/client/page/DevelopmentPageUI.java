@@ -11,7 +11,9 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -196,7 +198,7 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 		Session session = page.getSession();
 		Problem problem = session.get(Problem.class);
 		String text = aceEditor.getText();
-		RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<TestResult[]>() {
+		RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<SubmissionResult>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				final String msg = "Error sending submission to server for compilation"; 
@@ -206,21 +208,30 @@ public class DevelopmentPageUI extends Composite implements CloudCoderPageUI, Su
 			}
 
 			@Override
-			public void onSuccess(TestResult[] results) {
-				if (results == null) {
-					page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+			public void onSuccess(SubmissionResult result) {
+				if (result==null){
+				    page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
+				    page.getSession().add(new TestResult[0]);
+				} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
+				        result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
+				{
+				    page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
 					page.getSession().add(new TestResult[0]);
+				} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
+				    page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Submission didn't compile; TODO process and display CompilationDiagnostic messages"));
+				    page.getSession().add(new TestResult[0]);
 				} else {
-					// Great, got results back from server!
+				    TestResult[] results=result.getTestResults();
+				    // Great, got results back from server!
 					page.getSession().add(results);
 					
 					// Add a status message about the results
-					page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
-					
-					// Can resume editing now
-					mode = Mode.EDITING;
-					aceEditor.setReadOnly(false);
+					page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + 
+					        results.length+ " test result(s)"));
 				}
+                // Can resume editing now
+                mode = Mode.EDITING;
+                aceEditor.setReadOnly(false);
 			}
 		});
 	}

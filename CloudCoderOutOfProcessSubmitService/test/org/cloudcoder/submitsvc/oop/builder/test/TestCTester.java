@@ -1,61 +1,30 @@
 package org.cloudcoder.submitsvc.oop.builder.test;
 
 import org.cloudcoder.app.shared.model.ProblemType;
-import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.submitsvc.oop.builder.CTester;
 import org.junit.Before;
-import org.junit.Test;
 
-public class TestCTester extends GenericTest
+public class TestCTester extends TestSq
 {
     @Before
     public void before() {
-        super.before();
-        // create a problem
-        problem=createGenericProblem();
-        problem.setProblemType(ProblemType.C_FUNCTION);
-        problem.setTestName("sq");
+        createProblem("sq", ProblemType.JAVA_METHOD);
         
         tester=new CTester();
-        programText="int sq(int x) { \n" +
+        
+        setProgramText("#include <stdlib.h>\n"+
+                "#include <sys/types.h>\n"+
+                "#include <sys/socket.h>\n"+
+                "int sq(int x) { \n" +
                 " int * crash=NULL; \n" +
-                " if (x==5) return 17; \n" +
-                " if (x==9) *crash=1; \n" +
-                " if (x==10) while (1); \n" +
+                " if (x==1) return 17; \n" +
+                " if (x==2) *crash=1; \n" +
+                " if (x==3) while (1); \n" +
+                " if (x==4) system(\"/bin/ls\");\n" + //currently cannot block illegal operations
+                " if (x==5) return x*x; \n" + // correct
+                " if (x==6) x = socket(AF_INET, SOCK_STREAM, 0);\n" +//currently cannot block illegal operations
                 " return x*x; \n" +
-                    "}";
+                    "}");
     }
     
-    @Test
-    public void test1() {
-        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
-        runOneTest("test1");
-    }
-    
-    @Test
-    public void test2() {
-        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
-        runOneTest("test2");
-    }
-    
-    @Test
-    public void test3() {
-        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
-        runOneTest("test3");
-    }
-    
-    @Test
-    public void test4() {
-        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
-        runOneTest("test4");
-    }
-    
-    @Test
-    public void runAllTests() {
-        addTestCase("test1", "5", "25", TestOutcome.FAILED_ASSERTION);
-        addTestCase("test2", "9", "81", TestOutcome.FAILED_WITH_EXCEPTION);
-        addTestCase("test3", "-1", "1", TestOutcome.PASSED);
-        addTestCase("test4", "10", "100", TestOutcome.FAILED_FROM_TIMEOUT);
-        super.runAllTests();
-    }
 }
