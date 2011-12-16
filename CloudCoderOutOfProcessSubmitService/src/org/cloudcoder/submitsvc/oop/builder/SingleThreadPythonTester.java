@@ -26,9 +26,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
-import org.python.core.PyCode;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
@@ -67,7 +65,7 @@ public class SingleThreadPythonTester extends PythonTester
             results.add(PythonTester.executeTestCase(t, True, func));
         }
         SubmissionResult result=new SubmissionResult(compres);
-        result.setTestResults(results);
+        result.setTestResults(results.toArray(new TestResult[results.size()]));
         return result;
     }
     

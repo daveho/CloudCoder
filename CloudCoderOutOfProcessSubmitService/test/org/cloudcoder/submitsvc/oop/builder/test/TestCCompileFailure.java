@@ -17,11 +17,19 @@
 
 package org.cloudcoder.submitsvc.oop.builder.test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import junit.framework.Assert;
+
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.submitsvc.oop.builder.CTester;
+import org.cloudcoder.submitsvc.oop.builder.Compiler;
 import org.junit.Test;
 
 /**
@@ -31,6 +39,23 @@ import org.junit.Test;
 public class TestCCompileFailure extends GenericTest
 {
     @Test
+    public void testCompileFailure() throws IOException
+    {
+        File workDir=new File("testfiles/workdir");
+        workDir.mkdirs();
+        String progName="checker";
+            
+        String code=IOUtils.toString(new FileInputStream("testfiles/test1.c"));
+            
+        Compiler compiler=new Compiler(code, workDir, progName);
+        
+        Assert.assertFalse(compiler.compile());
+        
+        System.out.println("status message: "+compiler.getStatusMessage());;
+        System.out.println(compiler.getCompilerDiagnosticList());
+            
+    }
+    
     public void testCompileFailed() throws Exception {
         createProblem("compileTest", ProblemType.C_FUNCTION);
         

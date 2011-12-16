@@ -20,6 +20,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.util.List;
 import java.util.Map;
 
+
 import org.cloudcoder.app.shared.model.TestResult;
 
 /**
@@ -28,6 +29,16 @@ import org.cloudcoder.app.shared.model.TestResult;
  */
 public abstract class TesterUtils
 {
+    public static int countLines(String s) {
+        int count=0;
+        for (int i=0; i<s.length(); i++) {
+            if (s.charAt(i)=='\n') {
+                count++;
+            }
+        }
+        return count;
+    }
+    
     /**
      * @param pool
      * @param outcomes

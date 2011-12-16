@@ -3,7 +3,6 @@ package org.cloudcoder.submitsvc.oop.builder.test;
 
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestOutcome;
-import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.submitsvc.oop.builder.JavaTester;
 import org.junit.Before;
 import org.junit.Test;

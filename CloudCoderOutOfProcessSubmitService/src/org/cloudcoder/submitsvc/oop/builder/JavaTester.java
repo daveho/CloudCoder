@@ -22,17 +22,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
-import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -48,9 +39,12 @@ public class JavaTester implements ITester
     public static final long TIMEOUT_LIMIT=2000;
     
     static {
-        //TODO:  Huge hack!  Somehow TestResult was not being loaded properly
+        //TODO:  Huge hack!  Somehow TestResult was not being loaded by
+        // the correct classloader because it was first referenced inside the
+        // the body of the inner class for IsolatedTask
         try {
             ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestResult");
+            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestOutcome");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -70,47 +64,16 @@ public class JavaTester implements ITester
         // FIXME: this could be cached
         String testerCode = createTesterClassSource(problem, testCaseList);
         
-        logger.trace("Test code:");
-        logger.trace(testCode);
-        logger.trace("Tester code:");
-        logger.trace(testerCode);
-        
-        // Compile
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
-        sources.add(MemoryFileManager.makeSource("Test", testCode));
-        sources.add(MemoryFileManager.makeSource("Tester", testerCode));
-        
-        DiagnosticCollector<JavaFileObject> collector=
-                new DiagnosticCollector<JavaFileObject>();
-        
-        MemoryFileManager fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
-        CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
-        if (!task.call()) {
-            CompilationResult compileResult=new CompilationResult(CompilationOutcome.FAILURE);
-            for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
-                // convert Java-specific diagnostics to the language-independent diagnostics
-                // we could also 
-                compileResult.addCompilerDiagnostic(new CompilerDiagnostic(d));
-            }
-            return new SubmissionResult(compileResult);
-        }
-        ClassLoader cl = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
-        Class<?> testerClass=null;
-        
-        try {
-            testerClass = cl.loadClass("Tester");
-        } catch (ClassNotFoundException e) {
-            CompilationResult compilationResult=new CompilationResult(
-                    CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
-            compilationResult.setException(e);
-            SubmissionResult result=new SubmissionResult(compilationResult);
-            return result;
+        InMemoryJavaCompiler compiler=new InMemoryJavaCompiler();
+        compiler.addClassFile("Test", testCode);
+        compiler.addClassFile("Tester", testerCode);
+        if (!compiler.compile()) {
+            return new SubmissionResult(compiler.getCompileResult());
         }
 
         // create a list of tasks to be executed
         List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
-        final Class<?> testerCls=testerClass;
+        final Class<?> testerCls=compiler.getClass("Tester");
         
         for (final TestCase t : testCaseList) {
             tasks.add(new IsolatedTask<TestResult>() {
@@ -155,12 +118,15 @@ public class JavaTester implements ITester
         // run each task in a separate thread
         pool.run();
 
-        //merge outcomes with their buffered inputs for stdout/stderr
+        // merge outcomes with their buffered inputs for stdout/stderr
         List<TestResult> outcomes=TesterUtils.getStdoutStderr(pool);
         SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
-        result.setTestResults(outcomes);
+        result.setTestResults(outcomes.toArray(new TestResult[outcomes.size()]));
+        logger.info("Sending back to server "+result.getTestResults().length+" results");
         return result;
     }
+
+    
 
     /**
      * @param problem

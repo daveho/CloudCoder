@@ -18,8 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author jaimespacco
@@ -30,18 +28,25 @@ public class CompilationResult implements Serializable
     private static final long serialVersionUID=1L;
     
     private CompilationOutcome outcome;
-    private List<CompilerDiagnostic> diagnostics=new LinkedList<CompilerDiagnostic>();
-    private Exception exception;
+    private CompilerDiagnostic[] diagnosticList;
+    
+    public CompilationResult() {
+    }
+    
+    public String toString() {
+        //TODO:  Write this
+        return "TODO: Write this";
+    }
     
     /**
-     * @param failure
+     * @param outcome
      */
     public CompilationResult(CompilationOutcome outcome) {
         this.outcome=outcome;
     }
     
-    public void setDiagnostics(List<CompilerDiagnostic> diagnostics) {
-        this.diagnostics=diagnostics;
+    public void setCompilerDiagnosticList(CompilerDiagnostic[] diagnostics) {
+        this.diagnosticList=diagnostics;
     }
     
     public CompilationOutcome getOutcome() {
@@ -49,24 +54,26 @@ public class CompilationResult implements Serializable
     }
 
     /**
-     * @param compilerDiagnostic
+     * @param outcome the outcome to set
      */
-    public void addCompilerDiagnostic(CompilerDiagnostic compilerDiagnostic) {
-        this.diagnostics.add(compilerDiagnostic);
-    }
-
-    /**
-     * @param e
-     */
-    public void setException(Exception e) {
-        this.exception=e;
+    public void setOutcome(CompilationOutcome outcome) {
+        this.outcome = outcome;
     }
 
     /**
      * @return
      */
-    public List<CompilerDiagnostic> getCompilerDiagnosticList() {
-        return diagnostics;
+    public CompilerDiagnostic[] getCompilerDiagnosticList() {
+        return diagnosticList;
     }
 
+    /**
+     * @param prologueLength
+     * @param epilogueLength
+     */
+    public void adjustDiagnosticLineNumbers(int prologueLength, int epilogueLength) {
+        for (CompilerDiagnostic d : diagnosticList) {
+            d.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
+        }
+    }
 }

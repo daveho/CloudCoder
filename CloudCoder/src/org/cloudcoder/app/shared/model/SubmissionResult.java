@@ -17,13 +17,17 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.List;
+import java.io.Serializable;
 
-public class SubmissionResult
+public class SubmissionResult implements Serializable
 {
-    private List<TestResult> testResults;
+    public static final long serialVersionUID=1L;
+    
+    private TestResult[] testResults;
     private CompilationResult compilationResult;
     //Can add in other stuff like static error warnings
+    
+    public SubmissionResult() {}
     
     public SubmissionResult(CompilationResult compilationResult) {
         this.compilationResult=compilationResult;
@@ -46,14 +50,14 @@ public class SubmissionResult
     /**
      * @param outcomes
      */
-    public void setTestResults(List<TestResult> outcomes) {
+    public void setTestResults(TestResult[] outcomes) {
         this.testResults=outcomes;
     }
 
     /**
      * @return
      */
-    public List<TestResult> getTestResults() {
+    public TestResult[] getTestResults() {
         return testResults;
     }
 

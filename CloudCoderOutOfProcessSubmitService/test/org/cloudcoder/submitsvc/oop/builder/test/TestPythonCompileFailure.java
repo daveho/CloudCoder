@@ -21,9 +21,6 @@ import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.submitsvc.oop.builder.JavaTester;
 import org.cloudcoder.submitsvc.oop.builder.PythonTester;
 import org.junit.Test;
 
@@ -34,6 +31,15 @@ import org.junit.Test;
 public class TestPythonCompileFailure extends GenericTest
 {
     @Test
+    public void testCompileFailedSimple() {
+        CompilationResult res=PythonTester.compilePythonScript("def sq(x):\n" +
+                "  z=x*x\n" +
+                "     return z\n");
+        System.out.println(res.getOutcome());
+        System.out.println(res.getCompilerDiagnosticList());
+    }
+    
+
     public void testCompileFailed() throws Exception {
         createProblem("compileTest", ProblemType.PYTHON_FUNCTION);
 

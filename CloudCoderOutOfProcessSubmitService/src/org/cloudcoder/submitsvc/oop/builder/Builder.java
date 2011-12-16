@@ -126,8 +126,20 @@ public class Builder implements Runnable {
 					} catch (Throwable e) {
 						CompilationResult compres=
 						        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
+						logger.error("Builder error", e);
 						result=new SubmissionResult(compres);
 					}
+					logger.info("Sending SubmissionResult back to server");
+					if (result==null) {
+					    logger.error("null SubmissionResult");
+					} else {
+					    if (result.getTestResults()==null) {
+					        logger.error("null TestResult");
+					    } else {
+					        logger.info(result.getTestResults().length+" results");
+					    }
+					}
+					
 					out.writeObject(result);
 					out.flush();
 				} catch (IOException e) {

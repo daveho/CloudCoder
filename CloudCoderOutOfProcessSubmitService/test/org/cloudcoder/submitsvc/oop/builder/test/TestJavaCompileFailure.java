@@ -4,9 +4,6 @@ import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.submitsvc.oop.builder.CTester;
 import org.cloudcoder.submitsvc.oop.builder.JavaTester;
 import org.junit.Test;
 

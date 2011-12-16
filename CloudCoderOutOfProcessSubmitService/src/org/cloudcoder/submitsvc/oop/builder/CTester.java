@@ -18,12 +18,12 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -38,9 +38,16 @@ public class CTester implements ITester
     private static final Logger logger=LoggerFactory.getLogger(CTester.class);
     public static final long TIMEOUT_LIMIT=2000;
 
+    private int programTextLength;
+    private int prologueLength;
+    private int epilogueLength;
+    
     private String makeCTestFile(Problem problem,
             List<TestCase> testCaseList, String programText)
     {
+        prologueLength=1;
+        programTextLength=programText.length();
+
         StringBuilder test=new StringBuilder();
         test.append("#include <strings.h>\n");
         test.append(programText);
@@ -58,7 +65,11 @@ public class CTester implements ITester
         }
         test.append("  return 99;\n");
         test.append("}");
-        return test.toString();
+        String result=test.toString();
+        
+        epilogueLength=TesterUtils.countLines(result)-programTextLength-prologueLength;
+        
+        return result;
     }
     
     private void wait(ProcessRunner[] pool) {
@@ -105,7 +116,7 @@ public class CTester implements ITester
         if (!compiler.compile()) {
             logger.warn("Unable to compile");
             CompilationResult compilationRes=new CompilationResult(CompilationOutcome.FAILURE);
-            //TODO: Convert stdout/stderr from the compiler into a list of CompilerDiagnostic
+            compilationRes.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
             return new SubmissionResult(compilationRes);
         }
         logger.info("Compilation successful");
@@ -155,7 +166,7 @@ public class CTester implements ITester
         }
         SubmissionResult result=new SubmissionResult(
                 new CompilationResult(CompilationOutcome.SUCCESS));
-        result.setTestResults(results);
+        result.setTestResults(results.toArray(new TestResult[results.size()]));
         return result;
     }
     

@@ -23,7 +23,6 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.Submission;
@@ -81,7 +80,7 @@ public class GenericTest
         if (!result.isCompiled()) {
             Assert.fail("Code should have compiled");
         }
-        TestResult testResult=result.getTestResults().get(0);
+        TestResult testResult=result.getTestResults()[0];
         
         Assert.assertEquals("Test named "+testResult.getMessage(),
                 outcome,
@@ -93,9 +92,9 @@ public class GenericTest
         if (!result.isCompiled()) {
             Assert.fail("Code should have compiled");
         }
-        List<TestResult> results=result.getTestResults();
-        for (int i=0; i<results.size(); i++) {
-            TestResult testResult=results.get(i);
+        TestResult[] results=result.getTestResults();
+        for (int i=0; i<results.length; i++) {
+            TestResult testResult=results[i];
             TestOutcome outcome=testOutcomeList.get(i);
             Assert.assertEquals(outcome, testResult.getOutcome());
             

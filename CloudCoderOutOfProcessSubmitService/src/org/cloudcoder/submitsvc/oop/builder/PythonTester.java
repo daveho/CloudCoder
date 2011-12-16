@@ -19,10 +19,12 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -33,6 +35,7 @@ import org.python.core.PyException;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
+import org.python.core.PyTuple;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,10 @@ public class PythonTester implements ITester
 {
     public static final Logger logger=LoggerFactory.getLogger(PythonTester.class);
     public static final long TIMEOUT_LIMIT=2000;
+    
+    private int programTextLength;
+    private int prologueLength;
+    private int epilogueLength;
     
     static {
         // So far the new system of extracting a PyFunction and passing
@@ -72,6 +79,7 @@ public class PythonTester implements ITester
         //XXX: If we do that, we disallow global variables, which may be OK
         StringBuilder test = new StringBuilder();
         test.append(programText);
+        programTextLength=TesterUtils.countLines(programText);
         int spaces=getIndentationIncrementFromPythonCode(programText);
         
         for (TestCase t : testCaseList) {
@@ -80,7 +88,11 @@ public class PythonTester implements ITester
             test.append(indent(spaces)+"return "+t.getOutput()+" == "+
                     problem.getTestName()+"("+t.getInput()+")\n");
         }
-        return test.toString();
+        String result=test.toString();
+        int totalLen=TesterUtils.countLines(result);
+        prologueLength=0;
+        epilogueLength=totalLen-programTextLength;
+        return result;
     }
     
     @Override
@@ -96,6 +108,7 @@ public class PythonTester implements ITester
         //Check if the Python code is syntactically correct
         CompilationResult compres=compilePythonScript(s);
         if (compres.getOutcome()!=CompilationOutcome.SUCCESS) {
+            compres.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
             return new SubmissionResult(compres);
         }
         
@@ -141,35 +154,76 @@ public class PythonTester implements ITester
         
         List<TestResult> testResults=TesterUtils.getStdoutStderr(pool);
         SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
-        result.setTestResults(testResults);
+        result.setTestResults(testResults.toArray(new TestResult[testResults.size()]));
         return result;
     }
 
     /**
-     * @param s
+     * @param programText
      */
-    public static CompilationResult compilePythonScript(final String s) {
+    public static CompilationResult compilePythonScript(final String programText) {
         try {
             PythonInterpreter terp=new PythonInterpreter();
-            terp.execfile(new ByteArrayInputStream(s.getBytes()));
+            terp.execfile(new ByteArrayInputStream(programText.getBytes()));
             return new CompilationResult(CompilationOutcome.SUCCESS);
         } catch (PySyntaxError e) {
             
-            logger.info("Failed to compile:\n"+s+"\nwith message: "+e.getMessage());
+            logger.info("Failed to compile:\n"+programText+"\nwith message");
             
             //TODO: Convert Python error message or stack trace into a list of
             // CompilerDiagnostics to be sent back to the server
             CompilationResult compres=new CompilationResult(CompilationOutcome.FAILURE);
-            compres.setException(e);
+            List<CompilerDiagnostic> diagnostics=convertPySyntaxError(e);
+            compres.setCompilerDiagnosticList(diagnostics.toArray(new CompilerDiagnostic[diagnostics.size()]));
+            //compres.setException(e);
             return compres;
         } catch (PyException e) {
             logger.warn("Unexpected PyException (probably compilation failure): ");
             CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
-            compres.setException(e);
+            //compres.setException(e);
             return compres;
         }
     }
     
+    /**
+     * @param e
+     * @return
+     */
+    static List<CompilerDiagnostic> convertPySyntaxError(PySyntaxError e) {
+        List<CompilerDiagnostic> diagnostics=new LinkedList<CompilerDiagnostic>();
+        
+        /*
+         * Based on the source for Jython-2.5.2, here's code the 
+         * value field of a PySyntaxError:
+         * 
+
+
+        PyObject[] tmp = new PyObject[] {
+            new PyString(filename), new PyInteger(line),
+            new PyInteger(column), new PyString(text)
+        };
+
+        this.value = new PyTuple(new PyString(s), new PyTuple(tmp));
+        
+         * We're going to pull this apart to get out the values we want
+         *
+         */
+        
+        PyTuple tuple=(PyTuple)e.value;
+        
+        String msg=tuple.get(0).toString();
+        PyTuple loc=(PyTuple)tuple.get(1);
+        //String filename=(String)loc.get(0);
+        int lineNum=(Integer)loc.get(1);
+        int colNum=(Integer)loc.get(2);
+        //String text=(String)loc.get(3);
+
+        CompilerDiagnostic d=new CompilerDiagnostic(lineNum, lineNum, colNum, colNum, msg);
+        
+        diagnostics.add(d);
+        return diagnostics;
+    }
+
     /**
      * @param t
      * @param True

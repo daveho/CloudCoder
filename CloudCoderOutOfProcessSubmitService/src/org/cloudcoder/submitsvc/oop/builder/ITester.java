@@ -21,5 +21,5 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 
 public interface ITester
 {
-    public SubmissionResult testSubmission(Submission submission¯);
+    public SubmissionResult testSubmission(Submission submission);
 }

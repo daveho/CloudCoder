@@ -19,8 +19,6 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
-import javax.tools.JavaFileObject;
-
 /**
  * @author jaimespacco
  *
@@ -33,23 +31,40 @@ public class CompilerDiagnostic implements Serializable
     private long startColumn;
     private long endLine;
     private long endColumn;
-    private String message; 
+    private String message;
+    
+    public void adjustDiagnosticLineNumbers(int prologue, int epilogue) {
+        // Student-written code may be embedded in a test harness
+        // Using the number of lines of prologue/epilogue code
+        // re-write all of the diagnostics to refer only to the student code
+        startLine-=prologue;
+        endLine-=epilogue;
+    }
+    
+    public String toString() {
+        return message+": startLine: "+startLine+
+                ", endLine: "+endLine+
+                ", startColumn: "+startColumn+
+                ", endColumn: "+endColumn;
+    }
+    
+    public CompilerDiagnostic() {
+        this.startLine=-1;
+        this.endLine=-1;
+        this.startColumn=-1;
+        this.endColumn=-1;
+        this.message="";
+    }
 
-    public CompilerDiagnostic(int startLine, int endLine, int startCol, int endCol, String message) {
-        this.startLine=startLine;
-        this.endLine=endLine;
-        this.startColumn=startCol;
-        this.endColumn=endCol;
+    public CompilerDiagnostic(long l, long m, long n, long o, String message) {
+        this.startLine=l;
+        this.endLine=m;
+        this.startColumn=n;
+        this.endColumn=o;
         this.message=message;
     }
     
-    public CompilerDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> d) {
-        this.startLine=d.getLineNumber();
-        this.endLine=d.getLineNumber();
-        this.startColumn=d.getColumnNumber();
-        this.endColumn=d.getColumnNumber();
-        this.message=d.getMessage(null);
-    }
+    
     
     /**
      * @return the startLine
@@ -80,5 +95,19 @@ public class CompilerDiagnostic implements Serializable
      */
     public String getMessage() {
         return message;
+    }
+
+    /**
+     * @param s
+     * @return
+     */
+    public static CompilerDiagnostic diagnosticFromGcc(String s) {
+        // gcc compiler errors are in this format:
+        // checker.c:5: error: expected ';' before '}' token
+        // Going to split using :
+        String[] arr=s.split(":");
+        int lineNum=Integer.parseInt(arr[1]);
+        String message=arr[3];
+        return new CompilerDiagnostic(lineNum, lineNum, -1, -1, message);
     }
 }
