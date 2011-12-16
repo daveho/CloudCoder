@@ -20,8 +20,11 @@ package org.cloudcoder.app.shared.model;
 import java.util.List;
 
 /**
+ * A Submission bundles up all of the information needed
+ * to compile and test a submission of a (possible) solution to a particular
+ * problem.
+ * 
  * @author jaimespacco
- *
  */
 public class Submission
 {

@@ -19,16 +19,28 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
+/**
+ * A TestResult represents the outcome of a particular
+ * {@link TestCase} on a particular {@link Submission}.
+ */
 public class TestResult implements Serializable
 {
     public static final long serialVersionUID=1L;
     
+    private long id;
+    private long submissionReceiptId;
     private TestOutcome outcome;
     private String message;
     private String stdout;
     private String stderr;
     
+    public TestResult() {
+    	
+    }
+    
     public TestResult(TestOutcome outcome, String message) {
+    	this.id = -1L;
+    	this.submissionReceiptId = -1L;
         this.outcome=outcome;
         this.message=message;
     }
@@ -43,7 +55,33 @@ public class TestResult implements Serializable
         this.stderr=stderr;
     }
     
-    public TestResult() {}
+    /**
+	 * @param id the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	/**
+	 * @return the id
+	 */
+	public long getId() {
+		return id;
+	}
+	
+	/**
+	 * @param submissionReceiptId the submissionReceiptId to set
+	 */
+	public void setSubmissionReceiptId(long submissionReceiptId) {
+		this.submissionReceiptId = submissionReceiptId;
+	}
+	
+	/**
+	 * @return the submissionReceiptId
+	 */
+	public long getSubmissionReceiptId() {
+		return submissionReceiptId;
+	}
 
     public String toString() {
         return message;
