@@ -32,6 +32,11 @@ import java.io.Serializable;
 public class SubmissionReceipt implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Number of database fields.
+	 */
+	public static final int NUM_FIELDS = 4;
+
 	private Event event;
 	private int id;
 	private int eventId;
@@ -120,5 +125,25 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	 */
 	public SubmissionStatus getStatus() {
 		return SubmissionStatus.values()[status];
+	}
+	
+	/**
+	 * Create a SubmissionReceipt for given User and Problem.
+	 * 
+	 * @param user     the User
+	 * @param problem  the Problem
+	 * @param status   the SubmissionStatus to set in the SubmissionReceipt
+	 * @param lastEditEventId id of last edit event (i.e., the code version of the submission)
+	 * @return  the SubmissionReceipt
+	 */
+	public static SubmissionReceipt create(final User user, final Problem problem, SubmissionStatus status, int lastEditEventId) {
+		SubmissionReceipt receipt = new SubmissionReceipt();
+		receipt.getEvent().setProblemId(problem.getProblemId());
+		receipt.getEvent().setTimestamp(System.currentTimeMillis());
+		receipt.getEvent().setType(EventType.SUBMIT);
+		receipt.getEvent().setUserId(user.getId());
+		receipt.setLastEditEventId(lastEditEventId);
+		receipt.setStatus(status);
+		return receipt;
 	}
 }

@@ -32,9 +32,11 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.EventType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -429,49 +431,7 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				// Get TestResults (ensuring that the array is non-null
-				TestResult[] testResultList = testResultList_ != null ? testResultList_ : new TestResult[0];
-				
-				// Store the underlying Event
-				storeEvents(new SubmissionReceipt[]{receipt}, conn, this);
-				
-				// Set the SubmissionReceipt's event id to match the event we just inserted
-				receipt.setEventId(receipt.getEvent().getId());
-				
-				// Insert the SubmissionReceipt
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"insert into submission_receipts values (NULL, ?, ?, ?)"
-				);
-				storeNoId(receipt, stmt, 1);
-				stmt.execute();
-				
-				// Store the TestResults
-				for (TestResult testResult : testResultList) {
-					testResult.setSubmissionReceiptId(receipt.getId());
-				}
-				PreparedStatement insertTestResults = prepareStatement(
-						conn,
-						"insert into test_results values (NULL, ?, ?, ?, ?, ?)",
-						PreparedStatement.RETURN_GENERATED_KEYS
-				);
-				for (TestResult testResult : testResultList) {
-					storeNoId(testResult, insertTestResults, 1);
-					insertTestResults.addBatch();
-				}
-				insertTestResults.executeBatch();
-				
-				// Get generated TestResult ids
-				ResultSet generatedIds = getGeneratedKeys(insertTestResults);
-				int count = 0;
-				while (generatedIds.next()) {
-					testResultList[count].setId(generatedIds.getInt(1));
-					count++;
-				}
-				if (count != testResultList.length) {
-					throw new SQLException("Wrong number of generated ids for test results");
-				}
-				
+				doInsertSubmissionReceipt(receipt, testResultList_, conn, this);
 				return true;
 			}
 			/* (non-Javadoc)
@@ -484,6 +444,55 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#addSubmissionReceiptIfNecessary(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Problem)
+	 */
+	@Override
+	public void getOrAddLatestSubmissionReceipt(final User user, final Problem problem) {
+		databaseRun(new AbstractDatabaseRunnable<SubmissionReceipt>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public SubmissionReceipt run(Connection conn) throws SQLException {
+				// Get most recent submission receipt for user/problem
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select r.* from submission_receipts as r, events as e " +
+						" where r.event_id = e.id " +
+						"   and e.id = (select max(ee.id) from submission_receipts as rr, events as ee " +
+						"                where rr.event_id = ee.id " +
+						"                  and ee.problem_id = ? " +
+						"                  and ee.user_id = ?)");
+				stmt.setInt(1, problem.getProblemId());
+				stmt.setInt(2, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (resultSet.next()) {
+					SubmissionReceipt submissionReceipt = new SubmissionReceipt();
+					load(submissionReceipt, resultSet, 1);
+					load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+					return submissionReceipt;
+				}
+				
+				// There is no submission receipt in the database yet, so add one
+				// with status STARTED
+				SubmissionStatus status = SubmissionStatus.STARTED;
+				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1);
+				doInsertSubmissionReceipt(receipt, new TestResult[0], conn, this);
+				return receipt;
+				
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "adding initial submission receipt if necessary";
+			}
+		});
+	}
+	
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
 			Connection conn = null;
@@ -519,7 +528,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
 	 * @throws SQLException
 	 */
-	private<E> void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<E> dbRunnable)
+	private void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<?> dbRunnable)
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
@@ -543,6 +552,56 @@ public class JDBCDatabase implements IDatabase {
 		}
 		if (count != containsEventList.length) {
 			throw new SQLException("Did not get all generated keys for inserted events");
+		}
+	}
+
+	private void doInsertSubmissionReceipt(
+			final SubmissionReceipt receipt,
+			final TestResult[] testResultList_,
+			Connection conn,
+			AbstractDatabaseRunnable<?> dbRunnable)
+			throws SQLException {
+		// Get TestResults (ensuring that the array is non-null
+		TestResult[] testResultList = testResultList_ != null ? testResultList_ : new TestResult[0];
+		
+		// Store the underlying Event
+		storeEvents(new SubmissionReceipt[]{receipt}, conn, dbRunnable);
+		
+		// Set the SubmissionReceipt's event id to match the event we just inserted
+		receipt.setEventId(receipt.getEvent().getId());
+		
+		// Insert the SubmissionReceipt
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"insert into submission_receipts values (NULL, ?, ?, ?)"
+		);
+		storeNoId(receipt, stmt, 1);
+		stmt.execute();
+		
+		// Store the TestResults
+		for (TestResult testResult : testResultList) {
+			testResult.setSubmissionReceiptId(receipt.getId());
+		}
+		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
+				conn,
+				"insert into test_results values (NULL, ?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
+		);
+		for (TestResult testResult : testResultList) {
+			storeNoId(testResult, insertTestResults, 1);
+			insertTestResults.addBatch();
+		}
+		insertTestResults.executeBatch();
+		
+		// Get generated TestResult ids
+		ResultSet generatedIds = dbRunnable.getGeneratedKeys(insertTestResults);
+		int count = 0;
+		while (generatedIds.next()) {
+			testResultList[count].setId(generatedIds.getInt(1));
+			count++;
+		}
+		if (count != testResultList.length) {
+			throw new SQLException("Wrong number of generated ids for test results");
 		}
 	}
 
@@ -599,6 +658,21 @@ public class JDBCDatabase implements IDatabase {
 		testCase.setTestCaseName(resultSet.getString(index++));
 		testCase.setInput(resultSet.getString(index++));
 		testCase.setOutput(resultSet.getString(index++));
+	}
+	
+	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
+		submissionReceipt.setId(resultSet.getInt(index++));
+		submissionReceipt.setEventId(resultSet.getInt(index++));
+		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
+		submissionReceipt.setStatus(resultSet.getInt(index++));
+	}
+	
+	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
+		event.setId(resultSet.getInt(index++));
+		event.setUserId(resultSet.getInt(index++));
+		event.setProblemId(resultSet.getInt(index++));
+		event.setType(resultSet.getInt(index++));
+		event.setTimestamp(resultSet.getLong(index++));
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {

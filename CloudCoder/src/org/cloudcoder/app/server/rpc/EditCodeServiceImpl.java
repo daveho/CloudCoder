@@ -26,21 +26,24 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 
 	@Override
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException {
-    	// make sure client is authenticated
-    	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		// make sure client is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
-    	// Get the problem
-    	Problem problem = Database.getInstance().getProblem(user, problemId);
+		// Get the problem
+		Problem problem = Database.getInstance().getProblem(user, problemId);
 
-    	if (problem != null) {
-            // Store the Problem in the HttpSession - that way, the servlets
-            // that depend on knowing the problem have access to a known-authentic
-            // problem. (I.e., we don't have to trust a problem id sent as
-            // an RPC parameter which might have been forged.)
-            getThreadLocalRequest().getSession().setAttribute("problem", problem);
-    	}
-        
-        return problem;
+		if (problem != null) {
+			// Store the Problem in the HttpSession - that way, the servlets
+			// that depend on knowing the problem have access to a known-authentic
+			// problem. (I.e., we don't have to trust a problem id sent as
+			// an RPC parameter which might have been forged.)
+			getThreadLocalRequest().getSession().setAttribute("problem", problem);
+
+			// If appropriate, record that the user has started the problem
+			Database.getInstance().getOrAddLatestSubmissionReceipt(user, problem);
+		}
+
+		return problem;
 	}
 
     @Override
