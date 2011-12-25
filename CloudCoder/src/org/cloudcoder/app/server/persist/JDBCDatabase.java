@@ -458,7 +458,7 @@ public class JDBCDatabase implements IDatabase {
 				// Get most recent submission receipt for user/problem
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.* from submission_receipts as r, events as e " +
+						"select r.*, e.* from submission_receipts as r, events as e " +
 						" where r.event_id = e.id " +
 						"   and e.id = (select max(ee.id) from submission_receipts as rr, events as ee " +
 						"                where rr.event_id = ee.id " +
