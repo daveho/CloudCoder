@@ -20,6 +20,7 @@ package org.cloudcoder.app.client;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage;
+import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
@@ -52,10 +53,6 @@ public class CloudCoder implements EntryPoint, Subscriber {
 
 		// Subscribe to all Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
-
-//		layoutPanel = new LayoutPanel();
-//		layoutPanel.setSize("100%", "100%");
-//		RootPanel.get("cc-content").add(layoutPanel);
 		
 		RootLayoutPanel rootLayoutPanel = RootLayoutPanel.get();
 		
@@ -88,6 +85,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN || key == Session.Event.BACK_HOME) {
 			changePage(new CoursesAndProblemsPage());
+			//changePage(new CoursesAndProblemsPage2());
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
 		} else if (key == Session.Event.LOGOUT) {

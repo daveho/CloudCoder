@@ -17,7 +17,10 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.client.ui.Composite;
@@ -27,12 +30,21 @@ import com.google.gwt.user.client.ui.Composite;
  * 
  * @author David Hovemeyer
  */
-public class TermAndCourseTreeView extends Composite {
+public class TermAndCourseTreeView extends Composite implements SessionObserver {
 	private CellTree cellTree;
 	
 	public TermAndCourseTreeView(Course[] courseList) {
 		TermAndCourseTreeModel model = new TermAndCourseTreeModel(courseList);
 		cellTree = new CellTree(model, null);
 		initWidget(cellTree);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
+	 */
+	@Override
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// TODO Auto-generated method stub
+		
 	}
 }

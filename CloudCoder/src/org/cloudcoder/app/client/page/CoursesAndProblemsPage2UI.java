@@ -17,21 +17,86 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.TermAndCourseTreeView;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.util.Publisher;
+import org.cloudcoder.app.shared.util.Subscriber;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
+
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
  * @author David Hovemeyer
  *
  */
-public class CoursesAndProblemsPage2UI extends Composite {
+public class CoursesAndProblemsPage2UI extends Composite implements CloudCoderPageUI, Subscriber {
+	private CloudCoderPage page;
+
+	private LayoutPanel eastLayoutPanel;
+
+	private TermAndCourseTreeView termAndCourseTreeView;
+
 	public CoursesAndProblemsPage2UI() {
 		DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
 		
+		this.eastLayoutPanel = new LayoutPanel();
 		
-		
+		dockLayoutPanel.addEast(eastLayoutPanel, 8.0);
 		
 		initWidget(dockLayoutPanel);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
+	 */
+	@Override
+	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
+		// Load courses
+		RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
+			@Override
+			public void onSuccess(Course[] result) {
+				GWT.log(result.length + " course(s) loaded");
+				page.addSessionObject(result);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Error loading courses", caught);
+				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading courses: " + caught.getMessage()));
+			}
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.CloudCoderPageUI#setPage(org.cloudcoder.app.client.page.CloudCoderPage)
+	 */
+	@Override
+	public void setPage(CloudCoderPage page) {
+		this.page = page;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.util.Subscriber#eventOccurred(java.lang.Object, org.cloudcoder.app.shared.util.Publisher, java.lang.Object)
+	 */
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
+			// Courses are loaded - create and activate TermAndCourseTreeView
+			termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
+			termAndCourseTreeView.setSize("100%", "100%");
+			eastLayoutPanel.add(termAndCourseTreeView);
+			
+			termAndCourseTreeView.activate(page.getSession(), page.getSubscriptionRegistrar());
+		}
 	}
 }

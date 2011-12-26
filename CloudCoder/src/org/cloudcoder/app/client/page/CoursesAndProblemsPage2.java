@@ -28,8 +28,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 */
 	@Override
 	public void createWidget() {
-		// TODO Auto-generated method stub
-		
+		ui = new CoursesAndProblemsPage2UI();
+		ui.setPage(this);
 	}
 
 	/* (non-Javadoc)
@@ -37,8 +37,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 */
 	@Override
 	public void activate() {
-		// TODO Auto-generated method stub
-		
+		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	/* (non-Javadoc)
@@ -46,8 +45,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 */
 	@Override
 	public void deactivate() {
-		// TODO Auto-generated method stub
-		
+		getSubscriptionRegistrar().cancelAllSubscriptions();
 	}
 
 	/* (non-Javadoc)
@@ -55,8 +53,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 */
 	@Override
 	public CloudCoderPageUI getWidget() {
-		// TODO Auto-generated method stub
-		return null;
+		return ui;
 	}
 
 }
