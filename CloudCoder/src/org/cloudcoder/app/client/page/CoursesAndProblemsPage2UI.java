@@ -49,7 +49,7 @@ public class CoursesAndProblemsPage2UI extends Composite implements CloudCoderPa
 		
 		this.eastLayoutPanel = new LayoutPanel();
 		
-		dockLayoutPanel.addEast(eastLayoutPanel, 8.0);
+		dockLayoutPanel.addEast(eastLayoutPanel, 24.0);
 		
 		initWidget(dockLayoutPanel);
 	}

@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.view;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -40,8 +41,7 @@ import com.google.gwt.view.client.TreeViewModel;
  * @author David Hovemeyer
  */
 public class TermAndCourseTreeModel implements TreeViewModel {
-	private TermAndYear[] termAndYearList;
-	//private Course[][] termAndYearToCourseList;
+	private List<TermAndYear> termAndYearList;
 	private Map<TermAndYear, Course[]> termAndYearToCourseList;
 	
 	private SelectionModel<Course> selectionModel;
@@ -53,14 +53,13 @@ public class TermAndCourseTreeModel implements TreeViewModel {
 			termAndYearSet.add(course.getTermAndYear());
 		}
 		
-		termAndYearList = new TermAndYear[termAndYearSet.size()];
+		termAndYearList = new ArrayList<TermAndYear>();
 		termAndYearToCourseList = new HashMap<TermAndYear, Course[]>();
 
 		// Build list of TermAndYears, in reverse chronological order.
 		// For each TermAndYear, map it to an array of Courses.
-		int count = 0;
 		for (TermAndYear termAndYear : termAndYearSet) {
-			termAndYearList[count] = termAndYear;
+			termAndYearList.add(termAndYear);
 			ArrayList<Course> courseListForTermAndYear = new ArrayList<Course>();
 			for (Course course : courseList) {
 				if (course.getTermAndYear().equals(termAndYear)) {
@@ -85,9 +84,7 @@ public class TermAndCourseTreeModel implements TreeViewModel {
 		if (value == null) {
 			// root nodes - TermAndYear
 			ListDataProvider<TermAndYear> dataProvider = new ListDataProvider<TermAndYear>();
-			for (TermAndYear termAndYear : termAndYearList) {
-				dataProvider.getList().add(termAndYear);
-			}
+			dataProvider.getList().addAll(termAndYearList);
 			Cell<TermAndYear> cell = new AbstractCell<TermAndYear>() {
 				/* (non-Javadoc)
 				 * @see com.google.gwt.cell.client.AbstractCell#render(com.google.gwt.cell.client.Cell.Context, java.lang.Object, com.google.gwt.safehtml.shared.SafeHtmlBuilder)
