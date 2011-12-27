@@ -24,6 +24,8 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.user.client.ui.IsWidget;
+
 /**
  * Common superclass for all CloudCoder "pages".
  * Provides helper methods for managing session data and event subscribers.
@@ -88,9 +90,9 @@ public abstract class CloudCoderPage {
 	public abstract void deactivate();
 
 	/**
-	 * @return the Widget that is the UI for this page 
+	 * @return the widget that is the UI for this page 
 	 */
-	public abstract CloudCoderPageUI getWidget();
+	public abstract IsWidget getWidget();
 	
 	/**
 	 * @return the Session object
