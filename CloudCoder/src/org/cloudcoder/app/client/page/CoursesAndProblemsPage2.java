@@ -89,8 +89,6 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
 				termAndCourseTreeView.setSize("100%", "100%");
 				eastLayoutPanel.add(termAndCourseTreeView);
-				
-				termAndCourseTreeView.activate(getSession(), getSubscriptionRegistrar());
 			}
 		}
 	}
