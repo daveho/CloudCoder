@@ -51,7 +51,7 @@ public class TermAndCourseTreeView extends Composite {
 		private List<TermAndYear> termAndYearList;
 		private Map<TermAndYear, Course[]> termAndYearToCourseList;
 		
-		private SelectionModel<Course> selectionModel;
+		private SingleSelectionModel<Course> selectionModel;
 		
 		public Model(Course[] courseList) {
 			// Build sorted collection of TermAndYear objects
@@ -159,5 +159,12 @@ public class TermAndCourseTreeView extends Composite {
 	 */
 	public void addSelectionHandler(Handler h) {
 		model.addSelectionChangeHandler(h);
+	}
+
+	/**
+	 * @return
+	 */
+	public Course getSelectedCourse() {
+		return model.selectionModel.getSelectedObject();
 	}
 }

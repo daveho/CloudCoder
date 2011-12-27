@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -33,6 +34,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.view.client.SelectionChangeEvent;
 
 /**
  * @author David Hovemeyer
@@ -45,6 +47,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private LayoutPanel eastLayoutPanel;
 
 		private TermAndCourseTreeView termAndCourseTreeView;
+		private ProblemDescriptionView problemDescriptionView;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -52,6 +55,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			this.eastLayoutPanel = new LayoutPanel();
 			
 			dockLayoutPanel.addEast(eastLayoutPanel, 24.0);
+			
+			this.problemDescriptionView = new ProblemDescriptionView();
+			dockLayoutPanel.addSouth(problemDescriptionView, 12.0);
 			
 			initWidget(dockLayoutPanel);
 		}
@@ -62,6 +68,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+
+			// activate views
+			problemDescriptionView.activate(session, subscriptionRegistrar);
 			
 			// Load courses
 			RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
@@ -89,6 +98,15 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
 				termAndCourseTreeView.setSize("100%", "100%");
 				eastLayoutPanel.add(termAndCourseTreeView);
+				
+				// add selection event handler
+				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
+					@Override
+					public void onSelectionChange(SelectionChangeEvent event) {
+						Course course = termAndCourseTreeView.getSelectedCourse();
+						// TODO: load this course's problems
+					}
+				});
 			}
 		}
 	}
