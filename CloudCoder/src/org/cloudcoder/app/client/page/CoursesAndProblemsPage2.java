@@ -21,8 +21,10 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.ProblemListView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -49,6 +51,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private TermAndCourseTreeView termAndCourseTreeView;
 		private ProblemDescriptionView problemDescriptionView;
 
+		private ProblemListView problemListView;
+
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
 			
@@ -58,6 +62,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			
 			this.problemDescriptionView = new ProblemDescriptionView();
 			dockLayoutPanel.addSouth(problemDescriptionView, 12.0);
+			
+			this.problemListView = new ProblemListView();
+			dockLayoutPanel.add(problemListView);
 			
 			initWidget(dockLayoutPanel);
 		}
@@ -70,6 +77,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
 			// activate views
+			problemListView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			
 			// Load courses
@@ -104,7 +112,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 					@Override
 					public void onSelectionChange(SelectionChangeEvent event) {
 						Course course = termAndCourseTreeView.getSelectedCourse();
-						// TODO: load this course's problems
+						getSession().add(course);
 					}
 				});
 			}
