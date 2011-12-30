@@ -27,8 +27,14 @@ import java.io.Serializable;
  * @author David Hovemeyer
  */
 public class ProblemAndSubscriptionReceipt implements Serializable {
-	private final Problem problem;
-	private final SubmissionReceipt receipt;
+	private static final long serialVersionUID = 1L;
+
+	private Problem problem;
+	private SubmissionReceipt receipt;
+	
+	public ProblemAndSubscriptionReceipt() {
+		
+	}
 	
 	public ProblemAndSubscriptionReceipt(Problem problem, SubmissionReceipt receipt) {
 		this.problem = problem;

@@ -25,6 +25,7 @@ import org.cloudcoder.app.client.view.ProblemListView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -113,6 +114,23 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 					public void onSelectionChange(SelectionChangeEvent event) {
 						Course course = termAndCourseTreeView.getSelectedCourse();
 						getSession().add(course);
+					}
+				});
+			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof Course) {
+				Course course = (Course) hint;
+				
+				// Load problems
+				RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubscriptionReceipt[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						// FIXME: report error
+					}
+
+					@Override
+					public void onSuccess(ProblemAndSubscriptionReceipt[] result) {
+						// TODO: use a view that views list of ProblemAndSubscriptionReceipts
+						Problem[] problemList = new Problem[result.length];
+						getSession().add(problemList);
 					}
 				});
 			}
