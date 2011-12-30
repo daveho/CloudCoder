@@ -21,7 +21,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
-import org.cloudcoder.app.client.view.ProblemListView;
+import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
@@ -52,7 +52,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private TermAndCourseTreeView termAndCourseTreeView;
 		private ProblemDescriptionView problemDescriptionView;
 
-		private ProblemListView problemListView;
+		private ProblemListView2 ProblemListView2;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -64,8 +64,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			this.problemDescriptionView = new ProblemDescriptionView();
 			dockLayoutPanel.addSouth(problemDescriptionView, 12.0);
 			
-			this.problemListView = new ProblemListView();
-			dockLayoutPanel.add(problemListView);
+			this.ProblemListView2 = new ProblemListView2();
+			dockLayoutPanel.add(ProblemListView2);
 			
 			initWidget(dockLayoutPanel);
 		}
@@ -78,7 +78,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
 			// activate views
-			problemListView.activate(session, subscriptionRegistrar);
+			ProblemListView2.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			
 			// Load courses
@@ -128,9 +128,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 					@Override
 					public void onSuccess(ProblemAndSubscriptionReceipt[] result) {
-						// TODO: use a view that views list of ProblemAndSubscriptionReceipts
-						Problem[] problemList = new Problem[result.length];
-						getSession().add(problemList);
+						// Add ProblemAndSubmissionReceipt list to session so that
+						// ProblemListView2 will know about it
+						getSession().add(result);
 					}
 				});
 			}

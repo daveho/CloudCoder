@@ -42,10 +42,24 @@ public class ProblemAndSubscriptionReceipt implements Serializable {
 	}
 	
 	/**
+	 * @param problem the problem to set
+	 */
+	public void setProblem(Problem problem) {
+		this.problem = problem;
+	}
+	
+	/**
 	 * @return the problem
 	 */
 	public Problem getProblem() {
 		return problem;
+	}
+	
+	/**
+	 * @param receipt the receipt to set
+	 */
+	public void setReceipt(SubmissionReceipt receipt) {
+		this.receipt = receipt;
 	}
 	
 	/**

@@ -364,12 +364,12 @@ public class JDBCDatabase implements IDatabase {
 				// that user is authorized to get information about the course.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.* from submission_receipts as r, problems as p, events as e, course_registrations as cr " +
+						"select r.*, e.* from submission_receipts as r, problems as p, events as e, course_registrations as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
 						"   and p.course_id = cr.course_id " +
 						"   and e.problem_id = p.problem_id " +
-						"   and r.event_id = e.event_id "
+						"   and r.event_id = e.id "
 				);
 				stmt.setInt(1, user.getId());
 				stmt.setInt(2, course.getId());
