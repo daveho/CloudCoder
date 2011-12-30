@@ -24,7 +24,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -34,6 +36,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -331,35 +334,75 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
 			@Override
 			public List<Problem> run(Connection conn) throws SQLException {
-				//
-				// Note that we have to join on course registrations to ensure
-				// that we return courses that the user is actually registered for.
-				//
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select p.* from problems as p, courses as c, course_registrations as r " +
-						" where p.course_id = c.id " +
-						"   and r.course_id = c.id " +
-						"   and r.user_id = ? " +
-						"   and c.id = ?"
-				);
-				stmt.setInt(1, user.getId());
-				stmt.setInt(2, course.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				List<Problem> resultList = new ArrayList<Problem>();
-				while (resultSet.next()) {
-					Problem problem = new Problem();
-					load(problem, resultSet, 1);
-					resultList.add(problem);
-				}
-				
-				return resultList;
+				return doGetProblemsInCourse(user, course, conn, this);
 			}
 			@Override
 			public String getDescription() {
 				return "retrieving problems for course";
+			}
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblemAndSubscriptionReceiptsInCourse(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Course)
+	 */
+	@Override
+	public List<ProblemAndSubscriptionReceipt> getProblemAndSubscriptionReceiptsInCourse(
+			final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnable<List<ProblemAndSubscriptionReceipt>>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public List<ProblemAndSubscriptionReceipt> run(Connection conn)
+					throws SQLException {
+				// Get all problems for this user/course
+				List<Problem> problemList = doGetProblemsInCourse(user, course, conn, this);
+				
+				// Get all submission receipts for this user/course.
+				// Note that we join on course_registrations in order to ensure 
+				// that user is authorized to get information about the course.
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select r.* from submission_receipts as r, problems as p, events as e, course_registrations as cr " +
+						" where cr.user_id = ?" +
+						"   and cr.course_id = ? " +
+						"   and p.course_id = cr.course_id " +
+						"   and e.problem_id = p.problem_id " +
+						"   and r.event_id = e.event_id "
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, course.getId());
+				
+				// Map of problem ids to most recent submission receipt for problem
+				Map<Integer, SubmissionReceipt> problemIdToMostRecentSubmissionReceiptMap = new HashMap<Integer, SubmissionReceipt>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					SubmissionReceipt submissionReceipt = new SubmissionReceipt();
+					load(submissionReceipt, resultSet, 1);
+					load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+					SubmissionReceipt current = problemIdToMostRecentSubmissionReceiptMap.get(submissionReceipt.getEvent().getProblemId());
+					if (current == null || submissionReceipt.getEventId() > current.getEventId()) {
+						problemIdToMostRecentSubmissionReceiptMap.put(submissionReceipt.getEvent().getProblemId(), submissionReceipt);
+					}
+				}
+				
+				// Match up problems and corresponding submission receipts.
+				List<ProblemAndSubscriptionReceipt> result = new ArrayList<ProblemAndSubscriptionReceipt>();
+				for (Problem problem : problemList) {
+					SubmissionReceipt receipt = problemIdToMostRecentSubmissionReceiptMap.get(problem.getProblemId());
+					ProblemAndSubscriptionReceipt problemAndSubscriptionReceipt = new ProblemAndSubscriptionReceipt(problem, receipt);
+					result.add(problemAndSubscriptionReceipt);
+				}
+				
+				return result;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "retrieving problems and subscription receipts for course";
 			}
 		});
 	}
@@ -602,6 +645,47 @@ public class JDBCDatabase implements IDatabase {
 		if (count != testResultList.length) {
 			throw new SQLException("Wrong number of generated ids for test results");
 		}
+	}
+	
+	/**
+	 * Get all problems for user/course.
+	 * 
+	 * @param user    a User
+	 * @param course  a Course
+	 * @param conn    the Connection
+	 * @param dbRunnable the AbstractDatabaseRunnable
+	 * @return List of Problems for user/course
+	 * @throws SQLException 
+	 */
+	protected List<Problem> doGetProblemsInCourse(User user, Course course,
+			Connection conn,
+			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+		
+		//
+		// Note that we have to join on course registrations to ensure
+		// that we return courses that the user is actually registered for.
+		//
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"select p.* from problems as p, courses as c, course_registrations as r " +
+				" where p.course_id = c.id " +
+				"   and r.course_id = c.id " +
+				"   and r.user_id = ? " +
+				"   and c.id = ?"
+		);
+		stmt.setInt(1, user.getId());
+		stmt.setInt(2, course.getId());
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		
+		List<Problem> resultList = new ArrayList<Problem>();
+		while (resultSet.next()) {
+			Problem problem = new Problem();
+			load(problem, resultSet, 1);
+			resultList.add(problem);
+		}
+		
+		return resultList;
 	}
 
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
