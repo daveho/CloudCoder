@@ -36,7 +36,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -347,14 +347,14 @@ public class JDBCDatabase implements IDatabase {
 	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblemAndSubscriptionReceiptsInCourse(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Course)
 	 */
 	@Override
-	public List<ProblemAndSubscriptionReceipt> getProblemAndSubscriptionReceiptsInCourse(
+	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
 			final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnable<List<ProblemAndSubscriptionReceipt>>() {
+		return databaseRun(new AbstractDatabaseRunnable<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
-			public List<ProblemAndSubscriptionReceipt> run(Connection conn)
+			public List<ProblemAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
 				// Get all problems for this user/course
 				List<Problem> problemList = doGetProblemsInCourse(user, course, conn, this);
@@ -388,10 +388,10 @@ public class JDBCDatabase implements IDatabase {
 				}
 				
 				// Match up problems and corresponding submission receipts.
-				List<ProblemAndSubscriptionReceipt> result = new ArrayList<ProblemAndSubscriptionReceipt>();
+				List<ProblemAndSubmissionReceipt> result = new ArrayList<ProblemAndSubmissionReceipt>();
 				for (Problem problem : problemList) {
 					SubmissionReceipt receipt = problemIdToMostRecentSubmissionReceiptMap.get(problem.getProblemId());
-					ProblemAndSubscriptionReceipt problemAndSubscriptionReceipt = new ProblemAndSubscriptionReceipt(problem, receipt);
+					ProblemAndSubmissionReceipt problemAndSubscriptionReceipt = new ProblemAndSubmissionReceipt(problem, receipt);
 					result.add(problemAndSubscriptionReceipt);
 				}
 				

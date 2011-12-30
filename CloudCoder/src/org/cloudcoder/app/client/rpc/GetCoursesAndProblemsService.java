@@ -20,7 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -37,5 +37,5 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	
 	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException;
 	
-	public ProblemAndSubscriptionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
 }

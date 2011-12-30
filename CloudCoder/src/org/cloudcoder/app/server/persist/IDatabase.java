@@ -24,7 +24,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -44,7 +44,7 @@ public interface IDatabase {
 	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
 	public List<? extends Object[]> getCoursesForUser(User user);
 	public List<Problem> getProblemsInCourse(User user, Course course);
-	public List<ProblemAndSubscriptionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
+	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
 	public void storeChanges(Change[] changeList);
 	public List<TestCase> getTestCasesForProblem(int problemId);
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);

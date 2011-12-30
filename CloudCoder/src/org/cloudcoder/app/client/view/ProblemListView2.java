@@ -8,7 +8,7 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -23,10 +23,10 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 public class ProblemListView2 extends Composite implements SessionObserver, Subscriber {
 	private Session session;
-	private DataGrid<ProblemAndSubscriptionReceipt> cellTable;
+	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
 
 	public ProblemListView2() {
-		cellTable = new DataGrid<ProblemAndSubscriptionReceipt>();
+		cellTable = new DataGrid<ProblemAndSubmissionReceipt>();
 		
 		// Configure the DataGrid that will show the problems
 		cellTable.addColumn(new TestNameColumn(), "Name");
@@ -35,16 +35,16 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 		initWidget(cellTable);
 	}
 
-	private static class TestNameColumn extends TextColumn<ProblemAndSubscriptionReceipt> {
+	private static class TestNameColumn extends TextColumn<ProblemAndSubmissionReceipt> {
 		@Override
-		public String getValue(ProblemAndSubscriptionReceipt object) {
+		public String getValue(ProblemAndSubmissionReceipt object) {
 			return object.getProblem().getTestName();
 		}
 	}
 
-	private static class BriefDescriptionColumn extends TextColumn<ProblemAndSubscriptionReceipt> {
+	private static class BriefDescriptionColumn extends TextColumn<ProblemAndSubmissionReceipt> {
 		@Override
-		public String getValue(ProblemAndSubscriptionReceipt object) {
+		public String getValue(ProblemAndSubmissionReceipt object) {
 			return object.getProblem().getBriefDescription();
 		}
 	}
@@ -56,12 +56,12 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
 		// When a problem is selected, add it to the session
-		final SingleSelectionModel<ProblemAndSubscriptionReceipt> selectionModel = new SingleSelectionModel<ProblemAndSubscriptionReceipt>();
+		final SingleSelectionModel<ProblemAndSubmissionReceipt> selectionModel = new SingleSelectionModel<ProblemAndSubmissionReceipt>();
 		cellTable.setSelectionModel(selectionModel);
 		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent event) {
-				ProblemAndSubscriptionReceipt selected = selectionModel.getSelectedObject();
+				ProblemAndSubmissionReceipt selected = selectionModel.getSelectedObject();
 				if (selected != null) {
 					// Add the problem to the Session
 					// TODO: add ProblemAndSubmissionReceipt
@@ -72,7 +72,7 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 		
 		// If there is already a Course selected, load its problems
 		Course course = session.get(Course.class);
-		ProblemAndSubscriptionReceipt[] problemList = session.get(ProblemAndSubscriptionReceipt[].class);
+		ProblemAndSubmissionReceipt[] problemList = session.get(ProblemAndSubmissionReceipt[].class);
 		if (course != null) {
 			loadProblemsForCourse(course);
 		} else if (problemList != null) {
@@ -89,7 +89,7 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 	}
 
 	public void loadProblemsForCourse(Course course) {
-		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubscriptionReceipt[]>() {
+		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				GWT.log("Error loading problems for course", caught);
@@ -97,13 +97,13 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 			}
 
 			@Override
-			public void onSuccess(ProblemAndSubscriptionReceipt[] result) {
+			public void onSuccess(ProblemAndSubmissionReceipt[] result) {
 				displayLoadedProblems(result);
 			}
 		});
 	}
 
-	private void displayLoadedProblems(ProblemAndSubscriptionReceipt[] problemList) {
+	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
 		cellTable.setRowCount(problemList.length);
 		cellTable.setRowData(0, Arrays.asList(problemList));
 	}

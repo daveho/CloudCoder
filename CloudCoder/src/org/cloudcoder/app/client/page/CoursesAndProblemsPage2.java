@@ -25,7 +25,7 @@ import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAndSubscriptionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -120,14 +120,14 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				Course course = (Course) hint;
 				
 				// Load problems
-				RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubscriptionReceipt[]>() {
+				RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						// FIXME: report error
 					}
 
 					@Override
-					public void onSuccess(ProblemAndSubscriptionReceipt[] result) {
+					public void onSuccess(ProblemAndSubmissionReceipt[] result) {
 						// Add ProblemAndSubmissionReceipt list to session so that
 						// ProblemListView2 will know about it
 						getSession().add(result);

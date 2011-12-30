@@ -20,23 +20,23 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 
 /**
- * Problem and (optional) SubscriptionReceipt.
+ * Problem and (optional) SubmissionReceipt.
  * This object is used to convey information about a problem and a
  * summary of the user's work on the problem.
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndSubscriptionReceipt implements Serializable {
+public class ProblemAndSubmissionReceipt implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Problem problem;
 	private SubmissionReceipt receipt;
 	
-	public ProblemAndSubscriptionReceipt() {
+	public ProblemAndSubmissionReceipt() {
 		
 	}
 	
-	public ProblemAndSubscriptionReceipt(Problem problem, SubmissionReceipt receipt) {
+	public ProblemAndSubmissionReceipt(Problem problem, SubmissionReceipt receipt) {
 		this.problem = problem;
 		this.receipt = receipt;
 	}
