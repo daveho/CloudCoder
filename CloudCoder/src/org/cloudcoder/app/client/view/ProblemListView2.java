@@ -9,6 +9,8 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -31,6 +33,7 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 		// Configure the DataGrid that will show the problems
 		cellTable.addColumn(new TestNameColumn(), "Name");
 		cellTable.addColumn(new BriefDescriptionColumn(), "Description");
+		cellTable.addColumn(new SubmissionStatusColumn(), "Status");
 		
 		initWidget(cellTable);
 	}
@@ -46,6 +49,17 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 		@Override
 		public String getValue(ProblemAndSubmissionReceipt object) {
 			return object.getProblem().getBriefDescription();
+		}
+	}
+	
+	private static class SubmissionStatusColumn extends TextColumn<ProblemAndSubmissionReceipt> {
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+		 */
+		@Override
+		public String getValue(ProblemAndSubmissionReceipt object) {
+			SubmissionStatus status = (object.getReceipt() != null) ? object.getReceipt().getStatus() : SubmissionStatus.NOT_STARTED;
+			return status.toString();
 		}
 	}
 
