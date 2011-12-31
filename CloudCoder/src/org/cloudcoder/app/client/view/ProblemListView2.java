@@ -7,9 +7,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
-import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -23,6 +21,14 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
+/**
+ * View for ProblemAndSubmissionReceipts.
+ * It serves as a summary of which problems are available in a particular
+ * Course. It also displays a status with each problem (whether or not the
+ * problem has been started, completed, etc.)
+ * 
+ * @author David Hovemeyer
+ */
 public class ProblemListView2 extends Composite implements SessionObserver, Subscriber {
 	private Session session;
 	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
@@ -78,7 +84,6 @@ public class ProblemListView2 extends Composite implements SessionObserver, Subs
 				ProblemAndSubmissionReceipt selected = selectionModel.getSelectedObject();
 				if (selected != null) {
 					// Add the problem to the Session
-					// TODO: add ProblemAndSubmissionReceipt
 					session.add(selected.getProblem());
 				}
 			}

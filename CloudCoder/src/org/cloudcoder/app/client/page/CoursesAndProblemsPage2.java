@@ -24,7 +24,6 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -51,7 +50,6 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		private TermAndCourseTreeView termAndCourseTreeView;
 		private ProblemDescriptionView problemDescriptionView;
-
 		private ProblemListView2 ProblemListView2;
 
 		public UI() {
@@ -152,6 +150,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 */
 	@Override
 	public void activate() {
+		getSession().add(new ProblemAndSubmissionReceipt[0]);
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
