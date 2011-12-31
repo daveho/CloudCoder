@@ -88,7 +88,6 @@ public class DevelopmentPage extends CloudCoderPage {
 		private TestResultListView testResultListView;
 		private CompilerDiagnosticListView compilerDiagnosticListView;
 
-		private CloudCoderPage page;
 		private AceEditor aceEditor;
 		private Timer flushPendingChangeEventsTimer;
 		private Mode mode;
@@ -210,7 +209,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// and because the editor is read-only, we know that the
 			// local text is in-sync.  So, submit the code!
 
-			Session session = page.getSession();
+			Session session = getSession();
 			Problem problem = session.get(Problem.class);
 			String text = aceEditor.getText();
 			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<SubmissionResult>() {
@@ -218,16 +217,16 @@ public class DevelopmentPage extends CloudCoderPage {
 				public void onFailure(Throwable caught) {
 					final String msg = "Error sending submission to server for compilation"; 
 					GWT.log(msg, caught);
-					page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
+					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
 					// TODO: should set editor back to read/write?
 				}
 
 				@Override
 				public void onSuccess(SubmissionResult result) {
 					if (result==null){
-						page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
-						page.getSession().add(new TestResult[0]);
-						page.getSession().add(new CompilerDiagnostic[0]);
+						getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
+						getSession().add(new TestResult[0]);
+						getSession().add(new CompilerDiagnostic[0]);
 
 					} else {
 						// Add compiler diagnostics.
@@ -238,28 +237,28 @@ public class DevelopmentPage extends CloudCoderPage {
 						if (compilerDiagnosticList == null) {
 							compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
 						}
-						page.getSession().add(compilerDiagnosticList);
+						getSession().add(compilerDiagnosticList);
 
 						// See what the result of the submission was.
 						if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
 								result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
 						{
 							// ?
-							page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
-							page.getSession().add(new TestResult[0]);
+							getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+							getSession().add(new TestResult[0]);
 						} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
 							// Code did not compile
-							page.getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
-							page.getSession().add(new TestResult[0]);
+							getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
+							getSession().add(new TestResult[0]);
 						} else {
 							// Code compiled, and test results were sent back.
 
 							TestResult[] results=result.getTestResults();
 							// Great, got results back from server!
-							page.getSession().add(results);
+							getSession().add(results);
 
 							// Add a status message about the results
-							page.getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + 
+							getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + 
 									results.length+ " test result(s)"));
 						}
 						// Can resume editing now
