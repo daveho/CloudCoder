@@ -25,6 +25,7 @@ import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -32,6 +33,8 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -72,6 +75,12 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
 			
 			this.loadProblemButton = new Button("Load problem!");
+			loadProblemButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadProblemButtonClicked();
+				}
+			});
 			southLayoutPanel.add(loadProblemButton);
 			southLayoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 160.0, Unit.PX);
 			southLayoutPanel.setWidgetTopHeight(loadProblemButton, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
@@ -87,6 +96,13 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			dockLayoutPanel.add(problemListView2);
 			
 			initWidget(dockLayoutPanel);
+		}
+
+		private void loadProblemButtonClicked() {
+			Problem problem = getSession().get(Problem.class);
+			if (problem != null) {
+				getSession().notifySubscribers(Session.Event.PROBLEM_CHOSEN, problem);
+			}
 		}
 
 		/* (non-Javadoc)
