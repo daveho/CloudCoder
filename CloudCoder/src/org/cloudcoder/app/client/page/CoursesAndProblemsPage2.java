@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -32,6 +33,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -50,7 +52,10 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		private TermAndCourseTreeView termAndCourseTreeView;
 		private ProblemDescriptionView problemDescriptionView;
-		private ProblemListView2 ProblemListView2;
+		private StatusMessageView statusMessageView;
+		private ProblemListView2 problemListView2;
+
+		private Button loadProblemButton;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
@@ -59,11 +64,27 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			
 			dockLayoutPanel.addEast(eastLayoutPanel, 24.0);
 			
-			this.problemDescriptionView = new ProblemDescriptionView();
-			dockLayoutPanel.addSouth(problemDescriptionView, 12.0);
+			LayoutPanel southLayoutPanel = new LayoutPanel();
 			
-			this.ProblemListView2 = new ProblemListView2();
-			dockLayoutPanel.add(ProblemListView2);
+			this.statusMessageView = new StatusMessageView();
+			southLayoutPanel.add(statusMessageView);
+			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+			
+			this.loadProblemButton = new Button("Load problem!");
+			southLayoutPanel.add(loadProblemButton);
+			southLayoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 160.0, Unit.PX);
+			southLayoutPanel.setWidgetTopHeight(loadProblemButton, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+			
+			this.problemDescriptionView = new ProblemDescriptionView();
+			southLayoutPanel.add(problemDescriptionView);
+			southLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetTopBottom(problemDescriptionView, StatusMessageView.HEIGHT*2, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
+			
+			dockLayoutPanel.addSouth(southLayoutPanel, 15.0);
+			
+			this.problemListView2 = new ProblemListView2();
+			dockLayoutPanel.add(problemListView2);
 			
 			initWidget(dockLayoutPanel);
 		}
@@ -76,7 +97,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
 			// activate views
-			ProblemListView2.activate(session, subscriptionRegistrar);
+			problemListView2.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			
 			// Load courses
@@ -121,7 +142,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						// FIXME: report error
+						GWT.log("Error loading problems", caught);
+						getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problems: " + caught.getMessage()));
 					}
 
 					@Override
