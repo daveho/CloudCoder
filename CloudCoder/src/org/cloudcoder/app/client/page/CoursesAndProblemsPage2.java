@@ -124,8 +124,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
 				// Courses are loaded - create and activate TermAndCourseTreeView
 				termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
-				termAndCourseTreeView.setSize("100%", "100%");
 				eastLayoutPanel.add(termAndCourseTreeView);
+				eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
+				eastLayoutPanel.setWidgetTopBottom(termAndCourseTreeView, 0.0, Unit.PX, 0.0, Unit.PX);
 				
 				// add selection event handler
 				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
