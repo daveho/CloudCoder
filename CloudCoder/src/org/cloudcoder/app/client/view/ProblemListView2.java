@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.client.view;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
