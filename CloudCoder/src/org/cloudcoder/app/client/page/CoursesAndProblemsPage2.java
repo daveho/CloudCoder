@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -53,6 +54,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	private class UI extends Composite implements SessionObserver, Subscriber {
 		private LayoutPanel eastLayoutPanel;
 
+		private PageNavPanel pageNavPanel;
 		private TermAndCourseTreeView termAndCourseTreeView;
 		private ProblemDescriptionView problemDescriptionView;
 		private StatusMessageView statusMessageView;
@@ -64,6 +66,12 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
 			
 			this.eastLayoutPanel = new LayoutPanel();
+			
+			this.pageNavPanel = new PageNavPanel();
+			pageNavPanel.setShowBackButton(false);
+			eastLayoutPanel.add(pageNavPanel);
+			eastLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
+			eastLayoutPanel.setWidgetLeftRight(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			dockLayoutPanel.addEast(eastLayoutPanel, 24.0);
 			
@@ -116,6 +124,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			problemListView2.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			
+			// register a logout handler
+			this.pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			
 			// Load courses
 			RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
 				@Override
@@ -142,7 +153,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
 				eastLayoutPanel.add(termAndCourseTreeView);
 				eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
-				eastLayoutPanel.setWidgetTopBottom(termAndCourseTreeView, 0.0, Unit.PX, 0.0, Unit.PX);
+				eastLayoutPanel.setWidgetTopBottom(termAndCourseTreeView, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT, 0.0, Unit.PX);
 				
 				// add selection event handler
 				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
