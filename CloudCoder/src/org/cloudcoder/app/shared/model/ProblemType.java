@@ -30,6 +30,20 @@ public enum ProblemType {
 	 * Problem involving writing a complete Java method.
 	 */
 	JAVA_METHOD,
+	
+	/**
+	 * Problem involving writing a complete Python method.
+	 */
 	PYTHON_FUNCTION,
+	
+	/**
+	 * Problem involving writing a complete C function.
+	 */
 	C_FUNCTION,
+	
+	/**
+	 * Problem involving writing a complete C program,
+	 * complete with #includes, a main function, etc.
+	 */
+	C_PROGRAM,
 }

@@ -41,9 +41,10 @@ import org.slf4j.LoggerFactory;
  * A "Builder" process.  It runs separately from the CloudCoder server,
  * and waits to receive submissions (Problem and program text).
  * For each submission received, it compiles it, tests it,
- * and reports back a list of TestResults.
+ * and reports back a SubmissionResult.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class Builder implements Runnable {
     private static final Logger logger=LoggerFactory.getLogger(Builder.class);
@@ -68,23 +69,32 @@ public class Builder implements Runnable {
 		this.testerMap=new HashMap<ProblemType, ITester>();
 	}
 	
+	// Map of tester classes for known problem types
+	private static final Map<ProblemType, Class<? extends ITester>> testerClassMap =
+			new HashMap<ProblemType, Class<? extends ITester>>();
+	static {
+		testerClassMap.put(ProblemType.JAVA_METHOD, JavaTester.class);
+		testerClassMap.put(ProblemType.C_FUNCTION, CTester.class);
+		testerClassMap.put(ProblemType.C_PROGRAM, CProgramTester.class);
+		testerClassMap.put(ProblemType.PYTHON_FUNCTION, PythonTester.class);
+	}
+	
 	private ITester getTester(ProblemType problemType) {
-	    if (!testerMap.containsKey(problemType)) {
-	        //XXX Could use reflection to create the tester
-	        // could also dynamically replace the testers for a running server
-	        // may need to use JMX for this?
-	        // could somehow encode versions of testers
-	        if (problemType==ProblemType.JAVA_METHOD) {
-	            testerMap.put(problemType, new JavaTester());
-	        } else if (problemType==ProblemType.C_FUNCTION) {
-	            testerMap.put(problemType, new CTester());
-	        } else if (problemType==ProblemType.PYTHON_FUNCTION) {
-	            testerMap.put(ProblemType.PYTHON_FUNCTION, new PythonTester());
-	        } else {
-	            throw new UnsupportedOperationException("problem type "+problemType+" not supported");
-	        }
+		ITester result = testerMap.get(problemType);
+	    if (result == null) {
+	        // Use reflection to create the tester
+	    	Class<? extends ITester> testerCls = testerClassMap.get(problemType);
+	    	if (testerCls == null) {
+	    		throw new UnsupportedOperationException("problem type "+problemType+" not supported");
+	    	}
+	    	try {
+	    		result = testerCls.newInstance();
+	    	} catch (Exception e) {
+	    		throw new IllegalStateException("Could not instantiate tester for " + problemType, e);
+	    	}
+	    	testerMap.put(problemType, result);
 	    }
-	    return testerMap.get(problemType);
+	    return result;
 	}
 
 	public void run() {

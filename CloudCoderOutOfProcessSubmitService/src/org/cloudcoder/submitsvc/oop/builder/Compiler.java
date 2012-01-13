@@ -79,7 +79,7 @@ public class Compiler {
     
     public CompilerDiagnostic[] getCompilerDiagnosticList() {
         //TODO: Limit to only errors for the functions we're interested in
-        CompilerDiagnostic[] result=new CompilerDiagnostic[compilerOutput.size()-1];
+        CompilerDiagnostic[] result=new CompilerDiagnostic[compilerOutput.size()/*-1*/];
         if (compilerOutput.size()>1) {
             for (int i=1; i<compilerOutput.size(); i++) {
                 String s=compilerOutput.get(i);
@@ -147,29 +147,5 @@ public class Compiler {
 
     public void setProgramName(String progname) {
         this.progName = progname;
-    }
-
-    public static File makeTempDir(String baseDir) {
-
-        int attempts = 1;
-        File tempDir = null;
-
-        while (tempDir == null && attempts < 10) {
-            try {
-                // start by creating a temporary file
-                File tempFile = File.createTempFile("cmp", "", new File(baseDir));
-
-                // temporary file created successfully - delete it and make an identically-named
-                // directory
-                if (tempFile.delete() && tempFile.mkdir()) {
-                    // success!
-                    tempDir = tempFile;
-                }
-            } catch (IOException e) {
-                logger.warn("Unable to delete temp file and create directory");
-            }
-            attempts++;
-        }
-        return tempDir;
     }
 }

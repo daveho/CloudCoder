@@ -29,23 +29,41 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Run a subprocess, capturing its stdout and stderr as text.
+ * Optionally, send text to the stdin of the process.
+ * 
+ * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class ProcessRunner {
     private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
     
 	private String statusMessage = "";
 	private int exitCode;
-	private Process process;
+	private volatile Process process;
 	private Thread exitValueMonitor;
+	private String stdin;
 	private OutputCollector stdoutCollector;
 	private OutputCollector stderrCollector;
+	private InputSender stdinSender;
 	
 	private Map<String,String> env=new HashMap<String,String>();
 	
+	/**
+	 * Constructor.
+	 */
 	public ProcessRunner() {
 	    for (Entry<String,String> entry : System.getenv().entrySet()) {
 	        env.put(entry.getKey(), entry.getValue());
 	    }
+	}
+	
+	/**
+	 * Set text to send to the process as its standard input.
+	 * 
+	 * @param stdin text to send to the process as its standard input
+	 */
+	public void setStdin(String stdin) {
+		this.stdin = stdin;
 	}
 	
 	private String[] getEnvp() {
@@ -80,11 +98,20 @@ public class ProcessRunner {
             stderrCollector = new OutputCollector(process.getErrorStream());
             stdoutCollector.start();
             stderrCollector.start();
+            
+            // If stdin was provided, send it
+            if (stdin != null) {
+            	stdinSender = new InputSender(process.getOutputStream(), stdin);
+            	stdinSender.start();
+            }
 
             // wait for process and output collector threads to finish
             exitCode = process.waitFor();
             stdoutCollector.join();
             stderrCollector.join();
+            if (stdinSender != null) {
+            	stdinSender.join();
+            }
 
             statusMessage = "Process finished";
             return true;
@@ -118,8 +145,16 @@ public class ProcessRunner {
 	}
 
     public boolean isRunning() {
+    	Process p = process;
+    	
+    	if (p == null) {
+    		// Process hasn't started yet.
+    		// Count that as "running".
+    		return true;
+    	}
+    	
         try {
-            process.exitValue();
+            p.exitValue();
             return false;
         } catch (IllegalThreadStateException e){
             return true;
@@ -140,6 +175,8 @@ public class ProcessRunner {
         process.destroy();
         stdoutCollector.interrupt();
         stderrCollector.interrupt();
-        
+        if (stdinSender != null) {
+        	stdinSender.interrupt();
+        }
     }
 }

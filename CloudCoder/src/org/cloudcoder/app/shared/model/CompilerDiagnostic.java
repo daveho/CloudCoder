@@ -56,11 +56,11 @@ public class CompilerDiagnostic implements Serializable
         this.message="";
     }
 
-    public CompilerDiagnostic(long l, long m, long n, long o, String message) {
-        this.startLine=l;
-        this.endLine=m;
-        this.startColumn=n;
-        this.endColumn=o;
+    public CompilerDiagnostic(long startLine, long endLine, long startColumn, long endColumn, String message) {
+        this.startLine=startLine;
+        this.endLine=endLine;
+        this.startColumn=startColumn;
+        this.endColumn=endColumn;
         this.message=message;
     }
     

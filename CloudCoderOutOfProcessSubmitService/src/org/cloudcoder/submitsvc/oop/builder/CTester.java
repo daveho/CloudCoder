@@ -28,7 +28,6 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,50 +135,31 @@ public class CTester implements ITester
         // wait for the timeout limit
         wait(tests);
         
+        int index = 0;
         for (ProcessRunner p : tests) {
             if (p.isRunning()) {
                 p.killProcess();
-                results.add(new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
-                        "timeout",
-                        merge(p.getStdout()),
-                        merge(p.getStderr())));
+                results.add(CUtil.createTestResultForTimeout(p));
             } else {
                 //TODO: figure out return code of process killed by ulimit
                 if (p.getExitCode()==0) {
-                    results.add(new TestResult(TestOutcome.PASSED,
-                            p.getStatusMessage(),
-                            merge(p.getStdout()),
-                            merge(p.getStderr())));
+                    results.add(CUtil.createTestResultForPassedTest(p));
                 } else if (p.getExitCode()==6) {
                     // error code 6 means CORE DUMP
-                    results.add(new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
-                            p.getStatusMessage(),
-                            merge(p.getStdout()),
-                            merge(p.getStderr())));
+                    results.add(CUtil.createTestResultForCoreDump(p));
                 } else {
-                    results.add(new TestResult(TestOutcome.FAILED_ASSERTION,
-                            p.getStatusMessage(),
-                            merge(p.getStdout()),
-                            merge(p.getStderr())));
+                    results.add(CUtil.createTestResultForFailedAssertion(p, "Test failed for input " + testCaseList.get(index).getInput()));
                 }
             }
+            index++;
         }
         SubmissionResult result=new SubmissionResult(
                 new CompilationResult(CompilationOutcome.SUCCESS));
         result.setTestResults(results.toArray(new TestResult[results.size()]));
         return result;
     }
-    
-    private String merge(List<String> list){
-        StringBuilder builder=new StringBuilder();
-        for (String s : list) {
-            builder.append(s);
-            builder.append("\n");
-        }
-        return builder.toString();
-    }
-    
-    public String[] getTestCommand(String programName, TestCase testCase) {
+
+	public String[] getTestCommand(String programName, TestCase testCase) {
         return new String[] {programName, testCase.getTestCaseName()};
     }
 }
