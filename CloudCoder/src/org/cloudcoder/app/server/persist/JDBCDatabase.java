@@ -707,6 +707,8 @@ public class JDBCDatabase implements IDatabase {
 		problem.setTestName(resultSet.getString(index++));
 		problem.setBriefDescription(resultSet.getString(index++));
 		problem.setDescription(resultSet.getString(index++));
+		problem.setWhenAssigned(resultSet.getLong(index++));
+		problem.setWhenDue(resultSet.getLong(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {

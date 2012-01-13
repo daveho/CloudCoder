@@ -25,6 +25,7 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Table;
 
 import java.io.Serializable;
+import java.util.Date;
 
 //@Entity
 //@Table(name="problems")
@@ -50,6 +51,10 @@ public class Problem implements Serializable
 	
 //	@Column(name="description")
 	private String description;
+	
+	private long whenAssigned;
+	
+	private long whenDue;
 
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
@@ -120,5 +125,51 @@ public class Problem implements Serializable
 	 */
 	public void setDescription(String description){
 		this.description = description;
+	}
+	
+	/**
+	 * @return the whenAssigned
+	 */
+	public long getWhenAssigned() {
+		return whenAssigned;
+	}
+	
+	/**
+	 * Get "when assigned" as a java.util.Date.
+	 * 
+	 * @return "when assigned" as a java.util.Date
+	 */
+	public Date getWhenAssignedAsDate() {
+		return new Date(whenAssigned);
+	}
+	
+	/**
+	 * @param whenAssigned the whenAssigned to set
+	 */
+	public void setWhenAssigned(long whenAssigned) {
+		this.whenAssigned = whenAssigned;
+	}
+	
+	/**
+	 * @return the whenDue
+	 */
+	public long getWhenDue() {
+		return whenDue;
+	}
+	
+	/**
+	 * Get "when due" as a java.util.Date.
+	 * 
+	 * @return "when due" as a java.util.Date.
+	 */
+	public Date getWhenDueAsDate() {
+		return new Date(whenDue);
+	}
+	
+	/**
+	 * @param whenDue the whenDue to set
+	 */
+	public void setWhenDue(long whenDue) {
+		this.whenDue = whenDue;
 	}
 }

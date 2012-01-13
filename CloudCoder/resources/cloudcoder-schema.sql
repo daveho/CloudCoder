@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 16, 2011 at 04:47 PM
+-- Generation Time: Jan 13, 2012 at 12:40 PM
 -- Server version: 5.1.58
 -- PHP Version: 5.3.6-13ubuntu3.3
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `changes` (
   `text` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id` (`event_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=272 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=286 ;
 
 --
 -- Dumping data for table `changes`
@@ -330,7 +330,21 @@ INSERT INTO `changes` (`id`, `event_id`, `type`, `start_row`, `end_row`, `start_
 (268, 306, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
 (269, 308, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
 (270, 310, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
-(271, 312, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n');
+(271, 312, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(272, 314, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(273, 316, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(274, 318, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    return x * x;\n}\n'),
+(275, 320, 0, 1, 2, 37, 0, '\n'),
+(276, 321, 0, 2, 2, 0, 4, '    '),
+(277, 322, 0, 2, 2, 4, 5, 'f'),
+(278, 323, 0, 2, 2, 5, 6, 'r'),
+(279, 324, 0, 2, 2, 6, 7, 'o'),
+(280, 325, 0, 2, 2, 7, 8, 'o'),
+(281, 326, 0, 2, 2, 8, 9, 't'),
+(282, 327, 1, 2, 2, 8, 9, 't'),
+(283, 328, 0, 2, 2, 8, 9, 'p'),
+(284, 329, 0, 2, 2, 9, 10, '!'),
+(285, 330, 4, 0, 0, 0, 0, 'public int sq(int x) {\n    System.out.println("Meep! " + x);\n    froop!\n    return x * x;\n}\n');
 
 -- --------------------------------------------------------
 
@@ -416,7 +430,7 @@ CREATE TABLE IF NOT EXISTS `events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=314 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=332 ;
 
 --
 -- Dumping data for table `events`
@@ -696,7 +710,25 @@ INSERT INTO `events` (`id`, `user_id`, `problem_id`, `type`, `timestamp`) VALUES
 (309, 1, 1, 2, 1324070715588),
 (310, 1, 1, 0, 1324071858141),
 (312, 1, 1, 0, 1324072006881),
-(313, 1, 1, 2, 1324072007659);
+(313, 1, 1, 2, 1324072007659),
+(314, 1, 1, 0, 1324779889710),
+(315, 1, 1, 2, 1324779890029),
+(316, 1, 1, 0, 1325343467679),
+(317, 1, 1, 2, 1325343469527),
+(318, 1, 1, 0, 1326476376880),
+(319, 1, 1, 2, 1326476379325),
+(320, 1, 1, 0, 1326476385427),
+(321, 1, 1, 0, 1326476385435),
+(322, 1, 1, 0, 1326476386249),
+(323, 1, 1, 0, 1326476386434),
+(324, 1, 1, 0, 1326476386681),
+(325, 1, 1, 0, 1326476386838),
+(326, 1, 1, 0, 1326476386978),
+(327, 1, 1, 0, 1326476387353),
+(328, 1, 1, 0, 1326476387578),
+(329, 1, 1, 0, 1326476387699),
+(330, 1, 1, 0, 1326476389760),
+(331, 1, 1, 2, 1326476389952);
 
 -- --------------------------------------------------------
 
@@ -711,6 +743,8 @@ CREATE TABLE IF NOT EXISTS `problems` (
   `testname` varchar(255) NOT NULL,
   `brief_description` varchar(60) NOT NULL,
   `description` varchar(255) NOT NULL,
+  `when_assigned` bigint(20) NOT NULL,
+  `when_due` bigint(20) NOT NULL,
   PRIMARY KEY (`problem_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
@@ -718,8 +752,8 @@ CREATE TABLE IF NOT EXISTS `problems` (
 -- Dumping data for table `problems`
 --
 
-INSERT INTO `problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`) VALUES
-(1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
+INSERT INTO `problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`) VALUES
+(1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -734,7 +768,7 @@ CREATE TABLE IF NOT EXISTS `submission_receipts` (
   `status` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `event_id` (`event_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
 
 --
 -- Dumping data for table `submission_receipts`
@@ -742,7 +776,11 @@ CREATE TABLE IF NOT EXISTS `submission_receipts` (
 
 INSERT INTO `submission_receipts` (`id`, `event_id`, `last_edit_event_id`, `status`) VALUES
 (1, 309, 308, 0),
-(3, 313, 312, 0);
+(3, 313, 312, 0),
+(4, 315, 314, 3),
+(5, 317, 316, 0),
+(6, 319, 318, 0),
+(7, 331, 330, 2);
 
 -- --------------------------------------------------------
 
@@ -810,7 +848,7 @@ CREATE TABLE IF NOT EXISTS `test_results` (
   `stderr` varchar(200) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `submission_receipt_id` (`submission_receipt_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=13 ;
 
 --
 -- Dumping data for table `test_results`
@@ -820,7 +858,15 @@ INSERT INTO `test_results` (`id`, `submission_receipt_id`, `test_outcome`, `mess
 (1, 0, 0, 'Passed! input=5, output=25', '', ''),
 (2, 0, 0, 'Passed! input=-1, output=1', '', ''),
 (3, 0, 0, 'Passed! input=9, output=81', '', ''),
-(4, 0, 0, 'Passed! input=10, output=100', '', '');
+(4, 0, 0, 'Passed! input=10, output=100', '', ''),
+(5, 0, 0, 'Passed! input=5, output=25', '', ''),
+(6, 0, 0, 'Passed! input=-1, output=1', '', ''),
+(7, 0, 0, 'Passed! input=9, output=81', '', ''),
+(8, 0, 0, 'Passed! input=10, output=100', '', ''),
+(9, 0, 0, 'Passed! input=5, output=25', '', ''),
+(10, 0, 0, 'Passed! input=-1, output=1', '', ''),
+(11, 0, 0, 'Passed! input=9, output=81', '', ''),
+(12, 0, 0, 'Passed! input=10, output=100', '', '');
 
 -- --------------------------------------------------------
 
