@@ -1,0 +1,6 @@
+/bin/*
+/apps/submitServer
+/log.txt
+/log/*
+/cloudCoder.pid
+/cloudCoder-*.fifo
