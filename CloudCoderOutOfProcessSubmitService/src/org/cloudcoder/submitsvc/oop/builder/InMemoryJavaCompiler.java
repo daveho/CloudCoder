@@ -26,9 +26,9 @@ import java.util.Map;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
-import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.ToolProvider;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;

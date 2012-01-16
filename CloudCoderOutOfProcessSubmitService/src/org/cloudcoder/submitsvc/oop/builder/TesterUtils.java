@@ -20,7 +20,6 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.util.List;
 import java.util.Map;
 
-
 import org.cloudcoder.app.shared.model.TestResult;
 
 /**
