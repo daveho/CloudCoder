@@ -17,7 +17,10 @@
 
 package org.cloudcoder.submitsvc.oop.builder;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -207,18 +210,45 @@ public class Builder implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		Builder builder = new Builder("localhost", OutOfProcessSubmitService.PORT);
+		if (args.length < 1 || args.length > 2) {
+			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name>");
+			System.exit(1);
+		}
+
+		// Determine the host name and port for the CloudCoder webapp.
+		String appHost = args[0];
+		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.PORT;
+		
+		// Start the Builder
+		Builder builder = new Builder(appHost, appPort);
 		Thread thread = new Thread(builder);
 		thread.start();
 
-		Scanner keyboard = new Scanner(System.in);
-		logger.warn("Type shutdown to quit");
-
-		for (;;) {
-			String line = keyboard.nextLine();
-			if (line == null || line.equals("shutdown")) {
-				break;
+		// Wait until "quit" is written to the FIFO
+		try {
+			final String appName = "cloudCoderBuilder";
+			BufferedReader reader = new BufferedReader(System.getProperty(appName + ".fifo") != null
+					? new FileReader(System.getProperty(appName + ".fifo"))
+					: new InputStreamReader(System.in));
+			
+			try {
+				while (true) {
+					String line = reader.readLine();
+					if (line == null) {
+						System.err.println("Reached EOF on FIFO?");
+						break;
+					}
+					if (line.trim().toLowerCase().equals("quit")) {
+						System.out.println("Quit command read from FIFO");
+						break;
+					}
+				}
+			} finally {
+				reader.close();
 			}
+		} catch (IOException e) {
+			System.err.println("IOException reading from FIFO: " + e.getMessage());
+			e.printStackTrace(System.err);
 		}
 
 		try {

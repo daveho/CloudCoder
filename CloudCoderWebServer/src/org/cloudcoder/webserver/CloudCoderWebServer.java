@@ -57,8 +57,9 @@ public class CloudCoderWebServer {
 		
 		// Wait until "quit" is written to the FIFO
 		try {
-			BufferedReader reader = new BufferedReader(System.getProperty("cloudCoder.fifo") != null
-					? new FileReader(System.getProperty("cloudCoder.fifo"))
+			final String appName = "cloudCoder";
+			BufferedReader reader = new BufferedReader(System.getProperty(appName + ".fifo") != null
+					? new FileReader(System.getProperty(appName + ".fifo"))
 					: new InputStreamReader(System.in));
 			
 			try {
