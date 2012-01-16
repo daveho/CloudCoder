@@ -12,20 +12,27 @@ analyze data, etc.
 Installation
 ============
 
-If you want 
-
 TODO: make the installation process more friendly.
 
-There are three Eclipse projects:
+Start by checking out CloudCoder from github:
+
+  git clone https://github.com/daveho/CloudCoder.git
+
+This will create a "CloudCoder" directory with three subdirectories:
+
   CloudCoder
   CloudCoderOutOfProcessSubmitService
   CloudCoderWebServer
 
-Import all of the projects into Eclipse.  Make sure all
-three working directories are extracted in the same place.
-(This will happen automatically if you cloned the
-CloudCoder git repository.)  This directory will be
-referred to as $BASE.
+Import all of the projects into Eclipse.  (Recommended:
+File->Import->Git->Projects from Git, add the git repository
+you just created with the clone command, and then
+import all of the Eclipse projects in it.)
+
+Make sure all three working directories are extracted in
+the same place.  (This will happen automatically if you cloned the
+CloudCoder git repository as described above.)  The directory
+containing these subdirectories will be referred to as $BASE.
 
 Step 1 - Building Projects
 --------------------------
