@@ -1,5 +1,5 @@
 /bin/*
-/apps/submitServer
+/apps/cloudCoder
 /log.txt
 /log/*
 /cloudCoder.pid
