@@ -369,6 +369,7 @@ public class JDBCDatabase implements IDatabase {
 						"   and cr.course_id = ? " +
 						"   and p.course_id = cr.course_id " +
 						"   and e.problem_id = p.problem_id " +
+						"   and e.user_id = cr.user_id " +
 						"   and r.event_id = e.id "
 				);
 				stmt.setInt(1, user.getId());
