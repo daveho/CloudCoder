@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 13, 2012 at 03:32 PM
+-- Generation Time: Jan 17, 2012 at 04:58 PM
 -- Server version: 5.1.58
 -- PHP Version: 5.3.6-13ubuntu3.3
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `changes` (
   `text` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id` (`event_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=420 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=423 ;
 
 --
 -- Dumping data for table `changes`
@@ -478,7 +478,10 @@ INSERT INTO `changes` (`id`, `event_id`, `type`, `start_row`, `end_row`, `start_
 (416, 464, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}'),
 (417, 465, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}'),
 (418, 467, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}'),
-(419, 468, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}');
+(419, 468, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}'),
+(420, 470, 4, 0, 0, 0, 0, '#include <stdio.h>\n\nint main(void) {\n    int a, b;\n    scanf("%i", &a);\n    scanf("%i", &b);\n    printf("answer: %i\\n", (a + b));\n    return 0;\n}'),
+(421, 473, 0, 0, 0, 0, 1, '#'),
+(422, 474, 1, 0, 0, 0, 1, '#');
 
 -- --------------------------------------------------------
 
@@ -537,7 +540,7 @@ CREATE TABLE IF NOT EXISTS `course_registrations` (
   `user_id` int(11) NOT NULL,
   `registration_type` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=9 ;
 
 --
 -- Dumping data for table `course_registrations`
@@ -547,7 +550,11 @@ INSERT INTO `course_registrations` (`id`, `course_id`, `user_id`, `registration_
 (1, 1, 1, 0),
 (2, 2, 1, 0),
 (3, 3, 1, 0),
-(4, 4, 1, 0);
+(4, 4, 1, 0),
+(5, 1, 2, 0),
+(6, 1, 3, 0),
+(7, 1, 4, 0),
+(8, 1, 5, 0);
 
 -- --------------------------------------------------------
 
@@ -564,7 +571,7 @@ CREATE TABLE IF NOT EXISTS `events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=470 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=475 ;
 
 --
 -- Dumping data for table `events`
@@ -1000,7 +1007,12 @@ INSERT INTO `events` (`id`, `user_id`, `problem_id`, `type`, `timestamp`) VALUES
 (466, 1, 2, 2, 1326486012067),
 (467, 1, 2, 0, 1326486201637),
 (468, 1, 2, 0, 1326486229540),
-(469, 1, 2, 2, 1326486230350);
+(469, 1, 2, 2, 1326486230350),
+(470, 1, 2, 0, 1326745794823),
+(471, 1, 2, 2, 1326745795870),
+(472, 4, 2, 2, 1326836974145),
+(473, 4, 2, 0, 1326837452909),
+(474, 4, 2, 0, 1326837453802);
 
 -- --------------------------------------------------------
 
@@ -1026,7 +1038,7 @@ CREATE TABLE IF NOT EXISTS `problems` (
 
 INSERT INTO `problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`) VALUES
 (1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.', 0, 0),
-(2, 1, 3, 'addInts', 'read two integers, add them, and print result', 'Read two integer values, and then print "answer: X" where X is the sum of the two integer values.', 1326485534072, 1326571934072);
+(2, 1, 3, 'addInts', 'read/add/print sum of integers', 'Read two integer values, and then print "answer: X" where X is the sum of the two integer values.', 1326485534072, 1326571934072);
 
 -- --------------------------------------------------------
 
@@ -1041,7 +1053,7 @@ CREATE TABLE IF NOT EXISTS `submission_receipts` (
   `status` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `event_id` (`event_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=14 ;
 
 --
 -- Dumping data for table `submission_receipts`
@@ -1057,7 +1069,9 @@ INSERT INTO `submission_receipts` (`id`, `event_id`, `last_edit_event_id`, `stat
 (8, 332, -1, 4),
 (9, 463, 462, 3),
 (10, 466, 465, 3),
-(11, 469, 468, 0);
+(11, 469, 468, 0),
+(12, 471, 470, 0),
+(13, 472, -1, 4);
 
 -- --------------------------------------------------------
 
@@ -1126,7 +1140,7 @@ CREATE TABLE IF NOT EXISTS `test_results` (
   `stderr` varchar(200) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `submission_receipt_id` (`submission_receipt_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=14 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=15 ;
 
 --
 -- Dumping data for table `test_results`
@@ -1145,7 +1159,8 @@ INSERT INTO `test_results` (`id`, `submission_receipt_id`, `test_outcome`, `mess
 (10, 0, 0, 'Passed! input=-1, output=1', '', ''),
 (11, 0, 0, 'Passed! input=9, output=81', '', ''),
 (12, 0, 0, 'Passed! input=10, output=100', '', ''),
-(13, 0, 0, 'Process finished', 'answer: 9\n', '');
+(13, 0, 0, 'Process finished', 'answer: 9\n', ''),
+(14, 0, 0, 'Process finished', 'answer: 9\n', '');
 
 -- --------------------------------------------------------
 
@@ -1160,14 +1175,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   `salt` varchar(16) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_username_index` (`username`)
-) ENGINE=InnoDB  DEFAULT CHARSET=ucs2 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=ucs2 AUTO_INCREMENT=6 ;
 
 --
 -- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `username`, `password_md5`, `salt`) VALUES
-(1, 'user', '7be1cb12697d993266db952cde9456c6', '5011ffcedffe0a14');
+(1, 'user', '7be1cb12697d993266db952cde9456c6', '5011ffcedffe0a14'),
+(2, 'dbabcock', 'a790a0c6ff0f9f89c482e827eb6a2873', '64c51d57faf2954c'),
+(3, 'jmoscola', 'a790a0c6ff0f9f89c482e827eb6a2873', '64c51d57faf2954c'),
+(4, 'dhovemey', 'a790a0c6ff0f9f89c482e827eb6a2873', '64c51d57faf2954c'),
+(5, 'mmmiller', 'a790a0c6ff0f9f89c482e827eb6a2873', '64c51d57faf2954c');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
