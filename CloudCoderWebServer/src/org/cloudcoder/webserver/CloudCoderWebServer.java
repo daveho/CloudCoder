@@ -23,22 +23,77 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 // See: http://brandontilley.com/2010/03/27/serving-a-gwt-application-with-an-embedded-jetty-server.html
 public class CloudCoderWebServer {
 	private static final String WEB_APP_DIR_NAME = "cloudCoder";
+	
+	// Configuration options
+	private static class Options {
+		private int port;
+		private String context;
+		private boolean localhostOnly;
+		
+		public Options() {
+			// Default options: listen on port 8001, context is /cloudcoder,
+			// and only accept connections originating from localhost (which
+			// is what we expect if the webapp is being reverse-proxied
+			// (which is what I (DHH) am doing).
+			this.port = 8081;
+			this.context = "/cloudcoder";
+			this.localhostOnly = true;
+		}
+		
+		public int getPort() {
+			return port;
+		}
+		
+		public String getContext() {
+			return context;
+		}
+		
+		public boolean isLocalhostOnly() {
+			return localhostOnly;
+		}
+		
+		public void parse(String[] args) {
+			for (String arg : args) {
+				if (arg.startsWith("--port=")) {
+					port = Integer.parseInt(arg.substring("--port=".length()));
+				} else if (arg.startsWith("--context=")) {
+					context = arg.substring("--context=".length());
+				} else if (arg.startsWith("--localhostOnly=")) {
+					localhostOnly = Boolean.parseBoolean(arg.substring("--localhostOnly=".length()));
+				} else {
+					throw new IllegalArgumentException("Unknown argument: " + arg);
+				}
+			}
+		}
+	}
 
 	public static void main(String[] args) throws Exception {
-		// Create an embedded Jetty server on port 8080
-		Server server = new Server(8080);
+		Options options = new Options();
+		options.parse(args);
+		
+		// Create an embedded Jetty server
+		Server server = new Server();
+		
+		// Create a connector
+		SelectChannelConnector connector = new SelectChannelConnector();
+		connector.setPort(options.getPort());
+		if (options.isLocalhostOnly()) {
+			connector.setHost("localhost");
+		}
+		server.addConnector(connector);
 
 		// Create WebAppContext
 		WebAppContext handler = new WebAppContext();
 		handler.setResourceBase("./apps/" + WEB_APP_DIR_NAME);
 		handler.setDescriptor("./apps/" + WEB_APP_DIR_NAME + "/WEB-INF/web.xml");
-		handler.setContextPath("/");
+		handler.setContextPath(options.getContext());
 		handler.setParentLoaderPriority(true);
 
 		// Add it to the server
