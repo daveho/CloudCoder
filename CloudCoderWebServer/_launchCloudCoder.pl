@@ -29,7 +29,11 @@ system("echo '$pid' > $app.pid")/256 == 0 || die;
 my $fifo = "$app-$pid.fifo";
 system("mkfifo '$fifo'")/256 == 0 || die;
 
-# Launch the application
+# Launch the application, passing through any command line arguments
 my $cmd = "java -classpath bin:'$classpath' -D$app.fifo='$fifo' $MAIN_CLASS";
-print "cmd: $cmd\n" ; #if (exists $ENV{'DEBUG'});
+if (scalar(@ARGV) > 0) {
+	$cmd .= ' ';
+	$cmd .= join(' ', @ARGV);
+}
+print "cmd: $cmd\n" if (exists $ENV{'DEBUG'});
 exec($cmd) || die;
