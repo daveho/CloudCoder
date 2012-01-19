@@ -25,8 +25,6 @@ import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestOutcome;
-import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,38 +87,6 @@ public class CUtil {
 	        builder.append("\n");
 	    }
 	    return builder.toString();
-	}
-
-	public static TestResult createTestResultForTimeout(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
-		        "timeout",
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
-	public static TestResult createTestResultForPassedTest(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.PASSED,
-		        p.getStatusMessage(),
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
-	public static TestResult createTestResultForCoreDump(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
-		        p.getStatusMessage(),
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
-	public static TestResult createTestResultForFailedAssertion(ProcessRunner p, String message) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_ASSERTION,
-		        message,
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
 	}
 
 }

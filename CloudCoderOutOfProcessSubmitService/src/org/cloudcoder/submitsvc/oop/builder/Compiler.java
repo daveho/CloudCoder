@@ -124,7 +124,7 @@ public class Compiler {
             return false;
         }
 
-        compilerOutput.addAll(runner.getStderr());
+        compilerOutput.addAll(runner.getStderrAsList());
         if (runner.getExitCode() != 0) {
             statusMessage = cmd[0] + " exited with non-zero exit code " + runner.getExitCode();
             return false;

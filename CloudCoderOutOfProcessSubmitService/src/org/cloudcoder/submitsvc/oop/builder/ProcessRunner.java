@@ -19,6 +19,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
-public class ProcessRunner {
+public class ProcessRunner implements ITestOutput {
     private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
     
 	private String statusMessage = "";
@@ -136,11 +137,41 @@ public class ProcessRunner {
 		return exitCode;
 	}
 	
-	public List<String> getStdout() {
+//	public List<String> getStdout() {
+//		return stdoutCollector.getCollectedOutput();
+//	}
+//	
+//	public List<String> getStderr() {
+//		return stderrCollector.getCollectedOutput();
+//	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IHasStdoutAndStderr#getStdout()
+	 */
+	@Override
+	public String getStdout() {
+		return CUtil.merge(getStdoutAsList());
+	}
+
+	/**
+	 * @return the standard output written by the process as a List of strings
+	 */
+	public List<String> getStdoutAsList() {
 		return stdoutCollector.getCollectedOutput();
 	}
 	
-	public List<String> getStderr() {
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IHasStdoutAndStderr#getStderr()
+	 */
+	@Override
+	public String getStderr() {
+		return CUtil.merge(getStderrAsList());
+	}
+
+	/**
+	 * @return the standard error written by the process as a List of strings
+	 */
+	public List<String> getStderrAsList() {
 		return stderrCollector.getCollectedOutput();
 	}
 

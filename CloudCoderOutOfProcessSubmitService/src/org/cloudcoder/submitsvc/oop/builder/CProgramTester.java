@@ -129,16 +129,16 @@ public class CProgramTester implements ITester {
 		if (processRunner.isRunning()) {
 			// timed out!
 			processRunner.killProcess();
-			testResultList.add(CUtil.createTestResultForTimeout(processRunner));
+			testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
 		} else if (processRunner.getExitCode() == 6) {
 			// indicates core dump?
-			testResultList.add(CUtil.createTestResultForCoreDump(processRunner));
+			testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner));
 		} else {
 			// Process completed.  Scan through its output to see if there is a line
 			// matching the test case output regular expression.
 			boolean foundMatchingOutput = false;
 			Pattern pat = Pattern.compile(testCase.getOutput());
-			for (String line : processRunner.getStdout()) {
+			for (String line : processRunner.getStdoutAsList()) {
 				Matcher m = pat.matcher(line);
 				if (m.matches()) {
 					// Match!
@@ -147,8 +147,8 @@ public class CProgramTester implements ITester {
 				}
 			}
 			testResultList.add(foundMatchingOutput
-					? CUtil.createTestResultForPassedTest(processRunner)
-					: CUtil.createTestResultForFailedAssertion(processRunner, "Test failed for input " + testCase.getInput()));
+					? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
+					: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase));
 		}
 	}
 }

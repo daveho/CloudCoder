@@ -136,18 +136,19 @@ public class CTester implements ITester
         
         int index = 0;
         for (ProcessRunner p : tests) {
+            TestCase testCase = testCaseList.get(index);
             if (p.isRunning()) {
                 p.killProcess();
-                results.add(CUtil.createTestResultForTimeout(p));
+                results.add(TestResultUtil.createTestResultForTimeout(p, testCase));
             } else {
                 //TODO: figure out return code of process killed by ulimit
-                if (p.getExitCode()==0) {
-                    results.add(CUtil.createTestResultForPassedTest(p));
+				if (p.getExitCode()==0) {
+                    results.add(TestResultUtil.createTestResultForPassedTest(p, testCase));
                 } else if (p.getExitCode()==6) {
                     // error code 6 means CORE DUMP
-                    results.add(CUtil.createTestResultForCoreDump(p));
+                    results.add(TestResultUtil.createTestResultForCoreDump(p));
                 } else {
-                    results.add(CUtil.createTestResultForFailedAssertion(p, "Test failed for input " + testCaseList.get(index).getInput()));
+                    results.add(TestResultUtil.createTestResultForFailedAssertion(p, testCase));
                 }
             }
             index++;
