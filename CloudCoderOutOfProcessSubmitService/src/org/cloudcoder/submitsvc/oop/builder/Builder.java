@@ -209,13 +209,13 @@ public class Builder implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		if (args.length < 1 || args.length > 2) {
-			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name>");
+		if (args.length > 2) {
+			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name> <CloudCoder app port>");
 			System.exit(1);
 		}
 
 		// Determine the host name and port for the CloudCoder webapp.
-		String appHost = args[0];
+		String appHost = args.length > 0 ? args[0] : "localhost";
 		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.PORT;
 		
 		// Start the Builder
