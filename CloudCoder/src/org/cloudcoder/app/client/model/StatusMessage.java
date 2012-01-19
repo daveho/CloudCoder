@@ -26,6 +26,7 @@ public class StatusMessage {
 	public enum Category {
 		INFORMATION,
 		ERROR,
+		GOOD_NEWS,
 	}
 	
 	private Category category;

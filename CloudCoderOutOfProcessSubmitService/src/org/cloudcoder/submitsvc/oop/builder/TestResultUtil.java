@@ -64,12 +64,8 @@ public class TestResultUtil {
 	 * @param testCase  the test case that was executed
 	 * @return the TestResult
 	 */
-	public static TestResult createTestResultForCoreDump(ITestOutput p) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
-		        p.getStatusMessage(),
-		        p.getStdout(),
-		        p.getStderr());
-		return testResult;
+	public static TestResult createTestResultForCoreDump(ITestOutput p, TestCase testCase) {
+		return createTestResult(p, TestOutcome.FAILED_WITH_EXCEPTION, testCase);
 	}
 
 	/**
@@ -80,10 +76,23 @@ public class TestResultUtil {
 	 * @return the TestResult
 	 */
 	public static TestResult createTestResultForFailedAssertion(ITestOutput p, TestCase testCase) {
-		String message = "Test failed for input " + testCase.getInput();
+		return createTestResult(p, TestOutcome.FAILED_ASSERTION, testCase);
+	}
+
+	private static TestResult createTestResult(ITestOutput p, TestOutcome outcome, TestCase testCase) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(outcome.getShortMessage());
 		
-		TestResult testResult = new TestResult(TestOutcome.FAILED_ASSERTION,
-		        message,
+		if (!testCase.isSecret()) {
+			buf.append(" for input (" + testCase.getInput() + ")");
+		}
+		if (p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
+			buf.append(" [" + p.getStatusMessage() + "]");
+		}
+		
+		TestResult testResult = new TestResult(
+				outcome,
+		        buf.toString(),
 		        p.getStdout(),
 		        p.getStderr());
 		return testResult;

@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,9 @@ public class CUtil {
 		CompilerDiagnostic[] compilerDiagnosticList = compiler.getCompilerDiagnosticList();
 		CompilationResult compilationResult = new CompilationResult(CompilationOutcome.FAILURE);
 		compilationResult.setCompilerDiagnosticList(compilerDiagnosticList);
-		return new SubmissionResult(compilationResult);
+		SubmissionResult submissionResult = new SubmissionResult(compilationResult);
+		submissionResult.setTestResults(new TestResult[0]);
+		return submissionResult;
 	}
 
 	public static String merge(List<String> list){

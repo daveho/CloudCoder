@@ -210,4 +210,16 @@ public class ProcessRunner implements ITestOutput {
         	stdinSender.interrupt();
         }
     }
+
+	/**
+	 * Determine whether or not the process ended with a fatal signal.
+	 * 
+	 * @return true if the process ended with a fatal signal, false if
+	 *         it exited normally
+	 */
+	public boolean isCoreDump() {
+        // error code 6 means CORE DUMP
+		// FIXME: how robust is this?
+		return getExitCode() == 6;
+	}
 }

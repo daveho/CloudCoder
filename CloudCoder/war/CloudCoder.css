@@ -48,12 +48,23 @@ h1 {
 	margin-left: 0 auto;
 	margin-right: 0 auto;
 }
-.cc-statusMessageInformation {
+
+/*
+ * Styles for StatusMessageView
+ */
+.cc-statusIcon {
+	margin-top: 4px;
+	margin-right: 8px;
+}
+.cc-statusMessageNone, .cc-statusMessageInformation, .cc-statusMessageError, .cc-statusMessageGoodNews {
 	font-size: 16px;
-	vertical-align: middle;
+	vertical-align: 8px;;
+}
+.cc-statusMessageInformation {
 }
 .cc-statusMessageError {
-	font-size: 16px;
-	vertical-align: middle;
 	color: red;
+}
+.cc-statusMessageGoodNews {
+	background-color: #98fb98;
 }

@@ -144,9 +144,8 @@ public class CTester implements ITester
                 //TODO: figure out return code of process killed by ulimit
 				if (p.getExitCode()==0) {
                     results.add(TestResultUtil.createTestResultForPassedTest(p, testCase));
-                } else if (p.getExitCode()==6) {
-                    // error code 6 means CORE DUMP
-                    results.add(TestResultUtil.createTestResultForCoreDump(p));
+                } else if (p.isCoreDump()) {
+                    results.add(TestResultUtil.createTestResultForCoreDump(p, testCase));
                 } else {
                     results.add(TestResultUtil.createTestResultForFailedAssertion(p, testCase));
                 }

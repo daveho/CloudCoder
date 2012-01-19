@@ -67,4 +67,17 @@ public class SubmissionResult implements Serializable
     public boolean isCompiled() {
         return compilationResult.getOutcome()==CompilationOutcome.SUCCESS;
     }
+
+	/**
+	 * @return true if all tests passed, false if at least one
+	 *         test did not pass
+	 */
+	public boolean isAllTestsPassed() {
+		for (TestResult testResult : testResults) {
+			if (testResult.getOutcome() != TestOutcome.PASSED) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

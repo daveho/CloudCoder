@@ -17,11 +17,30 @@
 
 package org.cloudcoder.app.shared.model;
 
+/**
+ * Enumeration representing the outcome of a test case.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
+ */
 public enum TestOutcome {
-    PASSED,
-    FAILED_ASSERTION,
-    FAILED_WITH_EXCEPTION,
-    FAILED_FROM_TIMEOUT,
-    FAILED_BY_SECURITY_MANAGER,
-    INTERNAL_ERROR,
+    PASSED("Test passed"),
+    FAILED_ASSERTION("Test failed"),
+    FAILED_WITH_EXCEPTION("Exception"),
+    FAILED_FROM_TIMEOUT("Timeed out"),
+    FAILED_BY_SECURITY_MANAGER("Security exception"),
+    INTERNAL_ERROR("Internal error"),;
+    
+    private final String shortMessage;
+    
+	private TestOutcome(String shortMessage) {
+		this.shortMessage = shortMessage;
+	}
+
+	/**
+	 * @return the shortMessage
+	 */
+	public String getShortMessage() {
+		return shortMessage;
+	}
 }

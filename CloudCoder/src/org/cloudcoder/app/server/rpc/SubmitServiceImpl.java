@@ -79,13 +79,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		SubmissionStatus status;
 		if (result.getCompilationResult().getOutcome() == CompilationOutcome.SUCCESS) {
 			// Check to see whether or not all tests passed
-			status = SubmissionStatus.TESTS_PASSED;
-			for (TestResult testResult : result.getTestResults()) {
-				if (testResult.getOutcome() != TestOutcome.PASSED) {
-					status = SubmissionStatus.TESTS_FAILED;
-					break;
-				}
-			}
+			status = result.isAllTestsPassed() ? SubmissionStatus.TESTS_PASSED : SubmissionStatus.TESTS_FAILED;
 		} else if (result.getCompilationResult().getOutcome() == CompilationOutcome.FAILURE) {
 			// Compile error(s)
 			status = SubmissionStatus.COMPILE_ERROR;

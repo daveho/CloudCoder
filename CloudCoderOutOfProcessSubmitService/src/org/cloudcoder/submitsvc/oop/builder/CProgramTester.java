@@ -130,9 +130,9 @@ public class CProgramTester implements ITester {
 			// timed out!
 			processRunner.killProcess();
 			testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
-		} else if (processRunner.getExitCode() == 6) {
+		} else if (processRunner.isCoreDump()) {
 			// indicates core dump?
-			testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner));
+			testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner, testCase));
 		} else {
 			// Process completed.  Scan through its output to see if there is a line
 			// matching the test case output regular expression.

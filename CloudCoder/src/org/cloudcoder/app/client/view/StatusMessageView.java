@@ -9,19 +9,35 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 
 public class StatusMessageView extends Composite implements Subscriber, SessionObserver {
 	public static final double HEIGHT = 32.0;
 	public static final Unit HEIGHT_UNIT = Unit.PX;
 	
+	private static final String BLANK_ICON_URL = "cloudcoder/images/blank-icon-sm.png";
+	private static final String INFO_ICON_URL = "cloudcoder/images/info-icon-sm.png";
+	private static final String ERROR_ICON_URL = "cloudcoder/images/error-icon-sm.png";
+	private static final String CHECK_MARK_ICON_URL = "cloudcoder/images/check-mark-icon-sm.png";
+	
+	private Image icon;
 	private InlineLabel label;
 
 	public StatusMessageView() {
+		FlowPanel panel = new FlowPanel();
+		
+		icon = new Image();
+		icon.setUrl(BLANK_ICON_URL);
+		icon.setStylePrimaryName("cc-statusIcon");
+		panel.add(icon);
+
 		label = new InlineLabel();
-		label.setSize("100%", "100%");
-		label.setStylePrimaryName("ccStatusMessageInformation");
-		initWidget(label);
+		label.setStylePrimaryName("cc-statusMessageNone");
+		panel.add(label);
+		
+		initWidget(panel);
 	}
 
 	@Override
@@ -44,10 +60,16 @@ public class StatusMessageView extends Composite implements Subscriber, SessionO
 	private void setStatusMessage(StatusMessage statusMessage) {
 		switch (statusMessage.getCategory()) {
 		case INFORMATION:
+			icon.setUrl(INFO_ICON_URL);
 			label.setStyleName("cc-statusMessageInformation");
 			break;
 		case ERROR:
+			icon.setUrl(ERROR_ICON_URL);
 			label.setStyleName("cc-statusMessageError");
+			break;
+		case GOOD_NEWS:
+			icon.setUrl(CHECK_MARK_ICON_URL);
+			label.setStyleName("cc-statusMessageGoodNews");
 			break;
 		}
 		label.setText(statusMessage.getMessage());

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,15 +80,15 @@ public class Compiler {
     
     public CompilerDiagnostic[] getCompilerDiagnosticList() {
         //TODO: Limit to only errors for the functions we're interested in
-        CompilerDiagnostic[] result=new CompilerDiagnostic[compilerOutput.size()/*-1*/];
-        if (compilerOutput.size()>1) {
-            for (int i=1; i<compilerOutput.size(); i++) {
-                String s=compilerOutput.get(i);
-                CompilerDiagnostic d=CompilerDiagnostic.diagnosticFromGcc(s);
-                result[i-1]=d;
+    	ArrayList<CompilerDiagnostic> result = new ArrayList<CompilerDiagnostic>();
+        for (String s : compilerOutput) {
+            CompilerDiagnostic d=CompilerDiagnostic.diagnosticFromGcc(s);
+            if (d != null) {
+            	result.add(d);
             }
         }
-        return result;
+        System.out.println("Got " + result.size() + " compiler diagnostics");
+        return result.toArray(new CompilerDiagnostic[result.size()]);
     }        
 
     private String[] getCompileCmd() {
