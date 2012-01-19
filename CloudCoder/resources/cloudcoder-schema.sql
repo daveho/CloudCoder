@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 17, 2012 at 04:58 PM
+-- Generation Time: Jan 19, 2012 at 04:42 AM
 -- Server version: 5.1.58
 -- PHP Version: 5.3.6-13ubuntu3.3
 
@@ -1110,6 +1110,7 @@ CREATE TABLE IF NOT EXISTS `test_cases` (
   `test_case_name` varchar(40) DEFAULT NULL,
   `input` varchar(255) NOT NULL,
   `output` varchar(255) NOT NULL,
+  `secret` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`test_case_id`),
   KEY `problem_id` (`problem_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
@@ -1118,12 +1119,12 @@ CREATE TABLE IF NOT EXISTS `test_cases` (
 -- Dumping data for table `test_cases`
 --
 
-INSERT INTO `test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `input`, `output`) VALUES
-(2, 1, 'test1', '5', '25'),
-(3, 1, 'test2', '-1', '1'),
-(4, 1, 'test3', '9', '81'),
-(5, 1, 'test4', '10', '100'),
-(6, 2, 'fourPlusFive', '4 5', '^\\s*answer\\s*:\\s*(0*)9\\s*$');
+INSERT INTO `test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `input`, `output`, `secret`) VALUES
+(2, 1, 'test1', '5', '25', 0),
+(3, 1, 'test2', '-1', '1', 0),
+(4, 1, 'test3', '9', '81', 0),
+(5, 1, 'test4', '10', '100', 0),
+(6, 2, 'fourPlusFive', '4 5', '^\\s*answer\\s*:\\s*(0*)9\\s*$', 0);
 
 -- --------------------------------------------------------
 

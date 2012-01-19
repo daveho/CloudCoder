@@ -744,6 +744,7 @@ public class JDBCDatabase implements IDatabase {
 		testCase.setTestCaseName(resultSet.getString(index++));
 		testCase.setInput(resultSet.getString(index++));
 		testCase.setOutput(resultSet.getString(index++));
+		testCase.setSecret(resultSet.getBoolean(index++));
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
