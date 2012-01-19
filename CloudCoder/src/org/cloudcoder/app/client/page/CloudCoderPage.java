@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.IsWidget;
  * Provides helper methods for managing session data and event subscribers.
  */
 public abstract class CloudCoderPage {
-	private List<Object> sessionObjectList;
+	private List<Class<?>> sessionObjectClassList;
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
 	private Session session;
 	
@@ -39,7 +39,7 @@ public abstract class CloudCoderPage {
 	 * Constructor.
 	 */
 	public CloudCoderPage() {
-		this.sessionObjectList = new ArrayList<Object>();
+		this.sessionObjectClassList = new ArrayList<Class<?>>();
 		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
 	}
 
@@ -54,20 +54,23 @@ public abstract class CloudCoderPage {
 	
 	/**
 	 * Add an object to the Session.
+	 * When this page is finished, the object (or any object of the
+	 * same type which replaced the original object) will be removed
+	 * from the Session.
 	 * 
 	 * @param obj  object to add to the Session
 	 */
 	protected void addSessionObject(Object obj) {
 		session.add(obj);
-		sessionObjectList.add(obj);
+		sessionObjectClassList.add(obj.getClass());
 	}
 	
 	/**
 	 * Remove all objects added to the Session.
 	 */
 	protected void removeAllSessionObjects() {
-		for (Object obj : sessionObjectList) {
-			session.remove(obj.getClass());
+		for (Class<?> cls : sessionObjectClassList) {
+			session.remove(cls);
 		}
 	}
 

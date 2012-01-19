@@ -217,16 +217,16 @@ public class DevelopmentPage extends CloudCoderPage {
 				public void onFailure(Throwable caught) {
 					final String msg = "Error sending submission to server for compilation"; 
 					GWT.log(msg, caught);
-					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, msg));
 					// TODO: should set editor back to read/write?
 				}
 
 				@Override
 				public void onSuccess(SubmissionResult result) {
 					if (result==null){
-						getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
-						getSession().add(new TestResult[0]);
-						getSession().add(new CompilerDiagnostic[0]);
+						addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
+						addSessionObject(new TestResult[0]);
+						addSessionObject(new CompilerDiagnostic[0]);
 
 					} else {
 						// Add compiler diagnostics.
@@ -237,31 +237,31 @@ public class DevelopmentPage extends CloudCoderPage {
 						if (compilerDiagnosticList == null) {
 							compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
 						}
-						getSession().add(compilerDiagnosticList);
+						addSessionObject(compilerDiagnosticList);
 
 						// See what the result of the submission was.
 						if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
 								result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
 						{
 							// ?
-							getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
-							getSession().add(new TestResult[0]);
+							addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+							addSessionObject(new TestResult[0]);
 						} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
 							// Code did not compile
-							getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
-							getSession().add(new TestResult[0]);
+							addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
+							addSessionObject(new TestResult[0]);
 						} else {
 							// Code compiled, and test results were sent back.
 
 							TestResult[] results=result.getTestResults();
 							// Great, got results back from server!
-							getSession().add(results);
+							addSessionObject(results);
 
 							// Add a status message about the results
 							if (result.isAllTestsPassed()) {
-								getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed, congratulations!"));
+								addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed, congratulations!"));
 							} else {
-								getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
+								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
 							}
 						}
 						// Can resume editing now
@@ -411,6 +411,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
+		removeAllSessionObjects();
 	}
 
 	@Override
