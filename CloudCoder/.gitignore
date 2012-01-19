@@ -1,8 +1,7 @@
-war/cloudcoder/*
-gwt-unitCache/*
-.gwt/*
-war/WEB-INF/classes/*
-war/WEB-INF/deploy/*
-gwt-unitCache
-test-classes
-war/WEB-INF/lib/gwt-servlet.jar
+/war/cloudcoder/*
+/gwt-unitCache/*
+/.gwt/*
+/war/WEB-INF/classes/*
+/war/WEB-INF/deploy/*
+/test-classes
+/war/WEB-INF/lib/gwt-servlet.jar
