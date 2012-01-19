@@ -3,4 +3,6 @@ gwt-unitCache/*
 .gwt/*
 war/WEB-INF/classes/*
 war/WEB-INF/deploy/*
-/gwt-unitCache
+gwt-unitCache
+test-classes
+war/WEB-INF/lib/gwt-servlet.jar
