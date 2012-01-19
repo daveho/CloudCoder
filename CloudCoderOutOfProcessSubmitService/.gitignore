@@ -1,7 +1,7 @@
-log
-builder
+/log
+/builder
 *.fifo
 *.pid
-bin
+/bin
 log.txt
-testfiles/workdir
+/testfiles/workdir
