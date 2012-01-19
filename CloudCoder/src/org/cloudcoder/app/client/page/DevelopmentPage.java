@@ -258,8 +258,11 @@ public class DevelopmentPage extends CloudCoderPage {
 							getSession().add(results);
 
 							// Add a status message about the results
-							getSession().add(new StatusMessage(StatusMessage.Category.INFORMATION, "Received " + 
-									results.length+ " test result(s)"));
+							if (result.isAllTestsPassed()) {
+								getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed, congratulations!"));
+							} else {
+								getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
+							}
 						}
 						// Can resume editing now
 						mode = Mode.EDITING;

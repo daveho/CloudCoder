@@ -82,7 +82,7 @@ public class Compiler {
         //TODO: Limit to only errors for the functions we're interested in
     	ArrayList<CompilerDiagnostic> result = new ArrayList<CompilerDiagnostic>();
         for (String s : compilerOutput) {
-            CompilerDiagnostic d=CompilerDiagnostic.diagnosticFromGcc(s);
+            CompilerDiagnostic d = CompilerDiagnosticUtil.diagnosticFromGcc(s);
             if (d != null) {
             	result.add(d);
             }

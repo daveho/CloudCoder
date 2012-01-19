@@ -98,31 +98,4 @@ public class CompilerDiagnostic implements Serializable
     public String getMessage() {
         return message;
     }
-    
-    // Groups:
-	private static final Pattern GCC_ERROR_MSG_PATTERN =
-			Pattern.compile("^[^\\:]+:(\\d+)(:(\\d+))?: error: (.*)$");
-	private static final int LINE_NUMBER_GROUP = 1;
-//	private static final int COLUMN_NUMBER_GROUP = 3; // could be empty
-	private static final int ERROR_MESSAGE_GROUP = 4;
-
-	/**
-	 * Convert a string (a possible gcc error message)
-	 * into a CompilerDiagnostic.
-	 * 
-	 * @param s string containing a possible gcc error message 
-	 * @return a CompilerDiagnostic, or null if the string was not a gcc error message
-	 */
-	public static CompilerDiagnostic diagnosticFromGcc(String s) {
-		System.out.println("Try: " + s);
-		Matcher m = GCC_ERROR_MSG_PATTERN.matcher(s);
-		if (m.matches()) {
-			int lineNum = Integer.parseInt(m.group(LINE_NUMBER_GROUP));
-			String message = m.group(ERROR_MESSAGE_GROUP);
-			return new CompilerDiagnostic(lineNum, lineNum, -1, -1, message);
-		} else {
-			System.out.println("  no");
-			return null;
-		}
-	}
 }
