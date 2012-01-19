@@ -8,11 +8,13 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Table;
 //import javax.persistence.Transient;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 //@Entity
 //@Table(name="courses")
-public class Course implements IsSerializable {
+public class Course implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Make sure this is kept up to date with the courses table in
 	 * the database.

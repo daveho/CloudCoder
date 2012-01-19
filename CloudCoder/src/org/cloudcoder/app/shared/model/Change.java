@@ -17,9 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
-
-import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * Object representing a textual change.
@@ -28,9 +27,10 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 //@Entity
 //@Table(name="changes")
-public class Change implements IsSerializable, IContainsEvent {
+public class Change implements Serializable, IContainsEvent {
+	private static final long serialVersionUID = 1L;
 
-//	@Id
+	//	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="id")
 	private long id;

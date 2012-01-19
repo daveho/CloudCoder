@@ -7,11 +7,13 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 //@Entity
 //@Table(name="course_registrations")
-public class CourseRegistration implements IsSerializable {
+public class CourseRegistration implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="id")

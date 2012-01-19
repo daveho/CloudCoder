@@ -24,11 +24,13 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 //@Entity
 //@Table(name="terms")
-public class Term implements IsSerializable {
+public class Term implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="id")
