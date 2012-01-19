@@ -24,8 +24,7 @@ public class ProblemDescriptionView extends Composite implements SessionObserver
 		problemNameLabel = new Label("");
 		problemNameLabel.setStyleName("cc-problemName");
 		layoutPanel.add(problemNameLabel);
-		problemNameLabel.setWidth("100%");
-		layoutPanel.setWidgetLeftWidth(problemNameLabel, 0.0, Unit.PX, 302.0, Unit.PX);
+		layoutPanel.setWidgetLeftRight(problemNameLabel, 0.0, Unit.PX, 0.0, Unit.PX);
 		layoutPanel.setWidgetTopHeight(problemNameLabel, 0.0, Unit.PX, 24.0, Unit.PX);
 		
 		problemDescriptionHtml = new HTML("", true);
