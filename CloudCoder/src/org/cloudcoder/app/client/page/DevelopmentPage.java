@@ -259,7 +259,7 @@ public class DevelopmentPage extends CloudCoderPage {
 
 							// Add a status message about the results
 							if (result.isAllTestsPassed()) {
-								addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed, congratulations!"));
+								addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed! You rock."));
 							} else {
 								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
 							}

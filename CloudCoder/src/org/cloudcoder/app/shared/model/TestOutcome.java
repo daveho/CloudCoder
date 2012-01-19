@@ -24,17 +24,19 @@ package org.cloudcoder.app.shared.model;
  * @author David Hovemeyer
  */
 public enum TestOutcome {
-    PASSED("Test passed"),
-    FAILED_ASSERTION("Test failed"),
-    FAILED_WITH_EXCEPTION("Exception"),
-    FAILED_FROM_TIMEOUT("Timeed out"),
-    FAILED_BY_SECURITY_MANAGER("Security exception"),
-    INTERNAL_ERROR("Internal error"),;
+    PASSED("Test passed", false),
+    FAILED_ASSERTION("Test failed", false),
+    FAILED_WITH_EXCEPTION("Exception", true),
+    FAILED_FROM_TIMEOUT("Timeed out", false),
+    FAILED_BY_SECURITY_MANAGER("Security exception", true),
+    INTERNAL_ERROR("Internal error", true),;
     
     private final String shortMessage;
+    private final boolean displayProcessStatus;
     
-	private TestOutcome(String shortMessage) {
+	private TestOutcome(String shortMessage, boolean displayProcessStatus) {
 		this.shortMessage = shortMessage;
+		this.displayProcessStatus = displayProcessStatus;
 	}
 
 	/**
@@ -42,5 +44,13 @@ public enum TestOutcome {
 	 */
 	public String getShortMessage() {
 		return shortMessage;
+	}
+
+	/**
+	 * @return true if TestResults with this outcome should display extra
+	 *         information about the process status (how it terminated)
+	 */
+	public boolean isDisplayProcessStatus() {
+		return displayProcessStatus;
 	}
 }

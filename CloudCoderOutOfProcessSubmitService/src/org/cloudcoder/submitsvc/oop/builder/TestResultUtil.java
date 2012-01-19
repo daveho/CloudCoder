@@ -50,11 +50,7 @@ public class TestResultUtil {
 	 * @return the TestResult
 	 */
 	public static TestResult createTestResultForPassedTest(ITestOutput p, TestCase testCase) {
-		TestResult testResult = new TestResult(TestOutcome.PASSED,
-		        p.getStatusMessage(),
-		        p.getStdout(),
-		        p.getStderr());
-		return testResult;
+		return createTestResult(p, TestOutcome.PASSED, testCase);
 	}
 
 	/**
@@ -86,7 +82,8 @@ public class TestResultUtil {
 		if (!testCase.isSecret()) {
 			buf.append(" for input (" + testCase.getInput() + ")");
 		}
-		if (p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
+		if (outcome.isDisplayProcessStatus() &&
+				p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
 			buf.append(" [" + p.getStatusMessage() + "]");
 		}
 		
