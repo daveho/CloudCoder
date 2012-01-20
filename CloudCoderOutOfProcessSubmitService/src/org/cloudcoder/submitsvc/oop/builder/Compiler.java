@@ -1,6 +1,6 @@
 /*
  * Web C programming environment
- * Copyright (c) 2010-2011, David H. Hovemeyer <david.hovemeyer@gmail.com>
+ * Copyright (c) 2010-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,18 +93,10 @@ public class Compiler {
 
     private String[] getCompileCmd() {
         return new String[]{
-                //"avr-gcc",
                 "gcc",
+                "-Wall", // ALWAYS use -Wall
                 "-o",
                 getExeFileName(),
-                //				"-mmcu=at90usb1286",
-                //				"-gdwarf-2",
-                //				"-Os",
-                //				"-funsigned-char",
-                //				"-funsigned-bitfields",
-                //				"-fpack-struct",
-                //				"-fshort-enums",
-                //				"-DF_CPU=16000000UL",
                 getSourceFileName(),
         };
     }
@@ -114,7 +106,6 @@ public class Compiler {
     }
 
     private String getExeFileName() {
-        //return progName + ".elf";
         return progName;
     }
 
