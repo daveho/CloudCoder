@@ -18,10 +18,14 @@
 package org.cloudcoder.webserver;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -73,10 +77,13 @@ public class CloudCoderWebServer {
 			}
 		}
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		Options options = new Options();
 		options.parse(args);
+		
+		// Configure logging
+		configureLogging();
 		
 		// Create an embedded Jetty server
 		Server server = new Server();
@@ -148,5 +155,18 @@ public class CloudCoderWebServer {
 			System.err.println("Exception shutting down the server");
 			e.printStackTrace(System.err);
 		}
+	}
+
+	private static void configureLogging() throws IOException {
+		Properties log4jProperties = new Properties();
+		InputStream in = new FileInputStream("./apps/cloudCoder/WEB-INF/classes/log4j.properties"); 
+		try {
+			log4jProperties.load(in);
+		} finally {
+			in.close();
+		}
+		
+		// Configure log4j
+		PropertyConfigurator.configure(log4jProperties);
 	}
 }

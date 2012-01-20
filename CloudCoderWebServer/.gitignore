@@ -4,3 +4,4 @@
 /log/*
 /cloudCoder.pid
 /cloudCoder-*.fifo
+/logs
