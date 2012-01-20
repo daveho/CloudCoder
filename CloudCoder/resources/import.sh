@@ -2,7 +2,7 @@
 
 dbname=cloudcoder
 
-dbuser=root
+dbuser=marmoset
 
 # This may fail if the database does not currently exist
 echo "drop database $dbname;" \

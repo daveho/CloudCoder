@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="CloudCoderOutOfProcessBuildService">
+    <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="${user.home}/linux/java/eclipse"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="CloudCoderOutOfProcessBuildService.classpath">
+        <pathelement location="../CloudCoder/war/WEB-INF/classes"/>
+        <pathelement location="bin"/>
+	<fileset dir="lib">
+		<include name="**/*.jar"/>
+	</fileset>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="init" name="build">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="CloudCoderOutOfProcessBuildService.classpath"/>
+        </javac>
+    </target>
+</project>
