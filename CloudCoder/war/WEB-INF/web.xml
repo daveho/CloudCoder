@@ -5,6 +5,34 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+  <!-- Context parameters -->
+  <context-param>
+    <!-- MySQL username. -->
+  	<param-name>cloudcoder.db.user</param-name>
+  	<param-value>root</param-value>
+  </context-param>
+  <context-param>
+    <!-- MySQL password. -->
+    <param-name>cloudcoder.db.passwd</param-name>
+    <param-value>root</param-value>
+  </context-param>
+  <context-param>
+    <!-- Host where MySQL server is running. -->
+    <param-name>cloudcoder.db.host</param-name>
+    <param-value>localhost</param-value>
+  </context-param>
+  <context-param>
+    <!-- Set this to :8889 if using MAMP, otherwise leave it blank. -->
+    <param-name>cloudcoder.db.portstr</param-name>
+    <param-value></param-value>
+  </context-param>
+  <context-param>
+    <!-- Port that the out of process submit service will listen on
+         for connections from Builders. -->
+    <param-name>cloudcoder.submitsvc.oop.port</param-name>
+    <param-value>47374</param-value>
+  </context-param>
+
   <!-- Servlets -->
   <servlet>
     <servlet-name>ConfigurationSetting</servlet-name>
@@ -55,6 +83,9 @@
   <!-- Listeners -->
   <listener>
     <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
+  </listener>
+  <listener>
+    <listener-class>org.cloudcoder.app.server.persist.JDBCDatabaseConfig</listener-class>
   </listener>
 
 </web-app>

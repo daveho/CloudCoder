@@ -216,7 +216,7 @@ public class Builder implements Runnable {
 
 		// Determine the host name and port for the CloudCoder webapp.
 		String appHost = args.length > 0 ? args[0] : "localhost";
-		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.PORT;
+		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.DEFAULT_PORT;
 		
 		// Start the Builder
 		Builder builder = new Builder(appHost, appPort);

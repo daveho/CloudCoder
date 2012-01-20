@@ -51,8 +51,7 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		return instance;
 	}
 	
-	// FIXME: make configuration parameters configurable
-	public static final int PORT = 47374;
+	public static final int DEFAULT_PORT = 47374;
 
 	private ServerTask serverTask;
 	private Thread serverThread;
@@ -68,8 +67,8 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		return serverTask.submit(submission);
 	}
 	
-	public void start() throws IOException {
-		ServerSocket serverSocket = new ServerSocket(PORT);
+	public void start(int port) throws IOException {
+		ServerSocket serverSocket = new ServerSocket(port);
 		serverTask = new ServerTask(serverSocket);
 		serverThread = new Thread(serverTask);
 		serverThread.start();
@@ -84,7 +83,11 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		try {
-			start();
+			// See if a non-default port was specified
+			String p = event.getServletContext().getInitParameter("cloudcoder.submitsvc.oop.port");
+			int port = (p != null) ? Integer.parseInt(p) : DEFAULT_PORT;
+			
+			start(port);
 			instance = this;
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not create server thread for oop submit service", e);
