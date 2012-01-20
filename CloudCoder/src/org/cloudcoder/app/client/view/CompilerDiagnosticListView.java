@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
@@ -93,7 +94,8 @@ public class CompilerDiagnosticListView extends Composite implements SessionObse
 	}
 
 	private void displayCompilerDiagnostics(CompilerDiagnostic[] compilerDiagnosticList) {
-		cellTable.setRowCount(compilerDiagnosticList.length);
+		GWT.log("CompilerDiagnosticListView: displaying " + compilerDiagnosticList.length + " diagnostics");
+//		cellTable.setRowCount(compilerDiagnosticList.length);
 		cellTable.setRowData(Arrays.asList(compilerDiagnosticList));
 	}
 }

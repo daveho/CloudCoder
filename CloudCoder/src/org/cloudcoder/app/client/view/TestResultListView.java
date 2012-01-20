@@ -74,8 +74,7 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	}
 	
 	private void displayTestResults(TestResult[] testResultList) {
-		cellTable.setRowCount(testResultList.length);
-		List<TestResult> list = Arrays.asList(testResultList);
-		cellTable.setRowData(list);
+//		cellTable.setRowCount(testResultList.length);
+		cellTable.setRowData(Arrays.asList(testResultList));
 	}
 }

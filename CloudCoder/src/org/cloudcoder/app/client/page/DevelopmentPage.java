@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
@@ -40,6 +57,11 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
+/**
+ * Page for development (editing code, submitting, viewing results.)
+ * 
+ * @author David Hovemeyer
+ */
 public class DevelopmentPage extends CloudCoderPage {
 	
 	private enum Mode {
@@ -128,20 +150,15 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.testResultListView = new TestResultListView();
-			addResultsTab(testResultListView, "Test results");
+			resultsTabPanel.add(testResultListView, "Test results");
 			
 			this.compilerDiagnosticListView = new CompilerDiagnosticListView();
-			addResultsTab(compilerDiagnosticListView, "Compiler errors");
+			resultsTabPanel.add(compilerDiagnosticListView, "Compiler errors");
 
 			centerLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.add(centerLayoutPanel);
 
 			initWidget(dockLayoutPanel);
-		}
-		
-		private void addResultsTab(Widget tab, String title) {
-			//tab.setSize("100%", "100%");
-			resultsTabPanel.add(tab, title);
 		}
 
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
@@ -237,8 +254,15 @@ public class DevelopmentPage extends CloudCoderPage {
 						if (compilerDiagnosticList == null) {
 							compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
 						}
+						GWT.log("Adding " + compilerDiagnosticList.length + " compiler diagnostics");
+
+						// XXX: compiler diagnostics are lost unless the compiler errors tab is shown
+						// I really have no idea why this is, but this workaround seems to be effective.
+						resultsTabPanel.selectTab(compilerDiagnosticListView);
 						addSessionObject(compilerDiagnosticList);
 
+						//resultsTabPanel.selectTab(testResultListView);
+						
 						// See what the result of the submission was.
 						if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
 								result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
@@ -264,6 +288,12 @@ public class DevelopmentPage extends CloudCoderPage {
 								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
 							}
 						}
+						
+						if (compilerDiagnosticList.length == 0) {
+							// show the test results tab
+							resultsTabPanel.selectTab(testResultListView);
+						}
+						
 						// Can resume editing now
 						mode = Mode.EDITING;
 						aceEditor.setReadOnly(false);
