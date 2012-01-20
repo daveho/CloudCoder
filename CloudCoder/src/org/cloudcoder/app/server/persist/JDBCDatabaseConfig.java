@@ -28,22 +28,12 @@ import javax.servlet.ServletContextListener;
  */
 public class JDBCDatabaseConfig implements ServletContextListener {
 	private static JDBCDatabaseConfig instance;
+	private static Object instanceLock = new Object();
 	
 	private String dbUser;
 	private String dbPasswd;
 	private String dbHost;
 	private String dbPortStr;
-	
-	private static Object instanceLock = new Object();
-	
-	public JDBCDatabaseConfig() {
-		// The app server should create the object automatically,
-		// so we'll save a reference to it so JDBCDatabase can
-		// use it.
-		synchronized (instanceLock) {
-			instance = this;
-		}
-	}
 	
 	public static JDBCDatabaseConfig getInstance() {
 		synchronized (instanceLock) {
@@ -100,6 +90,8 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 			dbPasswd = e.getServletContext().getInitParameter("cloudcoder.db.passwd");
 			dbHost = e.getServletContext().getInitParameter("cloudcoder.db.host");
 			dbPortStr = e.getServletContext().getInitParameter("cloudcoder.db.portstr");
+			
+			instance = this;
 		}
 	}
 	
@@ -108,6 +100,8 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent e) {
-		instance = null; // allow garbage collection
+		synchronized (instanceLock) {
+			instance = null; // allow garbage collection
+		}
 	}
 }

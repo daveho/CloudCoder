@@ -54,18 +54,15 @@ import org.slf4j.LoggerFactory;
 public class JDBCDatabase implements IDatabase {
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	
-	private static String theJdbcUrl;
+	private String jdbcUrl;
 	
-	private static String getJdbcUrl() {
-		if (theJdbcUrl == null) {
-			JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
-			theJdbcUrl = "jdbc:mysql://" +
-					config.getDbHost() + config.getDbPortStr() +
-					"/cloudcoder?user=" +
-					config.getDbUser() +
-					"&password=" + config.getDbPasswd();
-		}
-		return theJdbcUrl;
+	public JDBCDatabase() {
+		JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
+		jdbcUrl = "jdbc:mysql://" +
+				config.getDbHost() + config.getDbPortStr() +
+				"/cloudcoder?user=" +
+				config.getDbUser() +
+				"&password=" + config.getDbPasswd();
 	}
 	
 	static {
@@ -92,7 +89,7 @@ public class JDBCDatabase implements IDatabase {
 		InUseConnection c = threadLocalConnection.get();
 		if (c == null) {
 			c = new InUseConnection();
-			c.conn = DriverManager.getConnection(getJdbcUrl());
+			c.conn = DriverManager.getConnection(jdbcUrl);
 			c.refCount = 0;
 			threadLocalConnection.set(c);
 		}
