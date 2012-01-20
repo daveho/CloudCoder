@@ -1,37 +1,6 @@
-/** Add css rules here for your application. */
-
-
-/** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
-}
-
-.sendButton {
-  display: block;
-  font-size: 16pt;
-}
-
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
-.dialogVPanel {
-  margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
-}
+/*
+ * CloudCoder CSS styles.
+ */
 .cc-pageTitle {
 	font-size: 140%;
 	font-weight: bold;
@@ -67,4 +36,37 @@ h1 {
 }
 .cc-statusMessageGoodNews {
 	color: green;
+}
+
+/*
+ * Emphasized button style (adapted from .gwtButton styles in clean.css).
+ * We use emphasized buttons to indicate the "most important" button
+ * on each page.
+ */
+.cc-emphButton {
+  margin: 0;
+  padding: 5px 7px;
+  text-decoration: none;
+  cursor: pointer;
+  cursor: hand;
+  font-size:120%;
+  font-weight: bold;
+  background: url("cloudcoder/gwt/clean/images/hborder.png") repeat-x 0px -2077px;
+  border:1px solid #bbb;
+  border-bottom: 1px solid #a0a0a0;
+  border-radius: 3px;
+ -moz-border-radius: 3px;
+}
+.cc-emphButton:active {
+  border: 1px inset #ccc;
+}
+.cc-emphButton:hover {
+  border-color: #939393;
+}
+.cc-emphButton[disabled] {
+  cursor: default;
+  color: #888;
+}
+.cc-emphButton[disabled]:hover {
+  border: 1px outset #ccc;
 }

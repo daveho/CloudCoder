@@ -14,6 +14,7 @@ public class DevActionsPanel extends Composite {
 		LayoutPanel layoutPanel = new LayoutPanel();
 		
 		Button submitButton = new Button("Submit!");
+		submitButton.setStylePrimaryName("cc-emphButton");
 		submitButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -23,8 +24,8 @@ public class DevActionsPanel extends Composite {
 			}
 		});
 		layoutPanel.add(submitButton);
-		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, 81.0, Unit.PX);
-		layoutPanel.setWidgetBottomHeight(submitButton, 15.0, Unit.PX, 27.0, Unit.PX);
+		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, 100.0, Unit.PX);
+		layoutPanel.setWidgetBottomHeight(submitButton, 15.0, Unit.PX, 32.0, Unit.PX);
 
 		initWidget(layoutPanel);
 	}

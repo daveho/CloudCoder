@@ -83,6 +83,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
 			
 			this.loadProblemButton = new Button("Load problem!");
+			loadProblemButton.setStylePrimaryName("cc-emphButton");
 			loadProblemButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
