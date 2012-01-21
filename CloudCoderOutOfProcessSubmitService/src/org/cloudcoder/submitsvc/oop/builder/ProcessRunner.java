@@ -20,6 +20,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,40 +112,52 @@ public class ProcessRunner implements ITestOutput {
 	}
 	
 	public boolean runSynchronous(File workingDir, String[] command) {
-	 // exec command
-        logger.info("Running in {} the command: {} with env: {} ",
-                new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
-        try {
-            process = Runtime.getRuntime().exec(command, getEnvp(), workingDir);
+		// wrap command using the runProcess.pl script
+		List<String> cmd = new ArrayList<String>();
+		cmd.add("perl");
+		cmd.add(RUN_PROCESS_SCRIPT);
+		for (String s : command) {
+			cmd.add(s);
+		}
+		command = cmd.toArray(new String[cmd.size()]);
+		
+		// exec command
+		logger.info("Running in {} the command: {} with env: {} ",
+				new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
+		try {
 
-            // collect compiler output
-            stdoutCollector = new OutputCollector(process.getInputStream());
-            stderrCollector = new OutputCollector(process.getErrorStream());
-            stdoutCollector.start();
-            stderrCollector.start();
-            
-            // If stdin was provided, send it
-            if (stdin != null) {
-            	stdinSender = new InputSender(process.getOutputStream(), stdin);
-            	stdinSender.start();
-            }
+			// TODO: create temp file for process status, set CC_PROC_STAT_FILE env var
 
-            // wait for process and output collector threads to finish
-            exitCode = process.waitFor();
-            stdoutCollector.join();
-            stderrCollector.join();
-            if (stdinSender != null) {
-            	stdinSender.join();
-            }
+			process = Runtime.getRuntime().exec(command, getEnvp(), workingDir);
 
-            statusMessage = "Process finished";
-            return true;
-        } catch (IOException e) {
-            statusMessage = "Could not execute process: " + e.getMessage();
-        } catch (InterruptedException e) {
-            statusMessage = "Process was interrupted (infinite loop killed?)";
-        }
-        return false;
+			// collect compiler output
+			stdoutCollector = new OutputCollector(process.getInputStream());
+			stderrCollector = new OutputCollector(process.getErrorStream());
+			stdoutCollector.start();
+			stderrCollector.start();
+
+			// If stdin was provided, send it
+			if (stdin != null) {
+				stdinSender = new InputSender(process.getOutputStream(), stdin);
+				stdinSender.start();
+			}
+
+			// wait for process and output collector threads to finish
+			exitCode = process.waitFor();
+			stdoutCollector.join();
+			stderrCollector.join();
+			if (stdinSender != null) {
+				stdinSender.join();
+			}
+
+			statusMessage = "Process finished";
+			return true;
+		} catch (IOException e) {
+			statusMessage = "Could not execute process: " + e.getMessage();
+		} catch (InterruptedException e) {
+			statusMessage = "Process was interrupted (infinite loop killed?)";
+		}
+		return false;
 	}
 	
 	public void runAsynchronous(final File workingDir, final String[] command) {

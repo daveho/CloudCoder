@@ -17,19 +17,23 @@ my $procStatFile = $ENV{'CC_PROC_STAT_FILE'};
 
 my $rc = system(@cmdArgs);
 
-my $fh = new FileHandle(">$procStatFile") || die;
-
-if ($rc == -1) {
-	print $fh "failed_to_execute\n";
-	print $fh "-1\n";
-} elsif ($rc == & 127) {
-	my $signum = ($rc & 127);
-	print $fh "terminated_by_signal\n";
-	print $fh "$signum\n";
-} else {
-	my $exitCode = ($rc >> 8);
-	print $fh "exited\n";
-	print $fh "$exitCode\n";
+if (defined $procStatFile) {
+	my $fh = new FileHandle(">$procStatFile") || die;
+	
+	if ($rc == -1) {
+		print $fh "failed_to_execute\n";
+		print $fh "-1\n";
+	} elsif ($rc == & 127) {
+		my $signum = ($rc & 127);
+		print $fh "terminated_by_signal\n";
+		print $fh "$signum\n";
+	} else {
+		my $exitCode = ($rc >> 8);
+		print $fh "exited\n";
+		print $fh "$exitCode\n";
+	}
+	$fh->flush();
+	$fh->close();
 }
-$fh->flush();
-$fh->close();
+
+exit ($rc >> 8);
