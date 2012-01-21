@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -208,6 +207,8 @@ public class Builder implements Runnable {
 		}
 	}
 
+	private static final int DEFAULT_PORT = 47374;
+
 	public static void main(String[] args) {
 		if (args.length > 2) {
 			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name> <CloudCoder app port>");
@@ -216,7 +217,7 @@ public class Builder implements Runnable {
 
 		// Determine the host name and port for the CloudCoder webapp.
 		String appHost = args.length > 0 ? args[0] : "localhost";
-		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.DEFAULT_PORT;
+		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : DEFAULT_PORT;
 		
 		// Start the Builder
 		Builder builder = new Builder(appHost, appPort);
