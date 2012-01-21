@@ -19,6 +19,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
@@ -81,6 +82,10 @@ public class CUtil {
 		SubmissionResult submissionResult = new SubmissionResult(compilationResult);
 		submissionResult.setTestResults(new TestResult[0]);
 		return submissionResult;
+	}
+	
+	public static String merge(String[] list) {
+		return merge(Arrays.asList(list));
 	}
 
 	public static String merge(List<String> list){

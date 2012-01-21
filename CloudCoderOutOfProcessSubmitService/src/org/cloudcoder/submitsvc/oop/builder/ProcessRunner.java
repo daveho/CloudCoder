@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.cloudcoder.submitsvc.oop.builder.CUtil.merge;
+
 /**
  * Run a subprocess, capturing its stdout and stderr as text.
  * Optionally, send text to the stdin of the process.
@@ -158,14 +160,6 @@ public class ProcessRunner implements ITestOutput {
 		return exitCode;
 	}
 	
-//	public List<String> getStdout() {
-//		return stdoutCollector.getCollectedOutput();
-//	}
-//	
-//	public List<String> getStderr() {
-//		return stderrCollector.getCollectedOutput();
-//	}
-	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.submitsvc.oop.builder.IHasStdoutAndStderr#getStdout()
 	 */
@@ -211,15 +205,6 @@ public class ProcessRunner implements ITestOutput {
         } catch (IllegalThreadStateException e){
             return true;
         }
-    }
-    
-    private String merge(String[] arr) {
-        StringBuilder builder=new StringBuilder();
-        for (String s : arr) {
-            builder.append(s);
-            builder.append(" ");
-        }
-        return builder.toString();
     }
     
     public void killProcess() {
