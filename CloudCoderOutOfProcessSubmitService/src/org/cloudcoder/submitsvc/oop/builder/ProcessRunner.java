@@ -19,7 +19,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,28 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  */
 public class ProcessRunner implements ITestOutput {
-    private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
+	private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
+    
+	private static String RUN_PROCESS_SCRIPT;
+	static {
+		// FIXME: find a way to make this work if we're running from a jar file
+		String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/" + "runProcess.pl";
+		//System.out.println("path: " + runProcessPath);
+		URL url = ProcessRunner.class.getClassLoader().getResource(runProcessPath);
+		if (url != null) {
+			String fileName = url.toExternalForm();
+			//System.out.println("fileName: " + fileName);
+			if (fileName.startsWith("file://")) {
+				RUN_PROCESS_SCRIPT = fileName.substring("file://".length());
+			} else if (fileName.startsWith("file:")) {
+				RUN_PROCESS_SCRIPT = fileName.substring("file:".length());
+			}
+		}
+		if (RUN_PROCESS_SCRIPT == null || !(new File(RUN_PROCESS_SCRIPT).exists())) {
+			throw new IllegalStateException("can't find filename of runProcess.pl script");
+		}
+		System.out.println("Run process script: " + RUN_PROCESS_SCRIPT);
+	}
     
 	private String statusMessage = "";
 	private int exitCode;
