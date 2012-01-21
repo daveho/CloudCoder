@@ -45,5 +45,25 @@ public enum ProblemType {
 	 * Problem involving writing a complete C program,
 	 * complete with #includes, a main function, etc.
 	 */
-	C_PROGRAM,
+	C_PROGRAM;
+	
+	/**
+	 * Get the Language associated with this ProblemType.
+	 * 
+	 * @return the Language associated with this ProblemType
+	 */
+	public Language getLanguage() {
+		switch (this) {
+		case JAVA_METHOD:
+			return Language.JAVA;
+		case PYTHON_FUNCTION:
+			return Language.PYTHON;
+		case C_FUNCTION:
+			return Language.C;
+		case C_PROGRAM:
+			return Language.C;
+		default:
+			throw new IllegalStateException("unknown ProblemType");
+		}
+	}
 }

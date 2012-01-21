@@ -31,6 +31,7 @@ import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -175,7 +176,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, subscriptionRegistrar);
 
 			// Create AceEditor instance
-			createEditor();
+			createEditor(problem.getProblemType().getLanguage());
 
 			// editor will be readonly until problem text is loaded
 			aceEditor.setReadOnly(true);
@@ -301,14 +302,32 @@ public class DevelopmentPage extends CloudCoderPage {
 			});
 		}
 
-		public void createEditor() {
+		public void createEditor(Language language) {
 			aceEditor = new AceEditor();
 			aceEditor.setSize("100%", "100%");
 			centerLayoutPanel.add(aceEditor);
 			aceEditor.startEditor();
 			aceEditor.setFontSize("14px");
-			aceEditor.setMode(AceEditorMode.JAVA);
-			//aceEditor.setTheme(AceEditorTheme.ECLIPSE);
+			
+			// based on programming language used in the Problem,
+			// choose an editor mode
+			AceEditorMode editorMode;
+			switch (language) {
+			case JAVA:
+				editorMode = AceEditorMode.JAVA; break;
+			case PYTHON:
+				editorMode = AceEditorMode.PYTHON; break;
+			case C:
+			case CPLUSPLUS:
+				editorMode = AceEditorMode.C_CPP; break;
+			default:
+				getSession().add(new StatusMessage(
+						StatusMessage.Category.ERROR,
+						"Warning: unknown programming language " + language));
+				editorMode = AceEditorMode.JAVA; break;
+			}
+			aceEditor.setMode(editorMode);
+			
 			aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
 			aceEditor.setShowPrintMargin(false);
 		}
