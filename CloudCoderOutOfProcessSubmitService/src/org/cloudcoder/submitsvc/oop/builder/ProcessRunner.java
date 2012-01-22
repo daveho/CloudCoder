@@ -17,7 +17,11 @@
  */
 package org.cloudcoder.submitsvc.oop.builder;
 
+import static org.cloudcoder.submitsvc.oop.builder.CUtil.merge;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,10 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.cloudcoder.submitsvc.oop.builder.CUtil.merge;
 
 /**
  * Run a subprocess, capturing its stdout and stderr as text.
@@ -63,7 +66,12 @@ public class ProcessRunner implements ITestOutput {
 	}
     
 	private String statusMessage = "";
+	
+	private boolean exitStatusKnown;
+	private boolean processStarted;
 	private int exitCode;
+	private boolean killedBySignal;
+	
 	private volatile Process process;
 	private Thread exitValueMonitor;
 	private String stdin;
@@ -91,12 +99,15 @@ public class ProcessRunner implements ITestOutput {
 		this.stdin = stdin;
 	}
 	
-	private String[] getEnvp() {
-	    String[] envp=new String[env.size()];
+	private String[] getEnvp(String... extraVars) {
+	    String[] envp=new String[env.size() + extraVars.length];
 	    int i=0;
 	    for (Entry<String,String> entry : env.entrySet()) {
 	        envp[i]=entry.getKey()+"="+entry.getValue();
 	        i+=1;
+	    }
+	    for (String s : extraVars) {
+	    	envp[i++] = s;
 	    }
 	    return envp;
 	}
@@ -125,12 +136,20 @@ public class ProcessRunner implements ITestOutput {
 		logger.info("Running in {} the command: {} with env: {} ",
 				new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
 		try {
+			// Create a temp file in which the runProcess.pl script can save
+			// the exit status of the process.
+			File exitStatusFile = File.createTempFile("ccxs", ".txt", workingDir);
+			exitStatusFile.deleteOnExit();
 
-			// TODO: create temp file for process status, set CC_PROC_STAT_FILE env var
+			// Start process, setting CC_PROC_STAT_FILE env var
+			// to indicate where runProcess.pl should write the process's
+			// exit status information
+			process = Runtime.getRuntime().exec(
+					command,
+					getEnvp("CC_PROC_STAT_FILE=" + exitStatusFile.getPath()),
+					workingDir);
 
-			process = Runtime.getRuntime().exec(command, getEnvp(), workingDir);
-
-			// collect compiler output
+			// Collect process output
 			stdoutCollector = new OutputCollector(process.getInputStream());
 			stderrCollector = new OutputCollector(process.getErrorStream());
 			stdoutCollector.start();
@@ -149,6 +168,9 @@ public class ProcessRunner implements ITestOutput {
 			if (stdinSender != null) {
 				stdinSender.join();
 			}
+			
+			// Read the process's exit status information
+			readProcessExitStatus(exitStatusFile);
 
 			statusMessage = "Process finished";
 			return true;
@@ -160,6 +182,52 @@ public class ProcessRunner implements ITestOutput {
 		return false;
 	}
 	
+	/**
+	 * Read the file written by the runProcess.pl script
+	 * which contains information about the process's exit status.
+	 * 
+	 * @param exitStatusFile file containing information about the process's exit status
+	 */
+	private void readProcessExitStatus(File exitStatusFile) {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(exitStatusFile));
+			String status = reader.readLine();
+			String exitCode = reader.readLine();
+			if (status != null && exitCode != null) {
+				System.out.println("status=" + status + ", exitCode=" + exitCode);
+				
+				// Second line of file should be the exit code
+				this.exitCode = Integer.parseInt(exitCode);
+				
+				if (status.equals("failed_to_execute")) {
+					// The process could not be started
+					this.processStarted = false;
+				} else if (status.equals("exited")) {
+					// The process exited normally.
+					this.exitStatusKnown = true;
+					this.processStarted = true;
+				} else if (status.equals("terminated_by_signal")) {
+					// The process was killed by a signal.
+					// The exit code is the signal that terminated the process.
+					this.exitStatusKnown = true;
+					this.processStarted = true;
+					this.killedBySignal = true;
+				} else {
+					// Should not happen.
+					this.exitStatusKnown = false;
+				}
+			}
+		} catch (IOException e) {
+			this.exitStatusKnown = false;
+		} catch (NumberFormatException e) {
+			exitStatusKnown = false;
+		} finally {
+			IOUtils.closeQuietly(reader);
+			exitStatusFile.delete();
+		}
+	}
+
 	public void runAsynchronous(final File workingDir, final String[] command) {
 	    exitValueMonitor=new Thread() {
 	        public void run() {
@@ -169,8 +237,55 @@ public class ProcessRunner implements ITestOutput {
 	    exitValueMonitor.start();
 	}
 	
+	/**
+	 * Find out whether or not the exit status of this process is known.
+	 * Because in Java it's not directly possible to find out things about
+	 * how a process was terminated (such as whether it was killed by
+	 * a signal), we use a wrapper script to collect information about the
+	 * process's status and write this to a file that this class can read.
+	 * However, we can't rule out the possibility that this file wasn't
+	 * written or was corrupted in some way.  If this method returns true,
+	 * then the process's exit status information is definitely known.
+	 * <bImportant:</b> don't call this unless the process is definitely not running.
+	 * 
+	 * @return true if the process's exit status is definitely known,
+	 *         false otherwise
+	 */
+	public boolean isExitStatusKnown() {
+		return exitStatusKnown;
+	}
+	
+	/**
+	 * Find out whether or not the process was actually started.
+	 * <b>Important:</b>: don't call this unless the process is definitely not running.
+	 * 
+	 * @return the processStarted
+	 */
+	public boolean isProcessStarted() {
+		return processStarted;
+	}
+	
+	/**
+	 * Get the terminated process's exit code.
+	 * If the process was killed by a signal, then the exit code is
+	 * the number of the signal that killed the process.
+	 * <b>Important:</b>: don't call this unless the process is definitely not running.
+	 * 
+	 * @return process's exit code, or the number of the signal that
+	 *         killed the process
+	 */
 	public int getExitCode() {
 		return exitCode;
+	}
+	
+	/**
+	 * Find out whether the process was killed by a signal.
+	 * <b>Important:</b>: don't call this unless the process is definitely not running.
+	 * 
+	 * @return true if the process was killed by a signal, false otherwise
+	 */
+	public boolean isKilledBySignal() {
+		return killedBySignal;
 	}
 	
 	/* (non-Javadoc)
