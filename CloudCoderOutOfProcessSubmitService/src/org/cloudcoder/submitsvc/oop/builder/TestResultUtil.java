@@ -84,7 +84,8 @@ public class TestResultUtil {
 		}
 		if (outcome.isDisplayProcessStatus() &&
 				p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
-			buf.append(" [" + p.getStatusMessage() + "]");
+			// Process did not complete normally, so add the ProcessRunner's status message
+			buf.append(" - " + p.getStatusMessage());
 		}
 		
 		TestResult testResult = new TestResult(
@@ -92,6 +93,23 @@ public class TestResultUtil {
 		        buf.toString(),
 		        p.getStdout(),
 		        p.getStderr());
+		return testResult;
+	}
+
+	/**
+	 * Create a TestResult to indicate that a TestCase couldn't be executed
+	 * because of an internal error.
+	 * 
+	 * @param p         the ProcessRunner for the TestCase
+	 * @param testCase  the TestCase
+	 * @return the TestResult
+	 */
+	public static TestResult createTestResultForInternalError(ProcessRunner p, TestCase testCase) {
+		TestResult testResult = new TestResult(
+				TestOutcome.INTERNAL_ERROR,
+				"The test failed to execute",
+				p.getStdout(),
+				p.getStderr());
 		return testResult;
 	}
 }

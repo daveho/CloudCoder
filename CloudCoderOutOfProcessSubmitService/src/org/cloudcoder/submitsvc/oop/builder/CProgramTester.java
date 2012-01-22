@@ -130,6 +130,8 @@ public class CProgramTester implements ITester {
 			// timed out!
 			processRunner.killProcess();
 			testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
+		} else if (!processRunner.isExitStatusKnown()) {
+			testResultList.add(TestResultUtil.createTestResultForInternalError(processRunner, testCase));
 		} else if (processRunner.isCoreDump()) {
 			// indicates core dump?
 			testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner, testCase));

@@ -171,8 +171,6 @@ public class ProcessRunner implements ITestOutput {
 			
 			// Read the process's exit status information
 			readProcessExitStatus(exitStatusFile);
-
-			statusMessage = "Process finished";
 			return true;
 		} catch (IOException e) {
 			statusMessage = "Could not execute process: " + e.getMessage();
@@ -195,7 +193,7 @@ public class ProcessRunner implements ITestOutput {
 			String status = reader.readLine();
 			String exitCode = reader.readLine();
 			if (status != null && exitCode != null) {
-				System.out.println("status=" + status + ", exitCode=" + exitCode);
+				logger.debug("Read process exit status file: status={}, exitCode={}", status, exitCode);
 				
 				// Second line of file should be the exit code
 				this.exitCode = Integer.parseInt(exitCode);
@@ -203,25 +201,31 @@ public class ProcessRunner implements ITestOutput {
 				if (status.equals("failed_to_execute")) {
 					// The process could not be started
 					this.processStarted = false;
+					this.statusMessage = "Process could not be started";
 				} else if (status.equals("exited")) {
 					// The process exited normally.
 					this.exitStatusKnown = true;
 					this.processStarted = true;
+					this.statusMessage = "Process exited";
 				} else if (status.equals("terminated_by_signal")) {
 					// The process was killed by a signal.
 					// The exit code is the signal that terminated the process.
 					this.exitStatusKnown = true;
 					this.processStarted = true;
 					this.killedBySignal = true;
+					this.statusMessage = "Process crashed (terminated by signal " + this.exitCode + ")";
 				} else {
 					// Should not happen.
 					this.exitStatusKnown = false;
+					this.statusMessage = "Process status could not be determined";
 				}
 			}
 		} catch (IOException e) {
 			this.exitStatusKnown = false;
+			this.statusMessage = "Process status could not be determined";
 		} catch (NumberFormatException e) {
-			exitStatusKnown = false;
+			this.exitStatusKnown = false;
+			this.statusMessage = "Process status could not be determined";
 		} finally {
 			IOUtils.closeQuietly(reader);
 			exitStatusFile.delete();
@@ -347,13 +351,12 @@ public class ProcessRunner implements ITestOutput {
 
 	/**
 	 * Determine whether or not the process ended with a fatal signal.
+	 * <b>Important:</b>: don't call this unless the process is definitely not running.
 	 * 
 	 * @return true if the process ended with a fatal signal, false if
 	 *         it exited normally
 	 */
 	public boolean isCoreDump() {
-        // error code 6 means CORE DUMP
-		// FIXME: how robust is this?
-		return getExitCode() == 6;
+		return isKilledBySignal();
 	}
 }
