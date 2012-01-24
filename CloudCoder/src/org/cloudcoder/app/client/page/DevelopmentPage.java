@@ -305,7 +305,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 
 		public void createEditor(Language language) {
-			aceEditor = new AceEditor();
+			aceEditor = new AceEditor(true);
 			aceEditor.setSize("100%", "100%");
 			centerLayoutPanel.add(aceEditor);
 			aceEditor.startEditor();
