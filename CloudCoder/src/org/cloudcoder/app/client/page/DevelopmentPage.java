@@ -410,10 +410,12 @@ public class DevelopmentPage extends CloudCoderPage {
 					aceEditor.setReadOnly(false);
 					mode = Mode.EDITING;
 
+					/*
 					// Force a redisplay: work around weirdness when an AceEditor
 					// is embedded in a LayoutPanel (or in this case,
 					// a DockLayoutPanel).
 					aceEditor.redisplay();
+					*/
 				}
 
 				@Override
