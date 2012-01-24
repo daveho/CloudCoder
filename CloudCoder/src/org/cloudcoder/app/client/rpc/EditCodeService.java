@@ -29,5 +29,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface EditCodeService extends RemoteService {
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException;
     public ProblemText loadCurrentText() throws NetCoderAuthenticationException;
-	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException;
+	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws NetCoderAuthenticationException;
 }

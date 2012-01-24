@@ -453,7 +453,7 @@ public class DevelopmentPage extends CloudCoderPage {
 							}
 						};
 
-						RPC.editCodeService.logChange(changeBatch, callback);
+						RPC.editCodeService.logChange(changeBatch, System.currentTimeMillis(), callback);
 					}
 				}
 			};

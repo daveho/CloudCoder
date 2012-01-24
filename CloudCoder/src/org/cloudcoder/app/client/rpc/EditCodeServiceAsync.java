@@ -26,5 +26,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface EditCodeServiceAsync {
 	public void setProblem(int problemId, AsyncCallback<Problem> callback);
 	void loadCurrentText(AsyncCallback<ProblemText> callback);
-	public void logChange(Change[] changeList, AsyncCallback<Boolean> callback);
+	void logChange(Change[] changeList, long clientSubmitTime,
+			AsyncCallback<Boolean> callback);
 }

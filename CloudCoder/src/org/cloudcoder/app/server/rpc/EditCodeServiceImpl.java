@@ -133,15 +133,33 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
 	@Override
-	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException {
+	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws NetCoderAuthenticationException {
+		long serverSubmitTime = System.currentTimeMillis();
+
 		// make sure client is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
 		// Make sure all Changes have proper user id
-		for (IContainsEvent change : changeList) {
+		for (Change change : changeList) {
 			if (change.getEvent().getUserId() != user.getId()) {
 				throw new NetCoderAuthenticationException();
 			}
+		}
+		
+		// Adjust the timestamps of each Change based on the delta between
+		// the client submit time and the server submit time,
+		// changing them to server times.
+		// That way, we don't assume that the client and the server clocks
+		// are synchronized (even approximately), only that they are
+		// advancing at the same rate.  Note that we are ignoring network
+		// latency here, but if it remains relatively consistent, and is
+		// small compared to the frequency at which changes are flushed on
+		// the client side, it shouldn't affect things too much.
+		long clientServerTimeDelta = serverSubmitTime - clientSubmitTime;
+		System.out.println("client/server time delta: " + clientServerTimeDelta);
+		for (Change change : changeList) {
+			long orig = change.getEvent().getTimestamp();
+			change.getEvent().setTimestamp(orig + clientServerTimeDelta);
 		}
 
 		// Insert changes
