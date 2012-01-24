@@ -17,43 +17,26 @@
 
 package org.cloudcoder.app.shared.model;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
-
 import java.io.Serializable;
 import java.util.Date;
 
-//@Entity
-//@Table(name="problems")
+/**
+ * A problem that has been assigned in a Course.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
+ */
 public class Problem implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	//	@Id 
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="problem_id")
 	private Integer problemId;
-	
-//	@Column(name="course_id")
 	private Integer courseId;
-	
 	private ProblemType problemType;
-
-//	@Column(name="testname")
 	private String testName;
-
-//	@Column(name="brief_description")
 	private String briefDescription;
-	
-//	@Column(name="description")
 	private String description;
-	
 	private long whenAssigned;
-	
 	private long whenDue;
 
 	public String toString() {
