@@ -422,8 +422,8 @@ public class DevelopmentPage extends CloudCoderPage {
 
 				@Override
 				public void onFailure(Throwable caught) {
-					// TODO: display error
 					GWT.log("Couldn't get current text for problem", caught);
+					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not get problem text: " + caught.getMessage()));
 				}
 			});
 		}
