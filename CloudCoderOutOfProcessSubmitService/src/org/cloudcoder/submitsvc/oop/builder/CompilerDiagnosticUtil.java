@@ -46,7 +46,6 @@ public class CompilerDiagnosticUtil {
 	 * @return a CompilerDiagnostic, or null if the string was not a gcc error message
 	 */
 	public static CompilerDiagnostic diagnosticFromGcc(String s) {
-//		System.out.println("Try: " + s);
 		Matcher m = GCC_ERROR_MSG_PATTERN.matcher(s);
 		if (m.matches()) {
 			int lineNum = Integer.parseInt(m.group(LINE_NUMBER_GROUP));
@@ -54,7 +53,6 @@ public class CompilerDiagnosticUtil {
 			String message = m.group(ERROR_MESSAGE_GROUP);
 			return new CompilerDiagnostic(lineNum, lineNum, -1, -1, errorOrWarning + ": " + message);
 		} else {
-//			System.out.println("  no");
 			return null;
 		}
 	}

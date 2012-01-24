@@ -57,7 +57,6 @@ public class OutputCollector {
 						if (line == null) {
 							break;
 						}
-						System.out.println("Got line: " + line);
 						collectedOutput.add(line);
 					}
 				} catch (IOException e) {

@@ -235,11 +235,11 @@ public class Builder implements Runnable {
 				while (true) {
 					String line = reader.readLine();
 					if (line == null) {
-						System.err.println("Reached EOF on FIFO?");
+						logger.warn("Reached EOF on FIFO?");
 						break;
 					}
 					if (line.trim().toLowerCase().equals("quit")) {
-						System.out.println("Quit command read from FIFO");
+						logger.info("Quit command read from FIFO");
 						break;
 					}
 				}
@@ -247,14 +247,13 @@ public class Builder implements Runnable {
 				reader.close();
 			}
 		} catch (IOException e) {
-			System.err.println("IOException reading from FIFO: " + e.getMessage());
-			e.printStackTrace(System.err);
+			logger.error("IOException reading from FIFO", e);
 		}
 
 		try {
 			builder.shutdown();
 			thread.join();
-			logger.warn("Finished");
+			logger.info("Finished");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

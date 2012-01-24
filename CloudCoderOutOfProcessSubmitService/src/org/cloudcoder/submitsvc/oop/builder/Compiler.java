@@ -87,7 +87,6 @@ public class Compiler {
             	result.add(d);
             }
         }
-        System.out.println("Got " + result.size() + " compiler diagnostics");
         return result.toArray(new CompilerDiagnostic[result.size()]);
     }        
 

@@ -48,11 +48,9 @@ public class ProcessRunner implements ITestOutput {
 	static {
 		// FIXME: find a way to make this work if we're running from a jar file
 		String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/" + "runProcess.pl";
-		//System.out.println("path: " + runProcessPath);
 		URL url = ProcessRunner.class.getClassLoader().getResource(runProcessPath);
 		if (url != null) {
 			String fileName = url.toExternalForm();
-			//System.out.println("fileName: " + fileName);
 			if (fileName.startsWith("file://")) {
 				RUN_PROCESS_SCRIPT = fileName.substring("file://".length());
 			} else if (fileName.startsWith("file:")) {
@@ -62,7 +60,6 @@ public class ProcessRunner implements ITestOutput {
 		if (RUN_PROCESS_SCRIPT == null || !(new File(RUN_PROCESS_SCRIPT).exists())) {
 			throw new IllegalStateException("can't find filename of runProcess.pl script");
 		}
-		System.out.println("Run process script: " + RUN_PROCESS_SCRIPT);
 	}
     
 	private String statusMessage = "";
