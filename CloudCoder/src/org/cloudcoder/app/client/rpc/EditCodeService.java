@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -27,6 +28,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("editCode")
 public interface EditCodeService extends RemoteService {
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException;
-    public String loadCurrentText() throws NetCoderAuthenticationException;
+    public ProblemText loadCurrentText() throws NetCoderAuthenticationException;
 	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException;
 }

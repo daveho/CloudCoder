@@ -14,6 +14,7 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCodeService {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(EditCodeServiceImpl.class);
+	
+	private static final boolean DEBUG_CODE_DELTAS = false;
 
 	@Override
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException {
@@ -47,7 +50,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
     @Override
-    public String loadCurrentText() throws NetCoderAuthenticationException {
+    public ProblemText loadCurrentText() throws NetCoderAuthenticationException {
     	// make sure client is authenticated
     	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
     	
@@ -59,36 +62,44 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     		throw new NetCoderAuthenticationException();
     	}
 
-    	String text = doLoadCurrentText(user, problem.getProblemId());
+    	ProblemText text = doLoadCurrentText(user, problem);
     	
-    	// FIXME: this is only necessary because (for debugging purposes) LogCodeChangeServiceImpl expects to have the full document
-    	TextDocument doc = new TextDocument();
-    	doc.setText(text);
-    	getThreadLocalRequest().getSession().setAttribute("doc", doc);
+    	if (DEBUG_CODE_DELTAS) {
+	    	// Keep a TextDocument in the session for debugging code deltas
+	    	TextDocument doc = new TextDocument();
+	    	doc.setText(text.getText());
+	    	getThreadLocalRequest().getSession().setAttribute("doc", doc);
+    	}
     	
     	return text;
     }
 
-	protected String doLoadCurrentText(User user, int problemId) {
-    	Change mostRecent = Database.getInstance().getMostRecentChange(user, problemId);
+	protected ProblemText doLoadCurrentText(User user, Problem problem) {
+    	Change mostRecent = Database.getInstance().getMostRecentChange(user, problem.getProblemId());
 
     	if (mostRecent == null) {
     		// Presumably, user has never worked on this problem.
-    		logger.debug("No changes recorded for user " + user.getId() + ", problem " + problemId);
-    		return "";
+    		logger.debug("No changes recorded for user " + user.getId() + ", problem " + problem.getProblemId());
+    		
+    		// If the problem has a skeleton, it is the initial problem text.
+    		// Otherwise, just use the empty string.
+    		String initialText = problem.hasSkeleton() ? problem.getSkeleton() : "";
+    		ProblemText initialProblemText = new ProblemText(initialText, true);
+    		
+    		return initialProblemText;
     	} else {
     		Change change = mostRecent; // result.get(0);
 
     		// If the Change is a full text change, great.
     		if (change.getType() == ChangeType.FULL_TEXT) {
-    			return change.getText();
+    			return new ProblemText(change.getText(), false);
     		}
 
     		// Otherwise, find the last full-text change (if any) and
     		// apply all later changes.
     		
     		// Find the most recent full-text change.
-    		Change fullText = Database.getInstance().getMostRecentFullTextChange(user, problemId);
+    		Change fullText = Database.getInstance().getMostRecentFullTextChange(user, problem.getProblemId());
     		
     		// Text doc to accumulate changes.
     		TextDocument textDocument = new TextDocument();
@@ -105,7 +116,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     		}
     		
     		// Get all deltas that follow the base revision.
-    		List<Change> deltaList = Database.getInstance().getAllChangesNewerThan(user, problemId, baseRev);
+    		List<Change> deltaList = Database.getInstance().getAllChangesNewerThan(user, problem.getProblemId(), baseRev);
     		
     		// Apply the deltas to the base revision.
     		try {
@@ -113,10 +124,10 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	    		for (Change delta : deltaList) {
 	    			applicator.apply(delta, textDocument);
 	    		}
-	    		return textDocument.getText();
+	    		return new ProblemText(textDocument.getText(), false);
     		} catch (RuntimeException e) {
     			// FIXME: should do something smarter than this 
-    			return fullText != null ? fullText.getText() : "";
+    			return new ProblemText(fullText != null ? fullText.getText() : "", false);
     		}
     	}
 	}
@@ -136,27 +147,25 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// Insert changes
 		Database.getInstance().storeChanges(changeList);
 		
-		//
-		// TODO: we don't really need to keep a complete copy
-		// of the TextDocument in the session - this is mostly
-		// for debugging
-		//
-		
-		HttpServletRequest req = this.getThreadLocalRequest();
-		HttpSession session = req.getSession();
-		
-		TextDocument doc = (TextDocument) session.getAttribute("doc");
-		if (doc == null) {
-			doc = new TextDocument();
-			session.setAttribute("doc", doc);
+		if (DEBUG_CODE_DELTAS) {
+			// For debugging - keep a TextDocument in the session,
+			// and apply changes to it
+			
+			HttpServletRequest req = this.getThreadLocalRequest();
+			HttpSession session = req.getSession();
+			
+			TextDocument doc = (TextDocument) session.getAttribute("doc");
+			if (doc == null) {
+				doc = new TextDocument();
+				session.setAttribute("doc", doc);
+			}
+			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+			for (Change change : changeList) {
+				applicator.apply(change, doc);
+			}
+			
+			logger.debug("Document is now:\n" + doc.getText());
 		}
-		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-		for (Change change : changeList) {
-			applicator.apply(change, doc);
-		}
-		
-		
-		logger.debug("Document is now:\n" + doc.getText());
 		
 		return true;
 	}

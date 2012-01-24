@@ -720,6 +720,7 @@ public class JDBCDatabase implements IDatabase {
 		problem.setDescription(resultSet.getString(index++));
 		problem.setWhenAssigned(resultSet.getLong(index++));
 		problem.setWhenDue(resultSet.getLong(index++));
+		problem.setSkeleton(resultSet.getString(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {

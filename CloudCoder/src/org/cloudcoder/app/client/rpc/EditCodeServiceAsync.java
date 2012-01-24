@@ -19,11 +19,12 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface EditCodeServiceAsync {
 	public void setProblem(int problemId, AsyncCallback<Problem> callback);
-	public void loadCurrentText(AsyncCallback<String> callback);
+	void loadCurrentText(AsyncCallback<ProblemText> callback);
 	public void logChange(Change[] changeList, AsyncCallback<Boolean> callback);
 }

@@ -29,10 +29,12 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
@@ -379,10 +381,32 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 
 		public void asyncLoadCurrentProblemText() {
-			RPC.editCodeService.loadCurrentText(new AsyncCallback<String>() {
+			RPC.editCodeService.loadCurrentText(new AsyncCallback<ProblemText>() {
 				@Override
-				public void onSuccess(String result) {
-					aceEditor.setText(result);
+				public void onSuccess(ProblemText result) {
+					// If the ProblemText is new (meaning that this is the first time the
+					// user is working on this problem), and if the problem text is
+					// non-empty, insert the initial problem text
+					// into the change list as a full-text change.  This handles the
+					// case where the problem has a skeleton.
+					if (result.isNew() && !result.getText().equals("")) {
+						User user = getSession().get(User.class);
+						Problem problem = getSession().get(Problem.class);
+						
+						Change initialChange = new Change(
+								ChangeType.FULL_TEXT,
+								0, 0, 0, 0,
+								System.currentTimeMillis(),
+								user.getId(),
+								problem.getProblemId(),
+								result.getText()
+								);
+						
+						getSession().get(ChangeList.class).addChange(initialChange);
+					}
+					
+					// Now we can start editing
+					aceEditor.setText(result.getText());
 					aceEditor.setReadOnly(false);
 					mode = Mode.EDITING;
 

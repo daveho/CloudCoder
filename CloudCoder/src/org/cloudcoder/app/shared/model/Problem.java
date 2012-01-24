@@ -38,6 +38,7 @@ public class Problem implements Serializable
 	private String description;
 	private long whenAssigned;
 	private long whenDue;
+	private String skeleton;
 
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
@@ -154,5 +155,26 @@ public class Problem implements Serializable
 	 */
 	public void setWhenDue(long whenDue) {
 		this.whenDue = whenDue;
+	}
+	
+	/**
+	 * @param skeleton the skeleton to set
+	 */
+	public void setSkeleton(String skeleton) {
+		this.skeleton = skeleton;
+	}
+	
+	/**
+	 * @return the skeleton
+	 */
+	public String getSkeleton() {
+		return skeleton;
+	}
+
+	/**
+	 * @return true if this problem has a skeleton, false if not
+	 */
+	public boolean hasSkeleton() {
+		return skeleton != null;
 	}
 }
