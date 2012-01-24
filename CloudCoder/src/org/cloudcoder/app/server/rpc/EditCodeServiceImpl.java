@@ -156,7 +156,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// small compared to the frequency at which changes are flushed on
 		// the client side, it shouldn't affect things too much.
 		long clientServerTimeDelta = serverSubmitTime - clientSubmitTime;
-		System.out.println("client/server time delta: " + clientServerTimeDelta);
+		//System.out.println("client/server time delta: " + clientServerTimeDelta);
 		for (Change change : changeList) {
 			long orig = change.getEvent().getTimestamp();
 			change.getEvent().setTimestamp(orig + clientServerTimeDelta);
