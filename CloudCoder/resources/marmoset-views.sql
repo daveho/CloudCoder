@@ -13,7 +13,7 @@ create view cc_courses as
          courses.coursename as name,
          courses.description as title,
          courses.url as url,
-         2 as term,                  -- XXX: hardcoded term "Spring"
+         2 as term_id,                  -- XXX: hardcoded term "Spring"
          2012 as year                -- XXX: hardcoded year
          from courses;
 
