@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WorkerTask implements Runnable {
+	private static Logger logger = LoggerFactory.getLogger(WorkerTask.class);
+	
 	private volatile boolean shutdownRequested;
 	private Socket clientSocket;
 	private LinkedBlockingQueue<Submission> submissionQueue;
@@ -35,26 +40,71 @@ public class WorkerTask implements Runnable {
 
 	@Override
 	public void run() {
+		Submission submission = null;
 		
+		// Testing of submissions by this worker continues until either an
+		// explicit shutdown request is made, or an exception is thrown communicating
+		// with the remote Builder process.
+	submissionTestingLoop:
 		while (!shutdownRequested) {
-			Submission submission = null;
+
+			// Try to get a submission to test
 			try {
 				submission = submissionQueue.poll(1000, TimeUnit.MILLISECONDS);
-				
-				if (submission != null) {
-					sendSubmissionForTesting(submission);
-				}
 			} catch (InterruptedException e) {
 				if (!shutdownRequested) {
-					// FIXME: log unexpected interruption
+					logger.error("Unexpected interruption", e);
+					break submissionTestingLoop;
 				}
-			} catch (IOException e) {
-				// FIXME: log
-				submission.setError(e);
-				break;
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("ClassNotFound while deserializing message", e);
 			}
+
+			if (submission != null) {
+				// Check to make sure there isn't some kind of persistent error
+				// affecting the testing of this submission
+				if (submission.getNumAttempts() >= 10) {
+					// Too many testing failures for this submission!
+					submission.setReady();
+					continue submissionTestingLoop;
+				}
+				
+				submission.setNumAttempts(submission.getNumAttempts() + 1);
+				
+				// Attempt to test the submission
+				try {
+					sendSubmissionForTesting(submission);
+					// Submission successfully tested!
+					submission = null; // We're done with this Submission
+				} catch (IOException e) {
+					submission.setError(e);
+					logger.error("IOException attempting to send submission for testing", e);
+					break submissionTestingLoop;
+				} catch (ClassNotFoundException e) {
+					submission.setError(e);
+					logger.error("ClassNotFoundException testing submission", e);
+					break submissionTestingLoop;
+				}
+			}
+		}
+		
+		// If the testing of a submission was not completed,
+		// place it back in the queue so it has an opportunity to be re-tested
+		if (submission != null) {
+			try {
+				submissionQueue.put(submission);
+			} catch (InterruptedException e) {
+				logger.error("Failed to put submission back in submission queue", e);
+				submission.setError(e);
+				submission.setReady();
+			}
+		}
+
+		// End the connection with the Builder
+		IOUtils.closeQuietly(in);
+		IOUtils.closeQuietly(out);
+		try {
+			clientSocket.close();
+		} catch (IOException e) {
+			logger.warn("Exception closing client socket", e);
 		}
 	}
 
@@ -83,5 +133,6 @@ public class WorkerTask implements Runnable {
 		// Read list of TestResults
 		SubmissionResult result= (SubmissionResult) in.readObject();
 		submission.setSubmissionResult(result);
+		submission.setReady();
 	}
 }
