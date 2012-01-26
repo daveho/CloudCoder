@@ -32,6 +32,7 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 	
 	private String dbUser;
 	private String dbPasswd;
+	private String dbDatabaseName;
 	private String dbHost;
 	private String dbPortStr;
 	
@@ -64,6 +65,14 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 	}
 	
 	/**
+	 * @return the database name (defaults to "cloudcoder" if not explicitly set
+	 *         in servlet context init params)
+	 */
+	public String getDbDatabaseName() {
+		return dbDatabaseName != null ? dbDatabaseName : "cloudcoder";
+	}
+	
+	/**
 	 * @return the host on which the MySQL database is running
 	 *         (returns "localhost" if no db host is set) 
 	 */
@@ -88,6 +97,7 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 		synchronized (instanceLock) {
 			dbUser = e.getServletContext().getInitParameter("cloudcoder.db.user");
 			dbPasswd = e.getServletContext().getInitParameter("cloudcoder.db.passwd");
+			dbDatabaseName = e.getServletContext().getInitParameter("cloudcoder.db.databaseName");
 			dbHost = e.getServletContext().getInitParameter("cloudcoder.db.host");
 			dbPortStr = e.getServletContext().getInitParameter("cloudcoder.db.portstr");
 			

@@ -73,7 +73,9 @@ public class JDBCDatabase implements IDatabase {
 		JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
 		jdbcUrl = "jdbc:mysql://" +
 				config.getDbHost() + config.getDbPortStr() +
-				"/cloudcoder?user=" +
+				"/" +
+				config.getDbDatabaseName() +
+				"?user=" +
 				config.getDbUser() +
 				"&password=" + config.getDbPasswd();
 	}
