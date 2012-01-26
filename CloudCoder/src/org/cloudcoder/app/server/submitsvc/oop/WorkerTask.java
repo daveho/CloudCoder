@@ -38,6 +38,14 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class WorkerTask implements Runnable {
+	/**
+	 * Number of milliseconds between attempts to poll the
+	 * submission queue.
+	 */
+	private static final int POLL_INTERVAL_MILLIS = 1000;
+
+	private static final long MAX_IDLE_TIME_MILLIS = 5000;
+
 	private static Logger logger = LoggerFactory.getLogger(WorkerTask.class);
 	
 	private volatile boolean shutdownRequested;
@@ -64,6 +72,12 @@ public class WorkerTask implements Runnable {
 	public void run() {
 		Submission submission = null;
 		
+		// Keep track of how long it has been since we sent
+		// the Builder a Submission.  If it's been too long,
+		// we will send a keepalive signal to avoid the TCP
+		// connection timing out.
+		long idleTimeMillis = 0;
+		
 		// Testing of submissions by this worker continues until either an
 		// explicit shutdown request is made, or an exception is thrown communicating
 		// with the remote Builder process.
@@ -72,12 +86,31 @@ public class WorkerTask implements Runnable {
 
 			// Try to get a submission to test
 			try {
-				submission = submissionQueue.poll(1000, TimeUnit.MILLISECONDS);
+				submission = submissionQueue.poll(POLL_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				if (!shutdownRequested) {
 					logger.error("Unexpected interruption", e);
 					break submissionTestingLoop;
 				}
+			}
+			
+			if (submission == null) {
+				idleTimeMillis += POLL_INTERVAL_MILLIS;
+				
+				if (idleTimeMillis >= MAX_IDLE_TIME_MILLIS) {
+					// Send a negative problem id as a keepalive signal.
+					// The Builder will ignore this.
+					try {
+						//logger.debug("Sending keepalive signal to Builder");
+						out.writeObject(Integer.valueOf(-1));
+						idleTimeMillis = 0L;
+					} catch (IOException e) {
+						logger.error("Error sending keepalive signal to Builder", e);
+						break submissionTestingLoop;
+					}
+				}
+			} else {
+				idleTimeMillis = 0L;
 			}
 
 			if (submission != null) {

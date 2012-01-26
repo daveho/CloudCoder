@@ -111,6 +111,13 @@ public class Builder implements Runnable {
 					Integer problemId = safeReadObject();
 					working = true;
 					
+					// The CloudCoder app may send us a negative problem id as
+					// a keepalive signal.  We can just ignore these.
+					if (problemId < 0) {
+						//logger.debug("Received keepalive signal from CloudCoder app");
+						continue requestLoop;
+					}
+					
 					Problem problem = problemIdToProblemMap.get(problemId);
 					List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
 
