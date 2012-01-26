@@ -52,6 +52,19 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
+	// Constants for table names
+	private static final String TEST_RESULTS = "cc_test_results";
+	private static final String TEST_CASES = "cc_test_cases";
+	private static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
+	private static final String TERMS = "cc_terms";
+	private static final String EVENTS = "cc_events";
+	private static final String CHANGES = "cc_changes";
+	private static final String COURSE_REGISTRATIONS = "cc_course_registrations";
+	private static final String COURSES = "cc_courses";
+	private static final String PROBLEMS = "cc_problems";
+	private static final String USERS = "cc_users";
+	private static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
+
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	
 	private String jdbcUrl;
@@ -112,7 +125,9 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public ConfigurationSetting run(Connection conn)
 					throws SQLException {
-				PreparedStatement stmt = prepareStatement(conn, "select s.* from configuration_settings as s where s.name = ?");
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select s.* from " + CONFIGURATION_SETTINGS + " as s where s.name = ?");
 				stmt.setString(1, name.toString());
 				ResultSet resultSet = executeQuery(stmt);
 				if (!resultSet.next()) {
@@ -134,7 +149,9 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<User>() {
 			@Override
 			public User run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(conn, "select * from users where username = ?");
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + USERS + " where username = ?");
 				stmt.setString(1, userName);
 				
 				ResultSet resultSet = executeQuery(stmt);
@@ -173,11 +190,11 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select problems.* from problems, courses, course_registrations " +
-						" where problems.problem_id = ? " +
-						"   and courses.id = problems.course_id " +
-						"   and course_registrations.course_id = courses.id " +
-						"   and course_registrations.user_id = ?"
+						"select " + PROBLEMS + ".* from " + PROBLEMS + ", " + COURSES + ", " + COURSE_REGISTRATIONS + " " +
+						" where " + PROBLEMS + ".problem_id = ? " +
+						"   and " + COURSES + ".id = " + PROBLEMS + ".course_id " +
+						"   and " + COURSE_REGISTRATIONS + ".course_id = " + COURSES + ".id " +
+						"   and " + COURSE_REGISTRATIONS + ".user_id = ?"
 				);
 				stmt.setInt(1, problemId);
 				stmt.setInt(2, user.getId());
@@ -208,9 +225,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)"
@@ -240,9 +257,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ? " +
@@ -276,7 +293,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
 						"   and e.id > ? " +
 						"   and e.user_id = ? " +
@@ -312,7 +329,7 @@ public class JDBCDatabase implements IDatabase {
 
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.*, t.* from courses as c, terms as t, course_registrations as r " +
+						"select c.*, t.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
 						" where c.id = r.course_id " + 
 						"   and c.term_id = t.id " +
 						"   and r.user_id = ? " +
@@ -374,7 +391,7 @@ public class JDBCDatabase implements IDatabase {
 				// that user is authorized to get information about the course.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from submission_receipts as r, problems as p, events as e, course_registrations as cr " +
+						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + PROBLEMS + " as p, " + EVENTS + " as e, " + COURSE_REGISTRATIONS + " as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
 						"   and p.course_id = cr.course_id " +
@@ -429,7 +446,7 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into changes values (NULL, ?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + CHANGES + " values (NULL, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
 					storeNoId(change, insertChange, 1);
@@ -453,7 +470,7 @@ public class JDBCDatabase implements IDatabase {
 			public List<TestCase> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from test_cases where problem_id = ?");
+						"select * from " + TEST_CASES + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				List<TestCase> result = new ArrayList<TestCase>();
@@ -511,9 +528,9 @@ public class JDBCDatabase implements IDatabase {
 				// Get most recent submission receipt for user/problem
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from submission_receipts as r, events as e " +
+						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + EVENTS + " as e " +
 						" where r.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from submission_receipts as rr, events as ee " +
+						"   and e.id = (select max(ee.id) from " + SUBMISSION_RECEIPTS + " as rr, " + EVENTS + " as ee " +
 						"                where rr.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)");
@@ -585,7 +602,7 @@ public class JDBCDatabase implements IDatabase {
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
-				"insert into events values (NULL, ?, ?, ?, ?)", 
+				"insert into " + EVENTS + " values (NULL, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS
 		);
 		for (IContainsEvent change : containsEventList) {
@@ -626,7 +643,7 @@ public class JDBCDatabase implements IDatabase {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into submission_receipts values (NULL, ?, ?, ?)"
+				"insert into " + SUBMISSION_RECEIPTS + " values (NULL, ?, ?, ?)"
 		);
 		storeNoId(receipt, stmt, 1);
 		stmt.execute();
@@ -637,7 +654,7 @@ public class JDBCDatabase implements IDatabase {
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
-				"insert into test_results values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TEST_RESULTS + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		for (TestResult testResult : testResultList) {
@@ -678,7 +695,7 @@ public class JDBCDatabase implements IDatabase {
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select p.* from problems as p, courses as c, course_registrations as r " +
+				"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
 				" where p.course_id = c.id " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
