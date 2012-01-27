@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,8 +276,8 @@ public class Builder implements Runnable {
 	}
 
 	public static void main(String[] args) {
+		// Parse command-line options
 		Options options = new Options();
-		
 		if (!options.parse(args)) {
 			System.err.println("Usage: " + Builder.class.getName() + " [options...]");
 			System.err.println("  --appHost=<hostname>         specify CloudCoder application hostname");
@@ -284,14 +285,18 @@ public class Builder implements Runnable {
 			System.err.println("  --numThreads=<num threads>   number of builder threads (parallelism)");
 			System.exit(1);
 		}
-		
-		// Start the Builder
-		Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
-		Thread thread_ = new Thread(builder_);
 
-		BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
-
-		builderAndThread.thread.start();
+		// Start Builder threads
+		List<BuilderAndThread> builderAndThreadList = new ArrayList<Builder.BuilderAndThread>();
+		for (int i = 0; i < options.getNumThreads(); i++) {
+			Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
+			Thread thread_ = new Thread(builder_);
+	
+			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
+			builderAndThreadList.add(builderAndThread);
+			
+			builderAndThread.thread.start();
+		}
 
 		// Wait until "quit" is written to the FIFO
 		try {
@@ -319,12 +324,15 @@ public class Builder implements Runnable {
 			logger.error("IOException reading from FIFO", e);
 		}
 
-		try {
-			builderAndThread.builder.shutdown();
-			builderAndThread.thread.join();
-			logger.info("Finished");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		// Shut down all Builder threads
+		for (BuilderAndThread builderAndThread : builderAndThreadList) {
+			try {
+				builderAndThread.builder.shutdown();
+				builderAndThread.thread.join();
+				logger.info("Finished");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
