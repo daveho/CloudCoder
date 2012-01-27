@@ -215,21 +215,83 @@ public class Builder implements Runnable {
 	}
 
 	private static final int DEFAULT_PORT = 47374;
+	
+	private static class Options {
+		private String appHost;
+		private int appPort;
+		private int numThreads;
+		
+		public Options() {
+			this.appHost = "localhost";
+			this.appPort = 47374;
+			this.numThreads = 1;
+		}
+		
+		/**
+		 * @return the appHost
+		 */
+		public String getAppHost() {
+			return appHost;
+		}
+		
+		/**
+		 * @return the appPort
+		 */
+		public int getAppPort() {
+			return appPort;
+		}
+		
+		/**
+		 * @return the numThreads
+		 */
+		public int getNumThreads() {
+			return numThreads;
+		}
+		
+		public boolean parse(String[] args) {
+			for (String arg : args) {
+				if (arg.startsWith("--appHost=")) {
+					this.appHost = arg.substring("--appHost=".length());
+				} else if (arg.startsWith("--appPort=")) {
+					this.appPort = Integer.parseInt(arg.substring("--appPort=".length()));
+				} else if (arg.startsWith("--numThreads=")) {
+					this.numThreads = Integer.parseInt(arg.substring("--numThreads=".length()));
+				} else {
+					System.err.println("Unknown argument: " + arg);
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	
+	private static class BuilderAndThread {
+		final Builder builder;
+		final Thread thread;
+		public BuilderAndThread(Builder builder, Thread thread) {
+			this.builder = builder;
+			this.thread = thread;
+		}
+	}
 
 	public static void main(String[] args) {
-		if (args.length > 2) {
-			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name> <CloudCoder app port>");
+		Options options = new Options();
+		
+		if (!options.parse(args)) {
+			System.err.println("Usage: " + Builder.class.getName() + " [options...]");
+			System.err.println("  --appHost=<hostname>         specify CloudCoder application hostname");
+			System.err.println("  --appPort=<port>             specify CloudCoder application port");
+			System.err.println("  --numThreads=<num threads>   number of builder threads (parallelism)");
 			System.exit(1);
 		}
-
-		// Determine the host name and port for the CloudCoder webapp.
-		String appHost = args.length > 0 ? args[0] : "localhost";
-		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : DEFAULT_PORT;
 		
 		// Start the Builder
-		Builder builder = new Builder(appHost, appPort);
-		Thread thread = new Thread(builder);
-		thread.start();
+		Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
+		Thread thread_ = new Thread(builder_);
+
+		BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
+
+		builderAndThread.thread.start();
 
 		// Wait until "quit" is written to the FIFO
 		try {
@@ -258,8 +320,8 @@ public class Builder implements Runnable {
 		}
 
 		try {
-			builder.shutdown();
-			thread.join();
+			builderAndThread.builder.shutdown();
+			builderAndThread.thread.join();
 			logger.info("Finished");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
