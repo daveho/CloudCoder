@@ -7,6 +7,21 @@ use FileHandle;
 # build and deploy the CloudCoder webapp and/or Builder.
 # Generates a local.properties file.
 
+my %MODES = ('-all' => 1, '-webapp' => 1, '-builder' => 1);
+my $mode = shift @ARGV;
+if ((!defined $mode) || (!exists $MODES{$mode})) {
+	print STDERR <<"EOF";
+Usage: ./configure.pl <mode>
+Modes are:
+  -all      generate all configuration properties (both webapp and builder)
+  -webapp   generate only webapp properties
+  -builder  generate only builder properties
+EOF
+	exit 1;
+}
+my $webapp = $mode eq '-all' || $mode eq '-webapp';
+my $builder = $mode eq '-all' || $mode eq '-builder';
+
 my @propertyNames = ();
 my %properties = ();
 
@@ -15,24 +30,30 @@ print "Please enter the information needed to configure CloudCoder for your syst
 print "You can just hit enter to accept the default value (if there is one).\n";
 print "\n";
 
-askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
-	"gwt.sdk", undef);
-askprop("What MySQL username will the webapp use to connect to the database?",
-	"cloudcoder.db.user", undef);
-askprop("What MySQL password will the webapp use to connect to the database?",
-	"cloudcoder.db.passwd", undef);
-askprop("What MySQL database will contain the CloudCoder tables?",
-	"cloudcoder.db.databaseName", "cloudcoder");
-askprop("What host will CloudCoder connect to to access the MySQL database?",
-	"cloudcoder.db.host", "localhost");
-askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
-	"Just hit enter if MySQL is running on the standard port.",
-	"cloudcoder.db.portStr", undef);
-askprop("What host will the CloudCoder webapp be running on?\n" .
-	"This information is only needed for the Builder, just hit enter\n" .
-	"if you're only configuring the webapp, or if the Builder will run\n" .
-	"on the same host as the webapp.",
-	"cloudcoder.submitsvc.oop.host", "localhost");
+if ($webapp) {
+	askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
+		"gwt.sdk", undef);
+	askprop("What MySQL username will the webapp use to connect to the database?",
+		"cloudcoder.db.user", undef);
+	askprop("What MySQL password will the webapp use to connect to the database?",
+		"cloudcoder.db.passwd", undef);
+	askprop("What MySQL database will contain the CloudCoder tables?",
+		"cloudcoder.db.databaseName", "cloudcoder");
+	askprop("What host will CloudCoder connect to to access the MySQL database?",
+		"cloudcoder.db.host", "localhost");
+	askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
+		"Just hit enter if MySQL is running on the standard port.",
+		"cloudcoder.db.portStr", undef);
+}
+
+if ($builder) {
+	askprop("What host will the CloudCoder webapp be running on?\n" .
+		"This information is only needed for the Builder, just hit enter\n" .
+		"if you're only configuring the webapp, or if the Builder will run\n" .
+		"on the same host as the webapp.",
+		"cloudcoder.submitsvc.oop.host", "localhost");
+}
+
 askprop("What port will the CloudCoder webapp use to listen for connections from\n" .
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
