@@ -7,34 +7,34 @@
 
   <!-- Context parameters -->
   <context-param>
+    <!-- Note: keep the param-name and param-value elements on the same line
+         without any spaces between them.  This allows automated setting
+         of the webapp configuration properties when the app is deployed
+         using CloudCoderWebServer. -->
+
     <!-- MySQL username. -->
-  	<param-name>cloudcoder.db.user</param-name>
-  	<param-value>root</param-value>
+    <param-name>cloudcoder.db.user</param-name><param-value>root</param-value>
   </context-param>
   <context-param>
     <!-- MySQL password. -->
-    <param-name>cloudcoder.db.passwd</param-name>
-    <param-value>root</param-value>
+    <param-name>cloudcoder.db.passwd</param-name><param-value>root</param-value>
   </context-param>
   <context-param>
-    <param-name>cloudcoder.db.databaseName</param-name>
-    <param-value>cloudcoder</param-value>
+    <!-- Name of MySQL database where the CloudCoder tables are. -->
+    <param-name>cloudcoder.db.databaseName</param-name><param-value>cloudcoder</param-value>
   </context-param>
   <context-param>
     <!-- Host where MySQL server is running. -->
-    <param-name>cloudcoder.db.host</param-name>
-    <param-value>localhost</param-value>
+    <param-name>cloudcoder.db.host</param-name><param-value>localhost</param-value>
   </context-param>
   <context-param>
     <!-- Set this to :8889 if using MAMP, otherwise leave it blank. -->
-    <param-name>cloudcoder.db.portstr</param-name>
-    <param-value></param-value>
+    <param-name>cloudcoder.db.portstr</param-name><param-value></param-value>
   </context-param>
   <context-param>
     <!-- Port that the out of process submit service will listen on
          for connections from Builders. -->
-    <param-name>cloudcoder.submitsvc.oop.port</param-name>
-    <param-value>47374</param-value>
+    <param-name>cloudcoder.submitsvc.oop.port</param-name><param-value>47374</param-value>
   </context-param>
 
   <!-- Servlets -->
