@@ -4,7 +4,12 @@
   <property name="gwt.args" value="" />
 
   <!-- Configure path to GWT SDK -->
+  <!--
   <property name="gwt.sdk" location="/home/dhovemey/linux/java/eclipse-indigo/plugins/com.google.gwt.eclipse.sdkbundle_2.4.0.v201201120043-rel-r37/gwt-2.4.0" />
+  -->
+
+  <!-- Read CloudCoder global configuration properties. -->
+  <property file="../local.properties"/>
 
   <path id="project.class.path">
     <pathelement location="war/WEB-INF/classes"/>
