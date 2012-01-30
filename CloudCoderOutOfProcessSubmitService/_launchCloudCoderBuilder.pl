@@ -13,16 +13,15 @@ my $app = 'cloudCoderBuilder';
 
 my @cp_entries = ();
 
-# Recursively find all jar files
+# Recursively find all jar files.
+# Assuming that the "modelClasses" ant target was built,
+# the model classes shared between the webapp and the builder
+# should be found here.
 my $find_fh = new FileHandle("(find lib -name '*\\.jar' -print) |") || die;
 while(<$find_fh>) {
 	chomp;
 	push @cp_entries, $_;
 }
-
-# Add war/WEB-INF/classes directory from CloudCoder to classpath,
-# to get classes shared between the webapp and the builder.
-push @cp_entries, "../CloudCoder/war/WEB-INF/classes";
 
 my $classpath = join(':', @cp_entries);
 print "$classpath\n" if (exists $ENV{'DEBUG'});
