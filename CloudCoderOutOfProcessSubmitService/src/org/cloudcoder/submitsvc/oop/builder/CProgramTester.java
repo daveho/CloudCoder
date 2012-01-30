@@ -28,6 +28,7 @@ import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,13 +88,22 @@ public class CProgramTester implements ITester {
 		// the process's stdout for a line matching the test case's output,
 		// which is interpreted as a regular expression.
 		
-		List<TestResult> testResultList = new ArrayList<TestResult>();
 		
 		// FIXME: consider executing tests in parallel, like CTester
-//		List<TestCaseExecutor> testCaseExecutors = new ArrayList<CProgramTester.TestCaseExecutor>();
+		List<TestCaseExecutor> testCaseExecutors = new ArrayList<CProgramTester.TestCaseExecutor>();
 		for (TestCase testCase : submission.getTestCaseList()) {
+//			executor.executeTestCase();
+//			testResultList.add(executor.getTestResult());
 			TestCaseExecutor executor = new TestCaseExecutor(tempDir, testCase);
-			executor.executeTestCase();
+			executor.start();
+			testCaseExecutors.add(executor);
+		}
+		
+		// Wait for all TestCaseExecutors to finish,
+		// collect TestResults
+		List<TestResult> testResultList = new ArrayList<TestResult>();
+		for (TestCaseExecutor executor : testCaseExecutors) {
+			executor.join();
 			testResultList.add(executor.getTestResult());
 		}
 		
@@ -107,22 +117,24 @@ public class CProgramTester implements ITester {
 		return submissionResult;
 	}
 	
-	private static class TestCaseExecutor {
+	private static class TestCaseExecutor implements Runnable {
+		private static final int MAX_TEST_EXECUTOR_JOIN_ATTEMPTS = 10;
+
 		private File tempDir;
 		private TestCase testCase;
 		private TestResult testResult;
+		private Thread thread;
 
 		public TestCaseExecutor(File tempDir, TestCase testCase) {
 			this.tempDir = tempDir;
 			this.testCase = testCase;
 		}
 		
-		public TestResult getTestResult() {
-			return testResult;
-		}
-
-		public void executeTestCase(/*File tempDir, TestCase testCase,
-				List<TestResult> testResultList*/) {
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
 			ProcessRunner processRunner = new ProcessRunner();
 			
 			processRunner.setStdin(testCase.getInput());
@@ -146,14 +158,11 @@ public class CProgramTester implements ITester {
 			if (processRunner.isRunning()) {
 				// timed out!
 				processRunner.killProcess();
-				//testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
 				testResult = TestResultUtil.createTestResultForTimeout(processRunner, testCase);
 			} else if (!processRunner.isExitStatusKnown()) {
-				//testResultList.add(TestResultUtil.createTestResultForInternalError(processRunner, testCase));
 				testResult = TestResultUtil.createTestResultForInternalError(processRunner, testCase);
 			} else if (processRunner.isCoreDump()) {
 				// indicates core dump?
-				//testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner, testCase));
 				testResult = TestResultUtil.createTestResultForCoreDump(processRunner, testCase);
 			} else {
 				// Process completed.  Scan through its output to see if there is a line
@@ -168,13 +177,39 @@ public class CProgramTester implements ITester {
 						break;
 					}
 				}
-//				testResultList.add(foundMatchingOutput
-//						? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
-//						: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase));
 				testResult = foundMatchingOutput
 						? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
 						: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase);
 			}
+		}
+
+		public void start() {
+			thread = new Thread(this);
+			thread.start();
+		}
+		
+		public void join() {
+			boolean done = false;
+			int numAttempts = 0;
+			while (!done && numAttempts < MAX_TEST_EXECUTOR_JOIN_ATTEMPTS) {
+				try {
+					thread.join();
+					done = true;
+				} catch (InterruptedException e) {
+					logger.error("test executor interrupted unexpectedly");
+					numAttempts++;
+				}
+			}
+			if (!done) {
+				logger.error(
+						"could not join test executor after {} attempts - giving up",
+						MAX_TEST_EXECUTOR_JOIN_ATTEMPTS);
+				testResult = new TestResult(TestOutcome.INTERNAL_ERROR, "Test executor failed to complete");
+			}
+		}
+
+		public TestResult getTestResult() {
+			return testResult;
 		}
 	}
 }
