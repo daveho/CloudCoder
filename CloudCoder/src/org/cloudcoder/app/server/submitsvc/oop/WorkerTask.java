@@ -70,6 +70,8 @@ public class WorkerTask implements Runnable {
 
 	@Override
 	public void run() {
+		logger.info("oop buildsvc WorkerTask starting");
+		
 		Submission submission = null;
 		
 		// Keep track of how long it has been since we sent
@@ -161,6 +163,8 @@ public class WorkerTask implements Runnable {
 		} catch (IOException e) {
 			logger.warn("Exception closing client socket", e);
 		}
+		
+		logger.info("oop buildsvc WorkerTask exiting");
 	}
 
 	private void sendSubmissionForTesting(Submission submission) throws IOException, ClassNotFoundException {
