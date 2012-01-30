@@ -34,8 +34,15 @@ system("echo '$pid' > $app.pid")/256 == 0 || die;
 my $fifo = "$app-$pid.fifo";
 system("mkfifo '$fifo'")/256 == 0 || die;
 
+# If ../local.properties exists, inform Builder (so it can
+# look for configuration parameters there.)
+my $localPropertiesOpt = '';
+if (-r '../local.properties') {
+	$localPropertiesOpt = '-Dlocal.properties=../local.properties';
+}
+
 # Launch the application
-my $cmd = "java -classpath bin:'$classpath' -D$app.fifo='$fifo' $MAIN_CLASS";
+my $cmd = "java -classpath bin:'$classpath' -D$app.fifo='$fifo' $localPropertiesOpt $MAIN_CLASS";
 # Append command line arguments, if any
 if (scalar(@ARGV) > 0) {
 	$cmd .= " ";
