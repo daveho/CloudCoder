@@ -48,10 +48,11 @@ if ($webapp) {
 
 if ($builder) {
 	askprop("What host will the CloudCoder webapp be running on?\n" .
-		"This information is only needed for the Builder, just hit enter\n" .
-		"if you're only configuring the webapp, or if the Builder will run\n" .
-		"on the same host as the webapp.",
+		"(This information is needed by the Builder so it knows how to connect\n" .
+		"to the webapp.)",
 		"cloudcoder.submitsvc.oop.host", "localhost");
+	askprop("How many threads should the Builder use? (suggestion: 1 per core)",
+		"cloudcoder.submitsvc.oop.numThreads", "2");
 }
 
 askprop("What port will the CloudCoder webapp use to listen for connections from\n" .
