@@ -87,13 +87,11 @@ public class CProgramTester implements ITester {
 		// sending the test case's input as stdin to the process, and scanning
 		// the process's stdout for a line matching the test case's output,
 		// which is interpreted as a regular expression.
-		
-		
-		// FIXME: consider executing tests in parallel, like CTester
+
+		// Create a TestExecutor for each test case, and start it asynchronously.
+		// All TestExecutors will work in parallel.
 		List<TestCaseExecutor> testCaseExecutors = new ArrayList<CProgramTester.TestCaseExecutor>();
 		for (TestCase testCase : submission.getTestCaseList()) {
-//			executor.executeTestCase();
-//			testResultList.add(executor.getTestResult());
 			TestCaseExecutor executor = new TestCaseExecutor(tempDir, testCase);
 			executor.start();
 			testCaseExecutors.add(executor);
