@@ -90,8 +90,11 @@ public class CProgramTester implements ITester {
 		List<TestResult> testResultList = new ArrayList<TestResult>();
 		
 		// FIXME: consider executing tests in parallel, like CTester
+//		List<TestCaseExecutor> testCaseExecutors = new ArrayList<CProgramTester.TestCaseExecutor>();
 		for (TestCase testCase : submission.getTestCaseList()) {
-			executeTestCase(tempDir, testCase, testResultList);
+			TestCaseExecutor executor = new TestCaseExecutor(tempDir, testCase);
+			executor.executeTestCase();
+			testResultList.add(executor.getTestResult());
 		}
 		
 		// OK, we have all of our TestResults.
@@ -103,54 +106,75 @@ public class CProgramTester implements ITester {
 		
 		return submissionResult;
 	}
+	
+	private static class TestCaseExecutor {
+		private File tempDir;
+		private TestCase testCase;
+		private TestResult testResult;
 
-	private void executeTestCase(File tempDir, TestCase testCase,
-			List<TestResult> testResultList) {
-		ProcessRunner processRunner = new ProcessRunner();
-		
-		processRunner.setStdin(testCase.getInput());
-		
-		// FIXME this is #!@!$! dangerous for many, many reasons
-		// - should chroot
-		// - should deny access to network
-		processRunner.runAsynchronous(tempDir, new String[]{"./" + PROGRAM_NAME});
-		
-		int elapsed = 0;
-		while (processRunner.isRunning() && elapsed < MAX_TIME_IN_SECONDS * 1000) {
-			try {
-				Thread.sleep(POLL_INTERVAL_IN_MILLIS);
-			} catch (InterruptedException e) {
-				// can't happen
-			}
-			
-			elapsed += POLL_INTERVAL_IN_MILLIS;
+		public TestCaseExecutor(File tempDir, TestCase testCase) {
+			this.tempDir = tempDir;
+			this.testCase = testCase;
 		}
 		
-		if (processRunner.isRunning()) {
-			// timed out!
-			processRunner.killProcess();
-			testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
-		} else if (!processRunner.isExitStatusKnown()) {
-			testResultList.add(TestResultUtil.createTestResultForInternalError(processRunner, testCase));
-		} else if (processRunner.isCoreDump()) {
-			// indicates core dump?
-			testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner, testCase));
-		} else {
-			// Process completed.  Scan through its output to see if there is a line
-			// matching the test case output regular expression.
-			boolean foundMatchingOutput = false;
-			Pattern pat = Pattern.compile(testCase.getOutput());
-			for (String line : processRunner.getStdoutAsList()) {
-				Matcher m = pat.matcher(line);
-				if (m.matches()) {
-					// Match!
-					foundMatchingOutput = true;
-					break;
+		public TestResult getTestResult() {
+			return testResult;
+		}
+
+		public void executeTestCase(/*File tempDir, TestCase testCase,
+				List<TestResult> testResultList*/) {
+			ProcessRunner processRunner = new ProcessRunner();
+			
+			processRunner.setStdin(testCase.getInput());
+			
+			// FIXME this is #!@!$! dangerous for many, many reasons
+			// - should chroot
+			// - should deny access to network
+			processRunner.runAsynchronous(tempDir, new String[]{"./" + PROGRAM_NAME});
+			
+			int elapsed = 0;
+			while (processRunner.isRunning() && elapsed < MAX_TIME_IN_SECONDS * 1000) {
+				try {
+					Thread.sleep(POLL_INTERVAL_IN_MILLIS);
+				} catch (InterruptedException e) {
+					// can't happen
 				}
+				
+				elapsed += POLL_INTERVAL_IN_MILLIS;
 			}
-			testResultList.add(foundMatchingOutput
-					? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
-					: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase));
+			
+			if (processRunner.isRunning()) {
+				// timed out!
+				processRunner.killProcess();
+				//testResultList.add(TestResultUtil.createTestResultForTimeout(processRunner, testCase));
+				testResult = TestResultUtil.createTestResultForTimeout(processRunner, testCase);
+			} else if (!processRunner.isExitStatusKnown()) {
+				//testResultList.add(TestResultUtil.createTestResultForInternalError(processRunner, testCase));
+				testResult = TestResultUtil.createTestResultForInternalError(processRunner, testCase);
+			} else if (processRunner.isCoreDump()) {
+				// indicates core dump?
+				//testResultList.add(TestResultUtil.createTestResultForCoreDump(processRunner, testCase));
+				testResult = TestResultUtil.createTestResultForCoreDump(processRunner, testCase);
+			} else {
+				// Process completed.  Scan through its output to see if there is a line
+				// matching the test case output regular expression.
+				boolean foundMatchingOutput = false;
+				Pattern pat = Pattern.compile(testCase.getOutput());
+				for (String line : processRunner.getStdoutAsList()) {
+					Matcher m = pat.matcher(line);
+					if (m.matches()) {
+						// Match!
+						foundMatchingOutput = true;
+						break;
+					}
+				}
+//				testResultList.add(foundMatchingOutput
+//						? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
+//						: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase));
+				testResult = foundMatchingOutput
+						? TestResultUtil.createTestResultForPassedTest(processRunner, testCase)
+						: TestResultUtil.createTestResultForFailedAssertion(processRunner, testCase);
+			}
 		}
 	}
 }
