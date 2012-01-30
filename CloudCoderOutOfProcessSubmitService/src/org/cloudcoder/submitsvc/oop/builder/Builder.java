@@ -137,27 +137,9 @@ public class Builder implements Runnable {
 					// read program text
 					String programText = safeReadObject();
 
-					SubmissionResult result;
-					try {
-					    ITester tester=getTester(problem.getProblemType());
-					    Submission submission=new Submission(problem, testCaseList, programText);
-					    result=tester.testSubmission(submission);
-					} catch (Throwable e) {
-						CompilationResult compres=
-						        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
-						logger.error("Builder error", e);
-						result=new SubmissionResult(compres);
-					}
-					logger.info("Sending SubmissionResult back to server");
-					if (result==null) {
-					    logger.error("null SubmissionResult");
-					} else {
-					    if (result.getTestResults()==null) {
-					        logger.error("null TestResult");
-					    } else {
-					        logger.info(result.getTestResults().length+" results");
-					    }
-					}
+					// Send the submission details to Builder for testing,
+					// read response.
+					SubmissionResult result = sendSubmissionForTesting(problem, testCaseList, programText);
 					
 					out.writeObject(result);
 					out.flush();
@@ -172,6 +154,32 @@ public class Builder implements Runnable {
 					throw new IllegalStateException("Class not found reading message", e);
 				}
 			}
+	}
+
+	private SubmissionResult sendSubmissionForTesting(Problem problem,
+			List<TestCase> testCaseList, String programText) {
+		SubmissionResult result;
+		try {
+		    ITester tester=getTester(problem.getProblemType());
+		    Submission submission=new Submission(problem, testCaseList, programText);
+		    result=tester.testSubmission(submission);
+		} catch (Throwable e) {
+			CompilationResult compres=
+			        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
+			logger.error("Builder error", e);
+			result=new SubmissionResult(compres);
+		}
+		logger.info("Sending SubmissionResult back to server");
+		if (result==null) {
+		    logger.error("null SubmissionResult");
+		} else {
+		    if (result.getTestResults()==null) {
+		        logger.error("null TestResult");
+		    } else {
+		        logger.info(result.getTestResults().length+" results");
+		    }
+		}
+		return result;
 	}
 
 	public void attemptToConnectToServer() {
@@ -202,7 +210,9 @@ public class Builder implements Runnable {
 
 	public void shutdown() {
 		shutdownRequested = true;
-		if (!working) {
+		if (working) {
+			logger.warn("shutdown(): cannot close worker socket because working=true");
+		} else {
 			try {
 				// Rude, but effective.
 				Socket s = socket;
@@ -224,8 +234,8 @@ public class Builder implements Runnable {
 		
 		public Options() {
 			this.appHost = "localhost";
-			this.appPort = 47374;
-			this.numThreads = 1;
+			this.appPort = DEFAULT_PORT;
+			this.numThreads = 2;
 		}
 		
 		/**

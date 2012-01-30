@@ -89,12 +89,23 @@ public class CUtil {
 	}
 
 	public static String merge(List<String> list){
-	    StringBuilder builder=new StringBuilder();
+		return doMerge(list, "\n");
+	}
+	
+	public static String mergeOneLine(String[] list) {
+		return mergeOneLine(Arrays.asList(list));
+	}
+
+	private static String mergeOneLine(List<String> list) {
+		return doMerge(list, " ");
+	}
+
+	private static String doMerge(List<String> list, String sep) {
+		StringBuilder builder=new StringBuilder();
 	    for (String s : list) {
 	        builder.append(s);
-	        builder.append("\n");
+	        builder.append(sep);
 	    }
 	    return builder.toString();
 	}
-
 }

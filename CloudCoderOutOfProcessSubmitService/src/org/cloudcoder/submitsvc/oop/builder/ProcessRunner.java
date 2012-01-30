@@ -17,8 +17,6 @@
  */
 package org.cloudcoder.submitsvc.oop.builder;
 
-import static org.cloudcoder.submitsvc.oop.builder.CUtil.merge;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -130,8 +128,9 @@ public class ProcessRunner implements ITestOutput {
 		command = cmd.toArray(new String[cmd.size()]);
 		
 		// exec command
-		logger.info("Running in {} the command: {} with env: {} ",
-				new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
+//		logger.info("Running in {} the command: {} with env: {} ",
+//				new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
+		logger.info("Running in {} the command: {}", workingDir.toString(), CUtil.mergeOneLine(command));
 		try {
 			// Create a temp file in which the runProcess.pl script can save
 			// the exit status of the process.
