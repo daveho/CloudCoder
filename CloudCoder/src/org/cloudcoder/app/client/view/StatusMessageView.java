@@ -7,15 +7,13 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 
 public class StatusMessageView extends Composite implements Subscriber, SessionObserver {
-	public static final double HEIGHT = 32.0;
-	public static final Unit HEIGHT_UNIT = Unit.PX;
+	public static final double HEIGHT_PX = 32.0;
 	
 	private static final String BLANK_ICON_URL = "cloudcoder/images/blank-icon-sm.png";
 	private static final String INFO_ICON_URL = "cloudcoder/images/info-icon-sm.png";

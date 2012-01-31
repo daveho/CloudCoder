@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.model.Session;
@@ -8,13 +25,20 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
+/**
+ * View to display the problem description.
+ * 
+ * @author David Hovemeyer
+ */
 public class ProblemDescriptionView extends Composite implements SessionObserver, Subscriber {
+	/** The preferred height of the ProblemDescriptionView. */
+	public static final double HEIGHT_PX = 150.0;
+	
 	private Label problemNameLabel;
 	private HTML problemDescriptionHtml;
 
@@ -32,7 +56,7 @@ public class ProblemDescriptionView extends Composite implements SessionObserver
 //		problemDescriptionHtml.setWidth("100%");
 		problemDescriptionHtml.setStyleName("cc-problemDescription");
 		layoutPanel.setWidgetLeftRight(problemDescriptionHtml, 0.0, Unit.PX, 0.0, Unit.PX);
-		layoutPanel.setWidgetTopHeight(problemDescriptionHtml, 30.0, Unit.PX, 70.0, Unit.PX);
+		layoutPanel.setWidgetTopBottom(problemDescriptionHtml, 30.0, Unit.PX, 0.0, Unit.PX);
 		
 		initWidget(layoutPanel);
 	}

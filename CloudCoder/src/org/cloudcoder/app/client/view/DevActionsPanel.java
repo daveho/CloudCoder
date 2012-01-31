@@ -48,7 +48,7 @@ public class DevActionsPanel extends Composite {
 		});
 		layoutPanel.add(submitButton);
 		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, 100.0, Unit.PX);
-		layoutPanel.setWidgetBottomHeight(submitButton, 15.0, Unit.PX, 32.0, Unit.PX);
+		layoutPanel.setWidgetBottomHeight(submitButton, 10.0, Unit.PX, 32.0, Unit.PX);
 
 		initWidget(layoutPanel);
 	}

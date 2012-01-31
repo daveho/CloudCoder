@@ -63,7 +63,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private Button loadProblemButton;
 
 		public UI() {
-			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
+			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
 			this.eastLayoutPanel = new LayoutPanel();
 			
@@ -73,14 +73,14 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			eastLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
 			eastLayoutPanel.setWidgetLeftRight(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
-			dockLayoutPanel.addEast(eastLayoutPanel, 24.0);
+			dockLayoutPanel.addEast(eastLayoutPanel, 225.0);
 			
 			LayoutPanel southLayoutPanel = new LayoutPanel();
 			
 			this.statusMessageView = new StatusMessageView();
 			southLayoutPanel.add(statusMessageView);
 			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
-			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			
 			this.loadProblemButton = new Button("Load problem!");
 			loadProblemButton.setStylePrimaryName("cc-emphButton");
@@ -92,14 +92,14 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			});
 			southLayoutPanel.add(loadProblemButton);
 			southLayoutPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, 160.0, Unit.PX);
-			southLayoutPanel.setWidgetTopHeight(loadProblemButton, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+			southLayoutPanel.setWidgetTopHeight(loadProblemButton, StatusMessageView.HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			
 			this.problemDescriptionView = new ProblemDescriptionView();
 			southLayoutPanel.add(problemDescriptionView);
 			southLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
-			southLayoutPanel.setWidgetTopBottom(problemDescriptionView, StatusMessageView.HEIGHT*2, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetTopBottom(problemDescriptionView, StatusMessageView.HEIGHT_PX*2, Unit.PX, 0.0, Unit.PX);
 			
-			dockLayoutPanel.addSouth(southLayoutPanel, 15.0);
+			dockLayoutPanel.addSouth(southLayoutPanel, ProblemDescriptionView.HEIGHT_PX + StatusMessageView.HEIGHT_PX*2);
 			
 			this.problemListView2 = new ProblemListView2();
 			dockLayoutPanel.add(problemListView2);

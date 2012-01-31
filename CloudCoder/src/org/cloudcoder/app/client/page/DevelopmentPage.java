@@ -96,8 +96,10 @@ public class DevelopmentPage extends CloudCoderPage {
 	 * UI class for DevelopmentPage.
 	 */
 	private class UI extends Composite implements Subscriber {
-		public static final double SOUTH_PANEL_HEIGHT_EM = 18.0;
-		public static final double NORTH_PANEL_HEIGHT_EM = 7.7;
+		public static final double NORTH_PANEL_HEIGHT_PX = ProblemDescriptionView.HEIGHT_PX;
+		public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
+		public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
+
 		public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 
 		private LayoutPanel northLayoutPanel;
@@ -117,13 +119,14 @@ public class DevelopmentPage extends CloudCoderPage {
 		private Mode mode;
 
 		public UI() {
-			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.EM);
+			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 
 			northLayoutPanel = new LayoutPanel();
-			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_EM);
+			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_PX);
 			problemDescriptionView = new ProblemDescriptionView();
 			northLayoutPanel.add(problemDescriptionView);
-			northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 350.0, Unit.PX);
+			northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
+			northLayoutPanel.setWidgetTopBottom(problemDescriptionView, 0.0, Unit.PX, 10.0, Unit.PX);
 			buttonsLayoutPanel = new LayoutPanel();
 			pageNavPanel = new PageNavPanel();
 			buttonsLayoutPanel.add(pageNavPanel);
@@ -135,20 +138,20 @@ public class DevelopmentPage extends CloudCoderPage {
 			buttonsLayoutPanel.setWidgetTopBottom(devActionsPanel, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT, 0.0, Unit.PX);
 			
 			northLayoutPanel.add(buttonsLayoutPanel);
-			northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, 350.0, Unit.PX);
-			northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_EM, Unit.EM);
+			northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
+			northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_PX, Unit.PX);
 
 			southLayoutPanel = new LayoutPanel();
-			dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_EM);
+			dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_PX);
 			
 			this.statusMessageView = new StatusMessageView();
 			southLayoutPanel.add(statusMessageView);
-			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT);
+			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
 
 			this.resultsTabPanel = new TabLayoutPanel(24, Unit.PX);
 			southLayoutPanel.add(resultsTabPanel);
-			southLayoutPanel.setWidgetTopBottom(resultsTabPanel, StatusMessageView.HEIGHT, StatusMessageView.HEIGHT_UNIT, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetTopBottom(resultsTabPanel, StatusMessageView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.testResultListView = new TestResultListView();
