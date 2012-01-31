@@ -13,6 +13,9 @@
 	font-weight: bold;
 	font-size: 20px;
 }
+.cc-problemDescription {
+	overflow: auto; /* Allow problem description text to scroll. */
+}
 .cc-centered {
 	margin-left: 0 auto;
 	margin-right: 0 auto;

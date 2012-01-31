@@ -29,7 +29,8 @@ public class ProblemDescriptionView extends Composite implements SessionObserver
 		
 		problemDescriptionHtml = new HTML("", true);
 		layoutPanel.add(problemDescriptionHtml);
-		problemDescriptionHtml.setWidth("100%");
+//		problemDescriptionHtml.setWidth("100%");
+		problemDescriptionHtml.setStyleName("cc-problemDescription");
 		layoutPanel.setWidgetLeftRight(problemDescriptionHtml, 0.0, Unit.PX, 0.0, Unit.PX);
 		layoutPanel.setWidgetTopHeight(problemDescriptionHtml, 30.0, Unit.PX, 70.0, Unit.PX);
 		
@@ -54,6 +55,10 @@ public class ProblemDescriptionView extends Composite implements SessionObserver
 
 	public void displayProblemDescription(Problem problem) {
 		problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
-		problemDescriptionHtml.setHTML(SafeHtmlUtils.fromString(problem.getDescription()));
+		
+		// Note: if the problem description contains HTML markup, it will
+		// be rendered.  This is intentional, since it allows a greater degree
+		// of control over formatting that just plain text would allow.
+		problemDescriptionHtml.setHTML(problem.getDescription());
 	}
 }
