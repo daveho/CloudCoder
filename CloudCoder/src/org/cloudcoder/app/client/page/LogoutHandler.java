@@ -32,8 +32,8 @@ public class LogoutHandler implements Runnable {
 			}
 
 			protected void clearSessionData() {
-				// Clear the User object from the session.
-				session.remove(User.class);
+				// Clear all session objects
+				session.clear();
 
 				// Publish the LOGOUT event.
 				session.notifySubscribers(Session.Event.LOGOUT, null);

@@ -99,4 +99,11 @@ public class Session extends Publisher {
 		Object obj = data.get(cls);
 		return (E) obj;
 	}
+
+	/**
+	 * Remove all objects from the session.
+	 */
+	public void clear() {
+		data.clear();
+	}
 }
