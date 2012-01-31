@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
@@ -67,6 +68,9 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		if (currentPage != null) {
 			currentPage.deactivate();
 			layoutPanel.remove(currentPage.getWidget());
+			
+			// make sure there is no StatusMessage from the previous page
+			session.remove(StatusMessage.class);
 		}
 		page.setSession(session);
 		// Create the page's Widget and add it to the DOM tree
