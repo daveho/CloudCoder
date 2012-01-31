@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,8 +71,8 @@ public class ProcessRunner implements ITestOutput {
 	private volatile Process process;
 	private Thread exitValueMonitor;
 	private String stdin;
-	private OutputCollector stdoutCollector;
-	private OutputCollector stderrCollector;
+	private IOutputCollector stdoutCollector;
+	private IOutputCollector stderrCollector;
 	private InputSender stdinSender;
 	
 	private Map<String,String> env=new HashMap<String,String>();
@@ -146,8 +147,8 @@ public class ProcessRunner implements ITestOutput {
 					workingDir);
 
 			// Collect process output
-			stdoutCollector = new OutputCollector(process.getInputStream());
-			stderrCollector = new OutputCollector(process.getErrorStream());
+			stdoutCollector = createOutputCollector(process.getInputStream());
+			stderrCollector = createOutputCollector(process.getErrorStream());
 			stdoutCollector.start();
 			stderrCollector.start();
 
@@ -174,6 +175,22 @@ public class ProcessRunner implements ITestOutput {
 			statusMessage = "Process was interrupted (infinite loop killed?)";
 		}
 		return false;
+	}
+
+	/**
+	 * Create an IOutputCollector to be used to collect the stdout/stderr
+	 * of the process.  Subclasses may override to precisely control how
+	 * output is collected (for example, to limit the number of bytes/lines
+	 * that will be collected.)
+	 * 
+	 * Default implementation returns an {@link OutputCollector}, which
+	 * reads an unlimited amount of output.
+	 * 
+	 * @param inputStream the InputStream for the process's stdout or stderr
+	 * @return an IOutputCollector to collect the process's stdout or stderr
+	 */
+	protected IOutputCollector createOutputCollector(InputStream inputStream) {
+		return new OutputCollector(inputStream);
 	}
 	
 	/**

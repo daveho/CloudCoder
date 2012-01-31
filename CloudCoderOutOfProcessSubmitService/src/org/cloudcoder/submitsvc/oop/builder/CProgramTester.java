@@ -133,7 +133,10 @@ public class CProgramTester implements ITester {
 		 */
 		@Override
 		public void run() {
-			ProcessRunner processRunner = new ProcessRunner();
+			// Create a process runner that will read only a limited amount of
+			// output.  (We don't want the tested process to generate huge amounts
+			// output that could overwhelm the Builder and/or database.)
+			ProcessRunner processRunner = CUtil.createProcessRunner();
 			
 			processRunner.setStdin(testCase.getInput());
 			

@@ -19,6 +19,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,6 +38,15 @@ import org.slf4j.LoggerFactory;
  */
 public class CUtil {
 	private static final Logger logger = LoggerFactory.getLogger(CUtil.class);
+
+	/** Maximum number of bytes of output native code testers should read from an untrusted test process. */
+	public static final int MAX_BYTES_ALLOWED = 20 * 100 * 2;
+
+	/** Maximum number of lines of output native code testers should read from an untrusted test process. */
+	public static final int MAX_LINES_ALLOWED = 20;
+
+	/** Maximum number of characters per line native code testers should read from an untrusted test process. */
+	public static final int MAX_CHARACTERS_PER_LINE = 100;
 	
 	/**
 	 * Make a temporary directory.
@@ -107,5 +117,30 @@ public class CUtil {
 	        builder.append(sep);
 	    }
 	    return builder.toString();
+	}
+
+	/**
+	 * Create a process runner suitable for running an untrusted test program.
+	 * Limits amount of output read to a reasonable level.
+	 * 
+	 * @return a ProcessRunner
+	 */
+	public static ProcessRunner createProcessRunner() {
+		ProcessRunner processRunner = new ProcessRunner() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.submitsvc.oop.builder.ProcessRunner#createOutputCollector(java.io.InputStream)
+			 */
+			@Override
+			protected IOutputCollector createOutputCollector(InputStream inputStream) {
+				LimitedOutputCollector collector = new LimitedOutputCollector(inputStream);
+				
+				collector.setMaxBytesAllowed(MAX_BYTES_ALLOWED);
+				collector.setMaxLinesAllowed(MAX_LINES_ALLOWED);
+				collector.setMaxCharactersPerLine(MAX_CHARACTERS_PER_LINE);
+				
+				return collector;
+			}
+		};
+		return processRunner;
 	}
 }

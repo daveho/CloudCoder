@@ -32,11 +32,15 @@ import org.apache.commons.io.IOUtils;
  * input stream (which could be the output of a process.)
  * The data is stored as a List of Strings, one per line of output.
  */
-public class OutputCollector {
+public class OutputCollector implements IOutputCollector {
 	private InputStream inputStream;
 	private Thread readerThread;
 	private List<String> collectedOutput;
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IOutputCollector#interrupt()
+	 */
+	@Override
 	public void interrupt() {
 	    readerThread.interrupt();
 	}
@@ -46,6 +50,10 @@ public class OutputCollector {
 		this.collectedOutput = new LinkedList<String>();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IOutputCollector#start()
+	 */
+	@Override
 	public void start() {
 		readerThread = new Thread(new Runnable() {
 			@Override
@@ -70,10 +78,18 @@ public class OutputCollector {
 		readerThread.start();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IOutputCollector#getCollectedOutput()
+	 */
+	@Override
 	public List<String> getCollectedOutput() {
 		return Collections.unmodifiableList(collectedOutput);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.IOutputCollector#join()
+	 */
+	@Override
 	public void join() throws InterruptedException {
 		readerThread.join();
 	}
