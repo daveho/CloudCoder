@@ -30,7 +30,7 @@ public class ProblemDescriptionView extends Composite implements SessionObserver
 		problemDescriptionHtml = new HTML("", true);
 		layoutPanel.add(problemDescriptionHtml);
 		problemDescriptionHtml.setWidth("100%");
-		layoutPanel.setWidgetLeftWidth(problemDescriptionHtml, 0.0, Unit.PX, 436.0, Unit.PX);
+		layoutPanel.setWidgetLeftRight(problemDescriptionHtml, 0.0, Unit.PX, 0.0, Unit.PX);
 		layoutPanel.setWidgetTopHeight(problemDescriptionHtml, 30.0, Unit.PX, 70.0, Unit.PX);
 		
 		initWidget(layoutPanel);
