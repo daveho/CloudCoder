@@ -37,7 +37,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  */
 public class ProblemDescriptionView extends Composite implements SessionObserver, Subscriber {
 	/** The preferred height of the ProblemDescriptionView. */
-	public static final double HEIGHT_PX = 150.0;
+	public static final double HEIGHT_PX = 175.0;
 	
 	private Label problemNameLabel;
 	private HTML problemDescriptionHtml;
