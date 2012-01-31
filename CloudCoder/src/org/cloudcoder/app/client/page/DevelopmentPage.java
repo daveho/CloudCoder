@@ -202,7 +202,7 @@ public class DevelopmentPage extends CloudCoderPage {
 					 } else {
 						 // As soon as the change list is clean, we'll be able
 						 // to submit
-						 addSessionObject(new StatusMessage(StatusMessage.Category.INFORMATION, "Saving your code..."));
+						 addSessionObject(new StatusMessage(StatusMessage.Category.PENDING, "Saving your code..."));
 						 mode = Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST;
 					 }
 					 
@@ -217,10 +217,9 @@ public class DevelopmentPage extends CloudCoderPage {
 		
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			//GWT.log("Event " + key + ", " + hint);
 			if (key == ChangeList.State.CLEAN && mode == Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST) {
-				GWT.log("Change list is clean, do submit...");
-				// The change list just became clean - initiate the submit
+				// The change list just became clean, and an attempt to
+				// submit is pending. Initiate the submit.
 				mode = Mode.SUBMIT_IN_PROGRESS;
 				doSubmit();
 			}
@@ -231,7 +230,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// and because the editor is read-only, we know that the
 			// local text is in-sync.  So, submit the code!
 			
-			addSessionObject(new StatusMessage(StatusMessage.Category.INFORMATION, "Testing your code, please wait..."));
+			addSessionObject(new StatusMessage(StatusMessage.Category.PENDING, "Testing your code, please wait..."));
 			
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();

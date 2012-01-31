@@ -25,9 +25,10 @@
 	margin-top: 4px;
 	margin-right: 8px;
 }
-.cc-statusMessageNone, .cc-statusMessageInformation, .cc-statusMessageError, .cc-statusMessageGoodNews {
+.cc-statusMessageNone, .cc-statusMessageInformation, .cc-statusMessageError, .cc-statusMessageGoodNews,
+.cc-statusMessagePending {
 	font-size: 16px;
-	vertical-align: 8px;;
+	vertical-align: 8px;
 }
 .cc-statusMessageInformation {
 }
@@ -36,6 +37,8 @@
 }
 .cc-statusMessageGoodNews {
 	color: green;
+}
+.cc-statusMessagePending {
 }
 
 /*

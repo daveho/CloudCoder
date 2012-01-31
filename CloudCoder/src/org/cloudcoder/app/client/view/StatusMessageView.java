@@ -21,6 +21,7 @@ public class StatusMessageView extends Composite implements Subscriber, SessionO
 	private static final String INFO_ICON_URL = "cloudcoder/images/info-icon-sm.png";
 	private static final String ERROR_ICON_URL = "cloudcoder/images/error-icon-sm.png";
 	private static final String CHECK_MARK_ICON_URL = "cloudcoder/images/check-mark-icon-sm.png";
+	private static final String ROLLER_ICON_URL = "cloudcoder/images/roller-sm.gif";
 	
 	private Image icon;
 	private InlineLabel label;
@@ -70,6 +71,10 @@ public class StatusMessageView extends Composite implements Subscriber, SessionO
 		case GOOD_NEWS:
 			icon.setUrl(CHECK_MARK_ICON_URL);
 			label.setStyleName("cc-statusMessageGoodNews");
+			break;
+		case PENDING:
+			icon.setUrl(ROLLER_ICON_URL);
+			label.setStyleName("cc-statusMessagePending");
 			break;
 		}
 		label.setText(statusMessage.getMessage());
