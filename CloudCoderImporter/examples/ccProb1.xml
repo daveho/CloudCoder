@@ -2,8 +2,9 @@
 	<name>prob_6_1</name>
 	<type>C_PROGRAM</type>
 	<brief>Print integers from 1 to n</brief>
+	<!-- Date format is dd MM yyyy HH:mm:ss Z -->
 	<assigned>2 2 2012 9:00:00 -0500</assigned>
-	<due>2 7 2012 9:00:00 -0500</due>
+	<due>7 2 2012 9:00:00 -0500</due>
 	<description><![CDATA[
 <p>
 Write a program that reads an integer (which you may assume
