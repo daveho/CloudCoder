@@ -600,7 +600,7 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
-	public void addTestCases(final List<TestCase> testCaseList) {
+	public void addTestCases(final Problem problem, final List<TestCase> testCaseList) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
@@ -614,6 +614,7 @@ public class JDBCDatabase implements IDatabase {
 				);
 				
 				for (TestCase testCase : testCaseList) {
+					testCase.setProblemId(problem.getProblemId());
 					storeNoId(testCase, stmt, 1);
 					stmt.addBatch();
 				}

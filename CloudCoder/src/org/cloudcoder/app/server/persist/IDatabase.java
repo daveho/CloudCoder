@@ -50,5 +50,5 @@ public interface IDatabase {
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
 	public void addProblem(Problem problem);
-	public void addTestCases(List<TestCase> testCaseList);
+	public void addTestCases(Problem problem, List<TestCase> testCaseList);
 }
