@@ -17,16 +17,27 @@
 
 package org.cloudcoder.app.server.persist;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 /**
- * A ServletContextListener to initialize configuration
- * parameters needed by JDBCDatabase.
+ * JDBCDatabase configuration properties singleton.
+ * Must be initialized using the create() method before
+ * {@link JDBCDatabase} is used.
  * 
  * @author David Hovemeyer
  */
-public class JDBCDatabaseConfig implements ServletContextListener {
+public class JDBCDatabaseConfig {
+	/**
+	 * A source of database configuration properties.
+	 */
+	public interface ConfigProperties {
+		/**
+		 * Get the value of a configuration property.
+		 * 
+		 * @param name the name of the configuration property to get
+		 * @return the value of the configuration property
+		 */
+		public String getDbConfigProperty(String name);
+	}
+	
 	private static JDBCDatabaseConfig instance;
 	private static Object instanceLock = new Object();
 	
@@ -36,9 +47,52 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 	private String dbHost;
 	private String dbPortStr;
 	
+	/**
+	 * @return the singleton instance of JDBCDatabaseConfig
+	 */
 	public static JDBCDatabaseConfig getInstance() {
 		synchronized (instanceLock) {
 			return instance;
+		}
+	}
+
+	/**
+	 * Create the singleton instance of JDBCDatabaseConfig.
+	 * 
+	 * @param configProperties the configuration properties
+	 */
+	public static void create(ConfigProperties configProperties) {
+		synchronized (instanceLock) {
+			if (instance != null) {
+				throw new IllegalStateException("JDBCDatabaseConfig already exists");
+			}
+			instance = new JDBCDatabaseConfig();
+			instance.readDatabaseConfigProperties(configProperties);
+		}
+	}
+
+	private void readDatabaseConfigProperties(ConfigProperties dbProperties) {
+		dbUser = getDatabaseProperty(dbProperties, "cloudcoder.db.user");
+		dbPasswd = getDatabaseProperty(dbProperties, "cloudcoder.db.passwd");
+		dbDatabaseName = getDatabaseProperty(dbProperties, "cloudcoder.db.databaseName");
+		dbHost = getDatabaseProperty(dbProperties, "cloudcoder.db.host");
+		dbPortStr = getDatabaseProperty(dbProperties, "cloudcoder.db.portstr");
+	}
+
+	private String getDatabaseProperty(ConfigProperties dbProperties, String propertyName) {
+		String value = dbProperties.getDbConfigProperty(propertyName);
+		if (value == null) {
+			throw new IllegalArgumentException("Database property " + propertyName + " is undefined");
+		}
+		return value;
+	}
+	
+	/**
+	 * Destroy the singleton instance of JDBCDatabaseCOonfig.
+	 */
+	public static void destroy() {
+		synchronized (instanceLock) {
+			instance = null;
 		}
 	}
 	
@@ -87,31 +141,5 @@ public class JDBCDatabaseConfig implements ServletContextListener {
 	 */
 	public String getDbPortStr() {
 		return dbPortStr != null ? dbPortStr : "";
-	}
-	
-	/* (non-Javadoc)
-	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
-	 */
-	@Override
-	public void contextInitialized(ServletContextEvent e) {
-		synchronized (instanceLock) {
-			dbUser = e.getServletContext().getInitParameter("cloudcoder.db.user");
-			dbPasswd = e.getServletContext().getInitParameter("cloudcoder.db.passwd");
-			dbDatabaseName = e.getServletContext().getInitParameter("cloudcoder.db.databaseName");
-			dbHost = e.getServletContext().getInitParameter("cloudcoder.db.host");
-			dbPortStr = e.getServletContext().getInitParameter("cloudcoder.db.portstr");
-			
-			instance = this;
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
-	 */
-	@Override
-	public void contextDestroyed(ServletContextEvent e) {
-		synchronized (instanceLock) {
-			instance = null; // allow garbage collection
-		}
 	}
 }

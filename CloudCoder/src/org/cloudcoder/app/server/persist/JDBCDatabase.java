@@ -565,6 +565,83 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	public void addProblem(final Problem problem) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into " + PROBLEMS + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				
+				storeNoId(problem, stmt, 1);
+				
+				stmt.executeUpdate();
+				
+				ResultSet generatedKey = getGeneratedKeys(stmt);
+				if (!generatedKey.next()) {
+					throw new SQLException("Could not get generated key for inserted problem");
+				}
+				problem.setProblemId(generatedKey.getInt(1));
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "adding Problem";
+			}
+		});
+	}
+	
+	public void addTestCases(final List<TestCase> testCaseList) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				
+				for (TestCase testCase : testCaseList) {
+					storeNoId(testCase, stmt, 1);
+					stmt.addBatch();
+				}
+				
+				stmt.executeBatch();
+				
+				ResultSet generatedKeys = getGeneratedKeys(stmt);
+				int count = 0;
+				while (generatedKeys.next()) {
+					testCaseList.get(count).setId(generatedKeys.getInt(1));
+					count++;
+				}
+				if (count != testCaseList.size()) {
+					throw new SQLException("wrong number of generated keys for inserted test cases");
+				}
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "adding test case";
+			}
+		});
+	}
+
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
 			Connection conn = null;
@@ -821,5 +898,24 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, testResult.getMessage());
 		stmt.setString(index++, testResult.getStdout());
 		stmt.setString(index++, testResult.getStderr());
+	}
+	
+	protected void storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, problem.getCourseId());
+		stmt.setInt(index++, problem.getProblemType().ordinal());
+		stmt.setString(index++, problem.getTestName());
+		stmt.setString(index++, problem.getBriefDescription());
+		stmt.setString(index++, problem.getDescription());
+		stmt.setLong(index++, problem.getWhenAssigned());
+		stmt.setLong(index++, problem.getWhenDue());
+		stmt.setString(index++, problem.getSkeleton());
+	}
+
+	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, testCase.getProblemId());
+		stmt.setString(index++, testCase.getTestCaseName());
+		stmt.setString(index++, testCase.getInput());
+		stmt.setString(index++, testCase.getOutput());
+		stmt.setBoolean(index++, testCase.isSecret());
 	}
 }

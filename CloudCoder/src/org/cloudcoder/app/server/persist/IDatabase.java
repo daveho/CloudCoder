@@ -49,4 +49,6 @@ public interface IDatabase {
 	public List<TestCase> getTestCasesForProblem(int problemId);
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
+	public void addProblem(Problem problem);
+	public void addTestCases(List<TestCase> testCaseList);
 }
