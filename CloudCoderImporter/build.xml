@@ -7,9 +7,13 @@
     <property name="source" value="1.6"/>
     <path id="CloudCoderImporter.classpath">
         <pathelement location="bin"/>
-	<fileset dir="lib">
-		<include name="**/*.jar"/>
-	</fileset>
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    	<pathelement location="../CloudCoder/war/WEB-INF/classes"/>
+        <fileset dir="../CloudCoder/war/WEB-INF/lib">
+            <include name="**/*.jar"/>
+        </fileset>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
