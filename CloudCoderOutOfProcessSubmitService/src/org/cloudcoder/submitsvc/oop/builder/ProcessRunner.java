@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,19 +47,25 @@ public class ProcessRunner implements ITestOutput {
 	private static String RUN_PROCESS_SCRIPT;
 	static {
 		// FIXME: find a way to make this work if we're running from a jar file
-		String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/" + "runProcess.pl";
-		URL url = ProcessRunner.class.getClassLoader().getResource(runProcessPath);
-		if (url != null) {
-			String fileName = url.toExternalForm();
-			if (fileName.startsWith("file://")) {
-				RUN_PROCESS_SCRIPT = fileName.substring("file://".length());
-			} else if (fileName.startsWith("file:")) {
-				RUN_PROCESS_SCRIPT = fileName.substring("file:".length());
-			}
-		}
+		RUN_PROCESS_SCRIPT = findScript("runProcess.pl");
 		if (RUN_PROCESS_SCRIPT == null || !(new File(RUN_PROCESS_SCRIPT).exists())) {
 			throw new IllegalStateException("can't find filename of runProcess.pl script");
 		}
+	}
+
+	protected static String findScript(String scriptName) {
+		String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/" + scriptName;
+		URL url = ProcessRunner.class.getClassLoader().getResource(runProcessPath);
+		String scriptPath = null;
+		if (url != null) {
+			String fileName = url.toExternalForm();
+			if (fileName.startsWith("file://")) {
+				scriptPath = fileName.substring("file://".length());
+			} else if (fileName.startsWith("file:")) {
+				scriptPath = fileName.substring("file:".length());
+			}
+		}
+		return scriptPath;
 	}
     
 	private String statusMessage = "";
@@ -95,7 +102,17 @@ public class ProcessRunner implements ITestOutput {
 		this.stdin = stdin;
 	}
 	
-	private String[] getEnvp(String... extraVars) {
+	/**
+	 * Create the environment array defining the environment
+	 * variables for the process.  The environment will
+	 * contain all of the environment variables in the parent process,
+	 * plus any extra ones specified by the extraVars parameter.
+	 * 
+	 * @param extraVars extra environment variables to define for the process,
+	 *                  in the form VAR=value
+	 * @return enviroment array
+	 */
+	protected String[] getEnvp(String... extraVars) {
 	    String[] envp=new String[env.size() + extraVars.length];
 	    int i=0;
 	    for (Entry<String,String> entry : env.entrySet()) {
@@ -119,14 +136,8 @@ public class ProcessRunner implements ITestOutput {
 	}
 	
 	public boolean runSynchronous(File workingDir, String[] command) {
-		// wrap command using the runProcess.pl script
-		List<String> cmd = new ArrayList<String>();
-		cmd.add("perl");
-		cmd.add(RUN_PROCESS_SCRIPT);
-		for (String s : command) {
-			cmd.add(s);
-		}
-		command = cmd.toArray(new String[cmd.size()]);
+		// wrap command (by default, using the runProcess.pl script)
+		command = wrapCommand(command);
 		
 		// exec command
 //		logger.info("Running in {} the command: {} with env: {} ",
@@ -175,6 +186,14 @@ public class ProcessRunner implements ITestOutput {
 			statusMessage = "Process was interrupted (infinite loop killed?)";
 		}
 		return false;
+	}
+
+	protected String[] wrapCommand(String[] command) {
+		List<String> cmd = new ArrayList<String>();
+		cmd.add("/usr/bin/perl");
+		cmd.add(RUN_PROCESS_SCRIPT);
+		cmd.addAll(Arrays.asList(command));
+		return cmd.toArray(new String[cmd.size()]);
 	}
 
 	/**
