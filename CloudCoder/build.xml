@@ -47,9 +47,7 @@
         encoding="utf-8"
         destdir="war/WEB-INF/classes"
         source="1.5" target="1.5" nowarn="true"
-        debug="true" debuglevel="lines,vars,source">
-      <classpath refid="project.class.path"/>
-    </javac>
+        debug="true" debuglevel="lines,vars,source"/>
     <copy todir="war/WEB-INF/classes">
       <fileset dir="src" excludes="**/*.java"/>
     </copy>
