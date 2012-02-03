@@ -18,13 +18,14 @@ Start by checking out CloudCoder from github:
 
   git clone https://github.com/daveho/CloudCoder.git
 
-This will create a "CloudCoder" directory with three subdirectories:
+This will create a "CloudCoder" directory with four subdirectories:
 
   CloudCoder
+  CloudCoderImporter
   CloudCoderOutOfProcessSubmitService
   CloudCoderWebServer
 
-Make sure all three working directories are extracted in
+Make sure all four projects are extracted in
 the same place.  (This will happen automatically if you cloned the
 CloudCoder git repository as described above.)  The directory
 containing these subdirectories will be referred to as $BASE.
