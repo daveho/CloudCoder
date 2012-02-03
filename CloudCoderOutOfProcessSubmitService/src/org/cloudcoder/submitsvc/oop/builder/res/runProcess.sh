@@ -22,6 +22,7 @@ if [ $rc -eq 127 ]; then
 	# Program could not be executed
 	echo "failed_to_execute" > ${CC_PROC_STAT_FILE}
 	echo "-1" >> ${CC_PROC_STAT_FILE}
+	exit $rc
 fi
 
 if [ $rc -lt 128 ]; then
