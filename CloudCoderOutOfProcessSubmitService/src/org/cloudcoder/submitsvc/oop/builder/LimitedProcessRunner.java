@@ -46,11 +46,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append("CC_PROCESS_RESOURCE_LIMITS=");
-		// Note that we allow one subprocess to be created:
-		// runProcess.pl uses system() to spawn the subprocess
-		// (the program being run). The subprocess is not allowed
-		// to create any processes of its own.
-		//buf.append("-f0"); // FIXME: make this configurable
+		buf.append("-f0 -s262144 -t5 -u0 -v8388608"); // FIXME: make this configurable
 
 		// -f0 -s262144 -t5 -u2 -v8388608
 		
