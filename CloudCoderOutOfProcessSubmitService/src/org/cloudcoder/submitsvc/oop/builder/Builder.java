@@ -57,6 +57,7 @@ public class Builder implements Runnable {
     
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
+	private NoConnectTimer noConnectTimer;
 	private String host;
 	private int port;
 	private Map<Integer, Problem> problemIdToProblemMap;
@@ -68,6 +69,7 @@ public class Builder implements Runnable {
 
 	public Builder(String host, int port) {
 		this.shutdownRequested = false;
+		this.noConnectTimer = new NoConnectTimer();
 		this.host = host;
 		this.port = port;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
@@ -191,10 +193,12 @@ public class Builder implements Runnable {
 			this.socket = new Socket(host, port);
 			this.in = new ObjectInputStream(socket.getInputStream());
 			logger.info("Connected!");
+			noConnectTimer.connected();
 			this.out = new ObjectOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			// ClientCoder server may not be running right now...try again soon
-			logger.error("Cannot connect to CloudCoder server");
+			//logger.error("Cannot connect to CloudCoder server");
+			noConnectTimer.notConnected();
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException ee) {
