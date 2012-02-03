@@ -58,6 +58,13 @@ will be hosting the builder):
   cd CloudCoderOutOfProcessBuildService
   ant build
 
+Note: it is highly recommended that you create a new user
+account for the builder.  Make sure that this user does not
+have access to any sensitive information (ssh keys, etc.)
+Because the Builder executes untrusted code, it is possible
+that files in the user account in which the builder is
+run could be accessed.
+
 Step 2 - Start the web app
 --------------------------
 
