@@ -78,6 +78,7 @@ public class CProgramTester implements ITester {
 		}
 		
 		Compiler compiler = new Compiler(submission.getProgramText(), tempDir, PROGRAM_NAME);
+		compiler.setCompilerExe("g++"); // C++ is a better C than C
 		if (!compiler.compile()) {
 			return CUtil.createSubmissionResultFromFailedCompile(compiler);
 		}

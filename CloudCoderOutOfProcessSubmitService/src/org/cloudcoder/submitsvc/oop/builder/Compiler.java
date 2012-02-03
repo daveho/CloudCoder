@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
 public class Compiler {
     private static final Logger logger=LoggerFactory.getLogger(Compiler.class);
 
+	public static final String DEFAULT_COMPILER_EXE = "gcc";
+
+    private String compilerExe;
     private String progName;
     private File workDir;
     private String code;
@@ -48,12 +51,22 @@ public class Compiler {
     private String outputFileName;
 
     public Compiler(String code, File workDir, String progName) {
+    	this.compilerExe = DEFAULT_COMPILER_EXE;
         this.progName = progName;
         this.workDir = workDir;
         this.code = code;
         this.statusMessage = "";
         this.compilerOutput = new LinkedList<String>();
     }
+    
+    /**
+     * Set the name of the compiler executable (e.g., "gcc").
+     * 
+	 * @param compilerExe the compiler executable to set
+	 */
+	public void setCompilerExe(String compilerExe) {
+		this.compilerExe = compilerExe;
+	}
 
     public boolean compile() {
         // copy source program into a .c file in the temporary directory
@@ -92,7 +105,7 @@ public class Compiler {
 
     private String[] getCompileCmd() {
         return new String[]{
-                "gcc",
+                this.compilerExe,
                 "-Wall", // ALWAYS use -Wall
                 "-o",
                 getExeFileName(),
