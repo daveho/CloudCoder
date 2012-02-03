@@ -35,3 +35,4 @@ fi
 signo=`expr $rc - 128`
 echo "terminated_by_signal" > ${CC_PROC_STAT_FILE}
 echo "$signo" >> ${CC_PROC_STAT_FILE}
+exit $rc
