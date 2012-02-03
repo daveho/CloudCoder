@@ -41,8 +41,12 @@ import org.slf4j.LoggerFactory;
 public class CProgramTester implements ITester {
 	/**
 	 * Maximum number of seconds to allow a test case process to run.
+	 * Note that the test process will be limited by the OS to at most
+	 * 5 seconds of CPU time; this limit is to avoid a test process
+	 * hanging around for a long time by, for example, sleeping or
+	 * blocking on I/O.
 	 */
-	private static final int MAX_TIME_IN_SECONDS = 5;
+	private static final int MAX_TIME_IN_SECONDS = 8;
 	
 	/**
 	 * Number of milliseconds between polls to see if a test case

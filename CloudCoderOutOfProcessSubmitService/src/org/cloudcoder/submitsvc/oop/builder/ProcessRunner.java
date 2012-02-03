@@ -47,9 +47,9 @@ public class ProcessRunner implements ITestOutput {
 	private static String RUN_PROCESS_SCRIPT;
 	static {
 		// FIXME: find a way to make this work if we're running from a jar file
-		RUN_PROCESS_SCRIPT = findScript("runProcess.pl");
+		RUN_PROCESS_SCRIPT = findScript("runProcess.sh");
 		if (RUN_PROCESS_SCRIPT == null || !(new File(RUN_PROCESS_SCRIPT).exists())) {
-			throw new IllegalStateException("can't find filename of runProcess.pl script");
+			throw new IllegalStateException("can't find filename of runProcess.sh script");
 		}
 	}
 
@@ -136,21 +136,19 @@ public class ProcessRunner implements ITestOutput {
 	}
 	
 	public boolean runSynchronous(File workingDir, String[] command) {
-		// wrap command (by default, using the runProcess.pl script)
+		// wrap command (by default, using the runProcess.sh script)
 		command = wrapCommand(command);
 		
 		// exec command
-//		logger.info("Running in {} the command: {} with env: {} ",
-//				new Object[] {workingDir.toString(), merge(command), merge(getEnvp())});
 		logger.info("Running in {} the command: {}", workingDir.toString(), CUtil.mergeOneLine(command));
 		try {
-			// Create a temp file in which the runProcess.pl script can save
+			// Create a temp file in which the runProcess.sh script can save
 			// the exit status of the process.
 			File exitStatusFile = File.createTempFile("ccxs", ".txt", workingDir);
 			exitStatusFile.deleteOnExit();
 
 			// Start process, setting CC_PROC_STAT_FILE env var
-			// to indicate where runProcess.pl should write the process's
+			// to indicate where runProcess.sh should write the process's
 			// exit status information
 			process = Runtime.getRuntime().exec(
 					command,
@@ -190,7 +188,7 @@ public class ProcessRunner implements ITestOutput {
 
 	protected String[] wrapCommand(String[] command) {
 		List<String> cmd = new ArrayList<String>();
-		cmd.add("/usr/bin/perl");
+		cmd.add("/bin/bash");
 		cmd.add(RUN_PROCESS_SCRIPT);
 		cmd.addAll(Arrays.asList(command));
 		return cmd.toArray(new String[cmd.size()]);
@@ -213,7 +211,7 @@ public class ProcessRunner implements ITestOutput {
 	}
 	
 	/**
-	 * Read the file written by the runProcess.pl script
+	 * Read the file written by the runProcess.sh script
 	 * which contains information about the process's exit status.
 	 * 
 	 * @param exitStatusFile file containing information about the process's exit status

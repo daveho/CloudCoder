@@ -28,30 +28,7 @@ import java.util.List;
  * @author David Hovemeyer
  */
 public class LimitedProcessRunner extends ProcessRunner {
-	private static String LIMITED_RUN_PROCESS_SCRIPT;
-	static {
-		LIMITED_RUN_PROCESS_SCRIPT = findScript("limitedRunProcess.sh");
-		if (LIMITED_RUN_PROCESS_SCRIPT == null) {
-			throw new IllegalStateException("Can't find limitedRunProcess.sh script");
-		}
-	}
-	
 	public LimitedProcessRunner() {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.submitsvc.oop.builder.ProcessRunner#wrapCommand(java.lang.String[])
-	 */
-	@Override
-	protected String[] wrapCommand(String[] command) {
-		// Wrap the command with limitedRunProcess.sh,
-		// which (aside from setting resource limits) is a transparent
-		// equivalent of runProcess.pl, and in fact delegates to it.
-		List<String> cmd = new ArrayList<String>();
-		cmd.add("/bin/bash");
-		cmd.add(LIMITED_RUN_PROCESS_SCRIPT);
-		cmd.addAll(Arrays.asList(command));
-		return cmd.toArray(new String[cmd.size()]);
 	}
 	
 	/* (non-Javadoc)
@@ -69,7 +46,13 @@ public class LimitedProcessRunner extends ProcessRunner {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append("CC_PROCESS_RESOURCE_LIMITS=");
-		buf.append("-f0 -s262144 -t5 -u1 -v8388608"); // FIXME: make this configurable
+		// Note that we allow one subprocess to be created:
+		// runProcess.pl uses system() to spawn the subprocess
+		// (the program being run). The subprocess is not allowed
+		// to create any processes of its own.
+		//buf.append("-f0"); // FIXME: make this configurable
+
+		// -f0 -s262144 -t5 -u2 -v8388608
 		
 		allEnvVars.add(buf.toString());
 		

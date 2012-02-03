@@ -122,11 +122,15 @@ public class CUtil {
 	/**
 	 * Create a process runner suitable for running an untrusted test program.
 	 * Limits amount of output read to a reasonable level.
+	 * Also, sets OS-level resource limits.
 	 * 
 	 * @return a ProcessRunner
 	 */
 	public static ProcessRunner createProcessRunner() {
-		ProcessRunner processRunner = new ProcessRunner() {
+		// Create a LimitedProcessRunner so that some resource limits
+		// are enforced by the OS.  (E.g., amount of memory used,
+		// don't allow subprocesses to be created, etc.)
+		ProcessRunner processRunner = new LimitedProcessRunner() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.submitsvc.oop.builder.ProcessRunner#createOutputCollector(java.io.InputStream)
 			 */
