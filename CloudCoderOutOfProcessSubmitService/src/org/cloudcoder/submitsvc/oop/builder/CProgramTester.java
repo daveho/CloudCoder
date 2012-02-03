@@ -167,8 +167,18 @@ public class CProgramTester implements ITester {
 			} else if (!processRunner.isExitStatusKnown()) {
 				testResult = TestResultUtil.createTestResultForInternalError(processRunner, testCase);
 			} else if (processRunner.isCoreDump()) {
-				// indicates core dump?
-				testResult = TestResultUtil.createTestResultForCoreDump(processRunner, testCase);
+				if (processRunner.getExitCode() == 9 || processRunner.getExitCode() == 24) {
+					// Special case: signals 9 (KILL) and 24 (XCPU) indicate that the
+					// process exceeded its CPU limit, so treat them as a timeout.
+					testResult = TestResultUtil.createTestResultForTimeout(processRunner, testCase);
+					
+					// The process stderr does not seem to be particularly
+					// useful in this case.
+					testResult.setStderr("");
+				} else {
+					// Some other fatal signal (most likely SEGV).
+					testResult = TestResultUtil.createTestResultForCoreDump(processRunner, testCase);
+				}
 			} else {
 				// Process completed.  Scan through its output to see if there is a line
 				// matching the test case output regular expression.
