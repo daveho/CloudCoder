@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 31, 2012 at 03:12 PM
+-- Generation Time: Feb 02, 2012 at 09:00 PM
 -- Server version: 5.1.58
 -- PHP Version: 5.3.6-13ubuntu3.3
 
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
   `when_due` bigint(20) NOT NULL,
   `skeleton` varchar(400) DEFAULT NULL,
   PRIMARY KEY (`problem_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
 
 --
 -- Dumping data for table `cc_problems`
@@ -150,7 +150,9 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
 
 INSERT INTO `cc_problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`, `skeleton`) VALUES
 (1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.', 0, 0, NULL),
-(2, 1, 3, 'addInts', 'read/add/print sum of integers', '<p>Write a program which:</p>\n\n<ul>\n<li> Reads two integer values\n<li> Computes the sum of the integer values\n<li> Prints a line of the form "answer: <i>X</i>",\n     where <i>X</i> is the sum of the integer values\n</ul>\n\n<p>\nAny lines of text that are not of the form\n"answer: <i>X</i>" will be ignored.  If the program\nproduces more than 20 lines of output, it will terminate\nand the test will fail.\n</p>', 1326485534072, 1326571934072, '#include <stdio.h>\n\nint main(void) {\n	// TODO: add your code\n\n	return 0;\n}');
+(2, 1, 3, 'addInts', 'read/add/print sum of integers', '<p>Write a program which:</p>\n\n<ul>\n<li> Reads two integer values\n<li> Computes the sum of the integer values\n<li> Prints a line of the form "answer: <i>X</i>",\n     where <i>X</i> is the sum of the integer values\n</ul>\n\n<p>\nAny lines of text that are not of the form\n"answer: <i>X</i>" will be ignored.  If the program\nproduces more than 20 lines of output, it will terminate\nand the test will fail.\n</p>', 1326485534072, 1326571934072, '#include <stdio.h>\n\nint main(void) {\n	// TODO: add your code\n\n	return 0;\n}'),
+(10, 1, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	'),
+(11, 1, 3, 'prob_6_2', 'Blast off!', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints a single line of the form\n</p>\n\n<blockquote>\n<pre>\n5...4...3...2...1...blast off!\n</pre>\n</blockquote>\n\n<p>\nwhere the countdown starts at the integer read, and continues\ndown to 1.  For example, the output above should be printed\nif the input integer is <b>5</b>.\n</p>\n\n<p>\nHint: make sure that each number printed is followed by exactly\nthree period (".") characters, and that <b>blast off!</b>\nis printed at the end of the line.  Aside from the space\nbetween "blast" and "off", the line should not contain\nany spaces.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
 
 -- --------------------------------------------------------
 
@@ -207,7 +209,7 @@ CREATE TABLE IF NOT EXISTS `cc_test_cases` (
   `secret` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`test_case_id`),
   KEY `problem_id` (`problem_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=47 ;
 
 --
 -- Dumping data for table `cc_test_cases`
@@ -222,7 +224,43 @@ INSERT INTO `cc_test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `in
 (7, 2, 'sixPlusSeven', '6 7', '^\\s*answer\\s*:\\s*(0*)13\\s*$', 0),
 (8, 2, 'threePlusNegSeventeen', '3 -17', '^\\s*answer\\s*:\\s*-(0*)14\\s*$', 0),
 (9, 2, 'onePlusZero', '1 0', '^\\s*answer\\s*:\\s*(0*)1\\s*$', 1),
-(10, 2, 'negOnePlusNeg2', '-1 -2', '^\\s*answer\\s*:\\s*-(0*)3\\s*$', 1);
+(10, 2, 'negOnePlusNeg2', '-1 -2', '^\\s*answer\\s*:\\s*-(0*)3\\s*$', 1),
+(11, 3, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(12, 3, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(13, 3, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(14, 3, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(15, 4, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(16, 4, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(17, 4, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(18, 4, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(19, 5, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(20, 5, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(21, 5, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(22, 5, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(23, 6, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(24, 6, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(25, 6, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(26, 6, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(27, 7, 'from3', '3', '^\\s*\\Q3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(28, 7, 'from5', '5', '^\\s*\\Q5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(29, 7, 'from10', '5', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(30, 7, 'from7', '9', '^\\s*\\Q7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1),
+(31, 8, 'from3', '3', '^\\s*\\Q3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(32, 8, 'from5', '5', '^\\s*\\Q5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(33, 8, 'from10', '5', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(34, 8, 'from7', '9', '^\\s*\\Q7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1),
+(35, 9, 'from3', '3', '^\\s*\\Q3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(36, 9, 'from5', '5', '^\\s*\\Q5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(37, 9, 'from10', '10', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(38, 9, 'from7', '9', '^\\s*\\Q9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1),
+(39, 10, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(40, 10, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(41, 10, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(42, 10, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(43, 11, 'from3', '3', '^\\s*\\Q3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(44, 11, 'from5', '5', '^\\s*\\Q5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(45, 11, 'from10', '10', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
+(46, 11, 'from7', '9', '^\\s*\\Q9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1);
 
 -- --------------------------------------------------------
 
@@ -235,8 +273,8 @@ CREATE TABLE IF NOT EXISTS `cc_test_results` (
   `submission_receipt_id` int(11) NOT NULL,
   `test_outcome` int(11) NOT NULL,
   `message` varchar(100) NOT NULL,
-  `stdout` varchar(200) NOT NULL,
-  `stderr` varchar(200) NOT NULL,
+  `stdout` text NOT NULL,
+  `stderr` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `submission_receipt_id` (`submission_receipt_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
