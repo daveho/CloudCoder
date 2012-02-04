@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 02, 2012 at 09:00 PM
+-- Generation Time: Feb 04, 2012 at 07:58 AM
 -- Server version: 5.1.58
 -- PHP Version: 5.3.6-13ubuntu3.3
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `cc_changes` (
   `text` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id` (`event_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=174 ;
 
 -- --------------------------------------------------------
 
@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `cc_course_registrations` (
   `course_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `registration_type` int(11) NOT NULL,
+  `section` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=12 ;
 
@@ -99,14 +100,12 @@ CREATE TABLE IF NOT EXISTS `cc_course_registrations` (
 -- Dumping data for table `cc_course_registrations`
 --
 
-INSERT INTO `cc_course_registrations` (`id`, `course_id`, `user_id`, `registration_type`) VALUES
-(5, 1, 2, 0),
-(6, 1, 3, 0),
-(7, 1, 4, 0),
-(8, 1, 5, 0),
-(9, 1, 6, 0),
-(10, 1, 7, 0),
-(11, 1, 8, 0);
+INSERT INTO `cc_course_registrations` (`id`, `course_id`, `user_id`, `registration_type`, `section`) VALUES
+(5, 1, 2, 0, 101),
+(6, 1, 3, 0, 101),
+(7, 1, 4, 0, 101),
+(8, 1, 5, 0, 101),
+(9, 1, 6, 0, 101);
 
 -- --------------------------------------------------------
 
@@ -123,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `cc_events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=189 ;
 
 -- --------------------------------------------------------
 
@@ -167,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `cc_submission_receipts` (
   `status` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `event_id` (`event_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
 
 -- --------------------------------------------------------
 
@@ -209,7 +208,7 @@ CREATE TABLE IF NOT EXISTS `cc_test_cases` (
   `secret` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`test_case_id`),
   KEY `problem_id` (`problem_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=47 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=49 ;
 
 --
 -- Dumping data for table `cc_test_cases`
@@ -260,7 +259,9 @@ INSERT INTO `cc_test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `in
 (43, 11, 'from3', '3', '^\\s*\\Q3...2...1...\\Eblast\\s*off!\\s*$', 0),
 (44, 11, 'from5', '5', '^\\s*\\Q5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
 (45, 11, 'from10', '10', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
-(46, 11, 'from7', '9', '^\\s*\\Q9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1);
+(46, 11, 'from7', '9', '^\\s*\\Q9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1),
+(47, 2, 'test6', '39 22', '^\\s*answer\\s*:\\s*(0+)?61\\s*$', 1),
+(48, 2, 'test7', '-14 29', '^\\s*answer\\s*:\\s*(0+)?15\\s*$', 1);
 
 -- --------------------------------------------------------
 
@@ -277,7 +278,7 @@ CREATE TABLE IF NOT EXISTS `cc_test_results` (
   `stderr` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `submission_receipt_id` (`submission_receipt_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=77 ;
 
 -- --------------------------------------------------------
 

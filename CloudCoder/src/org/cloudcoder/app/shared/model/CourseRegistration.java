@@ -37,6 +37,7 @@ public class CourseRegistration implements Serializable {
 	private int courseId;
 	private int userId;
 	private CourseRegistrationType registrationType;
+	private int section;
 	
 	/**
 	 * Constructor.
@@ -123,6 +124,22 @@ public class CourseRegistration implements Serializable {
 	 */
 	public void setRegistrationType(int registrationType) {
 		this.registrationType = CourseRegistrationType.values()[registrationType];
+	}
+	
+	/**
+	 * Set the course section.
+	 * @param section the section to set
+	 */
+	public void setSection(int section) {
+		this.section = section;
+	}
+	
+	/**
+	 * Get the course section.
+	 * @return the section the section to set.
+	 */
+	public int getSection() {
+		return section;
 	}
 	
 }

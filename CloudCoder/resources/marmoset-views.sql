@@ -28,7 +28,8 @@ create view cc_course_registrations as
   select sr.student_registration_pk as id,
          sr.course_pk as course_id,
          sr.student_pk as user_id,
-         case sr.instructor_capability
+         CASE sr.instructor_capability
            when 'modify' then 1
-           else 0 as registration_type
+           else 0 END as registration_type,
+         sr.section as section
     from student_registration as sr;
