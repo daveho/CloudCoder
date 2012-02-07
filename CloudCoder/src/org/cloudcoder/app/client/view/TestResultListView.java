@@ -17,7 +17,9 @@
 
 package org.cloudcoder.app.client.view;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
@@ -26,6 +28,11 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.cell.client.ButtonCell;
+import com.google.gwt.cell.client.CompositeCell;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.HasCell;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
@@ -48,8 +55,8 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		
 		cellTable.addColumn(new OutcomeColumn(), "Outcome");
 		cellTable.addColumn(new MessageColumn(), "Message");
-		cellTable.addColumn(new OutputColumn(), "Output");
-		cellTable.addColumn(new ErrorOutputColumn(), "Error output");
+		cellTable.addColumn(new StdoutColumn(), "Output");
+//		cellTable.addColumn(new ErrorOutputColumn(), "Error output");
 		
 		initWidget(cellTable);
 	}
@@ -68,17 +75,71 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		}
 	}
 	
-	private static class OutputColumn extends TextColumn<TestResult> {
+	private static class ShowFullOutputButtonColumn extends Column<TestResult, String> {
+		public ShowFullOutputButtonColumn() {
+			super(new ButtonCell());
+
+			// Set a FieldUpdater to handle the button click
+			setFieldUpdater(new FieldUpdater<TestResult, String>() {
+				@Override
+				public void update(int index, TestResult object, String value) {
+					// Show the TestResultOutputDialog.
+					TestResultOutputDialog dialog = new TestResultOutputDialog(object.getStdout());
+					dialog.center();
+				}
+			});
+		}
+
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+		 */
 		@Override
 		public String getValue(TestResult object) {
-			return object.getStdout();
+			return "Show all";
 		}
 	}
 	
-	private static class ErrorOutputColumn extends TextColumn<TestResult> {
+	private static class OutputFirstLineColumn extends TextColumn<TestResult> {
 		@Override
 		public String getValue(TestResult object) {
-			return object.getStderr();
+			return firstLine(object.getStdout());
+		}
+		
+		private static String firstLine(String s) {
+			int eol = s.indexOf('\n');
+			return (eol < 0) ? s : s.substring(0, eol);
+		}
+	}
+	
+//	private static class ErrorOutputColumn extends TextColumn<TestResult> {
+//		@Override
+//		public String getValue(TestResult object) {
+//			return object.getStderr();
+//		}
+//	}
+	
+	
+	private static class StdoutColumn extends Column<TestResult, TestResult> {
+		/**
+		 * @param cell
+		 */
+		public StdoutColumn() {
+			super(new CompositeCell<TestResult>(getCells()));
+		}
+		
+		private static List<HasCell<TestResult, ?>> getCells() {
+			List<HasCell<TestResult, ?>> result = new ArrayList<HasCell<TestResult, ?>>();
+			result.add(new ShowFullOutputButtonColumn());
+			result.add(new OutputFirstLineColumn());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+		 */
+		@Override
+		public TestResult getValue(TestResult object) {
+			return object;
 		}
 	}
 	
