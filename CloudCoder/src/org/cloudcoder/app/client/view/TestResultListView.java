@@ -55,8 +55,18 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		
 		cellTable.addColumn(new OutcomeColumn(), "Outcome");
 		cellTable.addColumn(new MessageColumn(), "Message");
-		cellTable.addColumn(new StdoutColumn(), "Output");
-//		cellTable.addColumn(new ErrorOutputColumn(), "Error output");
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+			@Override
+			public String getOutputText(TestResult testResult) {
+				return testResult.getStdout();
+			}
+		}), "Output");
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+			@Override
+			public String getOutputText(TestResult testResult) {
+				return testResult.getStderr();
+			}
+		}), "Error output");
 		
 		initWidget(cellTable);
 	}
@@ -75,7 +85,7 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		}
 	}
 	
-	private static class ShowFullOutputButtonColumn extends Column<TestResult, String> {
+	private static abstract class ShowFullOutputButtonColumn extends Column<TestResult, String> {
 		public ShowFullOutputButtonColumn() {
 			super(new ButtonCell());
 
@@ -84,11 +94,13 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 				@Override
 				public void update(int index, TestResult object, String value) {
 					// Show the TestResultOutputDialog.
-					TestResultOutputDialog dialog = new TestResultOutputDialog(object.getStdout());
+					TestResultOutputDialog dialog = new TestResultOutputDialog(getText(object));
 					dialog.center();
 				}
 			});
 		}
+
+		protected abstract String getText(TestResult object);
 
 		/* (non-Javadoc)
 		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
@@ -99,11 +111,13 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		}
 	}
 	
-	private static class OutputFirstLineColumn extends TextColumn<TestResult> {
+	private static abstract class OutputFirstLineColumn extends TextColumn<TestResult> {
 		@Override
 		public String getValue(TestResult object) {
-			return firstLine(object.getStdout());
+			return firstLine(getText(object));
 		}
+
+		protected abstract String getText(TestResult object);
 		
 		private static String firstLine(String s) {
 			int eol = s.indexOf('\n');
@@ -118,19 +132,35 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 //		}
 //	}
 	
+	private interface ExtractOutputText {
+		public String getOutputText(TestResult testResult);
+	}
 	
-	private static class StdoutColumn extends Column<TestResult, TestResult> {
-		/**
-		 * @param cell
-		 */
-		public StdoutColumn() {
-			super(new CompositeCell<TestResult>(getCells()));
+	private static class OutputColumn extends Column<TestResult, TestResult> {
+		public OutputColumn(ExtractOutputText extractor) {
+			super(new CompositeCell<TestResult>(getCells(extractor)));
 		}
 		
-		private static List<HasCell<TestResult, ?>> getCells() {
+		private static List<HasCell<TestResult, ?>> getCells(final ExtractOutputText extractor) {
 			List<HasCell<TestResult, ?>> result = new ArrayList<HasCell<TestResult, ?>>();
-			result.add(new ShowFullOutputButtonColumn());
-			result.add(new OutputFirstLineColumn());
+			result.add(new ShowFullOutputButtonColumn(){
+				/* (non-Javadoc)
+				 * @see org.cloudcoder.app.client.view.TestResultListView.ShowFullOutputButtonColumn#getText(org.cloudcoder.app.shared.model.TestResult)
+				 */
+				@Override
+				protected String getText(TestResult object) {
+					return extractor.getOutputText(object);
+				}
+			});
+			result.add(new OutputFirstLineColumn() {
+				/* (non-Javadoc)
+				 * @see org.cloudcoder.app.client.view.TestResultListView.OutputFirstLineColumn#getText(org.cloudcoder.app.shared.model.TestResult)
+				 */
+				@Override
+				protected String getText(TestResult object) {
+					return extractor.getOutputText(object);
+				}
+			});
 			return result;
 		}
 
