@@ -149,6 +149,11 @@ public class TermAndCourseTreeView extends Composite {
 		model = new Model(courseList);
 		cellTree = new CellTree(model, null);
 		initWidget(cellTree);
+		
+		// Expand the first child of the root.
+		if (cellTree.getRootTreeNode().getChildCount() > 0) {
+			cellTree.getRootTreeNode().setChildOpen(0, true);
+		}
 	}
 	
 	/**
@@ -161,7 +166,7 @@ public class TermAndCourseTreeView extends Composite {
 	}
 
 	/**
-	 * @return
+	 * @return the currently selected course
 	 */
 	public Course getSelectedCourse() {
 		return model.selectionModel.getSelectedObject();
