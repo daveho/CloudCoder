@@ -77,3 +77,12 @@
 .cc-emphButton[disabled]:hover {
   border: 1px outset #ccc;
 }
+
+/*
+ * Increase the z-index for .gwt-DialogBox.
+ * The default value leaves part of the dialog box below the current
+ * (highlighted) line in the Ace editor.
+ */
+.gwt-DialogBox {
+	z-index: 1001 !important;
+}

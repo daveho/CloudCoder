@@ -46,7 +46,7 @@ public class TestResultOutputDialog extends DialogBox {
 		setGlassEnabled(true);
 
 		LayoutPanel layoutPanel = new LayoutPanel();
-		layoutPanel.setSize("640px", "480px");
+		layoutPanel.setSize("540px", "405px");
 		
 		ScrollPanel scrollPanel = new ScrollPanel();
 		layoutPanel.add(scrollPanel);
@@ -74,5 +74,4 @@ public class TestResultOutputDialog extends DialogBox {
 		
 		setWidget(layoutPanel);
 	}
-
 }
