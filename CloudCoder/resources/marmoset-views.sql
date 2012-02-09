@@ -31,5 +31,5 @@ create view cc_course_registrations as
          CASE sr.instructor_capability
            when 'modify' then 1
            else 0 END as registration_type,
-         sr.section as section
+         CONVERT(sr.section, signed) as section
     from student_registration as sr;
