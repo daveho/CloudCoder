@@ -27,9 +27,9 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.DevActionsPanel;
+import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
-import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
@@ -59,7 +59,6 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -316,7 +315,10 @@ public class DevelopmentPage extends CloudCoderPage {
 							}
 						}
 						
-						if (compilerDiagnosticList.length == 0) {
+						if (compilerDiagnosticList.length > 0) {
+							// show the compiler diagnostics
+							resultsTabPanel.selectTab(compilerDiagnosticListView);
+						} else {
 							// show the test results tab
 							resultsTabPanel.selectTab(testResultListView);
 						}
