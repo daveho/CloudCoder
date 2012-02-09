@@ -36,7 +36,7 @@ import com.google.gwt.user.client.ui.Composite;
  * 
  * @author David Hovemeyer
  */
-public class CompilerDiagnosticListView extends Composite implements SessionObserver, Subscriber {
+public class CompilerDiagnosticListView extends Composite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<CompilerDiagnostic> cellTable;
 	
 	public CompilerDiagnosticListView() {
@@ -96,5 +96,14 @@ public class CompilerDiagnosticListView extends Composite implements SessionObse
 		GWT.log("CompilerDiagnosticListView: displaying " + compilerDiagnosticList.length + " diagnostics");
 //		cellTable.setRowCount(compilerDiagnosticList.length);
 		cellTable.setRowData(Arrays.asList(compilerDiagnosticList));
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.view.IResultsTabPanelWidget#setSelected()
+	 */
+	@Override
+	public void setSelected() {
+		// Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=7065
+		cellTable.redraw();
 	}
 }

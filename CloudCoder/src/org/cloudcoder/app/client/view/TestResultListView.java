@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.Composite;
  * 
  * @author David Hovemeyer
  */
-public class TestResultListView extends Composite implements SessionObserver, Subscriber {
+public class TestResultListView extends Composite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<TestResult> cellTable;
 	
 	public TestResultListView() {
@@ -120,13 +120,6 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 		}
 	}
 	
-//	private static class ErrorOutputColumn extends TextColumn<TestResult> {
-//		@Override
-//		public String getValue(TestResult object) {
-//			return object.getStderr();
-//		}
-//	}
-	
 	private interface ExtractOutputText {
 		public String getOutputText(TestResult testResult);
 	}
@@ -185,7 +178,15 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	}
 	
 	private void displayTestResults(TestResult[] testResultList) {
-//		cellTable.setRowCount(testResultList.length);
 		cellTable.setRowData(Arrays.asList(testResultList));
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.view.ResultsTabPanelWidget#setSelected()
+	 */
+	@Override
+	public void setSelected() {
+		// Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=7065
+		cellTable.redraw();
 	}
 }

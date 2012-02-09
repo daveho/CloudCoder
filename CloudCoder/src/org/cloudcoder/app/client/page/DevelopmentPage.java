@@ -17,6 +17,9 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.Session;
@@ -26,6 +29,7 @@ import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
@@ -45,6 +49,8 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -53,6 +59,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -113,6 +120,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private TabLayoutPanel resultsTabPanel;
 		private TestResultListView testResultListView;
 		private CompilerDiagnosticListView compilerDiagnosticListView;
+		private List<IResultsTabPanelWidget> resultsTabPanelWidgetList;
 
 		private AceEditor aceEditor;
 		private Timer flushPendingChangeEventsTimer;
@@ -154,16 +162,32 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetTopBottom(resultsTabPanel, StatusMessageView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
+			this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
+			
 			this.testResultListView = new TestResultListView();
-			resultsTabPanel.add(testResultListView, "Test results");
+			addResultsTab(this.testResultListView, "Test results");
 			
 			this.compilerDiagnosticListView = new CompilerDiagnosticListView();
-			resultsTabPanel.add(compilerDiagnosticListView, "Compiler errors");
+			addResultsTab(this.compilerDiagnosticListView, "Compiler errors");
 
+			// Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=7065
+			resultsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+				@Override
+				public void onSelection(SelectionEvent<Integer> event) {
+					int tabIndex = event.getSelectedItem();
+					resultsTabPanelWidgetList.get(tabIndex).setSelected();
+				}
+			});
+			
 			centerLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.add(centerLayoutPanel);
 
 			initWidget(dockLayoutPanel);
+		}
+
+		private void addResultsTab(IResultsTabPanelWidget w, String title) {
+			resultsTabPanel.add(w, title);
+			resultsTabPanelWidgetList.add(w); // keep track of all results tab panel widgets
 		}
 
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
@@ -264,13 +288,7 @@ public class DevelopmentPage extends CloudCoderPage {
 							compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
 						}
 						GWT.log("Adding " + compilerDiagnosticList.length + " compiler diagnostics");
-
-						// XXX: compiler diagnostics are lost unless the compiler errors tab is shown
-						// I really have no idea why this is, but this workaround seems to be effective.
-						resultsTabPanel.selectTab(compilerDiagnosticListView);
 						addSessionObject(compilerDiagnosticList);
-
-						//resultsTabPanel.selectTab(testResultListView);
 						
 						// See what the result of the submission was.
 						if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
