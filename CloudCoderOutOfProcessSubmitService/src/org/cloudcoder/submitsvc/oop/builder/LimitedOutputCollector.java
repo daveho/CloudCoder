@@ -37,10 +37,10 @@ import org.apache.commons.io.IOUtils;
  */
 public class LimitedOutputCollector implements IOutputCollector {
 	/** Default maximum number of bytes allowed. */
-	public static final int DEFAULT_MAX_BYTES_ALLOWED = 1600 * 2;
+	public static final int DEFAULT_MAX_BYTES_ALLOWED = 8192;
 	
 	/** Default maximum number of lines of text allowed. */
-	public static final int DEFAULT_MAX_LINES_ALLOWED = 20;
+	public static final int DEFAULT_MAX_LINES_ALLOWED = 60;
 	
 	/** Default maximum number of characters per line. */
 	public static final int DEFAULT_MAX_CHARACTERS_PER_LINE = 80;
