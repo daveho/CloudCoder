@@ -181,11 +181,24 @@ public class CProgramTester implements ITester {
 					testResult = TestResultUtil.createTestResultForCoreDump(processRunner, testCase);
 				}
 			} else {
-				// Process completed.  Scan through its output to see if there is a line
+				// Process completed.
+				
+				// Special case: if the stdout is completely empty, it is possible
+				// that the expected output of the program is a blank line, and
+				// thus empty output is correct.  So, if the stdout is empty,
+				// change it to a single empty line.  (These are the kinds of
+				// things you learn when you have actual students submitting code.)
+				List<String> stdoutAsList = processRunner.getStdoutAsList();
+				if (stdoutAsList.isEmpty()) {
+					stdoutAsList = new ArrayList<String>();
+					stdoutAsList.add("");
+				}
+				
+				// Scan through its output to see if there is a line
 				// matching the test case output regular expression.
 				boolean foundMatchingOutput = false;
 				Pattern pat = Pattern.compile(testCase.getOutput());
-				for (String line : processRunner.getStdoutAsList()) {
+				for (String line : stdoutAsList) {
 					Matcher m = pat.matcher(line);
 					if (m.matches()) {
 						// Match!
