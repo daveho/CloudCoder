@@ -48,11 +48,6 @@ public class TestResultListView extends Composite implements SessionObserver, Su
 	public TestResultListView() {
 		cellTable = new DataGrid<TestResult>();
 		
-		// Odd bug: when width is set to 100%, the scroll bar extends
-		// beyond the width of the parent.  So, make it a bit less than
-		// 100% width.
-		cellTable.setSize("98%", "100%");
-		
 		cellTable.addColumn(new OutcomeColumn(), "Outcome");
 		cellTable.addColumn(new MessageColumn(), "Message");
 		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {

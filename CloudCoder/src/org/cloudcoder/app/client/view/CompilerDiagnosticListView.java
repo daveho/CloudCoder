@@ -41,7 +41,6 @@ public class CompilerDiagnosticListView extends Composite implements SessionObse
 	
 	public CompilerDiagnosticListView() {
 		cellTable = new DataGrid<CompilerDiagnostic>();
-		cellTable.setSize("100%", "100%");
 		
 		// Add columns
 		cellTable.addColumn(new MessageColumn(), "Message");
