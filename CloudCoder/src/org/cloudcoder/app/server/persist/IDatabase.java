@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -69,4 +70,13 @@ public interface IDatabase {
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
 	public void addProblem(Problem problem);
 	public void addTestCases(Problem problem, List<TestCase> testCaseList);
+
+	/**
+	 * Create a {@link ProblemSummary} describing the submissions for
+	 * the given {@link Problem}.
+	 * 
+	 * @param problem the Problem
+	 * @return a ProblemSummary describing the submissions for the Problem
+	 */
+	public ProblemSummary createProblemSummary(Problem problem);
 }

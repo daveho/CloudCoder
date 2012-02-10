@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -645,6 +646,88 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#createProblemSummary(org.cloudcoder.app.shared.model.Problem)
+	 */
+	@Override
+	public ProblemSummary createProblemSummary(final Problem problem) {
+		return databaseRun(new AbstractDatabaseRunnable<ProblemSummary>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public ProblemSummary run(Connection conn) throws SQLException {
+				// Determine how many students (non-instructor users) are in this course
+				int numStudentsInCourse = doCountStudentsInCourse(problem, conn, this);
+				
+				// Get all SubmissionReceipts
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sr.*, e.* " +
+						"  from " + SUBMISSION_RECEIPTS + " as sr, " + EVENTS + " as e " +
+						" where sr.event_id = e.event_id " +
+						"   and e.problem_id = ?");
+				stmt.setInt(1, problem.getProblemId());
+				
+				// Keep track of "best" submissions from each student.
+				HashMap<Integer, SubmissionReceipt> bestSubmissions = new HashMap<Integer, SubmissionReceipt>();
+				
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					SubmissionReceipt receipt= new SubmissionReceipt();
+					load(receipt, resultSet, 1);
+					Event event = new Event();
+					load(event, resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+					
+					receipt.setEvent(event);
+					
+					SubmissionReceipt prevBest = bestSubmissions.get(receipt.getEvent().getUserId());
+					SubmissionStatus curStatus = receipt.getStatus();
+					SubmissionStatus prevStatus = prevBest.getStatus();
+					if (prevStatus == null
+							|| curStatus == SubmissionStatus.TESTS_PASSED && prevStatus != SubmissionStatus.TESTS_PASSED
+							|| receipt.getNumTestsPassed() > prevBest.getNumTestsPassed()) {
+						// New receipt is better than the previous receipt
+						bestSubmissions.put(receipt.getEvent().getUserId(), receipt);
+					}
+				}
+				
+				// Aggregate the data
+				int started = 0;
+				int anyPassed = 0;
+				int allPassed = 0;
+				for (SubmissionReceipt r : bestSubmissions.values()) {
+					if (r.getStatus() == SubmissionStatus.TESTS_PASSED) {
+						started++;
+						allPassed++;
+						anyPassed++;
+					} else if (r.getNumTestsPassed() > 0) {
+						started++;
+						anyPassed++;
+					} else {
+						started++;
+					}
+				}
+				
+				// Create the ProblemSummary
+				ProblemSummary problemSummary = new ProblemSummary();
+				problemSummary.setNumStudents(numStudentsInCourse);
+				problemSummary.setNumStarted(started);
+				problemSummary.setNumPassedAtLeastOneTest(anyPassed);
+				problemSummary.setNumCompleted(allPassed);
+				
+				return problemSummary;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "get problem summary for problem";
+			}
+		});
+	}
 
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
@@ -805,6 +888,18 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		return resultList;
+	}
+
+	/**
+	 * @param problem
+	 * @param conn
+	 * @param abstractDatabaseRunnable
+	 * @return
+	 */
+	protected int doCountStudentsInCourse(Problem problem, Connection conn,
+			AbstractDatabaseRunnable<ProblemSummary> abstractDatabaseRunnable) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

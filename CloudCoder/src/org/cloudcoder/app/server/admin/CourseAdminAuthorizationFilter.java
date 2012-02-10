@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
@@ -33,8 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for admin authorization filters which ensure that only course instructors
- * are permitted access.  Subclasses must override the getCourseId() method.
+ * Base class for admin authorization filters which ensure that
+ * only course instructors are permitted access.  If successful,
+ * adds the Course object to the request as a request attribute.
+ * Subclasses must override the getCourseId() method.
  * 
  * @author David Hovemeyer
  */
@@ -58,13 +61,12 @@ public abstract class CourseAdminAuthorizationFilter extends AdminAuthorizationF
 
 		boolean isInstructorInCourse = false;
 		for (Object[] triple : triples) {
-			//System.out.println("Check course=" + ((Course)triple[0]).getId());
 			// The third element of each triple returned by getCoursesForUser
 			// is the CourseRegistration, which will indicate the registration type.
 			CourseRegistration reg = (CourseRegistration) triple[2];
-			//System.out.println("  reg courseid=" + reg.getCourseId() + ", regtype=" + reg.getRegistrationType());
 			if (reg.getCourseId() == courseId && reg.getRegistrationType() == CourseRegistrationType.INSTRUCTOR) {
 				isInstructorInCourse = true;
+				req.setAttribute("Course", (Course) triple[0]);
 				break;
 			}
 		}

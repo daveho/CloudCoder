@@ -38,7 +38,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract base class for Filters to check that the client is authorized
  * to use an admin servlet.  Checks that Basic HTTP authorization has
- * been provided and that it matches a CloudCoder user.  Delegates
+ * been provided and that it matches a CloudCoder user.  Adds the
+ * User object to the request as a request attribute.  Delegates
  * to a subclass to check that the client is authorized to perform
  * whatever specific kind of request the servlet protected by the
  * filter is handling.
