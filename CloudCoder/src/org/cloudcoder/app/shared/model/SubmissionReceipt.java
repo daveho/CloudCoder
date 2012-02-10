@@ -35,13 +35,15 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * Number of database fields.
 	 */
-	public static final int NUM_FIELDS = 4;
+	public static final int NUM_FIELDS = 6;
 
 	private Event event;
 	private int id;
 	private int eventId;
 	private int lastEditEventId;
 	private int status;
+	private int numTestsAttempted;
+	private int numTestsPassed;
 	
 	public SubmissionReceipt() {
 		this.event = new Event();
@@ -128,6 +130,34 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	}
 	
 	/**
+	 * @param numTestsAttempted the numTestsAttempted to set
+	 */
+	public void setNumTestsAttempted(int numTestsAttempted) {
+		this.numTestsAttempted = numTestsAttempted;
+	}
+	
+	/**
+	 * @return the numTestsAttempted
+	 */
+	public int getNumTestsAttempted() {
+		return numTestsAttempted;
+	}
+	
+	/**
+	 * @param numTestsPassed the numTestsPassed to set
+	 */
+	public void setNumTestsPassed(int numTestsPassed) {
+		this.numTestsPassed = numTestsPassed;
+	}
+	
+	/**
+	 * @return the numTestsPassed
+	 */
+	public int getNumTestsPassed() {
+		return numTestsPassed;
+	}
+	
+	/**
 	 * Create a SubmissionReceipt for given User and Problem.
 	 * 
 	 * @param user     the User
@@ -136,7 +166,13 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	 * @param lastEditEventId id of last edit event (i.e., the code version of the submission)
 	 * @return  the SubmissionReceipt
 	 */
-	public static SubmissionReceipt create(final User user, final Problem problem, SubmissionStatus status, int lastEditEventId) {
+	public static SubmissionReceipt create(
+			final User user,
+			final Problem problem,
+			SubmissionStatus status,
+			int lastEditEventId,
+			int numTestsAttempted,
+			int numTestsPassed) {
 		SubmissionReceipt receipt = new SubmissionReceipt();
 		receipt.getEvent().setProblemId(problem.getProblemId());
 		receipt.getEvent().setTimestamp(System.currentTimeMillis());

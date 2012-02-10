@@ -553,7 +553,7 @@ public class JDBCDatabase implements IDatabase {
 				// There is no submission receipt in the database yet, so add one
 				// with status STARTED
 				SubmissionStatus status = SubmissionStatus.STARTED;
-				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1);
+				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1, 0, 0);
 				doInsertSubmissionReceipt(receipt, new TestResult[0], conn, this);
 				return receipt;
 				
@@ -726,10 +726,18 @@ public class JDBCDatabase implements IDatabase {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + SUBMISSION_RECEIPTS + " values (NULL, ?, ?, ?)"
+				"insert into " + SUBMISSION_RECEIPTS + " values (NULL, ?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		storeNoId(receipt, stmt, 1);
 		stmt.execute();
+		
+		// Get the generated key for this submission receipt
+		ResultSet genKey = dbRunnable.getGeneratedKeys(stmt);
+		if (!genKey.next()) {
+			throw new SQLException("Could not get generated key for submission receipt");
+		}
+		receipt.setId(genKey.getInt(1));
 		
 		// Store the TestResults
 		for (TestResult testResult : testResultList) {
@@ -863,6 +871,8 @@ public class JDBCDatabase implements IDatabase {
 		submissionReceipt.setEventId(resultSet.getInt(index++));
 		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
 		submissionReceipt.setStatus(resultSet.getInt(index++));
+		submissionReceipt.setNumTestsAttempted(submissionReceipt.getNumTestsAttempted());
+		submissionReceipt.setNumTestsPassed(submissionReceipt.getNumTestsPassed());
 	}
 	
 	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
@@ -902,6 +912,8 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setInt(index++, receipt.getEventId());
 		stmt.setLong(index++, receipt.getLastEditEventId());
 		stmt.setInt(index++, receipt.getStatus().ordinal());
+		stmt.setInt(index++, receipt.getNumTestsAttempted());
+		stmt.setInt(index++, receipt.getNumTestsPassed());
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {

@@ -48,21 +48,21 @@ public class SubmissionResult implements Serializable
     }
 
     /**
-     * @param outcomes
+     * @param outcomes the array of test results to set
      */
     public void setTestResults(TestResult[] outcomes) {
         this.testResults=outcomes;
     }
 
     /**
-     * @return
+     * @return the array of TestResults
      */
     public TestResult[] getTestResults() {
         return testResults;
     }
 
     /**
-     * @return
+     * @return true if the submission compiled, false otherwise
      */
     public boolean isCompiled() {
         return compilationResult.getOutcome()==CompilationOutcome.SUCCESS;
@@ -73,11 +73,26 @@ public class SubmissionResult implements Serializable
 	 *         test did not pass
 	 */
 	public boolean isAllTestsPassed() {
+		return testResults != null && (getNumTestsAttempted() == getNumTestsPassed());
+	}
+
+	/**
+	 * @return the number of test results which PASSED
+	 */
+	public int getNumTestsPassed() {
+		int numPassed = 0;
 		for (TestResult testResult : testResults) {
-			if (testResult.getOutcome() != TestOutcome.PASSED) {
-				return false;
+			if (testResult.getOutcome() == TestOutcome.PASSED) {
+				numPassed++;
 			}
 		}
-		return true;
+		return numPassed;
+	}
+
+	/**
+	 * @return the number of tests attempted
+	 */
+	public int getNumTestsAttempted() {
+		return testResults.length;
 	}
 }
