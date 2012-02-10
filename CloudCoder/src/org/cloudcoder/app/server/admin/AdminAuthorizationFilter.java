@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AdminAuthorizationFilter implements Filter {
 	private static final Logger logger = LoggerFactory.getLogger(AdminAuthorizationFilter.class);
 	
-	private static final String CLOUDCODER_ADMIN_REALM_NAME = "CloudCoderAdmin";
+	static final String CLOUDCODER_ADMIN_REALM_NAME = "CloudCoderAdmin";
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
@@ -62,7 +62,7 @@ public abstract class AdminAuthorizationFilter implements Filter {
 		
 		String authHeader = req.getHeader("Authorization");
 		if (authHeader == null || !authHeader.startsWith("Basic ")) {
-			unauthorized(resp);
+			AdminServletUtil.unauthorized(resp);
 			return;
 		}
 		
@@ -73,14 +73,14 @@ public abstract class AdminAuthorizationFilter implements Filter {
 			bytes = DatatypeConverter.parseBase64Binary(authString);
 		} catch (IllegalArgumentException e) {
 			logger.info("Admin auth: invalid base64 data " + authString);
-			unauthorized(resp);
+			AdminServletUtil.unauthorized(resp);
 			return;
 		}
 		String userNameAndPassword = new String(bytes, Charset.forName("UTF-8"));
 		int sep = userNameAndPassword.indexOf(':');
 		if (sep < 0) {
 			logger.info("Admin auth: invalid username:password pair");
-			unauthorized(resp);
+			AdminServletUtil.unauthorized(resp);
 			return;
 		}
 		
@@ -92,7 +92,7 @@ public abstract class AdminAuthorizationFilter implements Filter {
 		User user = Database.getInstance().authenticateUser(userName, password);
 		if (user == null) {
 			logger.info("Admin auth: username/password mismatch for " + userName);
-			unauthorized(resp);
+			AdminServletUtil.unauthorized(resp);
 			return;
 		}
 		
@@ -114,31 +114,6 @@ public abstract class AdminAuthorizationFilter implements Filter {
 	protected abstract void checkAuthorization(
 			User user, HttpServletRequest req, HttpServletResponse resp, FilterChain chain)
 			throws IOException, ServletException ;
-
-	/**
-	 * Send back a 401 (Unauthorized) response.
-	 * 
-	 * @param resp  the HttpServletResponse
-	 * @throws IOException
-	 */
-	protected void unauthorized(HttpServletResponse resp) throws IOException {
-		resp.setContentType("text/plain");
-		resp.getWriter().println("Authorization required");
-		resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		resp.addHeader("WWW-Authenticate", "Basic realm=\"" + CLOUDCODER_ADMIN_REALM_NAME + "\"");
-	}
-
-	/**
-	 * Send back a 400 (Bad Request) response.
-	 * 
-	 * @param resp  the HttpServletResponse
-	 * @throws IOException
-	 */
-	protected void badRequest(HttpServletResponse resp) throws IOException {
-		resp.setContentType("text/plain");
-		resp.getWriter().println("Invalid request");
-		resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-	}
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)

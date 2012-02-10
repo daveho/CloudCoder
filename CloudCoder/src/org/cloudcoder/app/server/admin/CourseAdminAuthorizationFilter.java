@@ -50,7 +50,7 @@ public abstract class CourseAdminAuthorizationFilter extends AdminAuthorizationF
 			ServletException {
 		int courseId = getCourseId(req);
 		if (courseId < 1) {
-			badRequest(resp);
+			AdminServletUtil.badRequest(resp);
 			return;
 		}
 		
@@ -72,7 +72,7 @@ public abstract class CourseAdminAuthorizationFilter extends AdminAuthorizationF
 		if (!isInstructorInCourse) {
 			// User is not an instructor in this course
 			logger.info("Admin auth: user " + user.getUserName() + " not an instructor in course " + courseId);
-			unauthorized(resp);
+			AdminServletUtil.unauthorized(resp);
 			return;
 		}
 		
