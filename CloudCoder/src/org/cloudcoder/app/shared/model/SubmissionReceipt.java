@@ -164,6 +164,8 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	 * @param problem  the Problem
 	 * @param status   the SubmissionStatus to set in the SubmissionReceipt
 	 * @param lastEditEventId id of last edit event (i.e., the code version of the submission)
+	 * @param numTestsAttempted the number of tests that were attempted for this submission
+	 * @param numTestsPassed the number of tests that were passed for this submission
 	 * @return  the SubmissionReceipt
 	 */
 	public static SubmissionReceipt create(
