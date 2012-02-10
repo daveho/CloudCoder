@@ -129,7 +129,7 @@ public abstract class AdminAuthorizationFilter implements Filter {
 	}
 
 	/**
-	 * Send back a 40 (Bad Request) response.
+	 * Send back a 400 (Bad Request) response.
 	 * 
 	 * @param resp  the HttpServletResponse
 	 * @throws IOException
