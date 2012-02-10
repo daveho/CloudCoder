@@ -37,7 +37,7 @@
     <param-name>cloudcoder.submitsvc.oop.port</param-name><param-value>47374</param-value>
   </context-param>
 
-  <!-- Servlets -->
+  <!-- RPC servlets -->
   <servlet>
     <servlet-name>ConfigurationSetting</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.ConfigurationSettingServiceImpl</servlet-class>
@@ -78,6 +78,26 @@
     <servlet-name>Submit</servlet-name>
     <url-pattern>/cloudcoder/submit</url-pattern>
   </servlet-mapping>
+  
+  <!-- Admin servlets. -->
+  <servlet>
+    <servlet-name>AdminProblems</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.admin.Problems</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminProblems</servlet-name>
+    <url-pattern>/cloudcoder/admin/problems/*</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Admin filters. -->
+  <filter>
+    <filter-name>AdminProblemsAuthorizationFilter</filter-name>
+    <filter-class>org.cloudcoder.app.server.admin.ProblemsAuthorizationFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AdminProblemsAuthorizationFilter</filter-name>
+    <url-pattern>/cloudcoder/admin/problems/*</url-pattern>
+  </filter-mapping>
   
   <!-- Default page to serve -->
   <welcome-file-list>

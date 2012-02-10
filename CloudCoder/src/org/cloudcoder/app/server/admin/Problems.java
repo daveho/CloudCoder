@@ -15,70 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.shared.model;
+package org.cloudcoder.app.server.admin;
 
-import java.io.Serializable;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * Model object representing an academic term (Fall, Spring, etc.)
+ * Servlet to retrieve information about problem submissions.
+ * 
  * @author David Hovemeyer
  */
-public class Term implements Serializable {
+public class Problems extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public static final int NUM_FIELDS = 3;
-
-	private int id;
-	private String name;
-	private int seq;
-	
-	public Term() {
-		
-	}
-	
-	public void setId(int id) {
-		this.id = id;
-	}
-	
-	public int getId() {
-		return id;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setSeq(int seq) {
-		this.seq = seq;
-	}
-	
-	public int getSeq() {
-		return seq;
-	}
-	
+	/* (non-Javadoc)
+	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || obj.getClass() != this.getClass()) {
-			return false;
-		}
-		Term other = (Term) obj;
-		return id == other.id && name.equals(other.name) && seq == other.seq;
-	}
-	
-	@Override
-	public int hashCode() {
-		return id;
-	}
-	
-	@Override
-	public String toString() {
-		return name;
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		resp.setContentType("text/plain");
+		resp.getWriter().println("Hey there");
+		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 }

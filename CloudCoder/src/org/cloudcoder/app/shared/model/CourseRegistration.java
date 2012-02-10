@@ -16,11 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.cloudcoder.app.shared.model;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
 
 import java.io.Serializable;
 

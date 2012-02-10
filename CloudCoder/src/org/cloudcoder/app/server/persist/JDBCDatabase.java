@@ -33,6 +33,7 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
@@ -331,7 +332,7 @@ public class JDBCDatabase implements IDatabase {
 
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.*, t.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
+						"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
 						" where c.id = r.course_id " + 
 						"   and c.term_id = t.id " +
 						"   and r.user_id = ? " +
@@ -346,7 +347,9 @@ public class JDBCDatabase implements IDatabase {
 					load(course, resultSet, 1);
 					Term term = new Term();
 					load(term, resultSet, Course.NUM_FIELDS + 1);
-					result.add(new Object[]{course, term});
+					CourseRegistration reg = new CourseRegistration();
+					load(reg, resultSet, Course.NUM_FIELDS + Term.NUM_FIELDS + 1);
+					result.add(new Object[]{course, term, reg});
 				}
 				
 				return result;
@@ -357,7 +360,7 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
 	@Override
 	public List<Problem> getProblemsInCourse(final User user, final Course course) {
 		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
@@ -868,6 +871,14 @@ public class JDBCDatabase implements IDatabase {
 		event.setProblemId(resultSet.getInt(index++));
 		event.setType(resultSet.getInt(index++));
 		event.setTimestamp(resultSet.getLong(index++));
+	}
+	
+	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
+		reg.setId(resultSet.getInt(index++));
+		reg.setCourseId(resultSet.getInt(index++));
+		reg.setUserId(resultSet.getInt(index++));
+		reg.setRegistrationType(resultSet.getInt(index++));
+		reg.setSection(resultSet.getInt(index++));
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {

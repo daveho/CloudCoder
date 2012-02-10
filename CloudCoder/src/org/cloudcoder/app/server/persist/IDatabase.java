@@ -23,6 +23,7 @@ import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -37,11 +38,28 @@ import org.cloudcoder.app.shared.model.User;
  */
 public interface IDatabase {
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
+	
+	/**
+	 * Authenticate a user.
+	 * 
+	 * @param userName  the username
+	 * @param password  the password
+	 * @return the authenticated User, or null if the username/password doesn't correspond to a known user
+	 */
 	public User authenticateUser(String userName, String password);
 	public Problem getProblem(User user, int problemId);
 	public Change getMostRecentChange(User user, int problemId);
 	public Change getMostRecentFullTextChange(User user, int problemId);
 	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
+	
+	/**
+	 * Get all of the courses in which given user is registered.
+	 * Each returned item is a triple consisting of {@link Course},
+	 * {@link Term}, and {@link CourseRegistration}.
+	 * 
+	 * @param user the User
+	 * @return list of triples (Course, Term, CourseRegistration)
+	 */
 	public List<? extends Object[]> getCoursesForUser(User user);
 	public List<Problem> getProblemsInCourse(User user, Course course);
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
