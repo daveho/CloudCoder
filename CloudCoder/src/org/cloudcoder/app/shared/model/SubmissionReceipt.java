@@ -180,6 +180,8 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 		receipt.getEvent().setUserId(user.getId());
 		receipt.setLastEditEventId(lastEditEventId);
 		receipt.setStatus(status);
+		receipt.setNumTestsAttempted(numTestsAttempted);
+		receipt.setNumTestsPassed(numTestsPassed);
 		return receipt;
 	}
 }
