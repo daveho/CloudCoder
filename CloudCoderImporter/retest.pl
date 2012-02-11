@@ -6,7 +6,7 @@ use strict;
 use FileHandle;
 
 if (scalar(@ARGV) != 1) {
-	print STDERR "Usage: ./retest.pl <submission receipt id>\n";
+	print STDERR "Usage: ./retest.pl (<submission receipt id> | @<file with list of ids>)\n";
 	exit 1;
 }
 

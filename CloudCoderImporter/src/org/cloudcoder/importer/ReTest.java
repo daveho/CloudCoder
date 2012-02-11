@@ -17,6 +17,8 @@
 
 package org.cloudcoder.importer;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -115,12 +117,30 @@ public class ReTest extends UsesDatabase {
 	
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("Usage: " + ReTest.class.getName() + " <config properties> <submission receipt id>");
+			System.err.println("Usage: " + ReTest.class.getName() +
+					" <config properties> (<submission receipt id> | @<file with list of ids>)");
 			System.exit(1);
 		}
 		
+		
 		ReTest reTest = new ReTest(args[0]);
-		reTest.addSubmissionReceiptId(Integer.parseInt(args[1]));
+		if (args[1].startsWith("@")) {
+			// Read a file containing a list of submission receipt ids
+			BufferedReader reader = new BufferedReader(new FileReader(args[1].substring(1)));
+			try {
+				while (true) {
+					String line = reader.readLine();
+					if (line == null) {
+						break;
+					}
+					reTest.addSubmissionReceiptId(Integer.parseInt(line));
+				}
+			} finally {
+				reader.close();
+			}
+		} else {
+			reTest.addSubmissionReceiptId(Integer.parseInt(args[1]));
+		}
 		reTest.run();
 	}
 
