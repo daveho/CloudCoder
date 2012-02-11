@@ -17,13 +17,12 @@
 
 package org.cloudcoder.importer;
 
-import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -38,37 +37,20 @@ import org.dom4j.io.SAXReader;
  * 
  * @author David Hovemeyer
  */
-public class ImportProblem {
-	public static void main(String[] args) throws Exception {
-		if (args.length != 3) {
-			System.out.println("Usage: " + ImportProblem.class.getName() + " <config properties> <problem xml> <course id>");
-			System.exit(1);
-		}
-		
-		final Properties config = new Properties();
-		FileReader fileReader = new FileReader(args[0]);
-		try {
-			config.load(fileReader);
-		} finally {
-			fileReader.close();
-		}
-		JDBCDatabaseConfig.create(new JDBCDatabaseConfig.ConfigProperties() {
-			@Override
-			public String getDbConfigProperty(String name) {
-				String value = config.getProperty(name);
-				if (value == null) {
-					// java.util.Properties treats properties with an empty value
-					// as nonexistent, which is not what we want
-					value = "";
-				}
-				return value;
-			}
-		});
-		
-		int courseId = Integer.parseInt(args[2]);
-		
+public class ImportProblem extends UsesDatabase {
+	private String problemXml;
+	private int courseId;
+
+	public ImportProblem(String configPropertiesFileName, String problemXml, int courseId) throws IOException {
+		super(configPropertiesFileName);
+		this.problemXml = problemXml;
+		this.courseId = courseId;
+	}
+	
+	@Override
+	public void run() throws Exception {
 		SAXReader reader = new SAXReader();
-		Document doc = reader.read(args[1]);
+		Document doc = reader.read(problemXml);
 		
 		// Create and initialize Problem object
 		Problem problem = new Problem();
@@ -111,6 +93,19 @@ public class ImportProblem {
 		Database.getInstance().addTestCases(problem, testCaseList);
 		
 		System.out.println("Problem uploaded successfully!");
+	}
+
+	public static void main(String[] args) throws Exception {
+		if (args.length != 3) {
+			System.out.println("Usage: " + ImportProblem.class.getName() + " <config properties> <problem xml> <course id>");
+			System.exit(1);
+		}
+		
+		String configPropertiesFileName = args[0];
+		String problemXml = args[1];
+		int courseId = Integer.parseInt(args[2]);
+
+		new ImportProblem(configPropertiesFileName, problemXml, courseId).run();
 	}
 
 	private static String getElementText(Branch doc, String xpath) {
