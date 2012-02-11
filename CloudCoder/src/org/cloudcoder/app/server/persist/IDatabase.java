@@ -49,6 +49,15 @@ public interface IDatabase {
 	 */
 	public User authenticateUser(String userName, String password);
 	public Problem getProblem(User user, int problemId);
+
+	/**
+	 * Get Problem with given problem id.
+	 * 
+	 * @param problemId the problem id
+	 * @return the Problem with that problem id, or null if there is no such Problem
+	 */
+	public Problem getProblem(int problemId);
+	
 	public Change getMostRecentChange(User user, int problemId);
 	public Change getMostRecentFullTextChange(User user, int problemId);
 	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
@@ -79,4 +88,39 @@ public interface IDatabase {
 	 * @return a ProblemSummary describing the submissions for the Problem
 	 */
 	public ProblemSummary createProblemSummary(Problem problem);
+
+	/**
+	 * Get SubmissionReceipt with given id.
+	 * 
+	 * @param submissionReceiptId the submission receipt id
+	 * @return the SubmissionReceipt with the given id, or null if there is no such
+	 *         SubmissionReceipt
+	 */
+	public SubmissionReceipt getSubmissionReceipt(int submissionReceiptId);
+
+	/**
+	 * Get the Change with given id.
+	 * 
+	 * @param changeId the event id of the Change
+	 * @return the Change with the given event id
+	 */
+	public Change getChange(int changeEventId);
+
+	/**
+	 * Insert TestResults.
+	 * 
+	 * @param testResults         the TestResults
+	 * @param submissionReceiptId the id of the SubmissionReceipt with which these
+	 *                            TestResults are associated
+	 */
+	public void insertTestResults(TestResult[] testResults, int submissionReceiptId);
+
+	/**
+	 * Update a SubmissionReceipt.  This can be useful if the submission
+	 * was tested incorrectly and the receipt is being updated following
+	 * a retest.
+	 * 
+	 * @param receipt the SubmissionReceipt to update
+	 */
+	public void updateSubmissionReceipt(SubmissionReceipt receipt);
 }

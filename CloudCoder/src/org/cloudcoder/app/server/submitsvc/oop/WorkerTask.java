@@ -50,12 +50,12 @@ public class WorkerTask implements Runnable {
 	
 	private volatile boolean shutdownRequested;
 	private Socket clientSocket;
-	private LinkedBlockingQueue<Submission> submissionQueue;
+	private LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue;
 	
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 
-	public WorkerTask(Socket clientSocket, LinkedBlockingQueue<Submission> submissionQueue) throws IOException {
+	public WorkerTask(Socket clientSocket, LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue) throws IOException {
 		this.shutdownRequested = false;
 		this.clientSocket = clientSocket;
 		this.submissionQueue = submissionQueue;
@@ -72,7 +72,7 @@ public class WorkerTask implements Runnable {
 	public void run() {
 		logger.info("oop buildsvc WorkerTask starting");
 		
-		Submission submission = null;
+		OOPBuildServiceSubmission submission = null;
 		
 		// Keep track of how long it has been since we sent
 		// the Builder a Submission.  If it's been too long,
@@ -167,7 +167,7 @@ public class WorkerTask implements Runnable {
 		logger.info("oop buildsvc WorkerTask exiting");
 	}
 
-	private void sendSubmissionForTesting(Submission submission) throws IOException, ClassNotFoundException {
+	private void sendSubmissionForTesting(OOPBuildServiceSubmission submission) throws IOException, ClassNotFoundException {
 		Problem problem = submission.getProblem();
 		List<TestCase> testCaseList = submission.getTestCaseList();
 		String programText = submission.getProgramText();

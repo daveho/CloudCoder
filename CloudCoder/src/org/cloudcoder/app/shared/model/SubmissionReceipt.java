@@ -104,7 +104,7 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * @return the lastEditEventId
 	 */
-	public long getLastEditEventId() {
+	public int getLastEditEventId() {
 		return lastEditEventId;
 	}
 	

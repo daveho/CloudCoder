@@ -26,7 +26,6 @@ import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
@@ -96,18 +95,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	}
 
 	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result, User user, Problem problem) {
-		// Determine status
-		SubmissionStatus status;
-		if (result.getCompilationResult().getOutcome() == CompilationOutcome.SUCCESS) {
-			// Check to see whether or not all tests passed
-			status = result.isAllTestsPassed() ? SubmissionStatus.TESTS_PASSED : SubmissionStatus.TESTS_FAILED;
-		} else if (result.getCompilationResult().getOutcome() == CompilationOutcome.FAILURE) {
-			// Compile error(s)
-			status = SubmissionStatus.COMPILE_ERROR;
-		} else {
-			// Something unexpected prevented compilation and/or testing
-			status = SubmissionStatus.BUILD_ERROR;
-		}
+		SubmissionStatus status = result.determineSubmissionStatus();
 
 		SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, mostRecentChange.getEventId(),
 				result.getNumTestsAttempted(), result.getNumTestsPassed());

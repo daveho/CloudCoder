@@ -95,4 +95,25 @@ public class SubmissionResult implements Serializable
 	public int getNumTestsAttempted() {
 		return testResults.length;
 	}
+
+	/**
+	 * Determine a {@link SubmissionStatus} for this SubmissionResult.
+	 * 
+	 * @return the SubmissionStatus
+	 */
+	public SubmissionStatus determineSubmissionStatus() {
+		// Determine status
+		SubmissionStatus status;
+		if (this.getCompilationResult().getOutcome() == CompilationOutcome.SUCCESS) {
+			// Check to see whether or not all tests passed
+			status = this.isAllTestsPassed() ? SubmissionStatus.TESTS_PASSED : SubmissionStatus.TESTS_FAILED;
+		} else if (this.getCompilationResult().getOutcome() == CompilationOutcome.FAILURE) {
+			// Compile error(s)
+			status = SubmissionStatus.COMPILE_ERROR;
+		} else {
+			// Something unexpected prevented compilation and/or testing
+			status = SubmissionStatus.BUILD_ERROR;
+		}
+		return status;
+	}
 }

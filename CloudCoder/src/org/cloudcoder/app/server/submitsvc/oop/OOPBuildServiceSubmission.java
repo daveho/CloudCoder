@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 
@@ -30,37 +31,33 @@ import org.cloudcoder.app.shared.model.TestCase;
  *  
  * @author David Hovemeyer
  */
-public class Submission {
+public class OOPBuildServiceSubmission {
 	private Object lock = new Object();
-	private Problem problem;
-	private List<TestCase> testCaseList;
-	private String programText;
+	private Submission submission;
 	private boolean ready;
 	private SubmissionResult submissionResult;
 	private Exception error;
 	private int numAttempts;
 	
-	public Submission(Problem problem, List<TestCase> testCaseList, String programText) {
-		this.problem = problem;
-		this.testCaseList = testCaseList;
-		this.programText = programText;
+	public OOPBuildServiceSubmission(Submission submission) {
+		this.submission = submission;
 	}
 	
 	public Problem getProblem() {
 		synchronized (lock) {
-			return problem;
+			return submission.getProblem();
 		}
 	}
 	
 	public List<TestCase> getTestCaseList() {
 		synchronized (lock) {
-			return testCaseList;
+			return submission.getTestCaseList();
 		}
 	}
 	
 	public String getProgramText() {
 		synchronized (lock) {
-			return programText;
+			return submission.getProgramText();
 		}
 	}
 	

@@ -25,35 +25,20 @@ import java.util.Arrays;
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-//@Entity
-//@Table(name="changes")
 public class Change implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
-	//	@Id
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="id")
+	public static final int NUM_FIELDS = 8;
+
 	private long id;
-
-//	@Column(name="event_id")
 	private int eventId;
-
-//	@Column(name="type")
 	private int type;
-//	@Column(name="start_row")
 	private int startRow;
-//	@Column(name="start_col")
 	private int startColumn;
-//	@Column(name="end_row")
 	private int endRow;
-//	@Column(name="end_col")
 	private int endColumn;
-	//    @Column(name="timestamp")
-	//	private long timestamp;
-//	@Column(name="text")
 	private String text;
 
-//	@Transient
 	private Event event;
 
 

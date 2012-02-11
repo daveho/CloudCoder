@@ -53,19 +53,19 @@ public class ServerTask implements Runnable {
 		}
 	}
 
-	private LinkedBlockingQueue<Submission> submissionQueue;
+	private LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue;
 	private List<WorkerThreadAndTaskPair> workerThreadAndTaskPairList;
 	private ServerSocket serverSocket;
 	private volatile boolean shutdownRequested;
 	
 	public ServerTask(ServerSocket serverSocket) {
-		this.submissionQueue = new LinkedBlockingQueue<Submission>();
+		this.submissionQueue = new LinkedBlockingQueue<OOPBuildServiceSubmission>();
 		this.workerThreadAndTaskPairList = new ArrayList<WorkerThreadAndTaskPair>();
 		this.serverSocket = serverSocket;
 		this.shutdownRequested = false;
 	}
 	
-	public SubmissionResult submit(Submission submission) throws SubmissionException {
+	public SubmissionResult submit(OOPBuildServiceSubmission submission) throws SubmissionException {
 		// add it to the queue so a worker can grab it	
 	    submissionQueue.add(submission);
 		

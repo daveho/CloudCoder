@@ -27,6 +27,7 @@ import javax.servlet.ServletContextListener;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.slf4j.Logger;
@@ -63,7 +64,8 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		if (serverTask == null) {
 			throw new IllegalStateException();
 		}
-		Submission submission = new Submission(problem, testCaseList, programText);
+		OOPBuildServiceSubmission submission = new OOPBuildServiceSubmission(
+				new Submission(problem, testCaseList, programText));
 		return serverTask.submit(submission);
 	}
 	
