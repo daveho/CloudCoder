@@ -838,12 +838,27 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
+				// Delete old test result events (if any).
+				// Isn't this ugly and complicated?
+				PreparedStatement delEvents = prepareStatement(
+						conn,
+						"delete from " + EVENTS + "  where id in " +
+						" (select * from (select e.id " +
+						"    from " + EVENTS + " as e, " +
+						"         " + SUBMISSION_RECEIPTS + " as sr, " +
+						"         " + TEST_RESULTS + " as tr " +
+						"   where e.id = sr.event_id " +
+						"     and tr.submission_receipt_id = sr.id " +
+						"     and tr.submission_receipt_id = ?) as T)");
+				delEvents.setInt(1, submissionReceiptId);
+				delEvents.executeUpdate();
+				
 				// Delete old test results (if any)
-				PreparedStatement stmt = prepareStatement(
+				PreparedStatement delTestResults = prepareStatement(
 						conn,
 						"delete from " + TEST_RESULTS + " where submission_receipt_id = ?");
-				stmt.setInt(1, submissionReceiptId);
-				stmt.executeUpdate();
+				delTestResults.setInt(1, submissionReceiptId);
+				delTestResults.executeUpdate();
 				
 				// Insert new test results
 				doInsertTestResults(testResults, submissionReceiptId, conn, this);

@@ -72,6 +72,7 @@ public class ReTest extends UsesDatabase {
 				System.out.println("done");
 			} catch (Exception e) {
 				System.out.println("failed, " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		
