@@ -1,31 +1,56 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.importer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.server.submitsvc.oop.OOPBuildServiceSubmission;
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.server.submitsvc.oop.ServerTask;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.CompilationOutcome;
-import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestCase;
 
+/**
+ * Re-test one or more submissions.
+ * 
+ * @author David Hovemeyer
+ */
 public class ReTest extends UsesDatabase {
 
-	private int submissionReceiptId;
+	private List<Integer> submissionReceiptIdList;
 
-	public ReTest(String configPropertiesFileName, int submissionReceiptId) throws IOException {
+	public ReTest(String configPropertiesFileName) throws IOException {
 		super(configPropertiesFileName);
-		this.submissionReceiptId = submissionReceiptId;
+		this.submissionReceiptIdList = new ArrayList<Integer>();
+	}
+	
+	public void addSubmissionReceiptId(int submissionReceiptId) {
+		submissionReceiptIdList.add(submissionReceiptId);
 	}
 
 	@Override
@@ -36,6 +61,24 @@ public class ReTest extends UsesDatabase {
 		Thread serverThread = new Thread(serverTask);
 		serverThread.start();
 
+		// Retest the submissions
+		for (Integer submissionReceiptId : submissionReceiptIdList) {
+			try {
+				System.out.print("Retesting submission " + submissionReceiptId + "...");
+				System.out.flush();
+				retestOneSubmission(serverTask, submissionReceiptId);
+				System.out.println("done");
+			} catch (Exception e) {
+				System.out.println("failed, " + e.getMessage());
+			}
+		}
+		
+		// We're done!
+		serverTask.shutdown();
+		serverThread.join();
+	}
+
+	private void retestOneSubmission(ServerTask serverTask, int submissionReceiptId) throws SubmissionException {
 		// Find the SubmissionReceipt of the submission to retest
 		SubmissionReceipt receipt = Database.getInstance().getSubmissionReceipt(submissionReceiptId);
 		if (receipt == null) {
@@ -57,8 +100,9 @@ public class ReTest extends UsesDatabase {
 		// Resubmit the submission to the Builder.
 		SubmissionResult result = serverTask.submit(new OOPBuildServiceSubmission(submission));
 		
-		// Insert new TestResults, using the submission receipt's existing id
-		Database.getInstance().insertTestResults(result.getTestResults(), receipt.getId());
+		// Delete any old TestResults for submission, and 
+		// insert new TestResults, using the submission receipt's existing id
+		Database.getInstance().replaceTestResults(result.getTestResults(), receipt.getId());
 		
 		// Update the submission receipt with the new status, num tests attempted,
 		// and num tests passed (which are the details which we would expect
@@ -67,10 +111,6 @@ public class ReTest extends UsesDatabase {
 		receipt.setNumTestsAttempted(result.getNumTestsAttempted());
 		receipt.setNumTestsPassed(result.getNumTestsPassed());
 		Database.getInstance().updateSubmissionReceipt(receipt);
-		
-		// We're done!
-		serverTask.shutdown();
-		serverThread.join();
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -79,7 +119,9 @@ public class ReTest extends UsesDatabase {
 			System.exit(1);
 		}
 		
-		new ReTest(args[0], Integer.parseInt(args[1])).run();
+		ReTest reTest = new ReTest(args[0]);
+		reTest.addSubmissionReceiptId(Integer.parseInt(args[1]));
+		reTest.run();
 	}
 
 }

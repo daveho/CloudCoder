@@ -113,7 +113,7 @@ public interface IDatabase {
 	 * @param submissionReceiptId the id of the SubmissionReceipt with which these
 	 *                            TestResults are associated
 	 */
-	public void insertTestResults(TestResult[] testResults, int submissionReceiptId);
+	public void replaceTestResults(TestResult[] testResults, int submissionReceiptId);
 
 	/**
 	 * Update a SubmissionReceipt.  This can be useful if the submission

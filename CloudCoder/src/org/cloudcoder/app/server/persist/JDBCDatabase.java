@@ -831,14 +831,23 @@ public class JDBCDatabase implements IDatabase {
 	 * @see org.cloudcoder.app.server.persist.IDatabase#insertTestResults(org.cloudcoder.app.shared.model.TestResult[], int)
 	 */
 	@Override
-	public void insertTestResults(final TestResult[] testResults, final int submissionReceiptId) {
+	public void replaceTestResults(final TestResult[] testResults, final int submissionReceiptId) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
+				// Delete old test results (if any)
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"delete from " + TEST_RESULTS + " where submission_receipt_id = ?");
+				stmt.setInt(1, submissionReceiptId);
+				stmt.executeUpdate();
+				
+				// Insert new test results
 				doInsertTestResults(testResults, submissionReceiptId, conn, this);
+				
 				return true;
 			}
 			/* (non-Javadoc)
