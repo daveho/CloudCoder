@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.cloudcoder.app.shared.model.SubmissionException;
-import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

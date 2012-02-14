@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.oop.OOPBuildServiceSubmission;
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.server.submitsvc.oop.ServerTask;
