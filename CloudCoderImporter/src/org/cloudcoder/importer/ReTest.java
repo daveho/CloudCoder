@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.server.submitsvc.SubmissionException;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.oop.OOPBuildServiceSubmission;
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.server.submitsvc.oop.ServerTask;
@@ -33,6 +33,7 @@ import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -101,7 +102,17 @@ public class ReTest extends UsesDatabase {
 		Submission submission = new Submission(problem, testCaseList, fullTextChange.getText());
 		
 		// Resubmit the submission to the Builder.
-		SubmissionResult result = serverTask.submit(new OOPBuildServiceSubmission(submission));
+		OOPBuildServiceSubmission future = new OOPBuildServiceSubmission(submission);
+		serverTask.submit(future);
+		SubmissionResult result = null;
+		while (result == null) {
+			result = future.poll();
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				// ignore, can't happen
+			}
+		}
 		
 		// Delete any old TestResults for submission, and 
 		// insert new TestResults, using the submission receipt's existing id

@@ -24,10 +24,11 @@ import java.util.List;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
-import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.slf4j.Logger;
@@ -58,15 +59,19 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private Thread serverThread;
 	
 	@Override
-	public SubmissionResult submit(Problem problem, List<TestCase> testCaseList, String programText) 
+	public IFutureSubmissionResult submitAsync(Problem problem, List<TestCase> testCaseList, String programText) 
 	throws SubmissionException 
 	{
 		if (serverTask == null) {
 			throw new IllegalStateException();
 		}
-		OOPBuildServiceSubmission submission = new OOPBuildServiceSubmission(
+		
+		OOPBuildServiceSubmission future = new OOPBuildServiceSubmission(
 				new Submission(problem, testCaseList, programText));
-		return serverTask.submit(submission);
+		
+		serverTask.submit(future);
+		
+		return future;
 	}
 	
 	public void start(int port) throws IOException {

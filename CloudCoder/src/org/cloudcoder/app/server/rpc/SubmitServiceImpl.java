@@ -19,16 +19,19 @@ package org.cloudcoder.app.server.rpc;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.cloudcoder.app.client.rpc.SubmitService;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.submitsvc.DefaultSubmitService;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
-import org.cloudcoder.app.server.submitsvc.SubmissionException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -47,14 +50,29 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {
 	private static final long serialVersionUID = 1L;
+
 	private static final Logger logger=LoggerFactory.getLogger(SubmitServiceImpl.class);
 
+	private static final String FUTURE_SUBMISSION_RESULT_KEY = "future";
+	private static final String FULL_TEXT_CHANGE_KEY = "fullText";
+
 	@Override
-	public SubmissionResult submit(int problemId, String programText) throws NetCoderAuthenticationException {
+	public void submit(int problemId, String programText) throws NetCoderAuthenticationException, SubmissionException {
 		// Make sure that client is authenticated and has permission to edit the given problem
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+
+		/*
 		Problem problem = Database.getInstance().getProblem(user, problemId);
 		if (problem == null) {
+			throw new NetCoderAuthenticationException();
+		}
+		*/
+
+		HttpSession session = getThreadLocalRequest().getSession();
+
+		// The Problem should be stored in the user's session
+		Problem problem = (Problem) session.getAttribute("problem");
+		if (problem == null || problem.getProblemId() != problemId) {
 			throw new NetCoderAuthenticationException();
 		}
 
@@ -71,27 +89,85 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(problemId);
 		
 		ISubmitService submitService = DefaultSubmitService.getInstance();
-		try {
-			logger.info("Passing submission to submit service...");
-			SubmissionResult result = submitService.submit(problem, testCaseList, programText);
 
-			if (result != null) {
-				// Add a SubmissionReceipt to the database
-				SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result, user, problem);
-				Database.getInstance().insertSubmissionReceipt(receipt, result.getTestResults());
-			}
-			
-			int numResult=0;
-			if (result!=null && result.getTestResults()!=null) {
-			    numResult=result.getTestResults().length;
-			}
-			logger.info("Compilation "+result.getCompilationResult()+", received " +
-			        numResult+" TestResults");
-			return result;
-		} catch (SubmissionException e) {
-		    logger.error("SubmissionException", e);
-			return null; 
+		logger.info("Passing submission to submit service...");
+		IFutureSubmissionResult future = submitService.submitAsync(problem, testCaseList, programText);
+		
+		// Put the full-text Change and IFutureSubmissionResult in the user's session.
+		addSessionObjects(session, fullTextChange, future);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.SubmitService#checkSubmission()
+	 */
+	@Override
+	public SubmissionResult checkSubmission() throws NetCoderAuthenticationException, SubmissionException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+
+		HttpSession session = getThreadLocalRequest().getSession();
+
+		// The Problem should be stored in the user's session
+		Problem problem = (Problem) session.getAttribute("problem");
+		if (problem == null) {
+			throw new NetCoderAuthenticationException();
 		}
+		
+		// Retrieve session objects for submission
+		IFutureSubmissionResult future =
+				(IFutureSubmissionResult) session.getAttribute(FUTURE_SUBMISSION_RESULT_KEY);
+		Change fullTextChange =
+				(Change) session.getAttribute(FULL_TEXT_CHANGE_KEY);
+		
+		if (future == null) {
+			throw new SubmissionException("No pending submission in session");
+		}
+		if (fullTextChange == null) {
+			throw new SubmissionException("No full-text change for pending submission in session");
+		}
+		
+		// See if the SubmissionResult is ready
+		SubmissionResult result;
+		try {
+			result = future.poll();
+		} catch (SubmissionException e) {
+			// If poll() throws an exception, the submission completed
+			// with an error, but it did complete, so clear the session objects.
+			clearSessionObjects(session);
+			throw e;
+		}
+		if (result == null) {
+			// submission result not ready yet
+			return null;
+		}
+		
+		// We are just trusting that the submission result is for the
+		// correct problem...
+
+		// Add a SubmissionReceipt to the database
+		SubmissionReceipt receipt = createSubmissionReceipt(fullTextChange, result, user, problem);
+		Database.getInstance().insertSubmissionReceipt(receipt, result.getTestResults());
+		
+		int numResult=0;
+		if (result!=null && result.getTestResults()!=null) {
+		    numResult=result.getTestResults().length;
+		}
+		logger.info("Compilation "+result.getCompilationResult()+", received " +numResult+" TestResults");
+		
+		// Clear session objects for submission
+		clearSessionObjects(session);
+		
+		return result;
+	}
+
+	private void addSessionObjects(HttpSession session, Change fullTextChange, IFutureSubmissionResult future) {
+		session.setAttribute(FUTURE_SUBMISSION_RESULT_KEY, future);
+		session.setAttribute(FULL_TEXT_CHANGE_KEY, fullTextChange);
+	}
+
+	private void clearSessionObjects(HttpSession session) {
+		session.removeAttribute(FUTURE_SUBMISSION_RESULT_KEY);
+		session.removeAttribute(FULL_TEXT_CHANGE_KEY);
 	}
 
 	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result, User user, Problem problem) {

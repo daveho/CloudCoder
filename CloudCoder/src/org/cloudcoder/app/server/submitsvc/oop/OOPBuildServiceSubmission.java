@@ -19,9 +19,10 @@ package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.util.List;
 
-import org.cloudcoder.app.server.submitsvc.SubmissionException;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 
@@ -31,7 +32,7 @@ import org.cloudcoder.app.shared.model.TestCase;
  *  
  * @author David Hovemeyer
  */
-public class OOPBuildServiceSubmission {
+public class OOPBuildServiceSubmission implements IFutureSubmissionResult {
 	private Object lock = new Object();
 	private Submission submission;
 	private boolean ready;
@@ -41,6 +42,22 @@ public class OOPBuildServiceSubmission {
 	
 	public OOPBuildServiceSubmission(Submission submission) {
 		this.submission = submission;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult#poll()
+	 */
+	@Override
+	public SubmissionResult poll() throws SubmissionException {
+		synchronized (lock) {
+			if (!ready) {
+				return null;
+			}
+			if (error != null) {
+				throw new SubmissionException("Error testing submission", error);
+			}
+			return submissionResult;
+		}
 	}
 	
 	public Problem getProblem() {
@@ -58,22 +75,6 @@ public class OOPBuildServiceSubmission {
 	public String getProgramText() {
 		synchronized (lock) {
 			return submission.getProgramText();
-		}
-	}
-	
-	public SubmissionResult getSubmissionResult() throws SubmissionException {
-		synchronized (lock) {
-			while (!ready) {
-				try {
-					lock.wait();
-				} catch (InterruptedException e) {
-					throw new SubmissionException("Interrupted while testing submission", e);
-				}
-			}
-			if (error != null) {
-				throw new SubmissionException("Error testing submission", error);
-			}
-			return submissionResult;
 		}
 	}
 	

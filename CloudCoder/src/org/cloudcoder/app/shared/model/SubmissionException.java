@@ -15,15 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.shared.model;
 
-import org.cloudcoder.app.shared.model.SubmissionResult;
+/**
+ * Exception indicating that there was an error compiling/testing
+ * a submission. 
+ * 
+ * @author David Hovemeyer
+ */
+public class SubmissionException extends Exception {
+	private static final long serialVersionUID = 1L;
+	
+	public SubmissionException() {
+		
+	}
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-public interface SubmitServiceAsync
-{
-    void submit(int problemId, String programText, AsyncCallback<Void> callback);
-
-	void checkSubmission(AsyncCallback<SubmissionResult> callback);
+	public SubmissionException(String msg) {
+		super(msg);
+	}
+	
+	public SubmissionException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
 }

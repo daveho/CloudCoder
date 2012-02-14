@@ -107,6 +107,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
 
 		public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
+		private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
 
 		private LayoutPanel northLayoutPanel;
 		private ProblemDescriptionView problemDescriptionView;
@@ -124,6 +125,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private AceEditor aceEditor;
 		private Timer flushPendingChangeEventsTimer;
 		private Mode mode;
+		private Timer checkPendingSubmissionTimer;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -251,7 +253,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			}
 		}
 
-		public void doSubmit() {
+		private void doSubmit() {
 			// Full text of submission has arrived at server,
 			// and because the editor is read-only, we know that the
 			// local text is in-sync.  So, submit the code!
@@ -261,7 +263,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();
 
-			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<SubmissionResult>() {
+			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					final String msg = "Error sending submission to server for compilation"; 
@@ -271,67 +273,14 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 
 				@Override
-				public void onSuccess(SubmissionResult result) {
-					if (result==null){
-						addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
-						addSessionObject(new TestResult[0]);
-						addSessionObject(new CompilerDiagnostic[0]);
-
-					} else {
-						// Add compiler diagnostics.
-						// We will just assume that, in general, there might be some
-						// messages from the compiler, even if the code was compiled
-						// successfully.
-						CompilerDiagnostic[] compilerDiagnosticList = result.getCompilationResult().getCompilerDiagnosticList();
-						if (compilerDiagnosticList == null) {
-							compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
-						}
-						GWT.log("Adding " + compilerDiagnosticList.length + " compiler diagnostics");
-						addSessionObject(compilerDiagnosticList);
-						
-						// See what the result of the submission was.
-						if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
-								result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
-						{
-							// ?
-							addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
-							addSessionObject(new TestResult[0]);
-						} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
-							// Code did not compile
-							addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
-							addSessionObject(new TestResult[0]);
-						} else {
-							// Code compiled, and test results were sent back.
-
-							TestResult[] results=result.getTestResults();
-							// Great, got results back from server!
-							addSessionObject(results);
-
-							// Add a status message about the results
-							if (result.isAllTestsPassed()) {
-								addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed! You rock."));
-							} else {
-								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
-							}
-						}
-						
-						if (compilerDiagnosticList.length > 0) {
-							// show the compiler diagnostics
-							resultsTabPanel.selectTab(compilerDiagnosticListView);
-						} else {
-							// show the test results tab
-							resultsTabPanel.selectTab(testResultListView);
-						}
-						
-						// Can resume editing now
-						mode = Mode.EDITING;
-						aceEditor.setReadOnly(false);
-					}
+				public void onSuccess(Void result) {
+					// Start polling for the SubmissionResult
+					checkPendingSubmissionTimer.scheduleRepeating(POLL_SUBMISSION_RESULT_INTERVAL_MS);
 				}
 			});
 		}
 
-		public void createEditor(Language language) {
+		private void createEditor(Language language) {
 			aceEditor = new AceEditor(true);
 			aceEditor.setSize("100%", "100%");
 			centerLayoutPanel.add(aceEditor);
@@ -361,7 +310,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			aceEditor.setShowPrintMargin(false);
 		}
 
-		public void addEditorChangeEventHandler(final Session session, final Problem problem) {
+		private void addEditorChangeEventHandler(final Session session, final Problem problem) {
 			final User user = session.get(User.class);
 			final ChangeList changeList = session.get(ChangeList.class);
 			aceEditor.addOnChangeHandler(new AceEditorCallback() {
@@ -385,7 +334,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			});
 		}
 
-		public void setProblem(final Session session, final Problem problem) {
+		private void setProblem(final Session session, final Problem problem) {
 			RPC.editCodeService.setProblem(problem.getProblemId(), new AsyncCallback<Problem>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -403,11 +352,15 @@ public class DevelopmentPage extends CloudCoderPage {
 
 					// start a timer to periodically transmit pending changes to the server
 					startTransmitPendingChangeTimer(session);
+					
+					// create (but do not start) a timer to periodically poll to check
+					// if a submission has completed compilation/testing
+					createCheckPendingSubmissionTimer();
 				}
 			});
 		}
 
-		public void asyncLoadCurrentProblemText() {
+		private void asyncLoadCurrentProblemText() {
 			RPC.editCodeService.loadCurrentText(new AsyncCallback<ProblemText>() {
 				@Override
 				public void onSuccess(ProblemText result) {
@@ -455,7 +408,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			});
 		}
 
-		public void startTransmitPendingChangeTimer(final Session session) {
+		private void startTransmitPendingChangeTimer(final Session session) {
 			// Create timer to flush unsent change events periodically.
 			this.flushPendingChangeEventsTimer = new Timer() {
 				@Override
@@ -489,6 +442,103 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 			};
 			flushPendingChangeEventsTimer.scheduleRepeating(FLUSH_CHANGES_INTERVAL_MS);
+		}
+		
+		private void createCheckPendingSubmissionTimer() {
+			// Create, but do not start, the timer that we will be used to
+			// poll for a pending SubmissionResult.
+			checkPendingSubmissionTimer = new Timer() {
+				private boolean checking;
+				
+				@Override
+				public void run() {
+					if (!checking) {
+						checking = true;
+						RPC.submitService.checkSubmission(new AsyncCallback<SubmissionResult>() {
+							/* (non-Javadoc)
+							 * @see com.google.gwt.user.client.rpc.AsyncCallback#onFailure(java.lang.Throwable)
+							 */
+							@Override
+							public void onFailure(Throwable caught) {
+								getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission: " + caught.getMessage()));
+								checkPendingSubmissionTimer.cancel();
+							}
+							
+							/* (non-Javadoc)
+							 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
+							 */
+							@Override
+							public void onSuccess(SubmissionResult result) {
+								checking = false;
+								if (result != null) {
+									// Received the SubmissionResult, yay
+									onReceiveSubmissionResult(result);
+									checkPendingSubmissionTimer.cancel();
+								}
+							}
+						});
+					}
+				}
+			};
+		}
+		
+		private void onReceiveSubmissionResult(SubmissionResult result) {
+			if (result==null){
+				addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
+				addSessionObject(new TestResult[0]);
+				addSessionObject(new CompilerDiagnostic[0]);
+
+			} else {
+				// Add compiler diagnostics.
+				// We will just assume that, in general, there might be some
+				// messages from the compiler, even if the code was compiled
+				// successfully.
+				CompilerDiagnostic[] compilerDiagnosticList = result.getCompilationResult().getCompilerDiagnosticList();
+				if (compilerDiagnosticList == null) {
+					compilerDiagnosticList = new CompilerDiagnostic[0]; // paranoia
+				}
+				GWT.log("Adding " + compilerDiagnosticList.length + " compiler diagnostics");
+				addSessionObject(compilerDiagnosticList);
+				
+				// See what the result of the submission was.
+				if (result.getCompilationResult().getOutcome()==CompilationOutcome.UNEXPECTED_COMPILER_ERROR ||
+						result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
+				{
+					// ?
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+					addSessionObject(new TestResult[0]);
+				} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
+					// Code did not compile
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
+					addSessionObject(new TestResult[0]);
+				} else {
+					// Code compiled, and test results were sent back.
+
+					TestResult[] results=result.getTestResults();
+					// Great, got results back from server!
+					addSessionObject(results);
+
+					// Add a status message about the results
+					if (result.isAllTestsPassed()) {
+						addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed! You rock."));
+					} else {
+						addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
+					}
+				}
+				
+				if (compilerDiagnosticList.length > 0) {
+					// show the compiler diagnostics
+					resultsTabPanel.selectTab(compilerDiagnosticListView);
+				} else {
+					// show the test results tab
+					resultsTabPanel.selectTab(testResultListView);
+				}
+				
+				// Can resume editing now
+				mode = Mode.EDITING;
+				aceEditor.setReadOnly(false);
+			}
+
 		}
 	}
 

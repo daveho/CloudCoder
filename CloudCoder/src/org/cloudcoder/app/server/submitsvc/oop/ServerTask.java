@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.cloudcoder.app.server.submitsvc.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +65,9 @@ public class ServerTask implements Runnable {
 		this.shutdownRequested = false;
 	}
 	
-	public SubmissionResult submit(OOPBuildServiceSubmission submission) throws SubmissionException {
+	public void submit(OOPBuildServiceSubmission submission) throws SubmissionException {
 		// add it to the queue so a worker can grab it	
 	    submissionQueue.add(submission);
-		
-		// wait for results
-		return submission.getSubmissionResult();
 	}
 	
 	@Override
