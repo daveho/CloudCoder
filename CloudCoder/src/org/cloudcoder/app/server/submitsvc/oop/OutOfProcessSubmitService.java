@@ -66,9 +66,17 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 			throw new IllegalStateException();
 		}
 		
+		if (serverTask.getNumWorkerTasks() == 0) {
+			// If no remote Builder threads are connected and running,
+			// then there is no point in adding this submission to the queue,
+			// since it could sit there forever.  Fail early in this case
+			// so there is an obvious diagnostic on the client side.
+			throw new SubmissionException("Cannot test submission: no Builders are available");
+		}
+
+		// Add the submission to the queue.
 		OOPBuildServiceSubmission future = new OOPBuildServiceSubmission(
 				new Submission(problem, testCaseList, programText));
-		
 		serverTask.submit(future);
 		
 		return future;

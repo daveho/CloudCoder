@@ -20,8 +20,6 @@ package org.cloudcoder.app.server.submitsvc.oop;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.cloudcoder.app.shared.model.SubmissionException;
@@ -36,32 +34,21 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerTask implements Runnable {
     private static final Logger logger=LoggerFactory.getLogger(ServerTask.class);
-    
-	private static class WorkerThreadAndTaskPair {
-		public Thread thread;
-		public WorkerTask task;
-		
-		public WorkerThreadAndTaskPair(Thread thread, WorkerTask task) {
-			this.thread = thread;
-			this.task = task;
-		}
-		
-		public void shutdown() {
-			task.shutdown();
-			thread.interrupt();
-		}
-	}
 
 	private LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue;
-	private List<WorkerThreadAndTaskPair> workerThreadAndTaskPairList;
 	private ServerSocket serverSocket;
+	private WorkerTaskSet workerTaskSet;
 	private volatile boolean shutdownRequested;
 	
 	public ServerTask(ServerSocket serverSocket) {
 		this.submissionQueue = new LinkedBlockingQueue<OOPBuildServiceSubmission>();
-		this.workerThreadAndTaskPairList = new ArrayList<WorkerThreadAndTaskPair>();
 		this.serverSocket = serverSocket;
+		this.workerTaskSet = new WorkerTaskSet();
 		this.shutdownRequested = false;
+	}
+	
+	public int getNumWorkerTasks() {
+		return workerTaskSet.getNumWorkerTasks();
 	}
 	
 	public void submit(OOPBuildServiceSubmission submission) throws SubmissionException {
@@ -78,15 +65,7 @@ public class ServerTask implements Runnable {
 				// FIXME: we should support whitelisting of client IPs
 				
 				// create worker task and thread
-				WorkerTask workerTask = new WorkerTask(clientSocket, submissionQueue);
-				Thread workerThread = new Thread(workerTask);
-				WorkerThreadAndTaskPair pair = new WorkerThreadAndTaskPair(workerThread, workerTask);
-
-				// add thread/task to list
-				workerThreadAndTaskPairList.add(pair);
-				
-				// start worker thread
-				pair.thread.start();
+				workerTaskSet.createWorker(clientSocket, submissionQueue);
 			}
 		
 		} catch (IOException e) {
@@ -103,17 +82,11 @@ public class ServerTask implements Runnable {
 		try {
 			serverSocket.close();  // a bit rude, but effective
 		} catch (IOException e) {
-		    logger.error("Exception in ServerTask", e);
+		    logger.error("Exception closing ServerTask's socket", e);
 		}
 		
-		// shut down workers
-		for (WorkerThreadAndTaskPair pair : workerThreadAndTaskPairList) {
-			pair.shutdown();
-			try {
-				pair.thread.join();
-			} catch (InterruptedException e) {
-			    logger.error("Unable to join", e);
-			}
-		}
+		// shut down worker tasks and wait for them to exit
+		workerTaskSet.shutdownAll();
+		workerTaskSet.waitForAll();
 	}
 }

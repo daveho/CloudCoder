@@ -266,10 +266,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					final String msg = "Error sending submission to server for compilation"; 
-					GWT.log(msg, caught);
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, msg));
-					// TODO: should set editor back to read/write?
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error: " + caught.getMessage()));
 				}
 
 				@Override
@@ -299,7 +296,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			case CPLUSPLUS:
 				editorMode = AceEditorMode.C_CPP; break;
 			default:
-				getSession().add(new StatusMessage(
+				addSessionObject(new StatusMessage(
 						StatusMessage.Category.ERROR,
 						"Warning: unknown programming language " + language));
 				editorMode = AceEditorMode.JAVA; break;
@@ -339,7 +336,7 @@ public class DevelopmentPage extends CloudCoderPage {
 				@Override
 				public void onFailure(Throwable caught) {
 					GWT.log("Could not set problem", caught);
-					session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problem on server: " + caught.getMessage()));
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problem on server: " + caught.getMessage()));
 				}
 				
 				@Override
@@ -403,7 +400,7 @@ public class DevelopmentPage extends CloudCoderPage {
 				@Override
 				public void onFailure(Throwable caught) {
 					GWT.log("Couldn't get current text for problem", caught);
-					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not get problem text: " + caught.getMessage()));
+					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Could not get problem text: " + caught.getMessage()));
 				}
 			});
 		}
@@ -428,7 +425,7 @@ public class DevelopmentPage extends CloudCoderPage {
 							public void onFailure(Throwable caught) {
 								changeList.endTransmit(false);
 								GWT.log("Failed to send change batch to server");
-								session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
+								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
 							}
 
 							@Override
@@ -460,7 +457,8 @@ public class DevelopmentPage extends CloudCoderPage {
 							 */
 							@Override
 							public void onFailure(Throwable caught) {
-								getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission: " + caught.getMessage()));
+								checking = false;
+								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error: " + caught.getMessage()));
 								checkPendingSubmissionTimer.cancel();
 							}
 							

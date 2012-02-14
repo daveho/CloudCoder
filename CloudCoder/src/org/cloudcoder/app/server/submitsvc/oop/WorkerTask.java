@@ -51,14 +51,16 @@ public class WorkerTask implements Runnable {
 	private volatile boolean shutdownRequested;
 	private Socket clientSocket;
 	private LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue;
+	private WorkerTaskSet workerTaskSet;
 	
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 
-	public WorkerTask(Socket clientSocket, LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue) throws IOException {
+	public WorkerTask(Socket clientSocket, LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue, WorkerTaskSet workerTaskSet) throws IOException {
 		this.shutdownRequested = false;
 		this.clientSocket = clientSocket;
 		this.submissionQueue = submissionQueue;
+		this.workerTaskSet = workerTaskSet;
 		
 		this.out = new ObjectOutputStream(clientSocket.getOutputStream());
 		this.in = new ObjectInputStream(clientSocket.getInputStream());
@@ -163,6 +165,8 @@ public class WorkerTask implements Runnable {
 		} catch (IOException e) {
 			logger.warn("Exception closing client socket", e);
 		}
+		
+		workerTaskSet.onWorkerExit(this);
 		
 		logger.info("oop buildsvc WorkerTask exiting");
 	}
