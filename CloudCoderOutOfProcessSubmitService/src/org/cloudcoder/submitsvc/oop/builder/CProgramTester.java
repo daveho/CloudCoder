@@ -194,10 +194,19 @@ public class CProgramTester implements ITester {
 					stdoutAsList.add("");
 				}
 				
+				// If regex ends in "$i", change it to "$"
+				// and treat as a request for case-insensitive matching.
+				String regex = testCase.getOutput();
+				boolean caseInsensitive = false;
+				if (regex.endsWith("$i")) {
+					regex = regex.substring(0, regex.length() - 1);
+					caseInsensitive = true;
+				}
+				
 				// Scan through its output to see if there is a line
 				// matching the test case output regular expression.
 				boolean foundMatchingOutput = false;
-				Pattern pat = Pattern.compile(testCase.getOutput());
+				Pattern pat = Pattern.compile(regex, caseInsensitive ? Pattern.CASE_INSENSITIVE : 0);
 				for (String line : stdoutAsList) {
 					Matcher m = pat.matcher(line);
 					if (m.matches()) {
