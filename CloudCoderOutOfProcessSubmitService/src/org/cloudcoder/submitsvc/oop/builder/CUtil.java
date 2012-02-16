@@ -46,7 +46,7 @@ public class CUtil {
 	public static final int MAX_LINES_ALLOWED = 20;
 
 	/** Maximum number of characters per line native code testers should read from an untrusted test process. */
-	public static final int MAX_CHARACTERS_PER_LINE = 100;
+	public static final int MAX_CHARACTERS_PER_LINE = 200;
 	
 	/**
 	 * Make a temporary directory.
