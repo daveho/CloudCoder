@@ -17,6 +17,7 @@
 
 package org.cloudcoder.importer;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,48 +49,25 @@ public class ImportProblem extends UsesDatabase {
 	
 	@Override
 	public void run() throws Exception {
-		SAXReader reader = new SAXReader();
-		Document doc = reader.read(problemXml);
-		
-		// Create and initialize Problem object
-		Problem problem = new Problem();
-		problem.setCourseId(courseId);
-		problem.setProblemType(ProblemType.valueOf(getElementText(doc, "/ccproblem/type")));
-		problem.setTestName(getElementText(doc, "/ccproblem/name"));
-		problem.setBriefDescription(getElementText(doc, "/ccproblem/brief"));
-		problem.setDescription(getElementText(doc, "/ccproblem/description"));
-		problem.setWhenAssigned(DateTimeToMillis.convert(getElementText(doc, "/ccproblem/assigned")));
-		problem.setWhenDue(DateTimeToMillis.convert(getElementText(doc, "/ccproblem/due")));
-		Node skeletonNode = doc.selectSingleNode("/ccproblem/skeleton");
-		if (skeletonNode != null) {
-			problem.setSkeleton(skeletonNode.getText());
+		// Read the Problem and TestCases
+		FileReader r = new FileReader(problemXml);
+		ProblemWithTestCases problemWithTestCases;
+		try {
+			problemWithTestCases = new ProblemReader().read(r);
+		} finally {
+			r.close();
 		}
 		
-		// Create and initialize TestCase objects
-		List<TestCase> testCaseList = new ArrayList<TestCase>();
-		List<?> tcElts = doc.selectNodes("/ccproblem/testcase");
-		for (Object elt_ : tcElts) {
-			Element elt = (Element) elt_;
-			
-			TestCase testCase = new TestCase();
-			
-			Node secretAttr = elt.selectSingleNode("./@secret");
-			if (secretAttr != null) {
-				testCase.setSecret(Boolean.valueOf(secretAttr.getText()));
-			}
-			
-			testCase.setTestCaseName(getElementText(elt, "./name"));
-			testCase.setInput(getElementText(elt, "./input"));
-			testCase.setOutput(getElementText(elt, "./output"));
-			
-			testCaseList.add(testCase);
-		}
+		// Set the course id for the problem
+		problemWithTestCases.getProblem().setCourseId(courseId);
 		
 		// Insert the Problem into the database
-		Database.getInstance().addProblem(problem);
+		Database.getInstance().addProblem(problemWithTestCases.getProblem());
 		
 		// Insert the TestCases into the database
-		Database.getInstance().addTestCases(problem, testCaseList);
+		Database.getInstance().addTestCases(
+				problemWithTestCases.getProblem(), 
+				problemWithTestCases.getTestCaseList());
 		
 		System.out.println("Problem uploaded successfully!");
 	}
@@ -105,13 +83,5 @@ public class ImportProblem extends UsesDatabase {
 		int courseId = Integer.parseInt(args[2]);
 
 		new ImportProblem(configPropertiesFileName, problemXml, courseId).run();
-	}
-
-	private static String getElementText(Branch doc, String xpath) {
-		Node node = doc.selectSingleNode(xpath);
-		if (node == null) {
-			throw new IllegalArgumentException("No node found for " + xpath);
-		}
-		return node.getText();
 	}
 }
