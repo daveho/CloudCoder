@@ -106,7 +106,7 @@ public class CUtil {
 		return mergeOneLine(Arrays.asList(list));
 	}
 
-	private static String mergeOneLine(List<String> list) {
+	public static String mergeOneLine(List<String> list) {
 		return doMerge(list, " ");
 	}
 

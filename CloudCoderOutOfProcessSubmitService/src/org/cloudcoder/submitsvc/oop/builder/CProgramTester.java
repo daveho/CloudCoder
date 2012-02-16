@@ -122,6 +122,8 @@ public class CProgramTester implements ITester {
 	
 	private static class TestCaseExecutor implements Runnable {
 		private static final int MAX_TEST_EXECUTOR_JOIN_ATTEMPTS = 10;
+		
+		private static final Pattern REGEX_OPTIONS = Pattern.compile("\\$([ij]+)$");
 
 		private File tempDir;
 		private TestCase testCase;
@@ -194,13 +196,29 @@ public class CProgramTester implements ITester {
 					stdoutAsList.add("");
 				}
 				
-				// If regex ends in "$i", change it to "$"
-				// and treat as a request for case-insensitive matching.
-				String regex = testCase.getOutput();
+				// Handle regex options.
 				boolean caseInsensitive = false;
-				if (regex.endsWith("$i")) {
-					regex = regex.substring(0, regex.length() - 1);
-					caseInsensitive = true;
+				boolean joinOutputLines = false;
+				String regex = testCase.getOutput();
+				Matcher optionsMatcher = REGEX_OPTIONS.matcher(regex);
+				if (optionsMatcher.find()) {
+					String options = optionsMatcher.group(1);
+					if (options.contains("i")) {
+						caseInsensitive = true;
+					}
+					if (options.contains("j")) {
+						joinOutputLines = true;
+					}
+					regex = regex.substring(0, optionsMatcher.start());
+				}
+				
+				// If the "j" regex option was specified, join all of the
+				// output lines into a single line (with a single space
+				// separating each original line).
+				if (joinOutputLines) {
+					String oneLine = CUtil.mergeOneLine(stdoutAsList);
+					stdoutAsList = new ArrayList<String>();
+					stdoutAsList.add(oneLine);
 				}
 				
 				// Scan through its output to see if there is a line
