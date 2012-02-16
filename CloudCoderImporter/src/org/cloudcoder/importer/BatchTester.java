@@ -118,13 +118,27 @@ public class BatchTester {
 		for (int i = 0; i < problemWithTestCases.getTestCaseList().size(); i++) {
 			TestCase testCase = problemWithTestCases.getTestCaseList().get(i);
 			TestResult testResult = result.getTestResults()[i];
-			
+
+			String outcome;
+			switch (testResult.getOutcome()) {
+			case PASSED: outcome = "passed"; break;
+			case FAILED_WITH_EXCEPTION: outcome = "crashed"; break;
+			case FAILED_FROM_TIMEOUT: outcome = "timeout"; break;
+			default: outcome = "failed"; break;
+			}
 			System.out.println(
 					"test " +
 					testCase.getTestCaseName() +
 					":" +
-					(testResult.getOutcome() == TestOutcome.PASSED ? "passed" : "failed")
+					outcome
 					);
+			if (testResult.getOutcome() != TestOutcome.PASSED) {
+				String output = testResult.getStdout();
+				if (!output.endsWith("\n")) {
+					output = output + "\n";
+				}
+				System.out.print(output);
+			}
 		}
 	}
 
