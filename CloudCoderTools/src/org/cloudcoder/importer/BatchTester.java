@@ -21,7 +21,7 @@ import org.dom4j.DocumentException;
 
 /**
  * Test a bunch of programs against a CloudCoder problem
- * specified by an XML file. This does really have anything
+ * specified by an XML file. This doesn't really have anything
  * with CloudCoder per se: it's just a convenient way to
  * automatically test a whole bunch of programs.
  * Requires that a Builder is running and connect to the
