@@ -28,6 +28,13 @@ import java.util.Arrays;
 public class Change implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Maximum number of characters that may be stored as text
+	 * directly in a row of the changes table.
+	 * Text values which are longer will be stored in a blob.
+	 */
+	public static final int MAX_TEXT_LEN_IN_ROW = 40;
+	
 	public static final int NUM_FIELDS = 7;
 
 	//private long id;

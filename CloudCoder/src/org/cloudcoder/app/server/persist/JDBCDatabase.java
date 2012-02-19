@@ -520,7 +520,7 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
 					store(change, insertChange, 1);
@@ -1108,7 +1108,14 @@ public class JDBCDatabase implements IDatabase {
 		change.setEndRow(resultSet.getInt(index++));
 		change.setStartColumn(resultSet.getInt(index++));
 		change.setEndColumn(resultSet.getInt(index++));
-		change.setText(resultSet.getString(index++));
+		
+		// Only one of the two text columns (text_short and text)
+		// should be non-null.
+		String shortText = resultSet.getString(index++);
+		String longText = resultSet.getString(index++);
+		
+		String text = shortText != null ? shortText : longText;
+		change.setText(text);
 	}
 
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
@@ -1174,7 +1181,22 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setInt(index++, change.getEndRow());
 		stmt.setInt(index++, change.getStartColumn());
 		stmt.setInt(index++, change.getEndColumn());
-		stmt.setString(index++, change.getText());
+		
+		// Determine if text can be stored in text_short column,
+		// or if it must be stored in the text (blob) column.
+		String text = change.getText();
+		
+		String shortText = null;
+		String longText = null;
+		
+		if (text.length() < Change.MAX_TEXT_LEN_IN_ROW) {
+			shortText = text;
+		} else {
+			longText = text;
+		}
+		
+		stmt.setString(index++, shortText);
+		stmt.setString(index++, longText);
 	}
 
 	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
