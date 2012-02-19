@@ -115,7 +115,8 @@ public class ReTest extends UsesDatabase {
 		
 		// Delete any old TestResults for submission, and 
 		// insert new TestResults, using the submission receipt's existing id
-		Database.getInstance().replaceTestResults(result.getTestResults(), receipt.getId());
+//		Database.getInstance().replaceTestResults(result.getTestResults(), receipt.getId());
+		Database.getInstance().replaceTestResults(result.getTestResults(), receipt.getEventId());
 		
 		// Update the submission receipt with the new status, num tests attempted,
 		// and num tests passed (which are the details which we would expect

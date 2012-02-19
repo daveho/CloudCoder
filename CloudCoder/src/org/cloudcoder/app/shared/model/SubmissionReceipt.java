@@ -35,10 +35,10 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * Number of database fields.
 	 */
-	public static final int NUM_FIELDS = 6;
+	public static final int NUM_FIELDS = 5;
 
 	private Event event;
-	private int id;
+//	private int id;
 	private int eventId;
 	private int lastEditEventId;
 	private int status;
@@ -80,19 +80,19 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 		return this.eventId;
 	}
 	
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(int id) {
-		this.id = id;
-	}
-	
-	/**
-	 * @return the id
-	 */
-	public int getId() {
-		return id;
-	}
+//	/**
+//	 * @param id the id to set
+//	 */
+//	public void setId(int id) {
+//		this.id = id;
+//	}
+//	
+//	/**
+//	 * @return the id
+//	 */
+//	public int getId() {
+//		return id;
+//	}
 	
 	/**
 	 * @param lastEditEventId the lastEditEventId to set

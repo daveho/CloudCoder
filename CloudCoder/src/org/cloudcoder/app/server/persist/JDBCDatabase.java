@@ -520,10 +520,10 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into " + CHANGES + " values (NULL, ?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
-					storeNoId(change, insertChange, 1);
+					store(change, insertChange, 1);
 					insertChange.addBatch();
 				}
 				insertChange.executeBatch();
@@ -806,7 +806,8 @@ public class JDBCDatabase implements IDatabase {
 						"select sr.*, e.* " +
 						"  from " + SUBMISSION_RECEIPTS + " as sr, " +
 						"       " + EVENTS + " as e " +
-						" where sr.id = ?");
+						" where sr.event_id = e.id " +
+						"   and e.event_id = ?");
 				stmt.setInt(1, submissionReceiptId);
 				
 				ResultSet resultSet = executeQuery(stmt);
@@ -838,25 +839,10 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				// Delete old test result events (if any).
-				// Isn't this ugly and complicated?
-				PreparedStatement delEvents = prepareStatement(
-						conn,
-						"delete from " + EVENTS + "  where id in " +
-						" (select * from (select e.id " +
-						"    from " + EVENTS + " as e, " +
-						"         " + SUBMISSION_RECEIPTS + " as sr, " +
-						"         " + TEST_RESULTS + " as tr " +
-						"   where e.id = sr.event_id " +
-						"     and tr.submission_receipt_id = sr.id " +
-						"     and tr.submission_receipt_id = ?) as T)");
-				delEvents.setInt(1, submissionReceiptId);
-				delEvents.executeUpdate();
-				
 				// Delete old test results (if any)
 				PreparedStatement delTestResults = prepareStatement(
 						conn,
-						"delete from " + TEST_RESULTS + " where submission_receipt_id = ?");
+						"delete from " + TEST_RESULTS + " where submission_receipt_event_id = ?");
 				delTestResults.setInt(1, submissionReceiptId);
 				delTestResults.executeUpdate();
 				
@@ -990,28 +976,29 @@ public class JDBCDatabase implements IDatabase {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + SUBMISSION_RECEIPTS + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + SUBMISSION_RECEIPTS + " values (?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
-		storeNoId(receipt, stmt, 1);
+		store(receipt, stmt, 1);
 		stmt.execute();
 		
-		// Get the generated key for this submission receipt
-		ResultSet genKey = dbRunnable.getGeneratedKeys(stmt);
-		if (!genKey.next()) {
-			throw new SQLException("Could not get generated key for submission receipt");
-		}
-		receipt.setId(genKey.getInt(1));
+//		// Get the generated key for this submission receipt
+//		ResultSet genKey = dbRunnable.getGeneratedKeys(stmt);
+//		if (!genKey.next()) {
+//			throw new SQLException("Could not get generated key for submission receipt");
+//		}
+//		receipt.setId(genKey.getInt(1));
 		
 		// Store the TestResults
-		doInsertTestResults(testResultList, receipt.getId(), conn, dbRunnable);
+//		doInsertTestResults(testResultList, receipt.getId(), conn, dbRunnable);
+		doInsertTestResults(testResultList, receipt.getEventId(), conn, dbRunnable);
 	}
 
 	private void doInsertTestResults(TestResult[] testResultList,
 			int submissionReceiptId, Connection conn,
 			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
 		for (TestResult testResult : testResultList) {
-			testResult.setSubmissionReceiptId(submissionReceiptId);
+			testResult.setSubmissionReceiptEventId(submissionReceiptId);
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
@@ -1114,7 +1101,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-		change.setId(resultSet.getInt(index++));
+//		change.setId(resultSet.getInt(index++));
 		change.setEventId(resultSet.getInt(index++));
 		change.setType(resultSet.getInt(index++));
 		change.setStartRow(resultSet.getInt(index++));
@@ -1149,7 +1136,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-		submissionReceipt.setId(resultSet.getInt(index++));
+//		submissionReceipt.setId(resultSet.getInt(index++));
 		submissionReceipt.setEventId(resultSet.getInt(index++));
 		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
 		submissionReceipt.setStatus(resultSet.getInt(index++));
@@ -1180,7 +1167,7 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setLong(index++, event.getTimestamp());
 	}
 
-	protected void storeNoId(Change change, PreparedStatement stmt, int index) throws SQLException {
+	protected void store(Change change, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, change.getEventId());
 		stmt.setInt(index++, change.getType().ordinal());
 		stmt.setInt(index++, change.getStartRow());
@@ -1190,7 +1177,7 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, change.getText());
 	}
 
-	protected void storeNoId(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
+	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, receipt.getEventId());
 		stmt.setLong(index++, receipt.getLastEditEventId());
 		stmt.setInt(index++, receipt.getStatus().ordinal());
@@ -1199,7 +1186,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testResult.getSubmissionReceiptId());
+		stmt.setInt(index++, testResult.getSubmissionReceiptEventId());
 		stmt.setInt(index++, testResult.getOutcome().ordinal());
 		stmt.setString(index++, testResult.getMessage());
 		stmt.setString(index++, testResult.getStdout());

@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 04, 2012 at 07:58 AM
+-- Generation Time: Feb 19, 2012 at 08:13 AM
 -- Server version: 5.1.58
--- PHP Version: 5.3.6-13ubuntu3.3
+-- PHP Version: 5.3.6-13ubuntu3.6
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -27,7 +27,6 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE IF NOT EXISTS `cc_changes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_id` int(11) NOT NULL,
   `type` int(11) NOT NULL,
   `start_row` mediumint(9) NOT NULL,
@@ -35,9 +34,8 @@ CREATE TABLE IF NOT EXISTS `cc_changes` (
   `start_col` mediumint(9) NOT NULL,
   `end_col` mediumint(9) NOT NULL,
   `text` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `event_id` (`event_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=174 ;
+  UNIQUE KEY `event_id` (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -101,11 +99,11 @@ CREATE TABLE IF NOT EXISTS `cc_course_registrations` (
 --
 
 INSERT INTO `cc_course_registrations` (`id`, `course_id`, `user_id`, `registration_type`, `section`) VALUES
-(5, 1, 2, 0, 101),
-(6, 1, 3, 0, 101),
-(7, 1, 4, 0, 101),
-(8, 1, 5, 0, 101),
-(9, 1, 6, 0, 101);
+(5, 1, 2, 1, 101),
+(6, 1, 3, 1, 101),
+(7, 1, 4, 1, 101),
+(8, 1, 5, 1, 101),
+(9, 1, 6, 1, 101);
 
 -- --------------------------------------------------------
 
@@ -122,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `cc_events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=189 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -141,17 +139,7 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
   `when_due` bigint(20) NOT NULL,
   `skeleton` varchar(400) DEFAULT NULL,
   PRIMARY KEY (`problem_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
-
---
--- Dumping data for table `cc_problems`
---
-
-INSERT INTO `cc_problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`, `skeleton`) VALUES
-(1, 1, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.', 0, 0, NULL),
-(2, 1, 3, 'addInts', 'read/add/print sum of integers', '<p>Write a program which:</p>\n\n<ul>\n<li> Reads two integer values\n<li> Computes the sum of the integer values\n<li> Prints a line of the form "answer: <i>X</i>",\n     where <i>X</i> is the sum of the integer values\n</ul>\n\n<p>\nAny lines of text that are not of the form\n"answer: <i>X</i>" will be ignored.  If the program\nproduces more than 20 lines of output, it will terminate\nand the test will fail.\n</p>', 1326485534072, 1326571934072, '#include <stdio.h>\n\nint main(void) {\n	// TODO: add your code\n\n	return 0;\n}'),
-(10, 1, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	'),
-(11, 1, 3, 'prob_6_2', 'Blast off!', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints a single line of the form\n</p>\n\n<blockquote>\n<pre>\n5...4...3...2...1...blast off!\n</pre>\n</blockquote>\n\n<p>\nwhere the countdown starts at the integer read, and continues\ndown to 1.  For example, the output above should be printed\nif the input integer is <b>5</b>.\n</p>\n\n<p>\nHint: make sure that each number printed is followed by exactly\nthree period (".") characters, and that <b>blast off!</b>\nis printed at the end of the line.  Aside from the space\nbetween "blast" and "off", the line should not contain\nany spaces.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -160,13 +148,13 @@ INSERT INTO `cc_problems` (`problem_id`, `course_id`, `problem_type`, `testname`
 --
 
 CREATE TABLE IF NOT EXISTS `cc_submission_receipts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_id` int(11) NOT NULL,
   `last_edit_event_id` int(11) NOT NULL,
   `status` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
+  `num_tests_attempted` int(11) NOT NULL,
+  `num_tests_passed` int(11) NOT NULL,
   UNIQUE KEY `event_id` (`event_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -208,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `cc_test_cases` (
   `secret` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`test_case_id`),
   KEY `problem_id` (`problem_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=49 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=124 ;
 
 --
 -- Dumping data for table `cc_test_cases`
@@ -261,7 +249,82 @@ INSERT INTO `cc_test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `in
 (45, 11, 'from10', '10', '^\\s*\\Q10...9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 0),
 (46, 11, 'from7', '9', '^\\s*\\Q9...8...7...6...5...4...3...2...1...\\Eblast\\s*off!\\s*$', 1),
 (47, 2, 'test6', '39 22', '^\\s*answer\\s*:\\s*(0+)?61\\s*$', 1),
-(48, 2, 'test7', '-14 29', '^\\s*answer\\s*:\\s*(0+)?15\\s*$', 1);
+(48, 2, 'test7', '-14 29', '^\\s*answer\\s*:\\s*(0+)?15\\s*$', 1),
+(49, 12, 'm5n3', '5 3', '^\\s*AAAAABBBBBAAAAABBBBBAAAAABBBBB\\s*$', 0),
+(50, 12, 'm3n4', '3 4', '^\\s*AAABBBAAABBBAAABBB\\s*$', 0),
+(51, 12, 'm4n5', '4 5', '^\\s*AAAABBBBAAAABBBBAAAABBBBAAAABBBBAAAABBBB\\s*$', 0),
+(52, 12, 'm1n8', '1 8', '^\\s*ABABABABABABABAB\\s*$', 1),
+(53, 12, 'm0n8', '0 8', '^\\s*$', 1),
+(54, 13, 'm5n3', '5 3', '^\\s*AAAAABBBBBAAAAABBBBBAAAAABBBBB\\s*$', 0),
+(55, 13, 'm3n4', '3 4', '^\\s*AAABBBAAABBBAAABBBAAABBB\\s*$', 0),
+(56, 13, 'm4n5', '4 5', '^\\s*AAAABBBBAAAABBBBAAAABBBBAAAABBBBAAAABBBB\\s*$', 0),
+(57, 13, 'm1n8', '1 8', '^\\s*ABABABABABABABAB\\s*$', 1),
+(58, 13, 'm0n8', '0 8', '^\\s*$', 1),
+(59, 14, 'n19', '19', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(60, 14, 'n11', '11', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11$', 0),
+(61, 14, 'n20', '20', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(62, 14, 'n1', '1', '^\\s*[Aa]nswer:\\s*1\\s*$', 0),
+(63, 14, 'n0', '1', '^\\s*[Aa]nswer:\\s*$', 0),
+(64, 15, 'n19', '19', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(65, 15, 'n11', '11', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11$', 0),
+(66, 15, 'n20', '20', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(67, 15, 'n1', '1', '^\\s*[Aa]nswer:\\s*1\\s*$', 0),
+(68, 15, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(69, 16, 'n19', '19', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(70, 16, 'n11', '11', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*$', 0),
+(71, 16, 'n20', '20', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(72, 16, 'n1', '1', '^\\s*[Aa]nswer:\\s*1\\s*$', 0),
+(73, 16, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(74, 17, 'n19', '19', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(75, 17, 'n11', '11', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*$', 0),
+(76, 17, 'n20', '20', '^\\s*[Aa]nswer:\\s*1\\s*3\\s*5\\s*7\\s*9\\s*11\\s*13\\s*15\\s*17\\s*19\\s*$', 0),
+(77, 17, 'n1', '1', '^\\s*[Aa]nswer:\\s*1\\s*$', 0),
+(78, 17, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(79, 18, 'm5n3', '5 3', '^\\s*AAAAABBBBBAAAAABBBBBAAAAABBBBB\\s*$', 0),
+(80, 18, 'm3n4', '3 4', '^\\s*AAABBBAAABBBAAABBBAAABBB\\s*$', 0),
+(81, 18, 'm4n5', '4 5', '^\\s*AAAABBBBAAAABBBBAAAABBBBAAAABBBBAAAABBBB\\s*$', 0),
+(82, 18, 'm1n8', '1 8', '^\\s*ABABABABABABABAB\\s*$', 1),
+(83, 18, 'm0n8', '0 8', '^\\s*$', 1),
+(84, 19, 'n20', '20', '^\\s*[Aa]nswer:2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*$', 0),
+(85, 19, 'n12', '12', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*$', 0),
+(86, 19, 'n30', '30', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*22\\s*26\\s*28\\s*$', 0),
+(87, 19, 'n2', '2', '^\\s*[Aa]nswer:\\s*2\\s*$', 0),
+(88, 19, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(89, 20, 'n20', '20', '^\\s*[Aa]nswer:2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*$', 0),
+(90, 20, 'n12', '12', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*$', 0),
+(91, 20, 'n30', '30', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*22\\s*26\\s*28\\s*$', 0),
+(92, 20, 'n2', '2', '^\\s*[Aa]nswer:\\s*2\\s*$', 0),
+(93, 20, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(94, 21, 'n20', '20', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*$', 0),
+(95, 21, 'n12', '12', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*$', 0),
+(96, 21, 'n30', '30', '^\\s*[Aa]nswer:\\s*2\\s*4\\s*8\\s*10\\s*14\\s*16\\s*20\\s*22\\s*26\\s*28\\s*$', 0),
+(97, 21, 'n2', '2', '^\\s*[Aa]nswer:\\s*2\\s*$', 0),
+(98, 21, 'n0', '0', '^\\s*[Aa]nswer:\\s*$', 0),
+(99, 22, 'value3_71', '3.71', '[Aa]nswer:\\s*(0*)3\\.71000\\s*$', 0),
+(100, 22, 'value753_331', '753.331', '[Aa]nswer:\\s*(0*)1506\\.662000\\s*$', 0),
+(101, 22, 'valueneg_901_17', '-901.17', '[Aa]nswer:\\s*-(0*)1802.340000\\s*$', 0),
+(102, 23, 'value3_71', '3.71', '[Aa]nswer:\\s*(0*)7\\.420000\\s*$', 0),
+(103, 23, 'value753_331', '753.331', '[Aa]nswer:\\s*(0*)1506\\.662000\\s*$', 0),
+(104, 23, 'valueneg_901_17', '-901.17', '[Aa]nswer:\\s*-(0*)1802.340000\\s*$', 0),
+(105, 24, 'value3_71', '3.71', '^.*[Aa]nswer:\\s*(0*)7\\.420000\\s*$', 0),
+(106, 24, 'value753_331', '753.331', '^.*[Aa]nswer:\\s*(0*)1506\\.662000\\s*$', 0),
+(107, 24, 'valueneg_901_17', '-901.17', '^.*[Aa]nswer:\\s*-(0*)1802.340000\\s*$', 0),
+(108, 25, 'age15', '15', '^.*[Yy]ou\\s+cannot\\s+vote\\s*,\\s*sorry\\s*(\\.)?\\s*$', 0),
+(109, 25, 'age26', '26', '^.*[Yy]ou\\s+can\\s+vote\\s*,\\s*congratulations\\s*(\\.)?\\s*$', 0),
+(110, 25, 'age4', '4', '^.*[Yy]ou\\s+cannot\\s+vote\\s*,\\s*sorry\\s*(\\.)?\\s*$', 0),
+(111, 25, 'age99', '99', '^.*[Yy]ou\\s+can\\s+vote\\s*,\\s*congratulations\\s*(\\.)?\\s*$', 0),
+(112, 26, 'age15', '15', '^.*[Yy]ou\\s+cannot\\s+vote\\s*,\\s*sorry\\s*(\\.)?\\s*$', 0),
+(113, 26, 'age26', '26', '^.*[Yy]ou\\s+can\\s+vote\\s*,\\s*congratulations\\s*(\\.)?\\s*$', 0),
+(114, 26, 'age4', '4', '^.*[Yy]ou\\s+cannot\\s+vote\\s*,\\s*sorry\\s*(\\.)?\\s*$', 0),
+(115, 26, 'age99', '99', '^.*[Yy]ou\\s+can\\s+vote\\s*,\\s*congratulations\\s*(\\.)?\\s*$', 0),
+(116, 27, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(117, 27, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(118, 27, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(119, 27, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1),
+(120, 28, 'n15', '15', '^.*\\s*3\\s+6\\s+9\\s+12\\s+15\\s*$', 0),
+(121, 28, 'n23', '23', '^.*\\s*3\\s+6\\s+9\\s+12\\s+15\\s+18\\s+21\\s*$', 0),
+(122, 28, 'n7', '7', '^.*\\s*3\\s+6\\s*$', 0),
+(123, 28, 'n29', '29', '^.*\\s*3\\s+6\\s+9\\s+12\\s+15\\s+18\\s+21\\s+24\\s+27\\s*$', 1);
 
 -- --------------------------------------------------------
 
@@ -271,14 +334,14 @@ INSERT INTO `cc_test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `in
 
 CREATE TABLE IF NOT EXISTS `cc_test_results` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `submission_receipt_id` int(11) NOT NULL,
+  `submission_receipt_event_id` int(11) NOT NULL,
   `test_outcome` int(11) NOT NULL,
   `message` varchar(100) NOT NULL,
   `stdout` text NOT NULL,
   `stderr` text NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `submission_receipt_id` (`submission_receipt_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=77 ;
+  KEY `submission_receipt_id` (`submission_receipt_event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 

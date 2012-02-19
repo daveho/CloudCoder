@@ -28,9 +28,9 @@ import java.util.Arrays;
 public class Change implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
-	public static final int NUM_FIELDS = 8;
+	public static final int NUM_FIELDS = 7;
 
-	private long id;
+	//private long id;
 	private int eventId;
 	private int type;
 	private int startRow;
@@ -152,21 +152,21 @@ public class Change implements Serializable, IContainsEvent {
 	//		return timestamp;
 	//	}
 
-	/**
-	 * @return the id
-	 */
-	public long getId()
-	{
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id)
-	{
-		this.id = id;
-	}
+//	/**
+//	 * @return the id
+//	 */
+//	public long getId()
+//	{
+//		return id;
+//	}
+//
+//	/**
+//	 * @param id the id to set
+//	 */
+//	public void setId(long id)
+//	{
+//		this.id = id;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEventId(int)

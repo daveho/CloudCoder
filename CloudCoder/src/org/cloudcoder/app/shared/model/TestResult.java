@@ -28,7 +28,7 @@ public class TestResult implements Serializable
     public static final long serialVersionUID=1L;
     
     private int id;
-    private int submissionReceiptId;
+    private int submissionReceiptEventId;
     private TestOutcome outcome;
     private String message;
     private String stdout;
@@ -40,7 +40,7 @@ public class TestResult implements Serializable
     
     public TestResult(TestOutcome outcome, String message) {
     	this.id = -1;
-    	this.submissionReceiptId = -1;
+    	this.submissionReceiptEventId = -1;
         this.outcome=outcome;
         this.message=message;
     }
@@ -72,15 +72,15 @@ public class TestResult implements Serializable
 	/**
 	 * @param submissionReceiptId the submissionReceiptId to set
 	 */
-	public void setSubmissionReceiptId(int submissionReceiptId) {
-		this.submissionReceiptId = submissionReceiptId;
+	public void setSubmissionReceiptEventId(int submissionReceiptId) {
+		this.submissionReceiptEventId = submissionReceiptId;
 	}
 	
 	/**
 	 * @return the submissionReceiptId
 	 */
-	public int getSubmissionReceiptId() {
-		return submissionReceiptId;
+	public int getSubmissionReceiptEventId() {
+		return submissionReceiptEventId;
 	}
 
     public String toString() {
