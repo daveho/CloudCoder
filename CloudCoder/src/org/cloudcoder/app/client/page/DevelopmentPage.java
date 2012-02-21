@@ -305,7 +305,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			}
 			aceEditor.setMode(editorMode);
 			
-			aceEditor.setTheme(AceEditorTheme.SOLARIZED_LIGHT);
+			aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
 			aceEditor.setShowPrintMargin(false);
 		}
 
