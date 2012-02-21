@@ -55,10 +55,12 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -128,7 +130,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private Timer checkPendingSubmissionTimer;
 
 		public UI() {
-			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
+			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
 
 			northLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_PX);
@@ -136,7 +138,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			northLayoutPanel.add(problemDescriptionView);
 			northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
 			northLayoutPanel.setWidgetTopBottom(problemDescriptionView, 0.0, Unit.PX, 10.0, Unit.PX);
-			buttonsLayoutPanel = new LayoutPanel();
+			buttonsLayoutPanel = new LayoutPanel(); // contains PageNavPanel and DevActionsPanel
 			pageNavPanel = new PageNavPanel();
 			buttonsLayoutPanel.add(pageNavPanel);
 			buttonsLayoutPanel.setWidgetLeftRight(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
@@ -148,7 +150,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			
 			northLayoutPanel.add(buttonsLayoutPanel);
 			northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
-			northLayoutPanel.setWidgetTopHeight(buttonsLayoutPanel, 0.0, Unit.PX, NORTH_PANEL_HEIGHT_PX, Unit.PX);
+			northLayoutPanel.setWidgetTopBottom(buttonsLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 
 			southLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_PX);
@@ -303,7 +305,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			}
 			aceEditor.setMode(editorMode);
 			
-			aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
+			aceEditor.setTheme(AceEditorTheme.SOLARIZED_LIGHT);
 			aceEditor.setShowPrintMargin(false);
 		}
 

@@ -25,17 +25,17 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
  * View to display the problem description.
  * 
  * @author David Hovemeyer
  */
-public class ProblemDescriptionView extends Composite implements SessionObserver, Subscriber {
+public class ProblemDescriptionView extends ResizeComposite implements SessionObserver, Subscriber {
 	/** The preferred height of the ProblemDescriptionView. */
 	public static final double HEIGHT_PX = 175.0;
 	

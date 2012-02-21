@@ -35,14 +35,14 @@ import com.google.gwt.cell.client.HasCell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
  * View displaying the list of TestResults.
  * 
  * @author David Hovemeyer
  */
-public class TestResultListView extends Composite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
+public class TestResultListView extends ResizeComposite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<TestResult> cellTable;
 	
 	public TestResultListView() {

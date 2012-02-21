@@ -29,14 +29,14 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
  * Table view for compiler diagnostics.
  * 
  * @author David Hovemeyer
  */
-public class CompilerDiagnosticListView extends Composite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
+public class CompilerDiagnosticListView extends ResizeComposite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<CompilerDiagnostic> cellTable;
 	
 	public CompilerDiagnosticListView() {

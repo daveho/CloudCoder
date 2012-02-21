@@ -21,8 +21,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
  * The DevActionsPanel contains the buttons for the DevelopmentPage
@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  * 
  * @author David Hovemeyer
  */
-public class DevActionsPanel extends Composite {
+public class DevActionsPanel extends ResizeComposite {
 	private Runnable submitHandler;
 	
 	public DevActionsPanel() {
