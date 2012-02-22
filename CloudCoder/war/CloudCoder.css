@@ -86,3 +86,15 @@
 .gwt-DialogBox {
 	z-index: 1001 !important;
 }
+
+/*
+ * Styles for the test result outcome column.
+ */
+.cc-passedTest {
+	color: green;
+	font-weight: bold;
+}
+.cc-failedTest {
+	color: red;
+	font-weight: bold;
+}

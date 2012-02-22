@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -32,6 +33,7 @@ import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.CompositeCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.HasCell;
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -70,6 +72,18 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		@Override
 		public String getValue(TestResult object) {
 			return object.getOutcome().toString().toLowerCase();
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getCellStyleNames(com.google.gwt.cell.client.Cell.Context, java.lang.Object)
+		 */
+		@Override
+		public String getCellStyleNames(Context context, TestResult object) {
+			if (object.getOutcome() == TestOutcome.PASSED) {
+				return "cc-passedTest";
+			} else {
+				return "cc-failedTest";
+			}
 		}
 	}
 	
