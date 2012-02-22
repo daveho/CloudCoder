@@ -98,3 +98,45 @@
 	color: red;
 	font-weight: bold;
 }
+
+/*
+ * Styles for the test outcome summary view (the green/red bar).
+ * Say what you will about CSS, it's pretty good for drawing
+ * rectangles.
+ */
+.cc-testOutcomeSummary {
+	position: relative;
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+	width: 300px;
+	height: 28px;
+	background-color: black;
+}
+.cc-testOutcomeSummaryInner {
+	position: absolute;
+	top: 1px;
+	bottom: 1px;
+	left: 1px;
+	right: 1px;
+}
+.cc-testOutcomeSummaryInnerBackground {
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+}
+.cc-testOutcomeSummaryInnerBackgroundEmpty {
+	background-color: white;
+}
+.cc-testOutcomeSummaryInnerBackgroundNonEmpty {
+	background-color: red;
+}
+.cc-testOutcomeSummaryPassedTests {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	bottom: 0px;
+	background-color: green;
+}

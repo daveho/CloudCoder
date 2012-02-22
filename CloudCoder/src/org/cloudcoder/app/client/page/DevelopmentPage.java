@@ -31,6 +31,7 @@ import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
+import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -57,10 +58,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -119,6 +118,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private LayoutPanel centerLayoutPanel;
 		private LayoutPanel buttonsLayoutPanel;
 		private StatusMessageView statusMessageView;
+		private TestOutcomeSummaryView testOutcomeSummaryView;
 		private TabLayoutPanel resultsTabPanel;
 		private TestResultListView testResultListView;
 		private CompilerDiagnosticListView compilerDiagnosticListView;
@@ -158,7 +158,11 @@ public class DevelopmentPage extends CloudCoderPage {
 			this.statusMessageView = new StatusMessageView();
 			southLayoutPanel.add(statusMessageView);
 			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX, Unit.PX);
+			this.testOutcomeSummaryView = new TestOutcomeSummaryView();
+			southLayoutPanel.add(testOutcomeSummaryView);
+			southLayoutPanel.setWidgetTopHeight(testOutcomeSummaryView, 2.0, Unit.PX, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX);
+			southLayoutPanel.setWidgetRightWidth(testOutcomeSummaryView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX, Unit.PX);
 
 			this.resultsTabPanel = new TabLayoutPanel(24, Unit.PX);
 			southLayoutPanel.add(resultsTabPanel);
@@ -202,6 +206,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			testResultListView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
+			testOutcomeSummaryView.activate(session, subscriptionRegistrar);
 			compilerDiagnosticListView.activate(session, subscriptionRegistrar);
 			
 			// Subscribe to ChangeList events
