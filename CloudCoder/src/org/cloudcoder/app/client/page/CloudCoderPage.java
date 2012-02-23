@@ -98,6 +98,16 @@ public abstract class CloudCoderPage {
 	public abstract IsWidget getWidget();
 	
 	/**
+	 * Check whether this page is an "activity": meaning that
+	 * if the user closes the page and navigates back, that
+	 * the same page should be restored (if the server session is
+	 * still valid.)
+	 * 
+	 * @return true if the page is an activity, false if not
+	 */
+	public abstract boolean isActivity();
+	
+	/**
 	 * @return the Session object
 	 */
 	public Session getSession() {

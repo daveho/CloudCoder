@@ -220,5 +220,13 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	public IsWidget getWidget() {
 		return ui;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
+	 */
+	@Override
+	public boolean isActivity() {
+		return true;
+	}
 
 }

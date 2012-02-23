@@ -23,10 +23,16 @@ import javax.servlet.http.HttpSession;
 
 import org.cloudcoder.app.client.rpc.LoginService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+/**
+ * Implementation of {@link LoginService}.
+ * 
+ * @author David Hovemeyer
+ */
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 	private static final long serialVersionUID = 1L;
 
@@ -38,7 +44,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			// Set User object in server HttpSession so that other
 			// servlets will know that the client is logged in
 			HttpSession session = getThreadLocalRequest().getSession();
-			session.setAttribute("user", user);
+			session.setAttribute(SessionAttributeKeys.USER_KEY, user);
 		}
 		
 		return user;
@@ -54,5 +60,29 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			String attr = attributeNames.nextElement();
 			session.removeAttribute(attr);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#getUser()
+	 */
+	@Override
+	public User getUser() {
+		return (User) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.USER_KEY);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#getActivity()
+	 */
+	@Override
+	public Activity getActivity() {
+		return (Activity) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.ACTIVITY_KEY);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#setActivity(org.cloudcoder.app.shared.model.Activity)
+	 */
+	@Override
+	public void setActivity(Activity activity) {
+		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.ACTIVITY_KEY, activity);
 	}
 }

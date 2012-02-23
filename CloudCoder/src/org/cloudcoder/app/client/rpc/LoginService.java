@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -24,6 +25,38 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
+	/**
+	 * Authenticate with given username and password.
+	 * 
+	 * @param userName the username
+	 * @param password the password
+	 * @return the authenticated User object, or null if the username/password
+	 *         combination is not found
+	 */
 	public User login(String userName, String password);
+	
+	/**
+	 * Logout current User.
+	 */
 	public void logout();
+	
+	/**
+	 * Get the currently logged-in User.
+	 * @return the currently logged-in User, or null if no User is logged in
+	 */
+	public User getUser();
+	
+	/**
+	 * Get the {@link Activity} most recently set by a call
+	 * to {@link #setActivity(Activity)}.
+	 * 
+	 * @return the most recent Activity
+	 */
+	public Activity getActivity();
+	
+	/**
+	 * Set the user's current {@link Activity}.
+	 * @param activity the user's current Activity
+	 */
+	public void setActivity(Activity activity);
 }

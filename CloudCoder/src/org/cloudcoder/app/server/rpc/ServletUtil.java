@@ -19,7 +19,7 @@ public class ServletUtil {
 	 */
 	public static User checkClientIsAuthenticated(HttpServletRequest request) throws NetCoderAuthenticationException {
 		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
+		User user = (User) session.getAttribute(SessionAttributeKeys.USER_KEY);
 		if (user == null) {
 			logger.info("Authentication failure - no user in session");
 			throw new NetCoderAuthenticationException();

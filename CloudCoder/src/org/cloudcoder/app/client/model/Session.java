@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -105,5 +106,12 @@ public class Session extends Publisher {
 	 */
 	public void clear() {
 		data.clear();
+	}
+
+	/**
+	 * @return the Collection of objects in the session
+	 */
+	public Collection<Object> getObjects() {
+		return data.values();
 	}
 }

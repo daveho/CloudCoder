@@ -15,23 +15,35 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.server.rpc;
 
 import org.cloudcoder.app.shared.model.Activity;
-import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.Problem;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
+/**
+ * Keys for session attributes.
+ * 
+ * @author David Hovemeyer
+ */
+public interface SessionAttributeKeys {
+	/**
+	 * Key to get the {@link User} object of the current
+	 * authenticated user.
+	 */
+	public static final String USER_KEY = "user";
+	
+	/**
+	 * Key to get the most-recently-set {@link Activity} object.
+	 */
+	public static final String ACTIVITY_KEY = "activity";
+	
+	/**
+	 * Key to get the current {@link Problem} object.
+	 */
+	public static final String PROBLEM_KEY = "problem";
 
-public interface LoginServiceAsync {
+	public static final String FUTURE_SUBMISSION_RESULT_KEY = "future";
 
-	void login(String userName, String password, AsyncCallback<User> callback);
-
-	void logout(AsyncCallback<Void> callback);
-
-	void getUser(AsyncCallback<User> callback);
-
-	void getActivity(AsyncCallback<Activity> callback);
-
-	void setActivity(Activity activity, AsyncCallback<Void> callback);
+	public static final String FULL_TEXT_CHANGE_KEY = "fullText";
 
 }

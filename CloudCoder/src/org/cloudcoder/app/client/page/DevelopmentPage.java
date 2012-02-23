@@ -577,4 +577,11 @@ public class DevelopmentPage extends CloudCoderPage {
 		return ui;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
+	 */
+	@Override
+	public boolean isActivity() {
+		return true;
+	}
 }

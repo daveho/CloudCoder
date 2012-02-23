@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.server.rpc;
 
 import java.util.List;
@@ -11,7 +28,6 @@ import org.cloudcoder.app.server.model.TextDocument;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
@@ -21,6 +37,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+/**
+ * Implementation of {@link EditCodeService}.
+ * 
+ * @author David Hovemeyer
+ */
 public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCodeService {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(EditCodeServiceImpl.class);
@@ -40,7 +61,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 			// that depend on knowing the problem have access to a known-authentic
 			// problem. (I.e., we don't have to trust a problem id sent as
 			// an RPC parameter which might have been forged.)
-			getThreadLocalRequest().getSession().setAttribute("problem", problem);
+			getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.PROBLEM_KEY, problem);
 
 			// If appropriate, record that the user has started the problem
 			Database.getInstance().getOrAddLatestSubmissionReceipt(user, problem);
@@ -55,7 +76,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
     	
     	// make sure a problem has been loaded
-    	Problem problem = (Problem) getThreadLocalRequest().getSession().getAttribute("problem");
+    	Problem problem = (Problem) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.PROBLEM_KEY);
     	
     	if (problem == null) {
     		// Can't load current text unless a Problem has been loaded

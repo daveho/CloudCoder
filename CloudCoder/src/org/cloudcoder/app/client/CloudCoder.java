@@ -17,19 +17,28 @@
 
 package org.cloudcoder.app.client;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -43,7 +52,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private CloudCoderPage currentPage;
 	
 	private LayoutPanel layoutPanel;
-
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -56,12 +65,90 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		
 		RootLayoutPanel rootLayoutPanel = RootLayoutPanel.get();
 		
+		// Create a LayoutPanel to be the parent of all CloudCoder page UIs,
+		// and inset it by 10px from each edge of the browser client area.
 		layoutPanel = new LayoutPanel();
 		rootLayoutPanel.add(layoutPanel);
 		rootLayoutPanel.setWidgetLeftRight(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
 		rootLayoutPanel.setWidgetTopBottom(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+
+		// Go to whatever initial page is appropriate.
+		createInitialPage();
+	}
+
+	private void createInitialPage() {
+		// Check to see if the user is already logged in, and if so,
+		// if there is an Activity set.  A bit complicated because it
+		// involves two RPC calls that are chained.
+		RPC.loginService.getUser(new AsyncCallback<User>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not check for current login status: " + caught.getMessage()));
+				changePage(new LoginPage());
+			}
+
+			@Override
+			public void onSuccess(User result) {
+				if (result == null) {
+					// Not logged in, so show LoginPage
+					changePage(new LoginPage());
+				} else {
+					// User is logged in: get Activity
+					RPC.loginService.getActivity(new AsyncCallback<Activity>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not check for current login status: " + caught.getMessage()));
+							changePage(new LoginPage());
+						}
+
+						@Override
+						public void onSuccess(Activity result) {
+							if (result == null) {
+								// Don't know what the user's activity was, so take
+								// them to the courses/problems page
+								changePage(new CoursesAndProblemsPage2());
+							} else {
+								// We have an activity.  Find the page.
+								CloudCoderPage page = getPageForActivity(result);
+								
+								// Restore the session objects.
+								for (Object obj : result.getSessionObjects()) {
+									session.add(obj);
+								}
+								
+								changePage(page);
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+
+	protected CloudCoderPage getPageForActivity(Activity result) {
+		String name = result.getName();
+		if (name.equals(CoursesAndProblemsPage2.class.getName())) {
+			return new CoursesAndProblemsPage2();
+		} else if (name.equals(DevelopmentPage.class.getName())) {
+			return new DevelopmentPage();
+		}
+		return null;
+	}
+	
+	protected Activity getActivityForPage(CloudCoderPage page) {
+		Activity activity = new Activity(page.getClass().getName());
 		
-		changePage(new LoginPage());
+		// Record the Session objects (the ones that are Serializable)
+		List<Serializable> sessionObjectList = new ArrayList<Serializable>();
+		for (Object obj : session.getObjects()) {
+			if (obj instanceof Serializable) {
+				sessionObjectList.add((Serializable) obj);
+				GWT.log("Adding " + obj.getClass().getName() + " to Activity");
+			}
+		}
+		activity.setSessionObjects(sessionObjectList.toArray(new Serializable[sessionObjectList.size()]));
+		
+		return activity;
 	}
 	
 	private void changePage(CloudCoderPage page) {
@@ -73,27 +160,43 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			session.remove(StatusMessage.class);
 		}
 		page.setSession(session);
+
 		// Create the page's Widget and add it to the DOM tree
 		page.createWidget();
 		IsWidget w = page.getWidget();
 		layoutPanel.add(w);
 		layoutPanel.setWidgetLeftRight(w, 0.0, Unit.PX, 0.0, Unit.PX);
 		layoutPanel.setWidgetTopBottom(w, 0.0, Unit.PX, 0.0, Unit.PX);
+
 		// Now it is safe to activate the page
 		page.activate();
 		currentPage = page;
+		
+		// Inform the server of the Activity (page) that the user is now working on,
+		// if the page requests it.  Otherwise set the activity to null.
+		Activity activity = page.isActivity() ? getActivityForPage(page) : null;
+		RPC.loginService.setActivity(activity, new AsyncCallback<Void>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				// There's not really anything useful we can do here.
+				GWT.log("Couldn't set activity on server?", caught);
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				// Nothing to do
+			}
+		});
 	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN || key == Session.Event.BACK_HOME) {
-			//changePage(new CoursesAndProblemsPage());
 			changePage(new CoursesAndProblemsPage2());
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
 		} else if (key == Session.Event.LOGOUT) {
 			changePage(new LoginPage());
 		}
-		
 	}
 }

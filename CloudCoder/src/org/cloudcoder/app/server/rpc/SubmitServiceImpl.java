@@ -53,25 +53,15 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 
 	private static final Logger logger=LoggerFactory.getLogger(SubmitServiceImpl.class);
 
-	private static final String FUTURE_SUBMISSION_RESULT_KEY = "future";
-	private static final String FULL_TEXT_CHANGE_KEY = "fullText";
-
 	@Override
 	public void submit(int problemId, String programText) throws NetCoderAuthenticationException, SubmissionException {
 		// Make sure that client is authenticated and has permission to edit the given problem
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
-		/*
-		Problem problem = Database.getInstance().getProblem(user, problemId);
-		if (problem == null) {
-			throw new NetCoderAuthenticationException();
-		}
-		*/
-
 		HttpSession session = getThreadLocalRequest().getSession();
 
 		// The Problem should be stored in the user's session
-		Problem problem = (Problem) session.getAttribute("problem");
+		Problem problem = (Problem) session.getAttribute(SessionAttributeKeys.PROBLEM_KEY);
 		if (problem == null || problem.getProblemId() != problemId) {
 			throw new NetCoderAuthenticationException();
 		}
@@ -108,16 +98,16 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		HttpSession session = getThreadLocalRequest().getSession();
 
 		// The Problem should be stored in the user's session
-		Problem problem = (Problem) session.getAttribute("problem");
+		Problem problem = (Problem) session.getAttribute(SessionAttributeKeys.PROBLEM_KEY);
 		if (problem == null) {
 			throw new NetCoderAuthenticationException();
 		}
 		
 		// Retrieve session objects for submission
 		IFutureSubmissionResult future =
-				(IFutureSubmissionResult) session.getAttribute(FUTURE_SUBMISSION_RESULT_KEY);
+				(IFutureSubmissionResult) session.getAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY);
 		Change fullTextChange =
-				(Change) session.getAttribute(FULL_TEXT_CHANGE_KEY);
+				(Change) session.getAttribute(SessionAttributeKeys.FULL_TEXT_CHANGE_KEY);
 		
 		if (future == null) {
 			throw new SubmissionException("No pending submission in session");
@@ -161,13 +151,13 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	}
 
 	private void addSessionObjects(HttpSession session, Change fullTextChange, IFutureSubmissionResult future) {
-		session.setAttribute(FUTURE_SUBMISSION_RESULT_KEY, future);
-		session.setAttribute(FULL_TEXT_CHANGE_KEY, fullTextChange);
+		session.setAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY, future);
+		session.setAttribute(SessionAttributeKeys.FULL_TEXT_CHANGE_KEY, fullTextChange);
 	}
 
 	private void clearSessionObjects(HttpSession session) {
-		session.removeAttribute(FUTURE_SUBMISSION_RESULT_KEY);
-		session.removeAttribute(FULL_TEXT_CHANGE_KEY);
+		session.removeAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY);
+		session.removeAttribute(SessionAttributeKeys.FULL_TEXT_CHANGE_KEY);
 	}
 
 	private SubmissionReceipt createSubmissionReceipt(IContainsEvent mostRecentChange, SubmissionResult result, User user, Problem problem) {
