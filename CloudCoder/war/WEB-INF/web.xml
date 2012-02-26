@@ -13,6 +13,27 @@
   <servlet>
     <servlet-name>Login</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.LoginServiceImpl</servlet-class>
+    <init-param>
+    		<description>
+    		Choices include:
+			database (default):  Usernames and passwords directly in the DB
+			imap: authenticate against an imap server
+    		</description>
+		<param-name>loginService</param-name>
+		<param-value>imap</param-value>
+	</init-param>
+	<init-param>
+		<param-name>host</param-name>
+		<param-value>mail.knox.edu</param-value>
+	</init-param>
+	<init-param>
+		<param-name>transport</param-name>
+		<param-value>smtps</param-value>
+	</init-param>
+	<init-param>
+		<param-name></param-name>
+		<param-value></param-value>
+	</init-param>
   </servlet>
   <servlet>
     <servlet-name>GetCoursesAndProblems</servlet-name>

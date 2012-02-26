@@ -21,19 +21,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JDBC utility methods.
  * 
  * @author David Hovemeyer
  */
 public class DBUtil {
+    private static final Logger logger=LoggerFactory.getLogger(DBUtil.class);
 	public static void closeQuietly(PreparedStatement stmt) {
 		try {
 			if (stmt != null) {
 				stmt.close();
 			}
 		} catch (SQLException e) {
-			// TODO: log
+		    logger.error("Unable to close prepared statement",e);
 		}
 	}
 
@@ -43,7 +47,7 @@ public class DBUtil {
 				resultSet.close();
 			}
 		} catch (SQLException e) {
-			// TODO: log
+		    logger.error("Unable to close result set",e);
 		}
 	}
 }

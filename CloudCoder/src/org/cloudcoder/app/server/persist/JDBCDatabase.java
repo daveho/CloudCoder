@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.cloudcoder.app.server.rpc.LoginServiceImpl;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -53,7 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCDatabase implements IDatabase {
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
-	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=root";
+	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=Knox!*#&";
 	
 	static {
 		try {
@@ -118,6 +120,46 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	private User getUser(Connection conn, String userName) throws SQLException {
+	    PreparedStatement stmt = conn.prepareStatement("select * from users where username = ?");
+        stmt.setString(1, userName);
+        
+        ResultSet resultSet = stmt.executeQuery();
+        if (!resultSet.next()) {
+            return null;
+        }
+        
+        User user = new User();
+        load(user, resultSet, 1);
+        return user;
+	}
+	
+	@Override
+	public User authenticateUserImap(final String userName, 
+	        final String password, 
+	        final Properties props)
+	{
+	    return databaseRun(new AbstractDatabaseRunnable<User>() {
+	        @Override
+	        public User run(Connection conn) throws SQLException {
+	            User user=getUser(conn, userName);
+                
+                // Check password using imap
+                if (!LoginServiceImpl.authenticateImap(userName, password, props)) {
+                    // cannot authenticate using imap
+                    return null;
+                }
+                
+                // Authenticated!
+                return user;
+	        }
+	        @Override
+	        public String getDescription() {
+	            return "retrieving user";
+	        }
+        });
+	};
 	
 	@Override
 	public User authenticateUser(final String userName, final String password) {
