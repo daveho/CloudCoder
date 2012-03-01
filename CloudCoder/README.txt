@@ -22,7 +22,7 @@ This will create a "CloudCoder" directory with four subdirectories:
 
   CloudCoder
   CloudCoderImporter
-  CloudCoderOutOfProcessSubmitService
+  CloudCoderBuilder
   CloudCoderWebServer
 
 Make sure all four projects are extracted in
@@ -55,7 +55,7 @@ will be hosting the builder):
 
   cd $BASE
   ./configure.pl -builder
-  cd CloudCoderOutOfProcessBuildService
+  cd CloudCoderBuilder
   ant build
 
 Note: it is highly recommended that you create a new user
@@ -83,7 +83,7 @@ Step 3 - Start the builder
 
 On the builder server:
 
-  cd $BASE/CloudCoderOutOfProcessBuildService
+  cd $BASE/CloudCoderBuilder
   ./start.sh
 
 Step 4 - Profit
