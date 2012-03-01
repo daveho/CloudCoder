@@ -71,6 +71,7 @@ public class CloudCoderWebServer {
 					context = arg.substring("--context=".length());
 				} else if (arg.startsWith("--localhostOnly=")) {
 					localhostOnly = Boolean.parseBoolean(arg.substring("--localhostOnly=".length()));
+					System.out.println("localhost only is: "+localhostOnly);
 				} else {
 					throw new IllegalArgumentException("Unknown argument: " + arg);
 				}
@@ -92,6 +93,7 @@ public class CloudCoderWebServer {
 		SelectChannelConnector connector = new SelectChannelConnector();
 		connector.setPort(options.getPort());
 		if (options.isLocalhostOnly()) {
+		    //System.out.println("happening?");
 			connector.setHost("localhost");
 		}
 		server.addConnector(connector);

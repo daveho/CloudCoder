@@ -74,7 +74,7 @@ On the webapp server:
   ./start.sh
 
 This starts a Jetty web server hosting the CloudCoder web application.
-It will listen on port 8080.
+It will listen on port 8081.
 
 TODO: allow use of SSL.
 

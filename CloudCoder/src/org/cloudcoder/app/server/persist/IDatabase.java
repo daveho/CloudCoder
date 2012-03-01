@@ -18,6 +18,7 @@
 package org.cloudcoder.app.server.persist;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -49,6 +50,7 @@ public interface IDatabase {
 	 * @return the authenticated User, or null if the username/password doesn't correspond to a known user
 	 */
 	public User authenticateUser(String userName, String password);
+	public User authenticateUserImap(String userName, String password, Properties props);
 	public Problem getProblem(User user, int problemId);
 
 	/**
