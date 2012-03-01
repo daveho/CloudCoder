@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -27,12 +27,18 @@ import javax.servlet.http.HttpSession;
 
 import org.cloudcoder.app.client.rpc.LoginService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+/**
+ * Implementation of {@link LoginService}.
+ * 
+ * @author David Hovemeyer
+ */
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(LoginServiceImpl.class);
@@ -61,7 +67,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			// Set User object in server HttpSession so that other
 			// servlets will know that the client is logged in
 			HttpSession session = getThreadLocalRequest().getSession();
-			session.setAttribute("user", user);
+			session.setAttribute(SessionAttributeKeys.USER_KEY, user);
 		}
 		
 		return user;
@@ -91,7 +97,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 	}
     
-    
     public static boolean authenticateImap(String username, 
             String password, 
             Properties props)
@@ -120,4 +125,28 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
             }
         }
     }
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#getUser()
+	 */
+	@Override
+	public User getUser() {
+		return (User) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.USER_KEY);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#getActivity()
+	 */
+	@Override
+	public Activity getActivity() {
+		return (Activity) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.ACTIVITY_KEY);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.LoginService#setActivity(org.cloudcoder.app.shared.model.Activity)
+	 */
+	@Override
+	public void setActivity(Activity activity) {
+		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.ACTIVITY_KEY, activity);
+	}
 }

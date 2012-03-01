@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -23,5 +23,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SubmitServiceAsync
 {
-    void submit(int problemId, String programText, AsyncCallback<SubmissionResult> callback);
+    void submit(int problemId, String programText, AsyncCallback<Void> callback);
+
+	void checkSubmission(AsyncCallback<SubmissionResult> callback);
 }

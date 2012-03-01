@@ -1,37 +1,6 @@
-/** Add css rules here for your application. */
-
-
-/** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
-}
-
-.sendButton {
-  display: block;
-  font-size: 16pt;
-}
-
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
-.dialogVPanel {
-  margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
-}
+/*
+ * CloudCoder CSS styles.
+ */
 .cc-pageTitle {
 	font-size: 140%;
 	font-weight: bold;
@@ -44,16 +13,130 @@ h1 {
 	font-weight: bold;
 	font-size: 20px;
 }
+.cc-problemDescription {
+	overflow: auto; /* Allow problem description text to scroll. */
+	background-color: #fffacd;
+}
 .cc-centered {
 	margin-left: 0 auto;
 	margin-right: 0 auto;
 }
-.cc-statusMessageInformation {
+
+/*
+ * Styles for StatusMessageView
+ */
+.cc-statusIcon {
+	margin-top: 4px;
+	margin-right: 8px;
+}
+.cc-statusMessageNone, .cc-statusMessageInformation, .cc-statusMessageError, .cc-statusMessageGoodNews,
+.cc-statusMessagePending {
 	font-size: 16px;
-	vertical-align: middle;
+	vertical-align: 8px;
+}
+.cc-statusMessageInformation {
 }
 .cc-statusMessageError {
-	font-size: 16px;
-	vertical-align: middle;
 	color: red;
+}
+.cc-statusMessageGoodNews {
+	color: green;
+}
+.cc-statusMessagePending {
+}
+
+/*
+ * Emphasized button style (adapted from .gwtButton styles in clean.css).
+ * We use emphasized buttons to indicate the "most important" button
+ * on each page.
+ */
+.cc-emphButton {
+  margin: 0;
+  padding: 5px 7px;
+  text-decoration: none;
+  cursor: pointer;
+  cursor: hand;
+  font-size:120%;
+  font-weight: bold;
+  background: url("cloudcoder/gwt/clean/images/hborder.png") repeat-x 0px -2077px;
+  border:1px solid #bbb;
+  border-bottom: 1px solid #a0a0a0;
+  border-radius: 3px;
+ -moz-border-radius: 3px;
+}
+.cc-emphButton:active {
+  border: 1px inset #ccc;
+}
+.cc-emphButton:hover {
+  border-color: #939393;
+}
+.cc-emphButton[disabled] {
+  cursor: default;
+  color: #888;
+}
+.cc-emphButton[disabled]:hover {
+  border: 1px outset #ccc;
+}
+
+/*
+ * Increase the z-index for .gwt-DialogBox.
+ * The default value leaves part of the dialog box below the current
+ * (highlighted) line in the Ace editor.
+ */
+.gwt-DialogBox {
+	z-index: 1001 !important;
+}
+
+/*
+ * Styles for the test result outcome column.
+ */
+.cc-passedTest {
+	color: green;
+	font-weight: bold;
+}
+.cc-failedTest {
+	color: red;
+	font-weight: bold;
+}
+
+/*
+ * Styles for the test outcome summary view (the green/red bar).
+ * Say what you will about CSS, it's pretty good for drawing
+ * rectangles.
+ */
+.cc-testOutcomeSummary {
+	position: relative;
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+	width: 300px;
+	height: 28px;
+	background-color: black;
+}
+.cc-testOutcomeSummaryInner {
+	position: absolute;
+	top: 1px;
+	bottom: 1px;
+	left: 1px;
+	right: 1px;
+}
+.cc-testOutcomeSummaryInnerBackground {
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+}
+.cc-testOutcomeSummaryInnerBackgroundEmpty {
+	background-color: white;
+}
+.cc-testOutcomeSummaryInnerBackgroundNonEmpty {
+	background-color: red;
+}
+.cc-testOutcomeSummaryPassedTests {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	bottom: 0px;
+	background-color: green;
 }

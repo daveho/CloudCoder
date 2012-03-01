@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,5 +99,19 @@ public class Session extends Publisher {
 	public<E> E get(Class<E> cls) {
 		Object obj = data.get(cls);
 		return (E) obj;
+	}
+
+	/**
+	 * Remove all objects from the session.
+	 */
+	public void clear() {
+		data.clear();
+	}
+
+	/**
+	 * @return the Collection of objects in the session
+	 */
+	public Collection<Object> getObjects() {
+		return data.values();
 	}
 }

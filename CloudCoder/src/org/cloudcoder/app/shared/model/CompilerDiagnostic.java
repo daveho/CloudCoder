@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -95,19 +95,5 @@ public class CompilerDiagnostic implements Serializable
      */
     public String getMessage() {
         return message;
-    }
-
-    /**
-     * @param s
-     * @return
-     */
-    public static CompilerDiagnostic diagnosticFromGcc(String s) {
-        // gcc compiler errors are in this format:
-        // checker.c:5: error: expected ';' before '}' token
-        // Going to split using :
-        String[] arr=s.split(":");
-        int lineNum=Integer.parseInt(arr[1]);
-        String message=arr[3];
-        return new CompilerDiagnostic(lineNum, lineNum, -1, -1, message);
     }
 }

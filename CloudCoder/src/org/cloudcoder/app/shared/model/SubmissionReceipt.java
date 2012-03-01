@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -35,13 +35,15 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * Number of database fields.
 	 */
-	public static final int NUM_FIELDS = 4;
+	public static final int NUM_FIELDS = 5;
 
 	private Event event;
-	private int id;
+//	private int id;
 	private int eventId;
 	private int lastEditEventId;
 	private int status;
+	private int numTestsAttempted;
+	private int numTestsPassed;
 	
 	public SubmissionReceipt() {
 		this.event = new Event();
@@ -78,19 +80,19 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 		return this.eventId;
 	}
 	
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(int id) {
-		this.id = id;
-	}
-	
-	/**
-	 * @return the id
-	 */
-	public int getId() {
-		return id;
-	}
+//	/**
+//	 * @param id the id to set
+//	 */
+//	public void setId(int id) {
+//		this.id = id;
+//	}
+//	
+//	/**
+//	 * @return the id
+//	 */
+//	public int getId() {
+//		return id;
+//	}
 	
 	/**
 	 * @param lastEditEventId the lastEditEventId to set
@@ -102,7 +104,7 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * @return the lastEditEventId
 	 */
-	public long getLastEditEventId() {
+	public int getLastEditEventId() {
 		return lastEditEventId;
 	}
 	
@@ -128,15 +130,51 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	}
 	
 	/**
+	 * @param numTestsAttempted the numTestsAttempted to set
+	 */
+	public void setNumTestsAttempted(int numTestsAttempted) {
+		this.numTestsAttempted = numTestsAttempted;
+	}
+	
+	/**
+	 * @return the numTestsAttempted
+	 */
+	public int getNumTestsAttempted() {
+		return numTestsAttempted;
+	}
+	
+	/**
+	 * @param numTestsPassed the numTestsPassed to set
+	 */
+	public void setNumTestsPassed(int numTestsPassed) {
+		this.numTestsPassed = numTestsPassed;
+	}
+	
+	/**
+	 * @return the numTestsPassed
+	 */
+	public int getNumTestsPassed() {
+		return numTestsPassed;
+	}
+	
+	/**
 	 * Create a SubmissionReceipt for given User and Problem.
 	 * 
 	 * @param user     the User
 	 * @param problem  the Problem
 	 * @param status   the SubmissionStatus to set in the SubmissionReceipt
 	 * @param lastEditEventId id of last edit event (i.e., the code version of the submission)
+	 * @param numTestsAttempted the number of tests that were attempted for this submission
+	 * @param numTestsPassed the number of tests that were passed for this submission
 	 * @return  the SubmissionReceipt
 	 */
-	public static SubmissionReceipt create(final User user, final Problem problem, SubmissionStatus status, int lastEditEventId) {
+	public static SubmissionReceipt create(
+			final User user,
+			final Problem problem,
+			SubmissionStatus status,
+			int lastEditEventId,
+			int numTestsAttempted,
+			int numTestsPassed) {
 		SubmissionReceipt receipt = new SubmissionReceipt();
 		receipt.getEvent().setProblemId(problem.getProblemId());
 		receipt.getEvent().setTimestamp(System.currentTimeMillis());
@@ -144,6 +182,8 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 		receipt.getEvent().setUserId(user.getId());
 		receipt.setLastEditEventId(lastEditEventId);
 		receipt.setStatus(status);
+		receipt.setNumTestsAttempted(numTestsAttempted);
+		receipt.setNumTestsPassed(numTestsPassed);
 		return receipt;
 	}
 }

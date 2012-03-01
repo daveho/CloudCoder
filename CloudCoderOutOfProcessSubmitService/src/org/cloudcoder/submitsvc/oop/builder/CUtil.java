@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,13 +19,14 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,15 @@ import org.slf4j.LoggerFactory;
  */
 public class CUtil {
 	private static final Logger logger = LoggerFactory.getLogger(CUtil.class);
+
+	/** Maximum number of bytes of output native code testers should read from an untrusted test process. */
+	public static final int MAX_BYTES_ALLOWED = 20 * 100 * 2;
+
+	/** Maximum number of lines of output native code testers should read from an untrusted test process. */
+	public static final int MAX_LINES_ALLOWED = 20;
+
+	/** Maximum number of characters per line native code testers should read from an untrusted test process. */
+	public static final int MAX_CHARACTERS_PER_LINE = 200;
 	
 	/**
 	 * Make a temporary directory.
@@ -79,48 +89,62 @@ public class CUtil {
 		CompilerDiagnostic[] compilerDiagnosticList = compiler.getCompilerDiagnosticList();
 		CompilationResult compilationResult = new CompilationResult(CompilationOutcome.FAILURE);
 		compilationResult.setCompilerDiagnosticList(compilerDiagnosticList);
-		return new SubmissionResult(compilationResult);
+		SubmissionResult submissionResult = new SubmissionResult(compilationResult);
+		submissionResult.setTestResults(new TestResult[0]);
+		return submissionResult;
+	}
+	
+	public static String merge(String[] list) {
+		return merge(Arrays.asList(list));
 	}
 
 	public static String merge(List<String> list){
-	    StringBuilder builder=new StringBuilder();
+		return doMerge(list, "\n");
+	}
+	
+	public static String mergeOneLine(String[] list) {
+		return mergeOneLine(Arrays.asList(list));
+	}
+
+	public static String mergeOneLine(List<String> list) {
+		return doMerge(list, " ");
+	}
+
+	private static String doMerge(List<String> list, String sep) {
+		StringBuilder builder=new StringBuilder();
 	    for (String s : list) {
 	        builder.append(s);
-	        builder.append("\n");
+	        builder.append(sep);
 	    }
 	    return builder.toString();
 	}
 
-	public static TestResult createTestResultForTimeout(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
-		        "timeout",
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
+	/**
+	 * Create a process runner suitable for running an untrusted test program.
+	 * Limits amount of output read to a reasonable level.
+	 * Also, sets OS-level resource limits.
+	 * 
+	 * @return a ProcessRunner
+	 */
+	public static ProcessRunner createProcessRunner() {
+		// Create a LimitedProcessRunner so that some resource limits
+		// are enforced by the OS.  (E.g., amount of memory used,
+		// don't allow subprocesses to be created, etc.)
+		ProcessRunner processRunner = new LimitedProcessRunner() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.submitsvc.oop.builder.ProcessRunner#createOutputCollector(java.io.InputStream)
+			 */
+			@Override
+			protected IOutputCollector createOutputCollector(InputStream inputStream) {
+				LimitedOutputCollector collector = new LimitedOutputCollector(inputStream);
+				
+				collector.setMaxBytesAllowed(MAX_BYTES_ALLOWED);
+				collector.setMaxLinesAllowed(MAX_LINES_ALLOWED);
+				collector.setMaxCharactersPerLine(MAX_CHARACTERS_PER_LINE);
+				
+				return collector;
+			}
+		};
+		return processRunner;
 	}
-
-	public static TestResult createTestResultForPassedTest(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.PASSED,
-		        p.getStatusMessage(),
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
-	public static TestResult createTestResultForCoreDump(ProcessRunner p) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
-		        p.getStatusMessage(),
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
-	public static TestResult createTestResultForFailedAssertion(ProcessRunner p, String message) {
-		TestResult testResult = new TestResult(TestOutcome.FAILED_ASSERTION,
-		        message,
-		        merge(p.getStdout()),
-		        merge(p.getStderr()));
-		return testResult;
-	}
-
 }

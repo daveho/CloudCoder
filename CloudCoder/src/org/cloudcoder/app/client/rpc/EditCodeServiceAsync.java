@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,11 +19,13 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface EditCodeServiceAsync {
 	public void setProblem(int problemId, AsyncCallback<Problem> callback);
-	public void loadCurrentText(AsyncCallback<String> callback);
-	public void logChange(Change[] changeList, AsyncCallback<Boolean> callback);
+	void loadCurrentText(AsyncCallback<ProblemText> callback);
+	void logChange(Change[] changeList, long clientSubmitTime,
+			AsyncCallback<Boolean> callback);
 }

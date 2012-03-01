@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.IsWidget;
  * Provides helper methods for managing session data and event subscribers.
  */
 public abstract class CloudCoderPage {
-	private List<Object> sessionObjectList;
+	private List<Class<?>> sessionObjectClassList;
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
 	private Session session;
 	
@@ -39,7 +39,7 @@ public abstract class CloudCoderPage {
 	 * Constructor.
 	 */
 	public CloudCoderPage() {
-		this.sessionObjectList = new ArrayList<Object>();
+		this.sessionObjectClassList = new ArrayList<Class<?>>();
 		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
 	}
 
@@ -54,20 +54,23 @@ public abstract class CloudCoderPage {
 	
 	/**
 	 * Add an object to the Session.
+	 * When this page is finished, the object (or any object of the
+	 * same type which replaced the original object) will be removed
+	 * from the Session.
 	 * 
 	 * @param obj  object to add to the Session
 	 */
 	protected void addSessionObject(Object obj) {
 		session.add(obj);
-		sessionObjectList.add(obj);
+		sessionObjectClassList.add(obj.getClass());
 	}
 	
 	/**
 	 * Remove all objects added to the Session.
 	 */
 	protected void removeAllSessionObjects() {
-		for (Object obj : sessionObjectList) {
-			session.remove(obj.getClass());
+		for (Class<?> cls : sessionObjectClassList) {
+			session.remove(cls);
 		}
 	}
 
@@ -93,6 +96,16 @@ public abstract class CloudCoderPage {
 	 * @return the widget that is the UI for this page 
 	 */
 	public abstract IsWidget getWidget();
+	
+	/**
+	 * Check whether this page is an "activity": meaning that
+	 * if the user closes the page and navigates back, that
+	 * the same page should be restored (if the server session is
+	 * still valid.)
+	 * 
+	 * @return true if the page is an activity, false if not
+	 */
+	public abstract boolean isActivity();
 	
 	/**
 	 * @return the Session object

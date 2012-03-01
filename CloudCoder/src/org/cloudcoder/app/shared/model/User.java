@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -24,7 +24,7 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 /**
  * Model object representing a user.
@@ -33,7 +33,9 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 //@Entity
 //@Table(name="users")
-public class User implements IsSerializable {
+public class User implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="id")

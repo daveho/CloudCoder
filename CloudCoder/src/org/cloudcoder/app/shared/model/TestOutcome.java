@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,11 +17,40 @@
 
 package org.cloudcoder.app.shared.model;
 
+/**
+ * Enumeration representing the outcome of a test case.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
+ */
 public enum TestOutcome {
-    PASSED,
-    FAILED_ASSERTION,
-    FAILED_WITH_EXCEPTION,
-    FAILED_FROM_TIMEOUT,
-    FAILED_BY_SECURITY_MANAGER,
-    INTERNAL_ERROR,
+    PASSED("Test passed", false),
+    FAILED_ASSERTION("Test failed", false),
+    FAILED_WITH_EXCEPTION("Exception", true),
+    FAILED_FROM_TIMEOUT("Timeed out", false),
+    FAILED_BY_SECURITY_MANAGER("Security exception", true),
+    INTERNAL_ERROR("Internal error", true),;
+    
+    private final String shortMessage;
+    private final boolean displayProcessStatus;
+    
+	private TestOutcome(String shortMessage, boolean displayProcessStatus) {
+		this.shortMessage = shortMessage;
+		this.displayProcessStatus = displayProcessStatus;
+	}
+
+	/**
+	 * @return the shortMessage
+	 */
+	public String getShortMessage() {
+		return shortMessage;
+	}
+
+	/**
+	 * @return true if TestResults with this outcome should display extra
+	 *         information about the process status (how it terminated)
+	 */
+	public boolean isDisplayProcessStatus() {
+		return displayProcessStatus;
+	}
 }

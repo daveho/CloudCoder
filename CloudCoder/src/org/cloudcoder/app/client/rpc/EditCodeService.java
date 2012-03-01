@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -27,6 +28,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("editCode")
 public interface EditCodeService extends RemoteService {
 	public Problem setProblem(int problemId) throws NetCoderAuthenticationException;
-    public String loadCurrentText() throws NetCoderAuthenticationException;
-	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException;
+    public ProblemText loadCurrentText() throws NetCoderAuthenticationException;
+	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws NetCoderAuthenticationException;
 }

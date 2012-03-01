@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -136,18 +136,18 @@ public class CTester implements ITester
         
         int index = 0;
         for (ProcessRunner p : tests) {
+            TestCase testCase = testCaseList.get(index);
             if (p.isRunning()) {
                 p.killProcess();
-                results.add(CUtil.createTestResultForTimeout(p));
+                results.add(TestResultUtil.createTestResultForTimeout(p, testCase));
             } else {
                 //TODO: figure out return code of process killed by ulimit
-                if (p.getExitCode()==0) {
-                    results.add(CUtil.createTestResultForPassedTest(p));
-                } else if (p.getExitCode()==6) {
-                    // error code 6 means CORE DUMP
-                    results.add(CUtil.createTestResultForCoreDump(p));
+				if (p.getExitCode()==0) {
+                    results.add(TestResultUtil.createTestResultForPassedTest(p, testCase));
+                } else if (p.isCoreDump()) {
+                    results.add(TestResultUtil.createTestResultForCoreDump(p, testCase));
                 } else {
-                    results.add(CUtil.createTestResultForFailedAssertion(p, "Test failed for input " + testCaseList.get(index).getInput()));
+                    results.add(TestResultUtil.createTestResultForFailedAssertion(p, testCase));
                 }
             }
             index++;

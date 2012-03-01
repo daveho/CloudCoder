@@ -1,6 +1,6 @@
 /*
  * Web C programming environment
- * Copyright (c) 2010-2011, David H. Hovemeyer <dhovemey@ycp.edu>
+ * Copyright (c) 2010-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +40,9 @@ import org.slf4j.LoggerFactory;
 public class Compiler {
     private static final Logger logger=LoggerFactory.getLogger(Compiler.class);
 
+	public static final String DEFAULT_COMPILER_EXE = "gcc";
+
+    private String compilerExe;
     private String progName;
     private File workDir;
     private String code;
@@ -47,12 +51,22 @@ public class Compiler {
     private String outputFileName;
 
     public Compiler(String code, File workDir, String progName) {
+    	this.compilerExe = DEFAULT_COMPILER_EXE;
         this.progName = progName;
         this.workDir = workDir;
         this.code = code;
         this.statusMessage = "";
         this.compilerOutput = new LinkedList<String>();
     }
+    
+    /**
+     * Set the name of the compiler executable (e.g., "gcc").
+     * 
+	 * @param compilerExe the compiler executable to set
+	 */
+	public void setCompilerExe(String compilerExe) {
+		this.compilerExe = compilerExe;
+	}
 
     public boolean compile() {
         // copy source program into a .c file in the temporary directory
@@ -79,31 +93,22 @@ public class Compiler {
     
     public CompilerDiagnostic[] getCompilerDiagnosticList() {
         //TODO: Limit to only errors for the functions we're interested in
-        CompilerDiagnostic[] result=new CompilerDiagnostic[compilerOutput.size()/*-1*/];
-        if (compilerOutput.size()>1) {
-            for (int i=1; i<compilerOutput.size(); i++) {
-                String s=compilerOutput.get(i);
-                CompilerDiagnostic d=CompilerDiagnostic.diagnosticFromGcc(s);
-                result[i-1]=d;
+    	ArrayList<CompilerDiagnostic> result = new ArrayList<CompilerDiagnostic>();
+        for (String s : compilerOutput) {
+            CompilerDiagnostic d = CompilerDiagnosticUtil.diagnosticFromGcc(s);
+            if (d != null) {
+            	result.add(d);
             }
         }
-        return result;
+        return result.toArray(new CompilerDiagnostic[result.size()]);
     }        
 
     private String[] getCompileCmd() {
         return new String[]{
-                //"avr-gcc",
-                "gcc",
+                this.compilerExe,
+                "-Wall", // ALWAYS use -Wall
                 "-o",
                 getExeFileName(),
-                //				"-mmcu=at90usb1286",
-                //				"-gdwarf-2",
-                //				"-Os",
-                //				"-funsigned-char",
-                //				"-funsigned-bitfields",
-                //				"-fpack-struct",
-                //				"-fshort-enums",
-                //				"-DF_CPU=16000000UL",
                 getSourceFileName(),
         };
     }
@@ -113,7 +118,6 @@ public class Compiler {
     }
 
     private String getExeFileName() {
-        //return progName + ".elf";
         return progName;
     }
 
@@ -124,7 +128,7 @@ public class Compiler {
             return false;
         }
 
-        compilerOutput.addAll(runner.getStderr());
+        compilerOutput.addAll(runner.getStderrAsList());
         if (runner.getExitCode() != 0) {
             statusMessage = cmd[0] + " exited with non-zero exit code " + runner.getExitCode();
             return false;

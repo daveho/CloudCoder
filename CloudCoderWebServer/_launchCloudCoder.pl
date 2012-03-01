@@ -29,6 +29,9 @@ system("echo '$pid' > $app.pid")/256 == 0 || die;
 my $fifo = "$app-$pid.fifo";
 system("mkfifo '$fifo'")/256 == 0 || die;
 
+# Make sure log directory exists
+system("mkdir -p logs");
+
 # Launch the application, passing through any command line arguments
 my $cmd = "java -classpath bin:'$classpath' -D$app.fifo='$fifo' $MAIN_CLASS";
 if (scalar(@ARGV) > 0) {

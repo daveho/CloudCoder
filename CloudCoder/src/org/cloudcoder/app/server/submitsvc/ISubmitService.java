@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,27 +20,34 @@ package org.cloudcoder.app.server.submitsvc;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 
 /**
  * Interface that implementations of problem submission services
  * must implement.  A problem submission service accepts a problem
- * and submitted program text, and returns a list of test results.
+ * and submitted program text, and (asynchronously) returns a
+ * {@link SubmissionResult} containing compilation result and
+ * diagnostics, test results, warnings from static code analysis,
+ * etc.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public interface ISubmitService {
 	/**
 	 * Submit a problem and program text.
-	 * The program text will be compiled and executed on each test,
-	 * and a list of TestResults will describe the outcome
-	 * of each test.
+	 * An {@link IFutureSubmissionResult} will be returned, which
+	 * eventually will yield a {@link SubmissionResult}
+	 * (which will contain a list of TestResults,
+	 * a CompilationResult, and in future versions could contain results
+	 * from static error checkers).
 	 * 
 	 * @param problem      a Problem
 	 * @param programText  program text
-	 * @return A SubmissionResult (which will contain a list of TestResults, a CompilationResult, 
-	 *  and in future versions could contain results from static error checkers)
+	 * @return an {@link IFutureSubmissionResult}, which will eventually yield
+	 *         a {@link SubmissionResult}
 	 */
-	public SubmissionResult submit(Problem problem, List<TestCase> testCaseList, String programText) throws SubmissionException;
+	public IFutureSubmissionResult submitAsync(Problem problem, List<TestCase> testCaseList, String programText) throws SubmissionException;
 }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -37,7 +37,7 @@ import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
@@ -49,7 +49,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * 
  * @author David Hovemeyer
  */
-public class ProblemListView2 extends Composite implements SessionObserver, Subscriber {
+public class ProblemListView2 extends ResizeComposite implements SessionObserver, Subscriber {
 	private Session session;
 	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
 

@@ -1,6 +1,6 @@
-// NetCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,27 +17,19 @@
 
 package org.cloudcoder.app.shared.model;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
+import java.io.Serializable;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+/**
+ * Model object representing an academic term (Fall, Spring, etc.)
+ * @author David Hovemeyer
+ */
+public class Term implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-//@Entity
-//@Table(name="terms")
-public class Term implements IsSerializable {
-//	@Id
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="id")
+	public static final int NUM_FIELDS = 3;
+
 	private int id;
-	
-//	@Column(name="name")
 	private String name;
-	
-//	@Column(name="seq")
 	private int seq;
 	
 	public Term() {

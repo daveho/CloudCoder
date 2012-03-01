@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -25,5 +26,22 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("submit")
 public interface SubmitService extends RemoteService {
-    public SubmissionResult submit(int problemId, String programText) throws NetCoderAuthenticationException;
+	/**
+	 * Submit program text for problem with given problem id to server.
+	 * 
+	 * @param problemId
+	 * @param programText
+	 * @throws NetCoderAuthenticationException
+	 */
+    public void submit(int problemId, String programText) throws NetCoderAuthenticationException, SubmissionException;
+    
+    /**
+     * Check to see if a {@link SubmissionResult} for the most-recently-submitted
+     * program text is available.  (I.e., has compilation/testing of the submission completed.)
+     * 
+     * @return a SubmissionResult, or null if compilation/testing of the
+     *         submission has not completed yet) 
+     * @throws NetCoderAuthenticationException
+     */
+    public SubmissionResult checkSubmission()  throws NetCoderAuthenticationException, SubmissionException;
 }

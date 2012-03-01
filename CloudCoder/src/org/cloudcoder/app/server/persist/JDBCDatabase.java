@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -35,10 +35,12 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -54,8 +56,33 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
+	// Constants for table names
+	private static final String TEST_RESULTS = "cc_test_results";
+	private static final String TEST_CASES = "cc_test_cases";
+	private static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
+	private static final String TERMS = "cc_terms";
+	private static final String EVENTS = "cc_events";
+	private static final String CHANGES = "cc_changes";
+	private static final String COURSE_REGISTRATIONS = "cc_course_registrations";
+	private static final String COURSES = "cc_courses";
+	private static final String PROBLEMS = "cc_problems";
+	private static final String USERS = "cc_users";
+	private static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
+
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
-	private static final String JDBC_URL = "jdbc:mysql://localhost" + /*":8889" +*/ "/cloudcoder?user=root&password=Knox!*#&";
+	
+	private String jdbcUrl;
+	
+	public JDBCDatabase() {
+		JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
+		jdbcUrl = "jdbc:mysql://" +
+				config.getDbHost() + config.getDbPortStr() +
+				"/" +
+				config.getDbDatabaseName() +
+				"?user=" +
+				config.getDbUser() +
+				"&password=" + config.getDbPasswd();
+	}
 	
 	static {
 		try {
@@ -81,7 +108,7 @@ public class JDBCDatabase implements IDatabase {
 		InUseConnection c = threadLocalConnection.get();
 		if (c == null) {
 			c = new InUseConnection();
-			c.conn = DriverManager.getConnection(JDBC_URL);
+			c.conn = DriverManager.getConnection(jdbcUrl);
 			c.refCount = 0;
 			threadLocalConnection.set(c);
 		}
@@ -104,7 +131,9 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public ConfigurationSetting run(Connection conn)
 					throws SQLException {
-				PreparedStatement stmt = prepareStatement(conn, "select s.* from configuration_settings as s where s.name = ?");
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select s.* from " + CONFIGURATION_SETTINGS + " as s where s.name = ?");
 				stmt.setString(1, name.toString());
 				ResultSet resultSet = executeQuery(stmt);
 				if (!resultSet.next()) {
@@ -166,7 +195,9 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<User>() {
 			@Override
 			public User run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(conn, "select * from users where username = ?");
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + USERS + " where username = ?");
 				stmt.setString(1, userName);
 				
 				ResultSet resultSet = executeQuery(stmt);
@@ -205,11 +236,11 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select problems.* from problems, courses, course_registrations " +
-						" where problems.problem_id = ? " +
-						"   and courses.id = problems.course_id " +
-						"   and course_registrations.course_id = courses.id " +
-						"   and course_registrations.user_id = ?"
+						"select " + PROBLEMS + ".* from " + PROBLEMS + ", " + COURSES + ", " + COURSE_REGISTRATIONS + " " +
+						" where " + PROBLEMS + ".problem_id = ? " +
+						"   and " + COURSES + ".id = " + PROBLEMS + ".course_id " +
+						"   and " + COURSE_REGISTRATIONS + ".course_id = " + COURSES + ".id " +
+						"   and " + COURSE_REGISTRATIONS + ".user_id = ?"
 				);
 				stmt.setInt(1, problemId);
 				stmt.setInt(2, user.getId());
@@ -233,6 +264,40 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblem(int)
+	 */
+	@Override
+	public Problem getProblem(final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Problem run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + PROBLEMS + " where problem_id = ?");
+				stmt.setInt(1, problemId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (resultSet.next()) {
+					Problem problem = new Problem();
+					load(problem, resultSet, 1);
+					return problem;
+				}
+				return null;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "get problem";
+			}
+		});
+	}
+	
 	@Override
 	public Change getMostRecentChange(final User user, final int problemId) {
 		return databaseRun(new AbstractDatabaseRunnable<Change>() {
@@ -240,9 +305,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)"
@@ -272,9 +337,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from changes as cc, events as ee " +
+						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ? " +
@@ -299,6 +364,42 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#getFullTextChange(long)
+	 */
+	@Override
+	public Change getChange(final int changeEventId) {
+		return databaseRun(new AbstractDatabaseRunnable<Change>(){
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Change run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select ch.*, e.* " +
+						"  from " + CHANGES + " as ch, " + EVENTS + " as e " +
+						" where e.id = ? and ch.event_id = e.id");
+				stmt.setInt(1, changeEventId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (resultSet.next()) {
+					Change change = getChangeAndEvent(resultSet);
+					return change;
+				}
+				
+				return null;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "get text change";
+			}
+		});
+	}
+	
 	@Override
 	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
 		return databaseRun(new AbstractDatabaseRunnable<List<Change>>() {
@@ -308,7 +409,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from changes as c, events as e " +
+						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
 						" where c.event_id = e.id " +
 						"   and e.id > ? " +
 						"   and e.user_id = ? " +
@@ -344,7 +445,7 @@ public class JDBCDatabase implements IDatabase {
 
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.*, t.* from courses as c, terms as t, course_registrations as r " +
+						"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
 						" where c.id = r.course_id " + 
 						"   and c.term_id = t.id " +
 						"   and r.user_id = ? " +
@@ -359,7 +460,9 @@ public class JDBCDatabase implements IDatabase {
 					load(course, resultSet, 1);
 					Term term = new Term();
 					load(term, resultSet, Course.NUM_FIELDS + 1);
-					result.add(new Object[]{course, term});
+					CourseRegistration reg = new CourseRegistration();
+					load(reg, resultSet, Course.NUM_FIELDS + Term.NUM_FIELDS + 1);
+					result.add(new Object[]{course, term, reg});
 				}
 				
 				return result;
@@ -370,7 +473,7 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
 	@Override
 	public List<Problem> getProblemsInCourse(final User user, final Course course) {
 		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
@@ -406,7 +509,7 @@ public class JDBCDatabase implements IDatabase {
 				// that user is authorized to get information about the course.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from submission_receipts as r, problems as p, events as e, course_registrations as cr " +
+						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + PROBLEMS + " as p, " + EVENTS + " as e, " + COURSE_REGISTRATIONS + " as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
 						"   and p.course_id = cr.course_id " +
@@ -421,9 +524,7 @@ public class JDBCDatabase implements IDatabase {
 				Map<Integer, SubmissionReceipt> problemIdToMostRecentSubmissionReceiptMap = new HashMap<Integer, SubmissionReceipt>();
 				ResultSet resultSet = executeQuery(stmt);
 				while (resultSet.next()) {
-					SubmissionReceipt submissionReceipt = new SubmissionReceipt();
-					load(submissionReceipt, resultSet, 1);
-					load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+					SubmissionReceipt submissionReceipt = loadSubmissionReceiptAndEvent(resultSet);
 					SubmissionReceipt current = problemIdToMostRecentSubmissionReceiptMap.get(submissionReceipt.getEvent().getProblemId());
 					if (current == null || submissionReceipt.getEventId() > current.getEventId()) {
 						problemIdToMostRecentSubmissionReceiptMap.put(submissionReceipt.getEvent().getProblemId(), submissionReceipt);
@@ -461,10 +562,10 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into changes values (NULL, ?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
-					storeNoId(change, insertChange, 1);
+					store(change, insertChange, 1);
 					insertChange.addBatch();
 				}
 				insertChange.executeBatch();
@@ -485,7 +586,7 @@ public class JDBCDatabase implements IDatabase {
 			public List<TestCase> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from test_cases where problem_id = ?");
+						"select * from " + TEST_CASES + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				List<TestCase> result = new ArrayList<TestCase>();
@@ -543,9 +644,9 @@ public class JDBCDatabase implements IDatabase {
 				// Get most recent submission receipt for user/problem
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from submission_receipts as r, events as e " +
+						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + EVENTS + " as e " +
 						" where r.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from submission_receipts as rr, events as ee " +
+						"   and e.id = (select max(ee.id) from " + SUBMISSION_RECEIPTS + " as rr, " + EVENTS + " as ee " +
 						"                where rr.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)");
@@ -554,16 +655,14 @@ public class JDBCDatabase implements IDatabase {
 				
 				ResultSet resultSet = executeQuery(stmt);
 				if (resultSet.next()) {
-					SubmissionReceipt submissionReceipt = new SubmissionReceipt();
-					load(submissionReceipt, resultSet, 1);
-					load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+					SubmissionReceipt submissionReceipt = loadSubmissionReceiptAndEvent(resultSet);
 					return submissionReceipt;
 				}
 				
 				// There is no submission receipt in the database yet, so add one
 				// with status STARTED
 				SubmissionStatus status = SubmissionStatus.STARTED;
-				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1);
+				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1, 0, 0);
 				doInsertSubmissionReceipt(receipt, new TestResult[0], conn, this);
 				return receipt;
 				
@@ -578,6 +677,267 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	public void addProblem(final Problem problem) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into " + PROBLEMS + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				
+				storeNoId(problem, stmt, 1);
+				
+				stmt.executeUpdate();
+				
+				ResultSet generatedKey = getGeneratedKeys(stmt);
+				if (!generatedKey.next()) {
+					throw new SQLException("Could not get generated key for inserted problem");
+				}
+				problem.setProblemId(generatedKey.getInt(1));
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "adding Problem";
+			}
+		});
+	}
+	
+	public void addTestCases(final Problem problem, final List<TestCase> testCaseList) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				
+				for (TestCase testCase : testCaseList) {
+					testCase.setProblemId(problem.getProblemId());
+					storeNoId(testCase, stmt, 1);
+					stmt.addBatch();
+				}
+				
+				stmt.executeBatch();
+				
+				ResultSet generatedKeys = getGeneratedKeys(stmt);
+				int count = 0;
+				while (generatedKeys.next()) {
+					testCaseList.get(count).setId(generatedKeys.getInt(1));
+					count++;
+				}
+				if (count != testCaseList.size()) {
+					throw new SQLException("wrong number of generated keys for inserted test cases");
+				}
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "adding test case";
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#createProblemSummary(org.cloudcoder.app.shared.model.Problem)
+	 */
+	@Override
+	public ProblemSummary createProblemSummary(final Problem problem) {
+		return databaseRun(new AbstractDatabaseRunnable<ProblemSummary>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public ProblemSummary run(Connection conn) throws SQLException {
+				// Determine how many students (non-instructor users) are in this course
+				int numStudentsInCourse = doCountStudentsInCourse(problem, conn, this);
+				
+				// Get all SubmissionReceipts
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sr.*, e.* " +
+						"  from " + SUBMISSION_RECEIPTS + " as sr, " + EVENTS + " as e " +
+						" where sr.event_id = e.event_id " +
+						"   and e.problem_id = ?");
+				stmt.setInt(1, problem.getProblemId());
+				
+				// Keep track of "best" submissions from each student.
+				HashMap<Integer, SubmissionReceipt> bestSubmissions = new HashMap<Integer, SubmissionReceipt>();
+				
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					SubmissionReceipt receipt = loadSubmissionReceiptAndEvent(resultSet);
+					
+					SubmissionReceipt prevBest = bestSubmissions.get(receipt.getEvent().getUserId());
+					SubmissionStatus curStatus = receipt.getStatus();
+					SubmissionStatus prevStatus = prevBest.getStatus();
+					if (prevStatus == null
+							|| curStatus == SubmissionStatus.TESTS_PASSED && prevStatus != SubmissionStatus.TESTS_PASSED
+							|| receipt.getNumTestsPassed() > prevBest.getNumTestsPassed()) {
+						// New receipt is better than the previous receipt
+						bestSubmissions.put(receipt.getEvent().getUserId(), receipt);
+					}
+				}
+				
+				// Aggregate the data
+				int started = 0;
+				int anyPassed = 0;
+				int allPassed = 0;
+				for (SubmissionReceipt r : bestSubmissions.values()) {
+					if (r.getStatus() == SubmissionStatus.TESTS_PASSED) {
+						started++;
+						allPassed++;
+						anyPassed++;
+					} else if (r.getNumTestsPassed() > 0) {
+						started++;
+						anyPassed++;
+					} else {
+						started++;
+					}
+				}
+				
+				// Create the ProblemSummary
+				ProblemSummary problemSummary = new ProblemSummary();
+				problemSummary.setNumStudents(numStudentsInCourse);
+				problemSummary.setNumStarted(started);
+				problemSummary.setNumPassedAtLeastOneTest(anyPassed);
+				problemSummary.setNumCompleted(allPassed);
+				
+				return problemSummary;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "get problem summary for problem";
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#getSubmissionReceipt(int)
+	 */
+	@Override
+	public SubmissionReceipt getSubmissionReceipt(final int submissionReceiptId) {
+		return databaseRun(new AbstractDatabaseRunnable<SubmissionReceipt>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public SubmissionReceipt run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sr.*, e.* " +
+						"  from " + SUBMISSION_RECEIPTS + " as sr, " +
+						"       " + EVENTS + " as e " +
+						" where sr.event_id = e.id " +
+						"   and e.event_id = ?");
+				stmt.setInt(1, submissionReceiptId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				if (resultSet.next()) {
+					SubmissionReceipt receipt = loadSubmissionReceiptAndEvent(resultSet);
+					return receipt;
+				}
+				return null;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "getting submission receipt";
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#insertTestResults(org.cloudcoder.app.shared.model.TestResult[], int)
+	 */
+	@Override
+	public void replaceTestResults(final TestResult[] testResults, final int submissionReceiptId) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				// Delete old test results (if any)
+				PreparedStatement delTestResults = prepareStatement(
+						conn,
+						"delete from " + TEST_RESULTS + " where submission_receipt_event_id = ?");
+				delTestResults.setInt(1, submissionReceiptId);
+				delTestResults.executeUpdate();
+				
+				// Insert new test results
+				doInsertTestResults(testResults, submissionReceiptId, conn, this);
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "store test results";
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#updateSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
+	 */
+	@Override
+	public void updateSubmissionReceipt(final SubmissionReceipt receipt) {
+		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				// Only update the fields that we expect might have changed
+				// following a retest.
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"update " + SUBMISSION_RECEIPTS + 
+						"  set status = ?, num_tests_attempted = ?, num_tests_passed = ?");
+				stmt.setInt(1, receipt.getStatus().ordinal());
+				stmt.setInt(2, receipt.getNumTestsAttempted());
+				stmt.setInt(3, receipt.getNumTestsPassed());
+				
+				stmt.executeUpdate();
+				
+				return true;
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "update submission receipt";
+			}
+		});
+	}
+
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
 			Connection conn = null;
@@ -617,7 +977,7 @@ public class JDBCDatabase implements IDatabase {
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
-				"insert into events values (NULL, ?, ?, ?, ?)", 
+				"insert into " + EVENTS + " values (NULL, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS
 		);
 		for (IContainsEvent change : containsEventList) {
@@ -658,18 +1018,33 @@ public class JDBCDatabase implements IDatabase {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into submission_receipts values (NULL, ?, ?, ?)"
+				"insert into " + SUBMISSION_RECEIPTS + " values (?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
 		);
-		storeNoId(receipt, stmt, 1);
+		store(receipt, stmt, 1);
 		stmt.execute();
 		
+//		// Get the generated key for this submission receipt
+//		ResultSet genKey = dbRunnable.getGeneratedKeys(stmt);
+//		if (!genKey.next()) {
+//			throw new SQLException("Could not get generated key for submission receipt");
+//		}
+//		receipt.setId(genKey.getInt(1));
+		
 		// Store the TestResults
+//		doInsertTestResults(testResultList, receipt.getId(), conn, dbRunnable);
+		doInsertTestResults(testResultList, receipt.getEventId(), conn, dbRunnable);
+	}
+
+	private void doInsertTestResults(TestResult[] testResultList,
+			int submissionReceiptId, Connection conn,
+			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
 		for (TestResult testResult : testResultList) {
-			testResult.setSubmissionReceiptId(receipt.getId());
+			testResult.setSubmissionReceiptEventId(submissionReceiptId);
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
-				"insert into test_results values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TEST_RESULTS + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		for (TestResult testResult : testResultList) {
@@ -710,7 +1085,7 @@ public class JDBCDatabase implements IDatabase {
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select p.* from problems as p, courses as c, course_registrations as r " +
+				"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
 				" where p.course_id = c.id " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
@@ -729,6 +1104,18 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		return resultList;
+	}
+
+	/**
+	 * @param problem
+	 * @param conn
+	 * @param abstractDatabaseRunnable
+	 * @return
+	 */
+	protected int doCountStudentsInCourse(Problem problem, Connection conn,
+			AbstractDatabaseRunnable<ProblemSummary> abstractDatabaseRunnable) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
@@ -752,17 +1139,25 @@ public class JDBCDatabase implements IDatabase {
 		problem.setDescription(resultSet.getString(index++));
 		problem.setWhenAssigned(resultSet.getLong(index++));
 		problem.setWhenDue(resultSet.getLong(index++));
+		problem.setSkeleton(resultSet.getString(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-		change.setId(resultSet.getInt(index++));
+//		change.setId(resultSet.getInt(index++));
 		change.setEventId(resultSet.getInt(index++));
 		change.setType(resultSet.getInt(index++));
 		change.setStartRow(resultSet.getInt(index++));
 		change.setEndRow(resultSet.getInt(index++));
 		change.setStartColumn(resultSet.getInt(index++));
 		change.setEndColumn(resultSet.getInt(index++));
-		change.setText(resultSet.getString(index++));
+		
+		// Only one of the two text columns (text_short and text)
+		// should be non-null.
+		String shortText = resultSet.getString(index++);
+		String longText = resultSet.getString(index++);
+		
+		String text = shortText != null ? shortText : longText;
+		change.setText(text);
 	}
 
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
@@ -786,13 +1181,16 @@ public class JDBCDatabase implements IDatabase {
 		testCase.setTestCaseName(resultSet.getString(index++));
 		testCase.setInput(resultSet.getString(index++));
 		testCase.setOutput(resultSet.getString(index++));
+		testCase.setSecret(resultSet.getBoolean(index++));
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-		submissionReceipt.setId(resultSet.getInt(index++));
+//		submissionReceipt.setId(resultSet.getInt(index++));
 		submissionReceipt.setEventId(resultSet.getInt(index++));
 		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
 		submissionReceipt.setStatus(resultSet.getInt(index++));
+		submissionReceipt.setNumTestsAttempted(submissionReceipt.getNumTestsAttempted());
+		submissionReceipt.setNumTestsPassed(submissionReceipt.getNumTestsPassed());
 	}
 	
 	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
@@ -802,6 +1200,14 @@ public class JDBCDatabase implements IDatabase {
 		event.setType(resultSet.getInt(index++));
 		event.setTimestamp(resultSet.getLong(index++));
 	}
+	
+	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
+		reg.setId(resultSet.getInt(index++));
+		reg.setCourseId(resultSet.getInt(index++));
+		reg.setUserId(resultSet.getInt(index++));
+		reg.setRegistrationType(resultSet.getInt(index++));
+		reg.setSection(resultSet.getInt(index++));
+	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, event.getUserId());
@@ -810,27 +1216,79 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setLong(index++, event.getTimestamp());
 	}
 
-	protected void storeNoId(Change change, PreparedStatement stmt, int index) throws SQLException {
+	protected void store(Change change, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, change.getEventId());
 		stmt.setInt(index++, change.getType().ordinal());
 		stmt.setInt(index++, change.getStartRow());
 		stmt.setInt(index++, change.getEndRow());
 		stmt.setInt(index++, change.getStartColumn());
 		stmt.setInt(index++, change.getEndColumn());
-		stmt.setString(index++, change.getText());
+		
+		// Determine if text can be stored in text_short column,
+		// or if it must be stored in the text (blob) column.
+		String text = change.getText();
+		
+		String shortText = null;
+		String longText = null;
+		
+		if (text.length() < Change.MAX_TEXT_LEN_IN_ROW) {
+			shortText = text;
+		} else {
+			longText = text;
+		}
+		
+		stmt.setString(index++, shortText);
+		stmt.setString(index++, longText);
 	}
 
-	protected void storeNoId(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
+	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, receipt.getEventId());
 		stmt.setLong(index++, receipt.getLastEditEventId());
 		stmt.setInt(index++, receipt.getStatus().ordinal());
+		stmt.setInt(index++, receipt.getNumTestsAttempted());
+		stmt.setInt(index++, receipt.getNumTestsPassed());
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testResult.getSubmissionReceiptId());
+		stmt.setInt(index++, testResult.getSubmissionReceiptEventId());
 		stmt.setInt(index++, testResult.getOutcome().ordinal());
 		stmt.setString(index++, testResult.getMessage());
 		stmt.setString(index++, testResult.getStdout());
 		stmt.setString(index++, testResult.getStderr());
+	}
+	
+	protected void storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, problem.getCourseId());
+		stmt.setInt(index++, problem.getProblemType().ordinal());
+		stmt.setString(index++, problem.getTestName());
+		stmt.setString(index++, problem.getBriefDescription());
+		stmt.setString(index++, problem.getDescription());
+		stmt.setLong(index++, problem.getWhenAssigned());
+		stmt.setLong(index++, problem.getWhenDue());
+		stmt.setString(index++, problem.getSkeleton());
+	}
+
+	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, testCase.getProblemId());
+		stmt.setString(index++, testCase.getTestCaseName());
+		stmt.setString(index++, testCase.getInput());
+		stmt.setString(index++, testCase.getOutput());
+		stmt.setBoolean(index++, testCase.isSecret());
+	}
+
+	protected Change getChangeAndEvent(ResultSet resultSet) throws SQLException {
+		Change change = new Change();
+		load(change, resultSet, 1);
+		Event event = new Event();
+		load(event, resultSet, Change.NUM_FIELDS + 1);
+		change.setEvent(event);
+		return change;
+	}
+
+	private SubmissionReceipt loadSubmissionReceiptAndEvent(ResultSet resultSet) throws SQLException {
+		SubmissionReceipt submissionReceipt = new SubmissionReceipt();
+		load(submissionReceipt, resultSet, 1);
+		load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+		return submissionReceipt;
 	}
 }

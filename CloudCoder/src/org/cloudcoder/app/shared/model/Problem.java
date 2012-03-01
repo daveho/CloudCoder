@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,44 +17,28 @@
 
 package org.cloudcoder.app.shared.model;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
-
 import java.io.Serializable;
 import java.util.Date;
 
-//@Entity
-//@Table(name="problems")
+/**
+ * A problem that has been assigned in a Course.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
+ */
 public class Problem implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	//	@Id 
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="problem_id")
 	private Integer problemId;
-	
-//	@Column(name="course_id")
 	private Integer courseId;
-	
 	private ProblemType problemType;
-
-//	@Column(name="testname")
 	private String testName;
-
-//	@Column(name="brief_description")
 	private String briefDescription;
-	
-//	@Column(name="description")
 	private String description;
-	
 	private long whenAssigned;
-	
 	private long whenDue;
+	private String skeleton;
 
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
@@ -171,5 +155,26 @@ public class Problem implements Serializable
 	 */
 	public void setWhenDue(long whenDue) {
 		this.whenDue = whenDue;
+	}
+	
+	/**
+	 * @param skeleton the skeleton to set
+	 */
+	public void setSkeleton(String skeleton) {
+		this.skeleton = skeleton;
+	}
+	
+	/**
+	 * @return the skeleton
+	 */
+	public String getSkeleton() {
+		return skeleton;
+	}
+
+	/**
+	 * @return true if this problem has a skeleton, false if not
+	 */
+	public boolean hasSkeleton() {
+		return skeleton != null;
 	}
 }

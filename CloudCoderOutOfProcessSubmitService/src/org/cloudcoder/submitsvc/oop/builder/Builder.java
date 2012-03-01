@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,17 +18,21 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -53,6 +57,7 @@ public class Builder implements Runnable {
     
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
+	private NoConnectTimer noConnectTimer;
 	private String host;
 	private int port;
 	private Map<Integer, Problem> problemIdToProblemMap;
@@ -64,6 +69,7 @@ public class Builder implements Runnable {
 
 	public Builder(String host, int port) {
 		this.shutdownRequested = false;
+		this.noConnectTimer = new NoConnectTimer();
 		this.host = host;
 		this.port = port;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
@@ -112,6 +118,13 @@ public class Builder implements Runnable {
 					Integer problemId = safeReadObject();
 					working = true;
 					
+					// The CloudCoder app may send us a negative problem id as
+					// a keepalive signal.  We can just ignore these.
+					if (problemId < 0) {
+						//logger.debug("Received keepalive signal from CloudCoder app");
+						continue requestLoop;
+					}
+					
 					Problem problem = problemIdToProblemMap.get(problemId);
 					List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
 
@@ -130,27 +143,9 @@ public class Builder implements Runnable {
 					// read program text
 					String programText = safeReadObject();
 
-					SubmissionResult result;
-					try {
-					    ITester tester=getTester(problem.getProblemType());
-					    Submission submission=new Submission(problem, testCaseList, programText);
-					    result=tester.testSubmission(submission);
-					} catch (Throwable e) {
-						CompilationResult compres=
-						        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
-						logger.error("Builder error", e);
-						result=new SubmissionResult(compres);
-					}
-					logger.info("Sending SubmissionResult back to server");
-					if (result==null) {
-					    logger.error("null SubmissionResult");
-					} else {
-					    if (result.getTestResults()==null) {
-					        logger.error("null TestResult");
-					    } else {
-					        logger.info(result.getTestResults().length+" results");
-					    }
-					}
+					// Send the submission details to Builder for testing,
+					// read response.
+					SubmissionResult result = sendSubmissionForTesting(problem, testCaseList, programText);
 					
 					out.writeObject(result);
 					out.flush();
@@ -167,15 +162,43 @@ public class Builder implements Runnable {
 			}
 	}
 
+	private SubmissionResult sendSubmissionForTesting(Problem problem,
+			List<TestCase> testCaseList, String programText) {
+		SubmissionResult result;
+		try {
+		    ITester tester=getTester(problem.getProblemType());
+		    Submission submission=new Submission(problem, testCaseList, programText);
+		    result=tester.testSubmission(submission);
+		} catch (Throwable e) {
+			CompilationResult compres=
+			        new CompilationResult(CompilationOutcome.BUILDER_ERROR);
+			logger.error("Builder error", e);
+			result=new SubmissionResult(compres);
+		}
+		logger.info("Sending SubmissionResult back to server");
+		if (result==null) {
+		    logger.error("null SubmissionResult");
+		} else {
+		    if (result.getTestResults()==null) {
+		        logger.error("null TestResult");
+		    } else {
+		        logger.info(result.getTestResults().length+" results");
+		    }
+		}
+		return result;
+	}
+
 	public void attemptToConnectToServer() {
 		try {
 			this.socket = new Socket(host, port);
 			this.in = new ObjectInputStream(socket.getInputStream());
 			logger.info("Connected!");
+			noConnectTimer.connected();
 			this.out = new ObjectOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			// ClientCoder server may not be running right now...try again soon
-			logger.error("Cannot connect to CloudCoder server");
+			//logger.error("Cannot connect to CloudCoder server");
+			noConnectTimer.notConnected();
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException ee) {
@@ -195,7 +218,9 @@ public class Builder implements Runnable {
 
 	public void shutdown() {
 		shutdownRequested = true;
-		if (!working) {
+		if (working) {
+			logger.warn("shutdown(): cannot close worker socket because working=true");
+		} else {
 			try {
 				// Rude, but effective.
 				Socket s = socket;
@@ -208,20 +233,112 @@ public class Builder implements Runnable {
 		}
 	}
 
-	public static void main(String[] args) {
-		if (args.length < 1 || args.length > 2) {
-			System.err.println("Usage: " + Builder.class.getName() + " <CloudCoder app host name>");
-			System.exit(1);
+	private static final int DEFAULT_PORT = 47374;
+	
+	private static class Options {
+		private String appHost;
+		private int appPort;
+		private int numThreads;
+		
+		public Options() {
+			this.appHost = "localhost";
+			this.appPort = DEFAULT_PORT;
+			this.numThreads = 2;
+		}
+		
+		/**
+		 * @return the appHost
+		 */
+		public String getAppHost() {
+			return appHost;
+		}
+		
+		/**
+		 * @return the appPort
+		 */
+		public int getAppPort() {
+			return appPort;
+		}
+		
+		/**
+		 * @return the numThreads
+		 */
+		public int getNumThreads() {
+			return numThreads;
+		}
+		
+		public boolean parse(String[] args) {
+			for (String arg : args) {
+				if (arg.startsWith("--appHost=")) {
+					this.appHost = arg.substring("--appHost=".length());
+				} else if (arg.startsWith("--appPort=")) {
+					this.appPort = Integer.parseInt(arg.substring("--appPort=".length()));
+				} else if (arg.startsWith("--numThreads=")) {
+					this.numThreads = Integer.parseInt(arg.substring("--numThreads=".length()));
+				} else {
+					System.err.println("Unknown argument: " + arg);
+					return false;
+				}
+			}
+			return true;
 		}
 
-		// Determine the host name and port for the CloudCoder webapp.
-		String appHost = args[0];
-		Integer appPort = args.length > 1 ? Integer.decode(args[1]) : OutOfProcessSubmitService.PORT;
+		/**
+		 * Initialize from Properties (the local.properties file generated by configure.pl).
+		 * 
+		 * @param properties the Properties (i.e., local.properties generated by configure.pl)
+		 */
+		public void setFromProperties(Properties properties) {
+			if (properties.containsKey("cloudcoder.submitsvc.oop.host")) {
+				this.appHost = properties.getProperty("cloudcoder.submitsvc.oop.host");
+			}
+			if (properties.containsKey("cloudcoder.submitscvc.oop.port")) {
+				this.appPort = Integer.parseInt(properties.getProperty("cloudcoder.submitscvc.oop.port"));
+			}
+			if (properties.containsKey("cloudcoder.submitsvc.oop.numThreads")) {
+				this.numThreads = Integer.parseInt(properties.getProperty("cloudcoder.submitsvc.oop.numThreads"));
+			}
+		}
+	}
+	
+	private static class BuilderAndThread {
+		final Builder builder;
+		final Thread thread;
+		public BuilderAndThread(Builder builder, Thread thread) {
+			this.builder = builder;
+			this.thread = thread;
+		}
+	}
+
+	public static void main(String[] args) {
+		Options options = new Options();
+		readLocalProperties(options);
 		
-		// Start the Builder
-		Builder builder = new Builder(appHost, appPort);
-		Thread thread = new Thread(builder);
-		thread.start();
+		// Parse command-line options
+		if (!options.parse(args)) {
+			System.err.println("Usage: " + Builder.class.getName() + " [options...]");
+			System.err.println("  --appHost=<hostname>         specify CloudCoder application hostname");
+			System.err.println("  --appPort=<port>             specify CloudCoder application port");
+			System.err.println("  --numThreads=<num threads>   number of builder threads (parallelism)");
+			System.exit(1);
+		}
+		
+		logger.info("Builder starting");
+		logger.info("appHost={}", options.getAppHost());
+		logger.info("appPort={}", options.getAppPort());
+		logger.info("numThreads={}", options.getNumThreads());
+
+		// Start Builder threads
+		List<BuilderAndThread> builderAndThreadList = new ArrayList<Builder.BuilderAndThread>();
+		for (int i = 0; i < options.getNumThreads(); i++) {
+			Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
+			Thread thread_ = new Thread(builder_);
+	
+			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
+			builderAndThreadList.add(builderAndThread);
+			
+			builderAndThread.thread.start();
+		}
 
 		// Wait until "quit" is written to the FIFO
 		try {
@@ -234,11 +351,11 @@ public class Builder implements Runnable {
 				while (true) {
 					String line = reader.readLine();
 					if (line == null) {
-						System.err.println("Reached EOF on FIFO?");
+						logger.warn("Reached EOF on FIFO?");
 						break;
 					}
 					if (line.trim().toLowerCase().equals("quit")) {
-						System.out.println("Quit command read from FIFO");
+						logger.info("Quit command read from FIFO");
 						break;
 					}
 				}
@@ -246,16 +363,38 @@ public class Builder implements Runnable {
 				reader.close();
 			}
 		} catch (IOException e) {
-			System.err.println("IOException reading from FIFO: " + e.getMessage());
-			e.printStackTrace(System.err);
+			logger.error("IOException reading from FIFO", e);
 		}
 
+		// Shut down all Builder threads
+		for (BuilderAndThread builderAndThread : builderAndThreadList) {
+			try {
+				builderAndThread.builder.shutdown();
+				builderAndThread.thread.join();
+				logger.info("Finished");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static void readLocalProperties(Options options) {
 		try {
-			builder.shutdown();
-			thread.join();
-			logger.warn("Finished");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			String localProperties = System.getProperty("local.properties");
+			if (localProperties != null) {
+				Properties properties = new Properties();
+				Reader reader = new InputStreamReader(new FileInputStream(localProperties));
+				try {
+					properties.load(reader);
+				} finally {
+					IOUtils.closeQuietly(reader);
+				}
+				
+				options.setFromProperties(properties);
+			}
+		} catch (IOException e) {
+			logger.error("Error reading local properties file", e);
+			System.exit(1);
 		}
 	}
 }

@@ -18,46 +18,57 @@ Start by checking out CloudCoder from github:
 
   git clone https://github.com/daveho/CloudCoder.git
 
-This will create a "CloudCoder" directory with three subdirectories:
+This will create a "CloudCoder" directory with four subdirectories:
 
   CloudCoder
+  CloudCoderImporter
   CloudCoderOutOfProcessSubmitService
   CloudCoderWebServer
 
-Import all of the projects into Eclipse.  (Recommended:
-File->Import->Git->Projects from Git, add the git repository
-you just created with the clone command, and then
-import all of the Eclipse projects in it.)
-
-Make sure all three working directories are extracted in
+Make sure all four projects are extracted in
 the same place.  (This will happen automatically if you cloned the
 CloudCoder git repository as described above.)  The directory
 containing these subdirectories will be referred to as $BASE.
 
-Step 1 - Building Projects
+Note: it is likely that you will want to host the web application
+on one server, and host the "builder" (the component that
+compiles and tests student submissions) on another
+servers.  You should check out the code on both servers.
+
+Step 1 - Configuring and Building
+---------------------------------
+
+Configuring and installing the webapp (on the server where
+you will be hosting the webapp):
+
+  cd $BASE
+  ./configure.pl -webapp
+  ./build_webapp.pl
+
+[Note that the above will prompt you for the location of the
+GWT SDK - the directory containing the "webAppCreator" script.
+You can use the SDK in your Eclipse installation, or you can
+use a standalone GWT SDK.  It must be version 2.4.0 or later.]
+
+Configuring and installing the builder (on the server where you
+will be hosting the builder):
+
+  cd $BASE
+  ./configure.pl -builder
+  cd CloudCoderOutOfProcessBuildService
+  ant build
+
+Note: it is highly recommended that you create a new user
+account for the builder.  Make sure that this user does not
+have access to any sensitive information (ssh keys, etc.)
+Because the Builder executes untrusted code, it is possible
+that files in the user account in which the builder is
+run could be accessed.
+
+Step 2 - Start the web app
 --------------------------
 
-Build the CloudCoder project using the Google toolbar item,
-choosing the "GWT Compile Project..." menu item.  (You will
-need the Google Eclipse Plugin and GWT version 2.4.0 or later.)
-
-The other two projects will be built automatically.
-
-Step 2 - Copy compiled web app to web server project
-----------------------------------------------------
-
-From the command line:
-
-  cd $BASE/CloudCoder
-  ./copy_webapp.sh
-
-This will copy the compiled web application into the "apps"
-subdirectory of CloudCoderWebServer.
-
-Step 3 - Start the web app
---------------------------
-
-From the command line
+On the webapp server:
 
   cd $BASE/CloudCoderWebServer
   ./start.sh
@@ -67,30 +78,15 @@ It will listen on port 8081.
 
 TODO: allow use of SSL.
 
-Step 4 - Start the builder
+Step 3 - Start the builder
 --------------------------
 
-The builder (a server which builds and tests submissions) can run
-on a different host as the web server which hosts the web application.
-Also, many builders may be used with a single web application.
-This is encouraged: in order to minimize the latency between the
-student submitting their work and the system responding with tests
-results, as many builders as necessary should be deployed.
-We'll refer to the hostname of the webserver hosting the web app
-as $WEBSERVER.
+On the builder server:
 
-By default, the port 47374 is used to allow Builders to connect to
-the web application.
+  cd $BASE/CloudCoderOutOfProcessBuildService
+  ./start.sh
 
-From the command line:
-
-  cd $BASE/CloudCoderOutOfProcessSubmitService
-  ./start.sh $WEBSERVER
-
-This will start a builder connected to the web app running on
-$WEBSERVER.
-
-Step 5 - Profit
+Step 4 - Profit
 ---------------
 
 At this point you should be able to point your web browser at
@@ -98,4 +94,3 @@ At this point you should be able to point your web browser at
   http://$WEBSERVER:8080
 
 and use the running CloudCoder application.
-  

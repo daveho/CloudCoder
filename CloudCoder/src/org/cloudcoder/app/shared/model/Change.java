@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,43 +17,35 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
-
-import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * Object representing a textual change.
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-//@Entity
-//@Table(name="changes")
-public class Change implements IsSerializable, IContainsEvent {
+public class Change implements Serializable, IContainsEvent {
+	private static final long serialVersionUID = 1L;
 
-//	@Id
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="id")
-	private long id;
+	/**
+	 * Maximum number of characters that may be stored as text
+	 * directly in a row of the changes table.
+	 * Text values which are longer will be stored in a blob.
+	 */
+	public static final int MAX_TEXT_LEN_IN_ROW = 40;
+	
+	public static final int NUM_FIELDS = 7;
 
-//	@Column(name="event_id")
+	//private long id;
 	private int eventId;
-
-//	@Column(name="type")
 	private int type;
-//	@Column(name="start_row")
 	private int startRow;
-//	@Column(name="start_col")
 	private int startColumn;
-//	@Column(name="end_row")
 	private int endRow;
-//	@Column(name="end_col")
 	private int endColumn;
-	//    @Column(name="timestamp")
-	//	private long timestamp;
-//	@Column(name="text")
 	private String text;
 
-//	@Transient
 	private Event event;
 
 
@@ -167,21 +159,21 @@ public class Change implements IsSerializable, IContainsEvent {
 	//		return timestamp;
 	//	}
 
-	/**
-	 * @return the id
-	 */
-	public long getId()
-	{
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(long id)
-	{
-		this.id = id;
-	}
+//	/**
+//	 * @return the id
+//	 */
+//	public long getId()
+//	{
+//		return id;
+//	}
+//
+//	/**
+//	 * @param id the id to set
+//	 */
+//	public void setId(long id)
+//	{
+//		this.id = id;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEventId(int)

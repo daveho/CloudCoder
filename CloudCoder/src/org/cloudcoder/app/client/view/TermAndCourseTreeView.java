@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -149,6 +149,11 @@ public class TermAndCourseTreeView extends Composite {
 		model = new Model(courseList);
 		cellTree = new CellTree(model, null);
 		initWidget(cellTree);
+		
+		// Expand the first child of the root.
+		if (cellTree.getRootTreeNode().getChildCount() > 0) {
+			cellTree.getRootTreeNode().setChildOpen(0, true);
+		}
 	}
 	
 	/**
@@ -161,7 +166,7 @@ public class TermAndCourseTreeView extends Composite {
 	}
 
 	/**
-	 * @return
+	 * @return the currently selected course
 	 */
 	public Course getSelectedCourse() {
 		return model.selectionModel.getSelectedObject();

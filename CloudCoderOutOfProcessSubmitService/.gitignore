@@ -1,4 +1,8 @@
 /log
 /builder
-*.fifo
-*.pid
+/*.fifo
+/*.pid
+/bin
+/log.txt
+/testfiles/workdir
+/lib/cloudCoderModelClasses.jar

@@ -7,7 +7,7 @@ package org.cloudcoder.app.shared.model;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
 /**
  * "Superclass" for event types.
@@ -17,7 +17,9 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 //@Entity
 //@Table(name="events")
-public class Event implements IsSerializable {
+public class Event implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
 //	@Column(name="id")

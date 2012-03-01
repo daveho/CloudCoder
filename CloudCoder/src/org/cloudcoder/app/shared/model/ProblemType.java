@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -45,5 +45,25 @@ public enum ProblemType {
 	 * Problem involving writing a complete C program,
 	 * complete with #includes, a main function, etc.
 	 */
-	C_PROGRAM,
+	C_PROGRAM;
+	
+	/**
+	 * Get the Language associated with this ProblemType.
+	 * 
+	 * @return the Language associated with this ProblemType
+	 */
+	public Language getLanguage() {
+		switch (this) {
+		case JAVA_METHOD:
+			return Language.JAVA;
+		case PYTHON_FUNCTION:
+			return Language.PYTHON;
+		case C_FUNCTION:
+			return Language.C;
+		case C_PROGRAM:
+			return Language.C;
+		default:
+			throw new IllegalStateException("unknown ProblemType");
+		}
+	}
 }

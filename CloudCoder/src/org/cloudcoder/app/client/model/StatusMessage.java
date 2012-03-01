@@ -1,6 +1,6 @@
 // CloudCloder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -23,9 +23,24 @@ package org.cloudcoder.app.client.model;
  * know about.
  */
 public class StatusMessage {
+	/**
+	 * Status message categories.
+	 */
 	public enum Category {
+		/** An informational status message. */
 		INFORMATION,
+		
+		/** An error message. */
 		ERROR,
+		
+		/** A notification of good news, e.g., all tests passed. */
+		GOOD_NEWS,
+		
+		/**
+		 * A status message describing a potentially long-running operation
+		 * (like testing a submission(.
+		 */
+		PENDING,
 	}
 	
 	private Category category;

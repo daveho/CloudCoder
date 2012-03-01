@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -48,23 +48,72 @@ public class SubmissionResult implements Serializable
     }
 
     /**
-     * @param outcomes
+     * @param outcomes the array of test results to set
      */
     public void setTestResults(TestResult[] outcomes) {
         this.testResults=outcomes;
     }
 
     /**
-     * @return
+     * @return the array of TestResults
      */
     public TestResult[] getTestResults() {
         return testResults;
     }
 
     /**
-     * @return
+     * @return true if the submission compiled, false otherwise
      */
     public boolean isCompiled() {
         return compilationResult.getOutcome()==CompilationOutcome.SUCCESS;
     }
+
+	/**
+	 * @return true if all tests passed, false if at least one
+	 *         test did not pass
+	 */
+	public boolean isAllTestsPassed() {
+		return testResults != null && (getNumTestsAttempted() == getNumTestsPassed());
+	}
+
+	/**
+	 * @return the number of test results which PASSED
+	 */
+	public int getNumTestsPassed() {
+		int numPassed = 0;
+		for (TestResult testResult : testResults) {
+			if (testResult.getOutcome() == TestOutcome.PASSED) {
+				numPassed++;
+			}
+		}
+		return numPassed;
+	}
+
+	/**
+	 * @return the number of tests attempted
+	 */
+	public int getNumTestsAttempted() {
+		return testResults.length;
+	}
+
+	/**
+	 * Determine a {@link SubmissionStatus} for this SubmissionResult.
+	 * 
+	 * @return the SubmissionStatus
+	 */
+	public SubmissionStatus determineSubmissionStatus() {
+		// Determine status
+		SubmissionStatus status;
+		if (this.getCompilationResult().getOutcome() == CompilationOutcome.SUCCESS) {
+			// Check to see whether or not all tests passed
+			status = this.isAllTestsPassed() ? SubmissionStatus.TESTS_PASSED : SubmissionStatus.TESTS_FAILED;
+		} else if (this.getCompilationResult().getOutcome() == CompilationOutcome.FAILURE) {
+			// Compile error(s)
+			status = SubmissionStatus.COMPILE_ERROR;
+		} else {
+			// Something unexpected prevented compilation and/or testing
+			status = SubmissionStatus.BUILD_ERROR;
+		}
+		return status;
+	}
 }

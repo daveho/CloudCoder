@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -26,21 +26,21 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
  * Table view for compiler diagnostics.
  * 
  * @author David Hovemeyer
  */
-public class CompilerDiagnosticListView extends Composite implements SessionObserver, Subscriber {
+public class CompilerDiagnosticListView extends ResizeComposite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<CompilerDiagnostic> cellTable;
 	
 	public CompilerDiagnosticListView() {
 		cellTable = new DataGrid<CompilerDiagnostic>();
-		cellTable.setSize("100%", "100%");
 		
 		// Add columns
 		cellTable.addColumn(new MessageColumn(), "Message");
@@ -93,7 +93,17 @@ public class CompilerDiagnosticListView extends Composite implements SessionObse
 	}
 
 	private void displayCompilerDiagnostics(CompilerDiagnostic[] compilerDiagnosticList) {
-		cellTable.setRowCount(compilerDiagnosticList.length);
+		GWT.log("CompilerDiagnosticListView: displaying " + compilerDiagnosticList.length + " diagnostics");
+//		cellTable.setRowCount(compilerDiagnosticList.length);
 		cellTable.setRowData(Arrays.asList(compilerDiagnosticList));
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.view.IResultsTabPanelWidget#setSelected()
+	 */
+	@Override
+	public void setSelected() {
+		// Workaround for http://code.google.com/p/google-web-toolkit/issues/detail?id=7065
+		cellTable.redraw();
 	}
 }
