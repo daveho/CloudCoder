@@ -18,8 +18,6 @@
 package org.cloudcoder.app.server.admin;
 
 import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,15 +26,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.User;
-import org.dom4j.Document;
-import org.dom4j.DocumentFactory;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
  * Servlet to retrieve information about problem submissions.
@@ -66,27 +62,22 @@ public class Problems extends HttpServlet {
 			return;
 		}
 		
-		User user = (User) req.getAttribute("User");
-		Course course = (Course) req.getAttribute("Course");
+		User user = (User) req.getAttribute(RequestAttributeKeys.USER_KEY);
+		Course course = (Course) req.getAttribute(RequestAttributeKeys.COURSE_KEY);
 		
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
 		}
 	}
 
-	private void summarizeProblems(User user, Course course,
-		HttpServletResponse resp) throws IOException {
+	private void summarizeProblems(User user, Course course, HttpServletResponse resp) throws IOException {
 		// Just summarize problems available in this course
-		List<Problem> problemList = Database.getInstance().getProblemsInCourse(user, course);
-
-		// If you ever wonder why many so people hate Java, have a look
-		// at the APIs for processing XML.  dom4j is the only one that
-		// isn't evil.
 		
-		Document doc = DocumentFactory.getInstance().createDocument();
-		Element root = doc.addElement("problems");
-		for (Problem problem : problemList) {
-			ProblemSummary problemSummary = Database.getInstance().createProblemSummary(problem);
-		}
+		resp.setContentType("text/xml");
+		
+		ProblemList problemList = Database.getInstance().getProblemsInCourse(user, course);
+		XStream xstream = new XStream(new StaxDriver());
+		xstream.processAnnotations(ProblemList.class);
+		xstream.toXML(problemList, resp.getWriter());
 	}
 }

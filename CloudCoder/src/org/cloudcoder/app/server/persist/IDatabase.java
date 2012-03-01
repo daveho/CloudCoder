@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -71,7 +72,7 @@ public interface IDatabase {
 	 * @return list of triples (Course, Term, CourseRegistration)
 	 */
 	public List<? extends Object[]> getCoursesForUser(User user);
-	public List<Problem> getProblemsInCourse(User user, Course course);
+	public ProblemList getProblemsInCourse(User user, Course course);
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
 	public void storeChanges(Change[] changeList);
 	public List<TestCase> getTestCasesForProblem(int problemId);
