@@ -40,6 +40,7 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -475,11 +476,11 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	@Override
-	public List<Problem> getProblemsInCourse(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnable<List<Problem>>() {
+	public ProblemList getProblemsInCourse(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnable<ProblemList>() {
 			@Override
-			public List<Problem> run(Connection conn) throws SQLException {
-				return doGetProblemsInCourse(user, course, conn, this);
+			public ProblemList run(Connection conn) throws SQLException {
+				return new ProblemList(doGetProblemsInCourse(user, course, conn, this));
 			}
 			@Override
 			public String getDescription() {

@@ -66,7 +66,7 @@ public abstract class CourseAdminAuthorizationFilter extends AdminAuthorizationF
 			CourseRegistration reg = (CourseRegistration) triple[2];
 			if (reg.getCourseId() == courseId && reg.getRegistrationType() == CourseRegistrationType.INSTRUCTOR) {
 				isInstructorInCourse = true;
-				req.setAttribute("Course", (Course) triple[0]);
+				req.setAttribute(RequestAttributeKeys.COURSE_KEY, (Course) triple[0]);
 				break;
 			}
 		}

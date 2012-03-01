@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" output="test-classes" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-api-1.6.4.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-log4j12-1.6.4.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/commons-io-2.1.jar">
@@ -11,11 +10,12 @@
 			<attribute name="javadoc_location" value="http://commons.apache.org/io/api-release"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/dom4j-1.6.1.jar">
+	<classpathentry kind="lib" path="war/WEB-INF/lib/xstream-1.4.2.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="http://dom4j.sourceforge.net/dom4j-1.6.1/apidocs/"/>
+			<attribute name="javadoc_location" value="http://xstream.codehaus.org/javadoc/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

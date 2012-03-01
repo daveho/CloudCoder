@@ -132,7 +132,11 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		} else if (name.equals(DevelopmentPage.class.getName())) {
 			return new DevelopmentPage();
 		}
-		return null;
+		
+		// This shouldn't happen (can't find page for Activity),
+		// but if it does, go to the courses and problems page.
+		GWT.log("Can't find activity " + result.getName());
+		return new CoursesAndProblemsPage2();
 	}
 	
 	protected Activity getActivityForPage(CloudCoderPage page) {

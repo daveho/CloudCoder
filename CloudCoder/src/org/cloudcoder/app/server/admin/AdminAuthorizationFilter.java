@@ -97,6 +97,8 @@ public abstract class AdminAuthorizationFilter implements Filter {
 			return;
 		}
 		
+		req.setAttribute(RequestAttributeKeys.USER_KEY, user);
+		
 		// Delegate to subclass to do servlet-specific checks.
 		checkAuthorization(user, req, resp, chain);
 	}
