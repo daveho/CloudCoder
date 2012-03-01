@@ -4,21 +4,24 @@ use strict;
 
 my @pats = ();
 
+my $numfmt = '';
+
 while (<>) {
 	chomp;
 	while (length($_) > 0) {
 		if (!/%/) {
 			Text($_);
 			$_ = '';
-		} elsif (/^([^%]*)%([a-z]+(\([^\)]+\))?)(.*)$/) {
+		} elsif (/^([^%]*)%(([a-z]+)(\(([^\)]+)\))?)(.*)$/) {
 			my $pfx = $1;
-			my $directive = $2;
-			my $rest = $4;
+			my $directive_name = $3;
+			my $directive_opts = $5;
+			my $rest = $6;
 			#print "pfx=$pfx, directive=$directive, rest=$rest\n";
 			if (length($pfx) > 0) {
 				Text($pfx);
 			}
-			Directive($directive);
+			Directive($directive_name, $directive_opts);
 			$_ = $rest;
 		} else {
 			die "unmatched: $_\n";
@@ -43,9 +46,7 @@ sub Text {
 	my @chunks = split(/\s+/, $txt);
 
 	my $regex = '';
-	if (!First()) {
-		$regex .= '\s+';
-	}
+	$regex .= '\s+' if (!First());
 	foreach my $chunk (@chunks) {
 		$regex .= "\\Q$chunk\\E";
 	}
@@ -54,7 +55,29 @@ sub Text {
 }
 
 sub Directive {
-	my ($directive) = @_;
-	push @pats, "[$directive]";
+	my ($name, $opts) = @_;
+
+	if ($name eq 'numfmt') {
+		$numfmt = $opts;
+	} elsif ($name eq 'numrange') {
+		$opts =~ s,\s,,g;
+		my ($min, $max, $incr) = split(',', $opts);
+		$incr = 1 if (!defined $incr);
+
+		for (my $i = $min; $i <= $max; $i += $incr) {
+			Num($i);
+		}
+	}
+}
+
+sub Num {
+	my ($val) = @_;
+	my $regex = '';
+	$regex .= '\s+' if (!First());
+	if ($numfmt eq 'int') {
+		$regex .= '(0*)';
+		$regex .= int($val);
+	}
+	push @pats, $regex;
 }
 
