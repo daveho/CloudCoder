@@ -17,10 +17,18 @@
 
 package org.cloudcoder.app.shared.model;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 /**
+ * Object summarizing student work on a {@link Problem}.
+ * 
  * @author David Hovemeyer
  */
+@XStreamAlias("problemsummary")
 public class ProblemSummary {
+	private int problemId;
+	private String testName;
+	private String briefDescription;
 	private int numStudents;
 	private int numStarted;
 	private int numPassedAtLeastOneTest;
@@ -28,6 +36,12 @@ public class ProblemSummary {
 	
 	public ProblemSummary() {
 		
+	}
+	
+	public void setProblem(Problem problem) {
+		this.problemId = problem.getProblemId();
+		this.testName = problem.getTestName();
+		this.briefDescription = problem.getBriefDescription();
 	}
 	
 	/**
