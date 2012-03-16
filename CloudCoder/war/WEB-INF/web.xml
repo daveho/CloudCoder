@@ -45,6 +45,7 @@
   <servlet>
     <servlet-name>Login</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.LoginServiceImpl</servlet-class>
+    <!--
     <init-param>
     		<description>
     		Choices include:
@@ -66,6 +67,7 @@
 		<param-name></param-name>
 		<param-value></param-value>
 	</init-param>
+	  -->
   </servlet>
   <servlet>
     <servlet-name>GetCoursesAndProblems</servlet-name>
