@@ -18,6 +18,7 @@
 package org.cloudcoder.app.server.admin;
 
 import java.io.IOException;
+import java.io.Writer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,12 +27,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
+import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemSummaryList;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamer;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
@@ -67,6 +74,9 @@ public class Problems extends HttpServlet {
 		
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
+		} else {
+			int problemId = problemURLInfo.getProblemId();
+			summarizeStudentWorkOnProblem(user, course, problemId, resp);
 		}
 	}
 
@@ -76,8 +86,34 @@ public class Problems extends HttpServlet {
 		resp.setContentType("text/xml");
 		
 		ProblemList problemList = Database.getInstance().getProblemsInCourse(user, course);
-		XStream xstream = new XStream(new StaxDriver());
-		xstream.processAnnotations(ProblemList.class);
-		xstream.toXML(problemList, resp.getWriter());
+		
+		ProblemSummaryList problemSummaryList = new ProblemSummaryList();
+		for (Problem problem : problemList.getProblemList()) {
+			ProblemSummary problemSummary = Database.getInstance().createProblemSummary(problem);
+			problemSummaryList.add(problemSummary);
+		}
+		
+		XStream xstream = new XStream(new StaxDriver(){
+			/* (non-Javadoc)
+			 * @see com.thoughtworks.xstream.io.xml.StaxDriver#createWriter(java.io.Writer)
+			 */
+			@Override
+			public HierarchicalStreamWriter createWriter(Writer out) {
+				return new PrettyPrintWriter(out);
+			}
+		});
+		xstream.processAnnotations(ProblemSummaryList.class);
+		xstream.toXML(problemSummaryList, resp.getWriter());
+	}
+
+	/**
+	 * @param user
+	 * @param course
+	 * @param problemId
+	 * @param resp
+	 * @throws ServletException 
+	 */
+	private void summarizeStudentWorkOnProblem(User user, Course course, int problemId, HttpServletResponse resp) throws ServletException {
+		throw new ServletException("Not supported yet");
 	}
 }

@@ -85,10 +85,11 @@ public class CUtil {
 		return new SubmissionResult(compilationResult);
 	}
 
-	public static SubmissionResult createSubmissionResultFromFailedCompile(Compiler compiler) {
+	public static SubmissionResult createSubmissionResultFromFailedCompile(Compiler compiler, int prologueLength, int epilogueLength) {
 		CompilerDiagnostic[] compilerDiagnosticList = compiler.getCompilerDiagnosticList();
 		CompilationResult compilationResult = new CompilationResult(CompilationOutcome.FAILURE);
 		compilationResult.setCompilerDiagnosticList(compilerDiagnosticList);
+		compilationResult.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
 		SubmissionResult submissionResult = new SubmissionResult(compilationResult);
 		submissionResult.setTestResults(new TestResult[0]);
 		return submissionResult;

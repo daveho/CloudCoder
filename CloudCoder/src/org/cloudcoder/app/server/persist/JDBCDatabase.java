@@ -759,7 +759,7 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select sr.*, e.* " +
 						"  from " + SUBMISSION_RECEIPTS + " as sr, " + EVENTS + " as e " +
-						" where sr.event_id = e.event_id " +
+						" where sr.event_id = e.id " +
 						"   and e.problem_id = ?");
 				stmt.setInt(1, problem.getProblemId());
 				
@@ -772,9 +772,9 @@ public class JDBCDatabase implements IDatabase {
 					
 					SubmissionReceipt prevBest = bestSubmissions.get(receipt.getEvent().getUserId());
 					SubmissionStatus curStatus = receipt.getStatus();
-					SubmissionStatus prevStatus = prevBest.getStatus();
-					if (prevStatus == null
-							|| curStatus == SubmissionStatus.TESTS_PASSED && prevStatus != SubmissionStatus.TESTS_PASSED
+					//SubmissionStatus prevStatus = prevBest.getStatus();
+					if (prevBest == null
+							|| curStatus == SubmissionStatus.TESTS_PASSED && prevBest.getStatus() != SubmissionStatus.TESTS_PASSED
 							|| receipt.getNumTestsPassed() > prevBest.getNumTestsPassed()) {
 						// New receipt is better than the previous receipt
 						bestSubmissions.put(receipt.getEvent().getUserId(), receipt);
@@ -800,6 +800,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				// Create the ProblemSummary
 				ProblemSummary problemSummary = new ProblemSummary();
+				problemSummary.setProblem(problem);
 				problemSummary.setNumStudents(numStudentsInCourse);
 				problemSummary.setNumStarted(started);
 				problemSummary.setNumPassedAtLeastOneTest(anyPassed);

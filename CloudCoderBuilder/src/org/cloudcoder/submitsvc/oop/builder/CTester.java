@@ -43,22 +43,28 @@ public class CTester implements ITester
     private String makeCTestFile(Problem problem,
             List<TestCase> testCaseList, String programText)
     {
-        prologueLength=1;
+        prologueLength=3;
         programTextLength=programText.length();
 
         StringBuilder test=new StringBuilder();
-        test.append("#include <strings.h>\n");
+        test.append("#include <string.h>\n");  // 3 lines of prologue
+        test.append("#include <stdlib.h>\n");
+        test.append("#include <stdio.h>\n");
         test.append(programText);
         test.append("\n");
-        test.append("int eq(int a, int b) {\n");
-        test.append("return a!=b;\n");
-        test.append("}\n");
+//        test.append("\t_Bool eq(int a, int b) {\n");
+//        test.append("\treturn a == b;\n");
+//        test.append("}\n");
+        test.append("#undef eq\n");
+        test.append("#define eq(a,b) ((a) == (b))\n");
         test.append("int main(int argc, char ** argv) {\n");
+        test.append("\tint rcIfEqual = atoi(argv[2]);\n");
+        test.append("\tint rcIfNotEqual = atoi(argv[3]);\n");
         for (TestCase t : testCaseList) {
             test.append("  if (strncmp(argv[1], \"" +t.getTestCaseName()+"\", "+
                     t.getTestCaseName().length()+")==0) {\n");
             test.append("    return eq( "+problem.getTestName()+
-                    "("+t.getInput()+"), "+t.getOutput()+");\n");
+                    "("+t.getInput()+"), "+t.getOutput()+") ? rcIfEqual : rcIfNotEqual;\n");
             test.append("  }\n");
         }
         test.append("  return 99;\n");
@@ -111,22 +117,24 @@ public class CTester implements ITester
         String programName="program";
         
         Compiler compiler=new Compiler(testerCode, workDir, programName);
+
         if (!compiler.compile()) {
-            logger.warn("Unable to compile");
-            CompilationResult compilationRes=new CompilationResult(CompilationOutcome.FAILURE);
-            compilationRes.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
-            return new SubmissionResult(compilationRes);
+            logger.warn("Compilation failed");
+        	return CUtil.createSubmissionResultFromFailedCompile(compiler, prologueLength, epilogueLength);
         }
+        
         logger.info("Compilation successful");
+        CompilationResult compilationRes = new CompilationResult(CompilationOutcome.SUCCESS);
+        compilationRes.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
+        compilationRes.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
         
         List<TestResult> results=new LinkedList<TestResult>();
         
         ProcessRunner[] tests=new ProcessRunner[testCaseList.size()];
         
         for (int i=0; i<tests.length; i++) {
-            tests[i]=new ProcessRunner();
+            tests[i]=new LimitedProcessRunner();
             //TODO: Use chroot jail
-            //TODO: Use ulimit
             //Full path to executable is necessary
             tests[i].runAsynchronous(workDir, getTestCommand(workDir.getAbsolutePath()+File.separatorChar+programName, testCaseList.get(i)));
         }
