@@ -153,7 +153,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	private User getUser(Connection conn, String userName) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from users where username = ?");
+	    PreparedStatement stmt = conn.prepareStatement("select * from "+USERS+" where username = ?");
         stmt.setString(1, userName);
         
         ResultSet resultSet = stmt.executeQuery();
@@ -182,9 +182,10 @@ public class JDBCDatabase implements IDatabase {
 	        @Override
 	        public User run(Connection conn) throws SQLException {
 	            User user=getUser(conn, userName);
-                
-	            if (props.getProperty(LoginServiceImpl.LOGIN_SERVICE).equals(LoginServiceImpl.LOGIN_IMAP)) {
-	             // Check password using imap
+	            if (LoginServiceImpl.LOGIN_IMAP.equals(props.getProperty(LoginServiceImpl.LOGIN_SERVICE))) {
+	                // Check password using imap
+	                logger.debug("Trying to authenticate "+userName+" using imap to " 
+	                        +props.getProperty(LoginServiceImpl.LOGIN_HOST));
 	                if (!ServletUtil.authenticateImap(userName, password, props)) {
 	                    // cannot authenticate using imap
 	                    return null;
@@ -212,45 +213,6 @@ public class JDBCDatabase implements IDatabase {
 	        }
         });
 	};
-	
-	
-	public User authenticateUserOld(final String userName, final String password) {
-		return databaseRun(new AbstractDatabaseRunnable<User>() {
-			@Override
-			public User run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + USERS + " where username = ?");
-				stmt.setString(1, userName);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				
-				User user = new User();
-				load(user, resultSet, 1);
-				
-				// Check password
-				String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
-				
-				logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
-				
-				if (!encryptedPassword.equals(user.getPasswordMD5())) {
-					// Password does not match
-					return null;
-				}
-				
-				// Authenticated!
-				return user;
-			}
-
-			@Override
-			public String getDescription() {
-				return "retrieving user";
-			}
-		});
-	}
 	
 	@Override
 	public Problem getProblem(final User user, final int problemId) {

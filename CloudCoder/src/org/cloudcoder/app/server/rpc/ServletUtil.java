@@ -33,7 +33,7 @@ public class ServletUtil {
             String password,
             Properties props)
     {
-        String url="imap://mailtest:"+username+"@"+props.getProperty(LoginServiceImpl.HOST);
+        String url="imap://mailtest:"+username+"@"+props.getProperty(LoginServiceImpl.LOGIN_HOST);
         
         // configure the jvm to use the jsse security.
         java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());

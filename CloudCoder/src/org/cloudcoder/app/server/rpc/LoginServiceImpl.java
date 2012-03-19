@@ -40,10 +40,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(LoginServiceImpl.class);
 	
-	public static final String LOGIN_SERVICE="loginService";
+	public static final String LOGIN_SERVICE="cloudcoder.login.service";
 	public static final String LOGIN_DATABASE="database";
 	public static final String LOGIN_IMAP="imap";
-	public static final String HOST="host";
+	public static final String LOGIN_HOST="cloudcoder.login.host";
+	public static final String DEFAULT_LOGIN_HOST="imaps.google.com";
 	
 	public static final String IMAP_SOCKET_FACTORY_CLASS="mail.imap.socketFactory.class";
     public static final String IMAP_SOCKET_FACTORY_FALLBACK= "mail.imap.socketFactory.fallback";
@@ -51,13 +52,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 	@Override
 	public User login(String userName, String password) {
-	    //TODO: extract a properties object based on the login.service
-	    // pass the properties file into the authenticateUser method
-	    // to make it easier to authenticate
+	    // Can this method be called anywhere?
 	    // Does AdminAuthorizationFilter have access to the ServletConfig?
         
 	    User user=null;
-	    Properties props=getImapPropertiesInitParams();
+	    Properties props=getLoginPropertiesInitParams();
 	    user = Database.getInstance().authenticateUser(userName, password, props);
 
 		if (user != null) {
@@ -73,7 +72,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	
 		
 	public void setProperty(Properties props, String key, String defaultValue) {
-	    String val=getServletConfig().getInitParameter(key);
+	    String val=getServletContext().getInitParameter(key);
 	    if (val!=null) {
 	        props.setProperty(key, val);
 	    } else {
@@ -88,7 +87,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	 * 
 	 * @return A Properties object configured to authenticate with IMAP.
 	 */
-	private Properties getImapPropertiesInitParams() {
+	private Properties getLoginPropertiesInitParams() {
         Properties props=new Properties();
 
         // note that you can also use the defult imap port (including the
@@ -98,6 +97,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         // on the SSL port, and if it fails, you can fallback to the normal
         // IMAP port.
         
+        // set the login service (defaults to database)
+        setProperty(props, LOGIN_SERVICE, LOGIN_DATABASE);
         // set this session up to use SSL for IMAP connections
         setProperty(props, IMAP_SOCKET_FACTORY_CLASS,"javax.net.ssl.SSLSocketFactory");
         // by default, don't fallback to normal IMAP connections on failure.
@@ -105,7 +106,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         // use the simap port for imap/ssl connections.
         setProperty(props, IMAP_SOCKET_FACTORY_PORT, "993");
         // get the hostname out of the web.xml file
-        props.setProperty(HOST, getServletConfig().getInitParameter(HOST));
+        setProperty(props, LOGIN_HOST, DEFAULT_LOGIN_HOST);
 
         return props;
     }
