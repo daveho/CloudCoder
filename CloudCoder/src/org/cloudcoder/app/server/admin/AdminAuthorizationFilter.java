@@ -19,6 +19,7 @@ package org.cloudcoder.app.server.admin;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Properties;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -90,7 +91,10 @@ public abstract class AdminAuthorizationFilter implements Filter {
 		String password = userNameAndPassword.substring(sep+1);
 		
 		// Look up user in database, ensure that password matches.
-		User user = Database.getInstance().authenticateUser(userName, password);
+		// FIXME: This only works with database authentication
+		// authentication with imap requires use of web.xml
+		// which filter cannot access
+		User user = Database.getInstance().authenticateUser(userName, password, new Properties());
 		if (user == null) {
 			logger.info("Admin auth: username/password mismatch for " + userName);
 			AdminServletUtil.unauthorized(resp);

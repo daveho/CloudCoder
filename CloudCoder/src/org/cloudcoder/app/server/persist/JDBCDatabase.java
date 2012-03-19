@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cloudcoder.app.server.rpc.LoginServiceImpl;
+import org.cloudcoder.app.server.rpc.ServletUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -166,23 +167,44 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public User authenticateUserImap(final String userName, 
+	public User authenticateUser(final String userName, 
 	        final String password, 
-	        final Properties props)
+	        Properties properties)
 	{
+	    // if properties is null, make it empty, which works, but will
+	    // default to using the database for authentication.
+	    // Basically, this saves null pointer checks.
+	    if (properties==null) {
+	        properties=new Properties();
+	    }
+	    final Properties props=properties;
 	    return databaseRun(new AbstractDatabaseRunnable<User>() {
 	        @Override
 	        public User run(Connection conn) throws SQLException {
 	            User user=getUser(conn, userName);
                 
-                // Check password using imap
-                if (!LoginServiceImpl.authenticateImap(userName, password, props)) {
-                    // cannot authenticate using imap
-                    return null;
-                }
-                
-                // Authenticated!
-                return user;
+	            if (props.getProperty(LoginServiceImpl.LOGIN_SERVICE).equals(LoginServiceImpl.LOGIN_IMAP)) {
+	             // Check password using imap
+	                if (!ServletUtil.authenticateImap(userName, password, props)) {
+	                    // cannot authenticate using imap
+	                    return null;
+	                } else {
+	                    // Authenticated!
+	                    return user;
+	                }
+	            } else {
+	                // default is to authenticate against the DB
+	                String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
+                    
+                    logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
+                    
+                    if (!encryptedPassword.equals(user.getPasswordMD5())) {
+                        // Password does not match
+                        return null;
+                    } else {
+                        return user;
+                    }
+	            }
 	        }
 	        @Override
 	        public String getDescription() {
@@ -191,8 +213,8 @@ public class JDBCDatabase implements IDatabase {
         });
 	};
 	
-	@Override
-	public User authenticateUser(final String userName, final String password) {
+	
+	public User authenticateUserOld(final String userName, final String password) {
 		return databaseRun(new AbstractDatabaseRunnable<User>() {
 			@Override
 			public User run(Connection conn) throws SQLException {
