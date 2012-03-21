@@ -232,6 +232,8 @@ public class ProcessRunner implements ITestOutput {
 					// The process could not be started
 					this.processStarted = false;
 					this.statusMessage = "Process could not be started";
+					
+					logger.debug("process stderr is {}", CUtil.mergeOneLine(stderrCollector.getCollectedOutput()));
 				} else if (status.equals("exited")) {
 					// The process exited normally.
 					this.exitStatusKnown = true;

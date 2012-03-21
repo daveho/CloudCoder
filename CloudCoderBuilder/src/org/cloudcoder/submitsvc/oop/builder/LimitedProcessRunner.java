@@ -46,7 +46,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append("CC_PROCESS_RESOURCE_LIMITS=");
-		buf.append("-f0 -s256 -t5 -u0 -v8192"); // FIXME: make this configurable
+		buf.append("-f0 -s256 -t5 -u0 -v16384"); // FIXME: make this configurable
 		
 		allEnvVars.add(buf.toString());
 		
