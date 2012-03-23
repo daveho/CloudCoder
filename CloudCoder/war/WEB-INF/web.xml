@@ -29,14 +29,27 @@
   </context-param>
   <context-param>
     <!-- Set this to :8889 if using MAMP, otherwise leave it blank. -->
-    <param-name>cloudcoder.db.portstr</param-name><param-value></param-value>
+    <param-name>cloudcoder.db.portstr</param-name><param-value>:8889</param-value>
   </context-param>
   <context-param>
     <!-- Port that the out of process submit service will listen on
          for connections from Builders. -->
     <param-name>cloudcoder.submitsvc.oop.port</param-name><param-value>47374</param-value>
   </context-param>
-
+  <!-- type of login service to use.  Choices include:
+  		database (default): Username and passwords directly in the cloudcoder backend database
+  		imap: authenticate against an imap server
+   
+  <context-param>
+	<param-name>cloudcoder.login.service</param-name><param-value>imap</param-value>
+  </context-param>
+  -->
+  <!-- host to authenticate against, if using imap authentication
+  	against a mail server. 
+   -->
+  <context-param>
+	<param-name>cloudcoder.login.host</param-name><param-value>mail.knox.edu</param-value>
+  </context-param>
   <!-- RPC servlets -->
   <servlet>
     <servlet-name>ConfigurationSetting</servlet-name>
@@ -45,29 +58,6 @@
   <servlet>
     <servlet-name>Login</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.LoginServiceImpl</servlet-class>
-    <!--
-    <init-param>
-    		<description>
-    		Choices include:
-			database (default):  Usernames and passwords directly in the DB
-			imap: authenticate against an imap server
-    		</description>
-		<param-name>loginService</param-name>
-		<param-value>imap</param-value>
-	</init-param>
-	<init-param>
-		<param-name>host</param-name>
-		<param-value>mail.knox.edu</param-value>
-	</init-param>
-	<init-param>
-		<param-name>transport</param-name>
-		<param-value>smtps</param-value>
-	</init-param>
-	<init-param>
-		<param-name></param-name>
-		<param-value></param-value>
-	</init-param>
-	  -->
   </servlet>
   <servlet>
     <servlet-name>GetCoursesAndProblems</servlet-name>

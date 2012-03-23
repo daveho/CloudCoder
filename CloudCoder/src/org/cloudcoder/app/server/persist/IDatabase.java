@@ -43,14 +43,17 @@ public interface IDatabase {
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	
 	/**
-	 * Authenticate a user.
+	 * Authenticate a user.  If props is null, empty, or does not contain
+	 * a valid or recognized loginService, then we assume that passwords
+	 * are stored directly in the database.
 	 * 
 	 * @param userName  the username
 	 * @param password  the password
+	 * @param props     properties file containing additional properties requires for
+	 *     authentication (IMAP settings, LDAP settings, etc)
 	 * @return the authenticated User, or null if the username/password doesn't correspond to a known user
 	 */
-	public User authenticateUser(String userName, String password);
-	public User authenticateUserImap(String userName, String password, Properties props);
+	public User authenticateUser(String userName, String password, Properties props);
 	public Problem getProblem(User user, int problemId);
 
 	/**

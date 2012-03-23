@@ -1,5 +1,7 @@
 package org.cloudcoder.app.server.rpc;
 
+import java.util.Properties;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -26,5 +28,30 @@ public class ServletUtil {
 		}
 		return user;
 	}
+	
+	public static boolean authenticateImap(String username,
+            String password,
+            Properties props)
+    {
+        String url="imap://mailtest:"+username+"@"+props.getProperty(LoginServiceImpl.LOGIN_HOST);
+        
+        // configure the jvm to use the jsse security.
+        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+
+        try {
+            // create the Session
+            javax.mail.Session session = javax.mail.Session.getInstance(props);
+            // and create the store..
+            javax.mail.Store store = session.getStore(new 
+                    javax.mail.URLName(url));
+                    //javax.mail.URLName("imap://mailtest:mailtest@localhost/"));
+            // and connect.
+            store.connect(username, password);
+            return true;
+        } catch (Exception e) {
+            logger.error(username+ " unable to connect to "+url, e);
+            return false;
+        }
+    }
 
 }

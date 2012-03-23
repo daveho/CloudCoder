@@ -20,9 +20,6 @@ package org.cloudcoder.app.server.rpc;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
 import javax.servlet.http.HttpSession;
 
 import org.cloudcoder.app.client.rpc.LoginService;
@@ -43,25 +40,24 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(LoginServiceImpl.class);
 	
-	public static final String LOGIN_SERVICE="loginService";
+	public static final String LOGIN_SERVICE="cloudcoder.login.service";
 	public static final String LOGIN_DATABASE="database";
 	public static final String LOGIN_IMAP="imap";
-	public static final String HOST="host";
-	public static final String TRANSPORT="transport";
+	public static final String LOGIN_HOST="cloudcoder.login.host";
+	public static final String DEFAULT_LOGIN_HOST="imaps.google.com";
+	
+	public static final String IMAP_SOCKET_FACTORY_CLASS="mail.imap.socketFactory.class";
+    public static final String IMAP_SOCKET_FACTORY_FALLBACK= "mail.imap.socketFactory.fallback";
+    public static final String IMAP_SOCKET_FACTORY_PORT= "mail.imap.socketFactory.port";
 
 	@Override
 	public User login(String userName, String password) {
-	    //TODO: Check the type of authentication being asked for
+	    // Can this method be called anywhere?
+	    // Does AdminAuthorizationFilter have access to the ServletConfig?
         
-	    String loginService = getServletConfig().getInitParameter(LOGIN_SERVICE);
 	    User user=null;
-	    if (LOGIN_IMAP.equals(loginService)) {
-	        Properties props=getImapPropertiesInitParams();
-	        user = Database.getInstance().authenticateUserImap(userName, password, props);
-	    } else {
-	        // default is to use the database
-	        user = Database.getInstance().authenticateUser(userName, password);
-	    }
+	    Properties props=getLoginPropertiesInitParams();
+	    user = Database.getInstance().authenticateUser(userName, password, props);
 
 		if (user != null) {
 			// Set User object in server HttpSession so that other
@@ -73,15 +69,45 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		return user;
 	}
 	
+	
+		
+	public void setProperty(Properties props, String key, String defaultValue) {
+	    String val=getServletContext().getInitParameter(key);
+	    if (val!=null) {
+	        props.setProperty(key, val);
+	    } else {
+	        props.setProperty(key, defaultValue);
+	    }
+	}
+	
 	/**
-     * @return
-     */
-    private Properties getImapPropertiesInitParams() {
+	 * Will use the defaults given in this method, unless 
+	 * values are specified in web.xml, in which case will
+	 * use the values from web.xml.
+	 * 
+	 * @return A Properties object configured to authenticate with IMAP.
+	 */
+	private Properties getLoginPropertiesInitParams() {
         Properties props=new Properties();
+
+        // note that you can also use the defult imap port (including the
+        // port specified by mail.imap.port) for your SSL port configuration.
+        // however, specifying mail.imap.socketFactory.port means that,
+        // if you decide to use fallback, you can try your SSL connection
+        // on the SSL port, and if it fails, you can fallback to the normal
+        // IMAP port.
         
-        props.setProperty(HOST, getServletConfig().getInitParameter(HOST));
-        props.setProperty(TRANSPORT, getServletConfig().getInitParameter(TRANSPORT));
-        props.setProperty("mail.smtps.auth", "true");
+        // set the login service (defaults to database)
+        setProperty(props, LOGIN_SERVICE, LOGIN_DATABASE);
+        // set this session up to use SSL for IMAP connections
+        setProperty(props, IMAP_SOCKET_FACTORY_CLASS,"javax.net.ssl.SSLSocketFactory");
+        // by default, don't fallback to normal IMAP connections on failure.
+        setProperty(props, IMAP_SOCKET_FACTORY_FALLBACK, "false");
+        // use the simap port for imap/ssl connections.
+        setProperty(props, IMAP_SOCKET_FACTORY_PORT, "993");
+        // get the hostname out of the web.xml file
+        setProperty(props, LOGIN_HOST, DEFAULT_LOGIN_HOST);
+
         return props;
     }
 
@@ -97,35 +123,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 	}
     
-    public static boolean authenticateImap(String username, 
-            String password, 
-            Properties props)
-    {
-        //String host = "mail.knox.edu";
-        //String transport="smtps";
-        //String username = "jaime.spacco";
-        Transport t=null;
-        try {
-            // transport should be smtps
-            t=Session.getInstance(props).getTransport(props.getProperty(TRANSPORT));    
-            t.connect(props.getProperty(HOST), username, password);
-            logger.debug("Successful imap login for "+username);
-            return true;
-        } catch (MessagingException e) {
-            logger.warn("Failed imap login for "+username, e);
-            return false;
-        } finally {
-            if (t!=null) {
-                try {
-                    t.close();
-                } catch (Exception e) {
-                    logger.error("Unable to close imap Transport connection", e);
-                    // ignore
-                }
-            }
-        }
-    }
-
+    
+    
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.rpc.LoginService#getUser()
 	 */
