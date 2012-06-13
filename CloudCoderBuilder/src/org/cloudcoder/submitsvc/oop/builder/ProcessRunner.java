@@ -145,6 +145,7 @@ public class ProcessRunner implements ITestOutput {
 			// Create a temp file in which the runProcess.sh script can save
 			// the exit status of the process.
 			File exitStatusFile = File.createTempFile("ccxs", ".txt", workingDir);
+			//logger.debug("Creating exit status file " + exitStatusFile.getPath());
 			exitStatusFile.deleteOnExit();
 
 			// Start process, setting CC_PROC_STAT_FILE env var
@@ -248,14 +249,17 @@ public class ProcessRunner implements ITestOutput {
 					this.statusMessage = "Process crashed (terminated by signal " + this.exitCode + ")";
 				} else {
 					// Should not happen.
+					logger.warn("Unknown process exit status " + status);
 					this.exitStatusKnown = false;
 					this.statusMessage = "Process status could not be determined";
 				}
 			}
 		} catch (IOException e) {
+			logger.warn("IOException trying to read process status file");
 			this.exitStatusKnown = false;
 			this.statusMessage = "Process status could not be determined";
 		} catch (NumberFormatException e) {
+			logger.warn("NumberFormatException trying to read process status file");
 			this.exitStatusKnown = false;
 			this.statusMessage = "Process status could not be determined";
 		} finally {

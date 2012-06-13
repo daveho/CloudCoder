@@ -138,14 +138,23 @@ public class CTester implements ITester
     @Override
     public SubmissionResult testSubmission(Submission submission)
     {
-        Problem problem=submission.getProblem();
+        File workDir = CUtil.makeTempDir("/tmp");
+        //logger.debug("Creating temp dir " + workDir);
+        try {
+        	return doTestSubmission(submission, workDir);
+        } finally {
+        	// Clean up
+        	new DeleteDirectoryRecursively(workDir).delete();
+        }
+    }
+
+	private SubmissionResult doTestSubmission(Submission submission,
+			File workDir) {
+		Problem problem=submission.getProblem();
         String programText=submission.getProgramText();
         List<TestCase> testCaseList=submission.getTestCaseList();
         String testerCode=makeCTestFile(problem, testCaseList, programText);
-        
-        File workDir=new File("builder");
-        workDir.mkdirs();
-        
+
         String programName="program";
         
         Compiler compiler=new Compiler(testerCode, workDir, programName);
@@ -197,27 +206,44 @@ public class CTester implements ITester
         // determine test outcomes
         for (int i = 0; i < tests.length; i++) {
         	ProcessRunner p = tests[i];
-            TestCase testCase = testCaseList.get(i);
-            if (p.isRunning()) {
-                p.killProcess();
-                results.add(TestResultUtil.createTestResultForTimeout(p, testCase));
-            } else {
-                //TODO: figure out return code of process killed by ulimit
-				if (p.getExitCode()==rcIfEqual[i]) {
-                    results.add(TestResultUtil.createTestResultForPassedTest(p, testCase));
-                } else if (p.isCoreDump()) {
-                    results.add(TestResultUtil.createTestResultForCoreDump(p, testCase));
-                } else {
-                    results.add(TestResultUtil.createTestResultForFailedAssertion(p, testCase));
-                }
-            }
+        	System.out.println(p.getStdout());
+        	TestCase testCase = testCaseList.get(i);
+
+        	TestResult testResult;
+
+        	if (p.isRunning()) {
+        		p.killProcess();
+        		testResult = TestResultUtil.createTestResultForTimeout(p, testCase);
+        	} else {
+        		if (p.isCoreDump()) {
+        			// Exit code is the signal which killed the process.
+        			if (p.getExitCode() == 9 || p.getExitCode() == 24) {
+        				// Special case: signals 9 (KILL) and 24 (XCPU) indicate that the
+        				// process exceeded its CPU limit, so treat them as a timeout.
+        				testResult = TestResultUtil.createTestResultForTimeout(p, testCase);
+
+        				// The process stderr does not seem to be particularly
+        				// useful in this case.
+        				testResult.setStderr("");
+        			} else {
+        				// Most likely, process was killed by a segmentation fault.
+        				testResult = TestResultUtil.createTestResultForCoreDump(p, testCase);
+        			}
+        		} else if (p.getExitCode()==rcIfEqual[i]) {
+        			testResult = TestResultUtil.createTestResultForPassedTest(p, testCase);
+        		} else {
+        			testResult = TestResultUtil.createTestResultForFailedAssertion(p, testCase);
+        		}
+
+        		results.add(testResult);
+        	}
         }
         
         SubmissionResult result=new SubmissionResult(
                 new CompilationResult(CompilationOutcome.SUCCESS));
         result.setTestResults(results.toArray(new TestResult[results.size()]));
         return result;
-    }
+	}
 
     /**
      * Get the command to execute a specific TestCase.
