@@ -20,6 +20,7 @@ package org.cloudcoder.submitsvc.oop.builder;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -31,10 +32,24 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An {@link ITester} implementation which tests single C functions
+ * by passing arguments to them and then testing that they
+ * return the expected return value.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
+ */
 public class CTester implements ITester
 {
     private static final Logger logger=LoggerFactory.getLogger(CTester.class);
     public static final long TIMEOUT_LIMIT=2000;
+ 
+    // A random number generator to generate exit codes for test processes.
+    // This makes it hard (but not impossible) for a tested function
+    // to game the system by simply exiting with the exit code that
+    // indicates success.
+    private static final Random rng = new Random();
 
     private int programTextLength;
     private int prologueLength;
@@ -50,26 +65,43 @@ public class CTester implements ITester
         test.append("#include <string.h>\n");  // 3 lines of prologue
         test.append("#include <stdlib.h>\n");
         test.append("#include <stdio.h>\n");
+        
+        // The program text is the user's function
         test.append(programText);
         test.append("\n");
-//        test.append("\t_Bool eq(int a, int b) {\n");
-//        test.append("\treturn a == b;\n");
-//        test.append("}\n");
+        
+        // The eq macro will test the function's return value against
+        // the expected return value.
         test.append("#undef eq\n");
         test.append("#define eq(a,b) ((a) == (b))\n");
+        
+        // Generate a main() function which can run all of the test cases.
+        // argv[1] specifies the test case to execute by name.
+        // argv[2] and argv[3] specify the exit values to use to indicate
+        // whether or not the tested function's return value matched the
+        // expected value.
         test.append("int main(int argc, char ** argv) {\n");
-        test.append("\tint rcIfEqual = atoi(argv[2]);\n");
-        test.append("\tint rcIfNotEqual = atoi(argv[3]);\n");
+        test.append("  int rcIfEqual = atoi(argv[2]);\n");
+        test.append("  int rcIfNotEqual = atoi(argv[3]);\n");
+        // Make it a bit harder to steal the exit codes
+        test.append("  argv[2] = 0;\n");
+        test.append("  argv[3] = 0;\n");
+        
+        // Generate calls to execute test cases.
         for (TestCase t : testCaseList) {
             test.append("  if (strncmp(argv[1], \"" +t.getTestCaseName()+"\", "+
                     t.getTestCaseName().length()+")==0) {\n");
-            test.append("    return eq( "+problem.getTestName()+
-                    "("+t.getInput()+"), "+t.getOutput()+") ? rcIfEqual : rcIfNotEqual;\n");
+            test.append("    return eq("+problem.getTestName()+
+                    "("+t.getInput()+"), ("+t.getOutput()+")) ? rcIfEqual : rcIfNotEqual;\n");
             test.append("  }\n");
         }
+        
+        // We return 99 if an invalid test case was provided: shouldn't
+        // happen in practice.
         test.append("  return 99;\n");
         test.append("}");
         String result=test.toString();
+        System.out.println(result);
         
         epilogueLength=TesterUtils.countLines(result)-programTextLength-prologueLength;
         
@@ -132,25 +164,46 @@ public class CTester implements ITester
         
         ProcessRunner[] tests=new ProcessRunner[testCaseList.size()];
         
+        // Create arrays of exit codes to use for
+        //   - the tested function returned the expected result (passed test)
+        //   - the tested function did not return the expected result (failed assertion)
+        int[] rcIfEqual = new int[testCaseList.size()];
+        int[] rcIfNotEqual = new int[testCaseList.size()];
+        for (int i = 0; i < testCaseList.size(); i++) {
+        	int rc = rng.nextInt(256);
+			rcIfEqual[i] = rc;
+        	rcIfNotEqual[i] = rc + 1;
+        }
+        
+        // Kick of execution of tests
         for (int i=0; i<tests.length; i++) {
             tests[i]=new LimitedProcessRunner();
             //TODO: Use chroot jail
             //Full path to executable is necessary
-            tests[i].runAsynchronous(workDir, getTestCommand(workDir.getAbsolutePath()+File.separatorChar+programName, testCaseList.get(i)));
+            tests[i].runAsynchronous(
+            		workDir,
+            		getTestCommand(
+            				workDir.getAbsolutePath()+File.separatorChar+programName,
+            				testCaseList.get(i),
+            		rcIfEqual[i],
+            		rcIfNotEqual[i]
+            		)
+            );
         }
         
         // wait for the timeout limit
         wait(tests);
         
-        int index = 0;
-        for (ProcessRunner p : tests) {
-            TestCase testCase = testCaseList.get(index);
+        // determine test outcomes
+        for (int i = 0; i < tests.length; i++) {
+        	ProcessRunner p = tests[i];
+            TestCase testCase = testCaseList.get(i);
             if (p.isRunning()) {
                 p.killProcess();
                 results.add(TestResultUtil.createTestResultForTimeout(p, testCase));
             } else {
                 //TODO: figure out return code of process killed by ulimit
-				if (p.getExitCode()==0) {
+				if (p.getExitCode()==rcIfEqual[i]) {
                     results.add(TestResultUtil.createTestResultForPassedTest(p, testCase));
                 } else if (p.isCoreDump()) {
                     results.add(TestResultUtil.createTestResultForCoreDump(p, testCase));
@@ -158,15 +211,24 @@ public class CTester implements ITester
                     results.add(TestResultUtil.createTestResultForFailedAssertion(p, testCase));
                 }
             }
-            index++;
         }
+        
         SubmissionResult result=new SubmissionResult(
                 new CompilationResult(CompilationOutcome.SUCCESS));
         result.setTestResults(results.toArray(new TestResult[results.size()]));
         return result;
     }
 
-	public String[] getTestCommand(String programName, TestCase testCase) {
-        return new String[] {programName, testCase.getTestCaseName()};
+    /**
+     * Get the command to execute a specific TestCase.
+     * 
+     * @param programName  the filename of the test executable
+     * @param testCase     the TestCase to execute
+     * @param rcIfEqual    the exit code to indicate that the test passed
+     * @param rcIfNotEqual the exit code to indicate that the test failed
+     * @return the command
+     */
+	public String[] getTestCommand(String programName, TestCase testCase, int rcIfEqual, int rcIfNotEqual) {
+        return new String[] {programName, testCase.getTestCaseName(), String.valueOf(rcIfEqual), String.valueOf(rcIfNotEqual)};
     }
 }

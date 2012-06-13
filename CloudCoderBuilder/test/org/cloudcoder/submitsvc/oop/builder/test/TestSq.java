@@ -56,6 +56,7 @@ public class TestSq extends GenericTest
         runOneTestCase("test6", "6", "36", TestOutcome.FAILED_BY_SECURITY_MANAGER);
     }
     
+    /*
     @Test
     public void runAllTests() {
         addTestCaseAndOutcome("test1", "1", "1", TestOutcome.FAILED_ASSERTION);
@@ -66,4 +67,5 @@ public class TestSq extends GenericTest
         addTestCaseAndOutcome("test6", "6", "36", TestOutcome.FAILED_BY_SECURITY_MANAGER);
         super.runAllTests();
     }
+    */
 }
