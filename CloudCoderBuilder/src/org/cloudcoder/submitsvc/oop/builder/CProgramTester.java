@@ -78,7 +78,7 @@ public class CProgramTester implements ITester {
 		// All TestExecutors will work in parallel.
 		List<CTestCaseExecutor> testCaseExecutors = new ArrayList<CTestCaseExecutor>();
 		for (TestCase testCase : submission.getTestCaseList()) {
-			CTestCaseExecutor executor = new CRegexTestCaseExecutor(tempDir, testCase);
+			CTestCaseExecutor executor = createTestExecutor(tempDir, testCase);
 			executor.start();
 			testCaseExecutors.add(executor);
 		}
@@ -99,5 +99,19 @@ public class CProgramTester implements ITester {
 		submissionResult.setTestResults(testResultList.toArray(new TestResult[testResultList.size()]));
 		
 		return submissionResult;
+	}
+
+	/**
+	 * Create a {@link CTestCaseExecutor} to execute given test case.
+	 * By default, creates a {@link CRegexTestCaseExecutor}.
+	 * Subclasses may override to use a different test case executor.
+	 * 
+	 * @param tempDir   the temp directory containing the compiled test exe
+	 * @param testCase  the test case
+	 * @return the CTestCaseExecutor with which to execute the test
+	 */
+	protected CTestCaseExecutor createTestExecutor(File tempDir, TestCase testCase) {
+		return new CRegexTestCaseExecutor(tempDir, testCase);
+//		return new CMultiExecRegexTestCaseExecutor(tempDir, testCase, 5);
 	}
 }
