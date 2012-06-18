@@ -29,7 +29,8 @@
   </context-param>
   <context-param>
     <!-- Set this to :8889 if using MAMP, otherwise leave it blank. -->
-    <param-name>cloudcoder.db.portstr</param-name><param-value>:8889</param-value>
+    <!--<param-name>cloudcoder.db.portstr</param-name><param-value>:8889</param-value>-->
+    <param-name>cloudcoder.db.portstr</param-name><param-value></param-value>
   </context-param>
   <context-param>
     <!-- Port that the out of process submit service will listen on
