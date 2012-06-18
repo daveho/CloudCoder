@@ -46,7 +46,12 @@ public class LimitedProcessRunner extends ProcessRunner {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append("CC_PROCESS_RESOURCE_LIMITS=");
-		buf.append("-f0 -s256 -t5 -u0 -v16384"); // FIXME: make this configurable
+		//
+		// Amazingly, -v16384 (allocating 16MB of virtual memory) is
+		// not sufficient to allow a g++-compiled executable to run on Ubuntu 12.04.
+		// 32MB ought to be plenty.  (Of course, that's what I thought about 16MB.)
+		//
+		buf.append("-f0 -s256 -t5 -u0 -v32768"); // FIXME: make this configurable
 		
 		allEnvVars.add(buf.toString());
 		

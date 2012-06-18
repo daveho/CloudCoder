@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class CProgramTester implements ITester {
+	private static final boolean KEEP_TEMP_FILES = Boolean.getBoolean("cProgramTester.keepTempFiles");
+	
 	private static final Logger logger = LoggerFactory.getLogger(CProgramTester.class);
 	
 	/* (non-Javadoc)
@@ -48,7 +50,9 @@ public class CProgramTester implements ITester {
 			return doTestSubmission(submission, tempDir);
 		} finally {
 			// Clean up
-			new DeleteDirectoryRecursively(tempDir).delete();
+			if (!KEEP_TEMP_FILES) {
+				new DeleteDirectoryRecursively(tempDir).delete();
+			}
 		}
 	}
 
