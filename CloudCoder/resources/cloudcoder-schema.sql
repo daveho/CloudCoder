@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jun 18, 2012 at 10:48 AM
+-- Generation Time: Jun 18, 2012 at 10:56 AM
 -- Server version: 5.5.24
 -- PHP Version: 5.3.10-1ubuntu3.1
 
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `cc_events` (
   PRIMARY KEY (`id`),
   KEY `problem_id` (`problem_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -140,7 +140,14 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
   `when_due` bigint(20) NOT NULL,
   `skeleton` varchar(400) DEFAULT NULL,
   PRIMARY KEY (`problem_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `cc_problems`
+--
+
+INSERT INTO `cc_problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`, `skeleton`) VALUES
+(2, 1, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
 
 -- --------------------------------------------------------
 
@@ -197,7 +204,17 @@ CREATE TABLE IF NOT EXISTS `cc_test_cases` (
   `secret` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`test_case_id`),
   KEY `problem_id` (`problem_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+
+--
+-- Dumping data for table `cc_test_cases`
+--
+
+INSERT INTO `cc_test_cases` (`test_case_id`, `problem_id`, `test_case_name`, `input`, `output`, `secret`) VALUES
+(1, 2, 'nEquals7', '7', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*$', 0),
+(2, 2, 'nEquals4', '4', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*$', 0),
+(3, 2, 'nEquals5', '5', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*$', 0),
+(4, 2, 'nEquals9', '9', '^\\s*\\s*1\\s*2\\s*3\\s*4\\s*5\\s*6\\s*7\\s*8\\s*9\\s*$', 1);
 
 -- --------------------------------------------------------
 
