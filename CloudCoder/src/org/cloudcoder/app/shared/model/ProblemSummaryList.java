@@ -20,17 +20,12 @@ package org.cloudcoder.app.shared.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 /**
  * A list of {@link ProblemSummary} objects.
  * 
  * @author David Hovemeyer
  */
-@XStreamAlias("problemsummarylist")
 public class ProblemSummaryList {
-	@XStreamImplicit
 	private List<ProblemSummary> list;
 	
 	public ProblemSummaryList() {

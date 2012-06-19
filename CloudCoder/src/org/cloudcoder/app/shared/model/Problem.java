@@ -20,15 +20,12 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * A problem that has been assigned in a Course.
  * 
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-@XStreamAlias("problem")
 public class Problem implements Serializable
 {
 	private static final long serialVersionUID = 1L;
