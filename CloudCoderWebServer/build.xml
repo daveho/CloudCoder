@@ -37,8 +37,6 @@
 	<!--
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
-		
-		TODO: this actually doesn't bundle the webapp yet.
 	-->
 	<target name="jar" depends="build">
 		<!--
@@ -63,6 +61,9 @@
 
 			<!-- Copy classes and other files from required libraries and Jetty. -->
 			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
+			
+			<!-- Include the webapp. -->
+			<fileset dir="../CloudCoder" includes="war/**"/>
 			
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>

@@ -2,7 +2,7 @@ package org.cloudcoder.webserver;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
+import java.security.ProtectionDomain;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -21,9 +21,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
  * @see http://brandontilley.com/2010/03/27/serving-a-gwt-application-with-an-embedded-jetty-server.html
  */
 public class CloudCoderDaemon implements IDaemon {
-	// TODO: eventually, this will be a resource within the classpath
-	private static final String WEB_APP_DIR_NAME = "cloudCoder";
-	
 	/**
 	 * Options for launching the webserver and webapp,
 	 * as specified in the CloudCoder configuration properties.
@@ -71,13 +68,21 @@ public class CloudCoderDaemon implements IDaemon {
 		}
 		server.addConnector(connector);
 
-		// Create WebAppContext
+		// Create WebAppContext, running the web application embedded in /war
+		// in the classpath.
 		WebAppContext handler = new WebAppContext();
-		handler.setResourceBase("./apps/" + WEB_APP_DIR_NAME);
-		handler.setDescriptor("./apps/" + WEB_APP_DIR_NAME + "/WEB-INF/web.xml");
+		ProtectionDomain domain = getClass().getProtectionDomain();
+		String codeBase = domain.getCodeSource().getLocation().toExternalForm();
+		if (codeBase.endsWith(".jar")) {
+			// Running out of a jarfile: this is the preferred deployment option.
+			handler.setWar("jar:" + codeBase + "!/war");
+		} else {
+			// Running from a directory. Untested.
+			boolean endsInDir = codeBase.endsWith("/");
+			handler.setWar(codeBase + (endsInDir ? "" : "/") + "war");
+		}
 		handler.setContextPath(options.getContext());
-		handler.setParentLoaderPriority(true);
-
+		
 		// Make all cloudcoder.* configuration parameters available
 		// as context init parameters.
 		for (String key : configProperties.stringPropertyNames()) {
