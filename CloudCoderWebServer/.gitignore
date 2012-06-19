@@ -1,7 +1,7 @@
 /bin/*
 /apps/cloudCoder
 /log.txt
-/log/*
-/cloudCoder.pid
-/cloudCoder-*.fifo
+/instance.pid
+/instance-*.fifo
 /logs
+/cloudcoderApp.jar

@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="CloudCoderWebServer">
+<project basedir="." default="jar" name="CloudCoderWebServer">
     <property environment="env"/>
     <property name="ECLIPSE_HOME" value="${user.home}/linux/java/eclipse"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <path id="CloudCoderWebServer.classpath">
+	
+	<!-- Name of the deployable jarfile to run the webapp. -->
+	<property name="jarname" value="cloudcoderApp.jar" />
+
+	<path id="CloudCoderWebServer.classpath">
         <pathelement location="bin"/>
-	<fileset dir="lib">
-		<include name="**/*.jar"/>
-	</fileset>
+		<fileset dir="lib">
+			<include name="**/*.jar"/>
+		</fileset>
     </path>
-    <target name="init">
+    
+	<target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
@@ -20,14 +25,49 @@
             </fileset>
         </copy>
     </target>
-    <target name="clean">
-        <delete dir="bin"/>
-    </target>
+	
     <target depends="init" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="CloudCoderWebServer.classpath"/>
         </javac>
+    </target>
+	
+	<!--
+		Target to build a single deployable jarfile containing both
+		the webapp (and required libraries) and Jetty (the web server).
+		
+		TODO: this actually doesn't bundle the webapp yet.
+	-->
+	<target name="jar" depends="build">
+		<!--
+			Build single jar containing contents of all required libraries.
+		-->
+		<jar destfile="deps.jar">
+			<zipgroupfileset dir="lib" includes="**/*.jar" />
+		</jar>
+		<!--
+			Build single deployable jarfile containing our launcher code,
+			all requried libraries, and the webapp.  Note that signatures
+			must be removed from the libraries.
+			FIXME: doesn't include the webapp yet.
+		-->
+		<jar destfile="${jarname}">
+			<fileset dir="bin" includes="**"/>
+			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.webserver.CloudCoderWebServer" />
+			</manifest>
+		</jar>
+		<!-- Now we can delete deps.jar. -->
+		<delete file="deps.jar"/>
+	</target>
+	
+    <target name="clean">
+        <delete>
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="cloudcoder.jar"/>
     </target>
 </project>
