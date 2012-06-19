@@ -47,6 +47,10 @@
 		<jar destfile="deps.jar">
 			<zipgroupfileset dir="lib" includes="**/*.jar" />
 		</jar>
+
+		<!-- Copy the user's local.properties file containing CloudCoder configuration properties. -->
+		<copy file="../local.properties" tofile="bin/org/cloudcoder/webserver/local.properties" />
+		
 		<!--
 			Build single deployable jarfile containing our launcher code,
 			all requried libraries, and the webapp.  Note that signatures
@@ -54,12 +58,18 @@
 			FIXME: doesn't include the webapp yet.
 		-->
 		<jar destfile="${jarname}">
+			<!-- Copy classes and properties files from the bin directory. -->
 			<fileset dir="bin" includes="**"/>
+
+			<!-- Copy classes and other files from required libraries and Jetty. -->
 			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
+			
+			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.webserver.CloudCoderWebServer" />
 			</manifest>
 		</jar>
+
 		<!-- Now we can delete deps.jar. -->
 		<delete file="deps.jar"/>
 	</target>

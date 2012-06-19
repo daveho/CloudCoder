@@ -1,6 +1,9 @@
 package org.cloudcoder.webserver;
 
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.cloudcoder.daemon.IDaemon;
@@ -21,21 +24,27 @@ public class CloudCoderDaemon implements IDaemon {
 	// TODO: eventually, this will be a resource within the classpath
 	private static final String WEB_APP_DIR_NAME = "cloudCoder";
 	
-	// TODO: figure out a reasonable way to pass options
-	// Probably we should either look in the classpath or the filesystem
-	// for a properties file.
-	private static class Options {
+	/**
+	 * Options for launching the webserver and webapp,
+	 * as specified in the CloudCoder configuration properties.
+	 */
+	private class Options {
+		private Properties configProperties;
+		
+		public Options(Properties configProperties) {
+			this.configProperties = configProperties;
+		}
 
 		public int getPort() {
-			return 8081;
+			return Integer.parseInt(configProperties.getProperty("cloudcoder.webserver.port", "8081"));
 		}
 
 		public boolean isLocalhostOnly() {
-			return true;
+			return Boolean.parseBoolean(configProperties.getProperty("cloudcoder.webserver.localhostonly", "true"));
 		}
 
 		public String getContext() {
-			return "/cloudcoder";
+			return configProperties.getProperty("cloudcoder.webserver.contextpath", "/cloudcoder");
 		}
 		
 	}
@@ -44,8 +53,8 @@ public class CloudCoderDaemon implements IDaemon {
 
 	@Override
 	public void start(String instanceName) {
-		Options options = new Options();
-//		options.parse(args);
+		Properties configProperties = loadProperties("local.properties");
+		Options options = new Options(configProperties);
 		
 		// Configure logging
 		configureLogging();
@@ -69,6 +78,15 @@ public class CloudCoderDaemon implements IDaemon {
 		handler.setContextPath(options.getContext());
 		handler.setParentLoaderPriority(true);
 
+		// Make all cloudcoder.* configuration parameters available
+		// as context init parameters.
+		for (String key : configProperties.stringPropertyNames()) {
+			if (key.startsWith("cloudcoder.")) {
+				String value = configProperties.getProperty(key);
+				handler.setInitParameter(key, value);
+			}
+		}
+
 		// Add it to the server
 		server.setHandler(handler);
 
@@ -85,9 +103,34 @@ public class CloudCoderDaemon implements IDaemon {
 	}
 	
 	private void configureLogging() {
-		String pkgName = this.getClass().getPackage().getName().replace('.', '/');
-		URL propURL = this.getClass().getClassLoader().getResource(pkgName + "/log4j.properties");
-		PropertyConfigurator.configure(propURL);
+		Properties log4jProperties = loadProperties("log4j.properties");
+		PropertyConfigurator.configure(log4jProperties);
+	}
+
+	/**
+	 * Load Properties from a properties file loaded from the classpath.
+	 * 
+	 * @param fileName name of properties file
+	 * @return the Properties contained in the properties file
+	 */
+	protected Properties loadProperties(String fileName) {
+		String propFilePath = this.getClass().getPackage().getName().replace('.', '/') + "/" + fileName;
+		URL propURL = this.getClass().getClassLoader().getResource(propFilePath);
+		if (propURL == null) {
+			throw new IllegalStateException("Couldn't find properties " + propFilePath);
+		}
+		Properties properties = new Properties();
+		try {
+			InputStream in = propURL.openStream();
+			try {
+				properties.load(in);
+			} finally {
+				in.close();
+			}
+		} catch (Exception e) {
+			throw new IllegalStateException("Couldn't load properties " + propFilePath);
+		}
+		return properties;
 	}
 
 	@Override
