@@ -25,20 +25,14 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem implements ActivityObject
+public class Problem extends ProblemData
 {
 	private static final long serialVersionUID = 1L;
 
 	private Integer problemId;
 	private Integer courseId;
-	private ProblemType problemType;
-	private String testName;
-	private String briefDescription;
-	private String description;
 	private long whenAssigned;
 	private long whenDue;
-	private String skeleton;
-
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
 	}
@@ -62,52 +56,6 @@ public class Problem implements ActivityObject
 	
 	public void setCourseId(Integer courseId) {
 		this.courseId = courseId;
-	}
-	
-	public void setProblemType(ProblemType problemType) {
-		this.problemType = problemType;
-	}
-	
-	public void setProblemType(int problemType) {
-		this.problemType = ProblemType.values()[problemType];
-	}
-	
-	public ProblemType getProblemType() {
-		return problemType;
-	}
-	
-	/**
-	 * @return the testName
-	 */
-	public String getTestName(){
-		return testName;
-	}
-	/**
-	 * @param testName the testName to set
-	 */
-	public void setTestName(String testName){
-		this.testName = testName;
-	}
-	
-	public void setBriefDescription(String briefDescription) {
-		this.briefDescription = briefDescription;
-	}
-	
-	public String getBriefDescription() {
-		return briefDescription;
-	}
-	
-	/**
-	 * @return the description
-	 */
-	public String getDescription(){
-		return description;
-	}
-	/**
-	 * @param description the description to set
-	 */
-	public void setDescription(String description){
-		this.description = description;
 	}
 	
 	/**
@@ -154,26 +102,5 @@ public class Problem implements ActivityObject
 	 */
 	public void setWhenDue(long whenDue) {
 		this.whenDue = whenDue;
-	}
-	
-	/**
-	 * @param skeleton the skeleton to set
-	 */
-	public void setSkeleton(String skeleton) {
-		this.skeleton = skeleton;
-	}
-	
-	/**
-	 * @return the skeleton
-	 */
-	public String getSkeleton() {
-		return skeleton;
-	}
-
-	/**
-	 * @return true if this problem has a skeleton, false if not
-	 */
-	public boolean hasSkeleton() {
-		return skeleton != null;
 	}
 }
