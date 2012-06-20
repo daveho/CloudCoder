@@ -1,6 +1,8 @@
 About CloudCoder
 ================
 
+FIXME: this is out of date and needs to be rewritten!
+
 CloudCoder is a web application for short programming exercises
 for introductory computer science courses.
 
