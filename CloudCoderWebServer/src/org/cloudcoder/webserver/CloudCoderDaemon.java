@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.cloudcoder.daemon.IDaemon;
+import org.cloudcoder.daemon.Util;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -120,22 +121,8 @@ public class CloudCoderDaemon implements IDaemon {
 	 */
 	protected Properties loadProperties(String fileName) {
 		String propFilePath = this.getClass().getPackage().getName().replace('.', '/') + "/" + fileName;
-		URL propURL = this.getClass().getClassLoader().getResource(propFilePath);
-		if (propURL == null) {
-			throw new IllegalStateException("Couldn't find properties " + propFilePath);
-		}
-		Properties properties = new Properties();
-		try {
-			InputStream in = propURL.openStream();
-			try {
-				properties.load(in);
-			} finally {
-				in.close();
-			}
-		} catch (Exception e) {
-			throw new IllegalStateException("Couldn't load properties " + propFilePath);
-		}
-		return properties;
+		ClassLoader clsLoader = this.getClass().getClassLoader();
+		return Util.loadPropertiesFromResource(clsLoader, propFilePath);
 	}
 
 	@Override
