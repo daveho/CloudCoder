@@ -4,7 +4,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <property name="model.class.jar" value="lib/cloudCoderModelClasses.jar"/>
+    <property name="model.class.jar" value="lib/cloudcoderModelClasses.jar"/>
 	
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
@@ -33,14 +33,11 @@
     	<delete file="${jarname}"/>
     </target>
 
-    <!-- compile shared model classes in CloudCoder project,
-         package them as a jarfile in this project -->
+    <!-- compile shared model classes, copy jar to this project -->
     <target name="modelClasses">
-      <delete file="${model.class.jar}"/>
-      <ant dir="../CloudCoder" target="javac-model"/>
-      <jar destfile="${model.class.jar}"
-           basedir="../CloudCoder/war/WEB-INF/classes"
-           includes="org/cloudcoder/app/shared/model/**"/>
+		<delete file="${model.class.jar}"/>
+		<ant dir="../CloudCoderModelClasses" target="jar"/>
+		<copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" tofile="${model.class.jar}"/>
     </target>
 
     <target depends="init,modelClasses" name="build">

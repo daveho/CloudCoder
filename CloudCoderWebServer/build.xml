@@ -79,6 +79,6 @@
         <delete>
         	<fileset dir="bin" includes="**"/>
         </delete>
-    	<delete file="cloudcoder.jar"/>
+    	<delete file="cloudcoderApp.jar"/>
     </target>
 </project>

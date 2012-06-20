@@ -8,3 +8,4 @@
 *~
 /logs
 /war/WEB-INF/lib/gwt-servlet-deps.jar
+/war/WEB-INF/lib/cloudcoderModelClasses.jar

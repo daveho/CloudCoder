@@ -19,7 +19,16 @@
     <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
   </path>
 
-  <target name="libs" description="Copy libs to WEB-INF/lib">
+  <!--
+    Compile the model classes jarfile, include it in
+    war/WEB-INF/lib.
+  -->
+  <target name="modelClasses">
+    <ant dir="../CloudCoderModelClasses" target="jar"/>
+    <copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" tofile="war/WEB-INF/lib/cloudcoderModelClasses.jar"/>
+  </target>
+
+  <target name="libs" depends="modelClasses" description="Copy libs to WEB-INF/lib">
     <mkdir dir="war/WEB-INF/lib" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet-deps.jar" />
@@ -39,6 +48,7 @@
     </copy>
   </target>
 
+	<!--
   <target name="javac-model" description="Compile shared model classes to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac
@@ -52,11 +62,16 @@
       <fileset dir="src" excludes="**/*.java"/>
     </copy>
   </target>
+  -->
 
   <target name="gwtc" depends="javac" description="GWT compile to JavaScript (production mode)">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
         <pathelement location="src"/>
+      	<!--
+      		Also compile shared model classes in CloudCoderModelClasses
+      	-->
+      	<pathelement location="../CloudCoderModelClasses/src"/>
         <path refid="project.class.path"/>
         <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA.jar" />
         <pathelement location="${gwt.sdk}/validation-api-1.0.0.GA-sources.jar" />
@@ -170,7 +185,7 @@ Test targets suppressed because -junit argument was not specified when running w
 
   <target name="hosted" depends="devmode" description="Run development mode (NOTE: the 'hosted' target is deprecated)" />
 
-  <target name="build" depends="gwtc" description="Build this project" />
+  <target name="build" depends="gwtc,modelClasses" description="Build this project" />
 
   <target name="war" depends="build" description="Create a war file">
     <zip destfile="CloudCoder.war" basedir="war"/>
