@@ -17,6 +17,8 @@ print "\n";
 
 askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
 	"gwt.sdk", undef);
+
+# Database configuration properties
 askprop("What MySQL username will the webapp use to connect to the database?",
 	"cloudcoder.db.user", undef);
 askprop("What MySQL password will the webapp use to connect to the database?",
@@ -28,6 +30,16 @@ askprop("What host will CloudCoder connect to to access the MySQL database?",
 askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
 	"Just hit enter if MySQL is running on the standard port.",
 	"cloudcoder.db.portStr", undef);
+
+# Login service properties
+askprop("Which login service do you want to use (imap or database)?",
+	"cloudcoder.login.service", "database");
+if ($properties{"cloudcoder.login.service"} eq 'imap') {
+	askprop("What is the hostname or IP address of your IMAP server?",
+		"cloudcoder.login.host", undef);
+}
+
+# Builder properties
 askprop("What host will the CloudCoder webapp be running on?\n" .
 	"(This information is needed by the Builder so it knows how to connect\n" .
 	"to the webapp.)",
@@ -37,7 +49,9 @@ askprop("How many threads should the Builder use? (suggestion: 1 per core)",
 askprop("What port will the CloudCoder webapp use to listen for connections from\n" .
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
-askprop("What post will the CloudCoder web server listen on?",
+
+# Web server properties
+askprop("What port will the CloudCoder web server listen on?",
 	"cloudcoder.webserver.port", "8081");
 askprop("What context path should the webapp use?",
 	"cloudcoder.webserver.contextpath", "/cloudcoder");

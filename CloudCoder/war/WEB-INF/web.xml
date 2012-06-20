@@ -7,10 +7,15 @@
 
   <!-- Context parameters -->
   <context-param>
-    <!-- Note: keep the param-name and param-value elements on the same line
-         without any spaces between them.  This allows automated setting
-         of the webapp configuration properties when the app is deployed
-         using CloudCoderWebServer. -->
+    <!--
+      Note: when the CloudCoder web application is deployed as an executable
+      jar file using CloudCoderWebServer, these context parameters are
+      ignored in favor of the configuration properties (local.properties)
+      defined by the user as a result of running the configure.pl script.
+      
+      So, the context parameters defined here are only meaningful when executing
+      the webapp directly from Eclipse (as part of development). 
+    -->
 
     <!-- MySQL username. -->
     <param-name>cloudcoder.db.user</param-name><param-value>root</param-value>
@@ -51,6 +56,7 @@
   <context-param>
 	<param-name>cloudcoder.login.host</param-name><param-value>199.36.142.222</param-value>
   </context-param>
+  
   <!-- RPC servlets -->
   <servlet>
     <servlet-name>ConfigurationSetting</servlet-name>
