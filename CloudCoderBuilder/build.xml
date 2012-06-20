@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="CloudCoderBuilder">
+<project basedir="." default="jar" name="CloudCoderBuilder">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
     <property name="model.class.jar" value="lib/cloudCoderModelClasses.jar"/>
+	
+	<!-- Name of the single executable jarfile used for deployment. -->
+	<property name="jarname" value="cloudcoderBuilder.jar"/>
 
     <path id="CloudCoderOutOfProcessBuildService.classpath">
         <pathelement location="${model.class.jar}"/>
@@ -27,6 +30,7 @@
     <target name="clean">
         <delete dir="bin"/>
         <delete file="${model.class.jar}"/>
+    	<delete file="${jarname}"/>
     </target>
 
     <!-- compile shared model classes in CloudCoder project,
@@ -46,4 +50,20 @@
             <classpath refid="CloudCoderOutOfProcessBuildService.classpath"/>
         </javac>
     </target>
+	
+	<!--
+		Build a single executable jarfile.
+	-->
+	<target name="jar" depends="build">
+		<!-- copy local.properties into bin (so it will be included in the executable jarfile) -->
+		<copy file="../local.properties" tofile="bin/org/cloudcoder/submitsvc/oop/builder/local.properties"/>
+		
+		<jar destfile="${jarname}">
+			<zipgroupfileset dir="lib" includes="**.jar"/>
+			<fileset dir="bin" includes="**"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
+			</manifest>
+		</jar>
+	</target>
 </project>

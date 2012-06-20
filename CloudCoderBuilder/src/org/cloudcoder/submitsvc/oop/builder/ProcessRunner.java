@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
+import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,26 +46,16 @@ public class ProcessRunner implements ITestOutput {
     
 	private static String RUN_PROCESS_SCRIPT;
 	static {
-		// FIXME: find a way to make this work if we're running from a jar file
-		RUN_PROCESS_SCRIPT = findScript("runProcess.sh");
-		if (RUN_PROCESS_SCRIPT == null || !(new File(RUN_PROCESS_SCRIPT).exists())) {
-			throw new IllegalStateException("can't find filename of runProcess.sh script");
+		// "Externalize" the runProcess.sh script.
+		// If we're running out of a directory, then we can directly access the file
+		// in the classpath.  If we're running out of a jarfile, then this will copy
+		// runProcess.sh into a temporary file in the filesystem.
+		try {
+			String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/runProcess.sh";
+			RUN_PROCESS_SCRIPT = Util.getExternalizedFileName(ProcessRunner.class.getClassLoader(), runProcessPath);
+		} catch (IOException e) {
+			throw new IllegalStateException("Couldn't get externalized path for runProcess.sh", e);
 		}
-	}
-
-	protected static String findScript(String scriptName) {
-		String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/" + scriptName;
-		URL url = ProcessRunner.class.getClassLoader().getResource(runProcessPath);
-		String scriptPath = null;
-		if (url != null) {
-			String fileName = url.toExternalForm();
-			if (fileName.startsWith("file://")) {
-				scriptPath = fileName.substring("file://".length());
-			} else if (fileName.startsWith("file:")) {
-				scriptPath = fileName.substring("file:".length());
-			}
-		}
-		return scriptPath;
 	}
     
 	private String statusMessage = "";
