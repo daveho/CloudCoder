@@ -1,7 +1,5 @@
 package org.cloudcoder.webserver;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Properties;
 
@@ -26,10 +24,10 @@ public class CloudCoderDaemon implements IDaemon {
 	 * Options for launching the webserver and webapp,
 	 * as specified in the CloudCoder configuration properties.
 	 */
-	private class Options {
+	private class CloudCoderConfig {
 		private Properties configProperties;
 		
-		public Options(Properties configProperties) {
+		public CloudCoderConfig(Properties configProperties) {
 			this.configProperties = configProperties;
 		}
 
@@ -52,7 +50,7 @@ public class CloudCoderDaemon implements IDaemon {
 	@Override
 	public void start(String instanceName) {
 		Properties configProperties = loadProperties("local.properties");
-		Options options = new Options(configProperties);
+		CloudCoderConfig config = new CloudCoderConfig(configProperties);
 		
 		// Configure logging
 		configureLogging();
@@ -62,8 +60,8 @@ public class CloudCoderDaemon implements IDaemon {
 		
 		// Create a connector
 		SelectChannelConnector connector = new SelectChannelConnector();
-		connector.setPort(options.getPort());
-		if (options.isLocalhostOnly()) {
+		connector.setPort(config.getPort());
+		if (config.isLocalhostOnly()) {
 		    //System.out.println("happening?");
 			connector.setHost("localhost");
 		}
@@ -82,7 +80,7 @@ public class CloudCoderDaemon implements IDaemon {
 			boolean endsInDir = codeBase.endsWith("/");
 			handler.setWar(codeBase + (endsInDir ? "" : "/") + "war");
 		}
-		handler.setContextPath(options.getContext());
+		handler.setContextPath(config.getContext());
 		
 		// Make all cloudcoder.* configuration parameters available
 		// as context init parameters.
