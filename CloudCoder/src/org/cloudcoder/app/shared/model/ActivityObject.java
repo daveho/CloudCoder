@@ -20,44 +20,10 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 
 /**
- * Class which represents the Activity the user
- * is working on.
+ * Marker interface for objects that should be saved on the
+ * user's server-side {@link Activity}.
  * 
  * @author David Hovemeyer
  */
-public class Activity implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	private String name;
-	private ActivityObject[] sessionObjectList;
-	
-	public Activity() {
-	}
-	
-	public Activity(String name) {
-		this.name = name;
-	}
-	
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * Add an object which should be added to the user's
-	 * session when the activity is resumed. 
-	 * @param obj an object which should be added to the user's session
-	 */
-	public void setSessionObjects(ActivityObject[] sessionObjectList) {
-		this.sessionObjectList = sessionObjectList;
-	}
-
-	/**
-	 * @return
-	 */
-	public ActivityObject[] getSessionObjects() {
-		return sessionObjectList;
-	}
+public interface ActivityObject extends Serializable {
 }

@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -26,7 +25,7 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem implements Serializable
+public class Problem implements ActivityObject
 {
 	private static final long serialVersionUID = 1L;
 

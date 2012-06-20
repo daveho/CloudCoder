@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.client;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +28,7 @@ import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.ActivityObject;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -142,15 +142,15 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	protected Activity getActivityForPage(CloudCoderPage page) {
 		Activity activity = new Activity(page.getClass().getName());
 		
-		// Record the Session objects (the ones that are Serializable)
-		List<Serializable> sessionObjectList = new ArrayList<Serializable>();
+		// Record the Session objects (the ones that are ActivityObjects)
+		List<ActivityObject> sessionObjectList = new ArrayList<ActivityObject>();
 		for (Object obj : session.getObjects()) {
-			if (obj instanceof Serializable) {
-				sessionObjectList.add((Serializable) obj);
+			if (obj instanceof ActivityObject) {
+				sessionObjectList.add((ActivityObject) obj);
 				GWT.log("Adding " + obj.getClass().getName() + " to Activity");
 			}
 		}
-		activity.setSessionObjects(sessionObjectList.toArray(new Serializable[sessionObjectList.size()]));
+		activity.setSessionObjects(sessionObjectList.toArray(new ActivityObject[sessionObjectList.size()]));
 		
 		return activity;
 	}
