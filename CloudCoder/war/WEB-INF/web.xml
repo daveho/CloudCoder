@@ -40,16 +40,16 @@
   <!-- type of login service to use.  Choices include:
   		database (default): Username and passwords directly in the cloudcoder backend database
   		imap: authenticate against an imap server
-   
+  --> 
   <context-param>
-	<param-name>cloudcoder.login.service</param-name><param-value>imap</param-value>
+	<param-name>cloudcoder.login.service</param-name><param-value></param-value>
   </context-param>
-  -->
+  
   <!-- host to authenticate against, if using imap authentication
   	against a mail server. 
    -->
   <context-param>
-	<param-name>cloudcoder.login.host</param-name><param-value>mail.knox.edu</param-value>
+	<param-name>cloudcoder.login.host</param-name><param-value>199.36.142.222</param-value>
   </context-param>
   <!-- RPC servlets -->
   <servlet>
