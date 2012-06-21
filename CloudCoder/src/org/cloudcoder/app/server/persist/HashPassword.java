@@ -23,6 +23,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.Scanner;
 
+import org.cloudcoder.app.shared.model.ConvertBytesToHex;
+
 /**
  * Password hashing utility methods.
  */
@@ -46,21 +48,10 @@ public abstract class HashPassword {
 			
 			byte[] hash = md.digest();
 			
-			return byteArrayToHexString(hash);
+			return new ConvertBytesToHex(hash).convert();
 		} catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException("Cannot find MD5 algorithm?", e);
 		}
-	}
-	
-	private static final String HEX = "0123456789abcdef";
-	
-	private static String byteArrayToHexString(byte[] byteArray) {
-		StringBuilder buf = new StringBuilder();
-		for (byte b : byteArray) {
-			buf.append(HEX.charAt((b >>> 4) & 0xF));
-			buf.append(HEX.charAt(b & 0xF));
-		}
-		return buf.toString();
 	}
 	
 	private static byte[] hexStringToByteArray(String s) {
@@ -83,7 +74,7 @@ public abstract class HashPassword {
 	public static String generateRandomSalt(Random r) {
 		byte[] saltBytes = new byte[8];
 		r.nextBytes(saltBytes);
-		return byteArrayToHexString(saltBytes);
+		return new ConvertBytesToHex(saltBytes).convert();
 	}
 
 	private static byte hexValue(char c) {
