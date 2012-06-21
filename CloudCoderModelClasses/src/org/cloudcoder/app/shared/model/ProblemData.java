@@ -33,11 +33,23 @@ public class ProblemData implements ActivityObject {
 	private String briefDescription;
 	private String description;
 	private String skeleton;
+	private int schemaVersion;
+	private String authorName;
+	private String authorEmail;
+	private String authorWebsite;
+	private long timestampUTC;
+	private ProblemLicense license;
+	private String parentHash;
 	
 	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = 5;
+	public static final int NUM_FIELDS = 12;
+	
+	/**
+	 * The current ProblemData schema version.
+	 */
+	public static final int CURRENT_SCHEMA_VERSION = 1;
 
 	/**
 	 * Constructor.
@@ -115,4 +127,130 @@ public class ProblemData implements ActivityObject {
 		return skeleton != null;
 	}
 
+	/**
+	 * Set the schema version.
+	 * 
+	 * @param schemaVersion the schema version
+	 */
+	public void setSchemaVersion(int schemaVersion) {
+		this.schemaVersion = schemaVersion;
+	}
+	
+	/**
+	 * Get the schema version.
+	 * 
+	 * @return the schema version
+	 */
+	public int getSchemaVersion() {
+		return schemaVersion;
+	}
+
+	/**
+	 * Set the name of the author.
+	 * 
+	 * @param authorName the name of the author
+	 */
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
+	}
+	
+	/**
+	 * Get the name of the author.
+	 * 
+	 * @return the name of the author
+	 */
+	public String getAuthorName() {
+		return authorName;
+	}
+	
+	/**
+	 * Set the author's email address.
+	 * @param authorEmail the author's email address
+	 */
+	public void setAuthorEmail(String authorEmail) {
+		this.authorEmail = authorEmail;
+	}
+	
+	/**
+	 * Get the author's email address.
+	 * 
+	 * @return the author's email address
+	 */
+	public String getAuthorEmail() {
+		return authorEmail;
+	}
+	
+	/**
+	 * Set the URL of the author's website.
+	 * 
+	 * @param authorWebsite the URL of the author's website
+	 */
+	public void setAuthorWebsite(String authorWebsite) {
+		this.authorWebsite = authorWebsite;
+	}
+	
+	/**
+	 * Get the URL of the author's website
+	 * 
+	 * @return the URL of the author's website
+	 */
+	public String getAuthorWebsite() {
+		return authorWebsite;
+	}
+	
+	/**
+	 * Get the "creation" timestamp in seconds past the epoch, UTC.
+	 * 
+	 * @param timestampUTC the "creation" timestamp in seconds past the epoch, UTC
+	 */
+	public void setTimestampUTC(long timestampUTC) {
+		this.timestampUTC = timestampUTC;
+	}
+	
+	/**
+	 * Get the "creation" timestamp in seconds past the epoch, UTC.
+	 * 
+	 * @return the "creation" timestamp in seconds past the epoch, UTC
+	 */
+	public long getTimestampUTC() {
+		return timestampUTC;
+	}
+	
+	/**
+	 * Set the license under which this problem is available.
+	 * 
+	 * @param license the license under which this problem is available
+	 */
+	public void setLicense(ProblemLicense license) {
+		this.license = license;
+	}
+	
+	/**
+	 * Get the license under which this problem is available.
+	 * 
+	 * @return  the license under which this problem is available
+	 */
+	public ProblemLicense getLicense() {
+		return license;
+	}
+	
+	/**
+	 * Set the SHA-1 hash of the problem from which this problem was derived.
+	 * An empty string means that this is not a derived problem.
+	 * 
+	 * @param parentHash the SHA-1 hash of the problem from which this problem was derived
+	 */
+	public void setParentHash(String parentHash) {
+		this.parentHash = parentHash;
+	}
+	
+	/**
+	 * Get the SHA-1 hash of the problem from which this problem was derived.
+	 * An empty string means that this is not a derived problem.
+	 * 
+	 * @return the SHA-1 hash of the problem from which this problem was derived
+	 */
+	public String getParentHash() {
+		return parentHash;
+	}
 }

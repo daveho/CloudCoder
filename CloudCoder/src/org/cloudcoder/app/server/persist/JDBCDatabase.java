@@ -42,6 +42,7 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemData;
+import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -1131,6 +1132,13 @@ public class JDBCDatabase implements IDatabase {
 		problemData.setBriefDescription(resultSet.getString(index++));
 		problemData.setDescription(resultSet.getString(index++));
 		problemData.setSkeleton(resultSet.getString(index++));
+		problemData.setSchemaVersion(resultSet.getInt(index++));
+		problemData.setAuthorName(resultSet.getString(index++));
+		problemData.setAuthorEmail(resultSet.getString(index++));
+		problemData.setAuthorWebsite(resultSet.getString(index++));
+		problemData.setTimestampUTC(resultSet.getLong(index++));
+		problemData.setLicense(ProblemLicense.fromOrdinal(resultSet.getInt(index++)));
+		problemData.setParentHash(resultSet.getString(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
@@ -1261,6 +1269,13 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, problemData.getBriefDescription());
 		stmt.setString(index++, problemData.getDescription());
 		stmt.setString(index++, problemData.getSkeleton());
+		stmt.setInt(index++, problemData.getSchemaVersion());
+		stmt.setString(index++, problemData.getAuthorName());
+		stmt.setString(index++, problemData.getAuthorEmail());
+		stmt.setString(index++, problemData.getAuthorWebsite());
+		stmt.setLong(index++, problemData.getTimestampUTC());
+		stmt.setInt(index++, problemData.getLicense().ordinal());
+		stmt.setString(index++, problemData.getParentHash());
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
