@@ -49,7 +49,7 @@ public class ProblemData implements ActivityObject {
 	/**
 	 * The current ProblemData schema version.
 	 */
-	public static final int CURRENT_SCHEMA_VERSION = 1;
+	public static final int CURRENT_SCHEMA_VERSION = 0;
 
 	/**
 	 * Constructor.
