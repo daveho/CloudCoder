@@ -41,6 +41,7 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -1119,13 +1120,17 @@ public class JDBCDatabase implements IDatabase {
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
 		problem.setProblemId(resultSet.getInt(index++));
 		problem.setCourseId(resultSet.getInt(index++));
-		problem.setProblemType(resultSet.getInt(index++));
-		problem.setTestName(resultSet.getString(index++));
-		problem.setBriefDescription(resultSet.getString(index++));
-		problem.setDescription(resultSet.getString(index++));
 		problem.setWhenAssigned(resultSet.getLong(index++));
 		problem.setWhenDue(resultSet.getLong(index++));
-		problem.setSkeleton(resultSet.getString(index++));
+		loadProblemData(problem, resultSet, index);
+	}
+
+	protected void loadProblemData(ProblemData problemData, ResultSet resultSet, int index) throws SQLException {
+		problemData.setProblemType(resultSet.getInt(index++));
+		problemData.setTestName(resultSet.getString(index++));
+		problemData.setBriefDescription(resultSet.getString(index++));
+		problemData.setDescription(resultSet.getString(index++));
+		problemData.setSkeleton(resultSet.getString(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
@@ -1245,13 +1250,17 @@ public class JDBCDatabase implements IDatabase {
 	
 	protected void storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, problem.getCourseId());
-		stmt.setInt(index++, problem.getProblemType().ordinal());
-		stmt.setString(index++, problem.getTestName());
-		stmt.setString(index++, problem.getBriefDescription());
-		stmt.setString(index++, problem.getDescription());
 		stmt.setLong(index++, problem.getWhenAssigned());
 		stmt.setLong(index++, problem.getWhenDue());
-		stmt.setString(index++, problem.getSkeleton());
+		storeProblemData(problem, stmt, index);
+	}
+
+	protected void storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
+		stmt.setInt(index++, problemData.getProblemType().ordinal());
+		stmt.setString(index++, problemData.getTestName());
+		stmt.setString(index++, problemData.getBriefDescription());
+		stmt.setString(index++, problemData.getDescription());
+		stmt.setString(index++, problemData.getSkeleton());
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {

@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jun 18, 2012 at 10:56 AM
+-- Generation Time: Jun 21, 2012 at 10:01 AM
 -- Server version: 5.5.24
--- PHP Version: 5.3.10-1ubuntu3.1
+-- PHP Version: 5.3.10-1ubuntu3.2
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `cc_courses` (
   `term_id` int(11) NOT NULL,
   `year` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
 --
 -- Dumping data for table `cc_courses`
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `cc_course_registrations` (
   `registration_type` int(11) NOT NULL,
   `section` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 --
 -- Dumping data for table `cc_course_registrations`
@@ -132,12 +132,12 @@ CREATE TABLE IF NOT EXISTS `cc_events` (
 CREATE TABLE IF NOT EXISTS `cc_problems` (
   `problem_id` int(11) NOT NULL AUTO_INCREMENT,
   `course_id` int(11) NOT NULL,
+  `when_assigned` bigint(20) NOT NULL,
+  `when_due` bigint(20) NOT NULL,
   `problem_type` int(11) NOT NULL,
   `testname` varchar(255) NOT NULL,
   `brief_description` varchar(60) NOT NULL,
   `description` varchar(8192) NOT NULL,
-  `when_assigned` bigint(20) NOT NULL,
-  `when_due` bigint(20) NOT NULL,
   `skeleton` varchar(400) DEFAULT NULL,
   PRIMARY KEY (`problem_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
@@ -146,8 +146,8 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
 -- Dumping data for table `cc_problems`
 --
 
-INSERT INTO `cc_problems` (`problem_id`, `course_id`, `problem_type`, `testname`, `brief_description`, `description`, `when_assigned`, `when_due`, `skeleton`) VALUES
-(2, 1, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', 1328191200000, 1328623200000, '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
+INSERT INTO `cc_problems` (`problem_id`, `course_id`, `when_assigned`, `when_due`, `problem_type`, `testname`, `brief_description`, `description`, `skeleton`) VALUES
+(2, 1, 0, 0, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
 
 -- --------------------------------------------------------
 
@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS `cc_users` (
   `salt` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_username_index` (`username`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
 --
 -- Dumping data for table `cc_users`

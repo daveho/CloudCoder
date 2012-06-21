@@ -33,9 +33,11 @@ public class Problem extends ProblemData
 	private Integer courseId;
 	private long whenAssigned;
 	private long whenDue;
-	public String toString() {
-		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
-	}
+	
+	/**
+	 * Number of fields.
+	 */
+	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 4;
 
 	/**
 	 * @return the id
@@ -102,5 +104,10 @@ public class Problem extends ProblemData
 	 */
 	public void setWhenDue(long whenDue) {
 		this.whenDue = whenDue;
+	}
+
+	@Override
+	public String toString() {
+		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
 	}
 }

@@ -33,6 +33,11 @@ public class ProblemData implements ActivityObject {
 	private String briefDescription;
 	private String description;
 	private String skeleton;
+	
+	/**
+	 * Number of fields.
+	 */
+	public static final int NUM_FIELDS = 5;
 
 	/**
 	 * Constructor.
