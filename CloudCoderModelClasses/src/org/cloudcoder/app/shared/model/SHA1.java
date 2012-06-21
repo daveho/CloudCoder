@@ -47,6 +47,10 @@ package org.cloudcoder.app.shared.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class that works like java.security.MessageDigest, and computes
+ * the SHA-1 hash of some data.
+ */
 public class SHA1 {
 	private List<byte[]> inputDataList;
 	
