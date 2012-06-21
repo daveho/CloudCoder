@@ -96,7 +96,7 @@ public class SHA1 {
 	}
 
 	/**
-	 * Take an array of bytes and return the base64 representation of its SHA-1.
+	 * Take an array of bytes and return its SHA-1 hash as bytes.
 	 * Any data added to this object using the {@link #update(byte[])} method
 	 * is ignored.
 	 * 
