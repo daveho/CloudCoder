@@ -37,6 +37,20 @@ public class JDBCDatabaseConfigServletContextListener implements ServletContextL
 		JDBCDatabaseConfig.create(new JDBCDatabaseConfig.ConfigProperties() {
 			@Override
 			public String getDbConfigProperty(String name) {
+				// As a special case, the cloudcoder.db.portStr property will be
+				// returned as ":8889" (for MAMP) if cloudcoder.db.checkmacos is true
+				// and the os.name system property contains "OS X".  This allows
+				// development mode to work seamlessly on MacOS without any
+				// changes to web.xml.
+				if (name.equals("cloudcoder.db.portStr")) {
+					String checkMacOS = e.getServletContext().getInitParameter("cloudcoder.db.checkmacos");
+					if (checkMacOS != null
+							&& Boolean.parseBoolean(checkMacOS) == true
+							&& System.getProperty("os.name").contains("OS X")) {
+						return ":8889";
+					}
+				}
+				
 				return e.getServletContext().getInitParameter(name);
 			}
 		});
