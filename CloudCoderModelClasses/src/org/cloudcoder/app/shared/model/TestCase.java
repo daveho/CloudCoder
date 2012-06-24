@@ -20,22 +20,17 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 
 /**
- * A TestCase for a Problem.
+ * A TestCase for a {@link Problem}.
  * Specifies input(s) and expected output.
  * 
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase implements Serializable {
+public class TestCase extends TestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
 	private int problemId;
-	private String testCaseName;
-	private String input;
-	private String output;
-	private boolean secret;
-	
 	public TestCase() {
 		
 	}
@@ -54,43 +49,5 @@ public class TestCase implements Serializable {
 	
 	public int getProblemId() {
 		return problemId;
-	}
-	
-	public void setTestCaseName(String testCaseName) {
-		this.testCaseName = testCaseName;
-	}
-	
-	public String getTestCaseName() {
-		return testCaseName;
-	}
-	
-	public void setInput(String input) {
-		this.input = input;
-	}
-	
-	public String getInput() {
-		return input;
-	}
-	
-	public void setOutput(String output) {
-		this.output = output;
-	}
-	
-	public String getOutput() {
-		return output;
-	}
-	
-	/**
-	 * @param secret true if the test case is secret, false otherwise
-	 */
-	public void setSecret(boolean secret) {
-		this.secret = secret;
-	}
-	
-	/**
-	 * @return true if test case is secret, false otherwise
-	 */
-	public boolean isSecret() {
-		return secret;
 	}
 }
