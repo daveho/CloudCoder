@@ -27,6 +27,7 @@ import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -55,6 +56,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 * UI class for CoursesAndProblemsPage2.
 	 */
 	private class UI extends Composite implements SessionObserver, Subscriber {
+		private static final double COURSE_ADMIN_BUTTON_HEIGHT = 27.0;
+
 		private LayoutPanel eastLayoutPanel;
 
 		private PageNavPanel pageNavPanel;
@@ -62,7 +65,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private ProblemDescriptionView problemDescriptionView;
 		private StatusMessageView statusMessageView;
 		private ProblemListView2 problemListView2;
-
+		private Button courseAdminButton;
 		private Button loadProblemButton;
 
 		public UI() {
@@ -153,11 +156,51 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseAndCourseRegistration[]) {
-				// Courses are loaded - create and activate TermAndCourseTreeView
-				termAndCourseTreeView = new TermAndCourseTreeView((CourseAndCourseRegistration[]) hint);
+				CourseAndCourseRegistration[] courseAndRegList = (CourseAndCourseRegistration[]) hint;
+				
+				boolean isInstructor = false;
+
+				// Determine if the user is an instructor for any of the courses
+				for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+					if (courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR) {
+						GWT.log("Instructor for course " +  courseAndReg.getCourse().getName());
+						isInstructor = true;
+					}
+				}
+				
+				// Courses are loaded - create and activate TermAndCourseTreeView.
+				// If the user is an instructor for at least one course, leave some room for
+				// the "Course admin" button.
+				termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
 				eastLayoutPanel.add(termAndCourseTreeView);
 				eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
-				eastLayoutPanel.setWidgetTopBottom(termAndCourseTreeView, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT, 0.0, Unit.PX);
+				eastLayoutPanel.setWidgetTopBottom(
+						termAndCourseTreeView,
+						PageNavPanel.HEIGHT + (isInstructor ? COURSE_ADMIN_BUTTON_HEIGHT + 8.0 : 0),
+						PageNavPanel.HEIGHT_UNIT,
+						0.0,
+						Unit.PX);
+				
+				// Create the "Course admin" button if appropriate.
+				if (isInstructor) {
+					courseAdminButton = new Button("Course admin");
+					eastLayoutPanel.add(courseAdminButton);
+					eastLayoutPanel.setWidgetRightWidth(courseAdminButton, 0.0, Unit.PX, 100.0, Unit.PX);
+					eastLayoutPanel.setWidgetTopHeight(courseAdminButton, PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_ADMIN_BUTTON_HEIGHT, Unit.PX);
+					courseAdminButton.addClickHandler(new ClickHandler(){
+						/* (non-Javadoc)
+						 * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
+						 */
+						@Override
+						public void onClick(ClickEvent event) {
+							handleCourseAdminButtonClicked();
+						}
+					});
+					
+					// Disable the button initially.  It will be enabled/disabled
+					// appropriately as courses are selected.
+					courseAdminButton.setEnabled(false);
+				}
 				
 				// add selection event handler
 				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
@@ -185,7 +228,25 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 						getSession().add(result);
 					}
 				});
+				
+				if (courseAdminButton != null) {
+					// Find the CourseRegistration for this Course
+					CourseAndCourseRegistration[] courseAndRegList = getSession().get(CourseAndCourseRegistration[].class);
+					for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+						if (courseAndReg.getCourse() == course) {
+							// Enable or disable the courseAdminButton depending on whether or not
+							// user is an instructor.
+							boolean isInstructor = courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR;
+							courseAdminButton.setEnabled(isInstructor);
+							GWT.log((isInstructor ? "enable" : "disable") + " courseAdminButton");
+						}
+					}
+				}
 			}
+		}
+
+		protected void handleCourseAdminButtonClicked() {
+			GWT.log("Course admin button clicked");
 		}
 	}
 
