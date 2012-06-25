@@ -1138,7 +1138,6 @@ public class JDBCDatabase implements IDatabase {
 		problemData.setAuthorWebsite(resultSet.getString(index++));
 		problemData.setTimestampUTC(resultSet.getLong(index++));
 		problemData.setLicense(ProblemLicense.fromOrdinal(resultSet.getInt(index++)));
-		problemData.setParentHash(resultSet.getString(index++));
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
@@ -1275,7 +1274,6 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, problemData.getAuthorWebsite());
 		stmt.setLong(index++, problemData.getTimestampUTC());
 		stmt.setInt(index++, problemData.getLicense().ordinal());
-		stmt.setString(index++, problemData.getParentHash());
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {

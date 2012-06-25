@@ -33,7 +33,7 @@ public class ConvertToXML {
 		writeString(problemData.getTestName(), "testname", writer);
 		writeLong(problemData.getTimestampUTC(), "timestamp", writer);
 		writeString(problemData.getLicense().toString(), "license", writer);
-		writeString(problemData.getParentHash(), "parenthash", writer);
+		//writeString(problemData.getParentHash(), "parenthash", writer);
 	}
 	
 	/**

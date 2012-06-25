@@ -20,30 +20,24 @@ package org.cloudcoder.app.shared.model;
 import java.nio.charset.Charset;
 
 /**
- * Compute a hash of the data in a {@link ProblemData} object.
+ * Compute a hash of the data in a {@link ProblemAndTestCaseData} object.
  * The hash should be "unique enough" that collisions will not arise
  * in practice.
  * 
  * @author David Hovemeyer
  */
-public class HashProblemData {
-	private ProblemData problemData;
-	//private MessageDigest sha1;
+public class HashProblemAndTestCaseData {
+	private ProblemAndTestCaseData problemAndTestCaseData;
 	private SHA1 sha1;
 	private Charset utf8;
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param problemData the ProblemData to compute a hash for
+	 * @param problemAndTestCaseData the ProblemData to compute a hash for
 	 */
-	public HashProblemData(ProblemData problemData) {
-		this.problemData = problemData;
-//		try {
-//			this.sha1 = MessageDigest.getInstance("SHA-1");
-//		} catch (NoSuchAlgorithmException e) {
-//			throw new IllegalStateException("SHA-1 not supported?");
-//		}
+	public HashProblemAndTestCaseData(ProblemAndTestCaseData problemAndTestCaseData) {
+		this.problemAndTestCaseData = problemAndTestCaseData;
 		this.sha1 = new SHA1();
 		this.utf8 = Charset.forName("UTF-8");
 	}
@@ -54,6 +48,20 @@ public class HashProblemData {
 	 * @return the hash
 	 */
 	public String compute() {
+		// Incorporate the ProblemData
+		hashProblemData(problemAndTestCaseData.getProblemData());
+
+		// Incorporate each TestCase
+		for (TestCase testCase : problemAndTestCaseData.getTestCaseList()) {
+			hashTestCase(testCase);
+		}
+
+		// Return the computed hash as a hex string
+		byte[] digest = sha1.digest();
+		return new ConvertBytesToHex(digest).convert();
+	}
+
+	private void hashProblemData(ProblemData problemData) {
 		// Fields present in schema version 0 and later.
 		updateString(problemData.getProblemType().toString());
 		updateString(problemData.getTestName());
@@ -69,10 +77,13 @@ public class HashProblemData {
 		// Note: parent hash is NOT digested.
 		
 		// TODO: based on schema version, may need to digest additional fields
-		
-		byte[] digest = sha1.digest();
-		
-		return new ConvertBytesToHex(digest).convert();
+	}
+
+	private void hashTestCase(TestCase testCase) {
+		updateString(testCase.getTestCaseName());
+		updateString(testCase.getInput());
+		updateString(testCase.getOutput());
+		updateBoolean(testCase.isSecret());
 	}
 
 	private void updateString(String s) {
@@ -88,6 +99,11 @@ public class HashProblemData {
 	
 	private void updateLong(long value) {
 		// Digest an integer value by first converting it to a string.
+		updateString(String.valueOf(value));
+	}
+
+	private void updateBoolean(boolean value) {
+		// Digest a boolean value by first converting it to a string.
 		updateString(String.valueOf(value));
 	}
 }

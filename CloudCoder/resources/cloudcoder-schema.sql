@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jun 21, 2012 at 10:01 AM
+-- Generation Time: Jun 25, 2012 at 12:18 PM
 -- Server version: 5.5.24
 -- PHP Version: 5.3.10-1ubuntu3.2
 
@@ -139,15 +139,22 @@ CREATE TABLE IF NOT EXISTS `cc_problems` (
   `brief_description` varchar(60) NOT NULL,
   `description` varchar(8192) NOT NULL,
   `skeleton` varchar(400) DEFAULT NULL,
-  PRIMARY KEY (`problem_id`)
+  `schema_version` int(11) NOT NULL DEFAULT '0',
+  `author_name` varchar(80) NOT NULL DEFAULT '',
+  `author_email` varchar(80) NOT NULL DEFAULT '',
+  `author_website` varchar(100) NOT NULL DEFAULT '',
+  `timestamp_utc` bigint(20) NOT NULL DEFAULT '0',
+  `license` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`problem_id`),
+  KEY `author_name` (`author_name`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `cc_problems`
 --
 
-INSERT INTO `cc_problems` (`problem_id`, `course_id`, `when_assigned`, `when_due`, `problem_type`, `testname`, `brief_description`, `description`, `skeleton`) VALUES
-(2, 1, 0, 0, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	');
+INSERT INTO `cc_problems` (`problem_id`, `course_id`, `when_assigned`, `when_due`, `problem_type`, `testname`, `brief_description`, `description`, `skeleton`, `schema_version`, `author_name`, `author_email`, `author_website`, `timestamp_utc`, `license`) VALUES
+(2, 1, 0, 0, 3, 'prob_6_1', 'Print integers from 1 to n', '\n<p>\nWrite a program that reads an integer (which you may assume\nwill be positive) and prints all of the integers from\n1 to that integer, <em>on a single line</em>.\n</p>\n\n<p>\nFor example, if the integer read by the program is <b>7</b>,\nthen the program should print a line reading\n</p>\n\n<blockquote>\n<pre>\n1 2 3 4 5 6 7\n</pre>\n</blockquote>\n\n<p>\nHint: make sure that there is at least one space between each\nnumber.  In other words, if the integer is <b>4</b>,\nthen the output should be <code>1 2 3 4</code>, not <code>1234</code>.\n</p>\n\n<p>\nIf the program produces more than 20 lines of output, it will terminate and the test will fail.\n</p>\n\n	', '#include <stdio.h>\n\nint main(void) {\n	// TODO: your code goes here\n\n	return 0;\n}\n\n	', 0, '', '', '', 0, 0);
 
 -- --------------------------------------------------------
 

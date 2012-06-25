@@ -39,12 +39,11 @@ public class ProblemData implements ActivityObject {
 	private String authorWebsite;
 	private long timestampUTC;
 	private ProblemLicense license;
-	private String parentHash;
 	
 	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = 12;
+	public static final int NUM_FIELDS = 11;
 	
 	/**
 	 * The current ProblemData schema version.
@@ -232,25 +231,5 @@ public class ProblemData implements ActivityObject {
 	 */
 	public ProblemLicense getLicense() {
 		return license;
-	}
-	
-	/**
-	 * Set the SHA-1 hash of the problem from which this problem was derived.
-	 * An empty string means that this is not a derived problem.
-	 * 
-	 * @param parentHash the SHA-1 hash of the problem from which this problem was derived
-	 */
-	public void setParentHash(String parentHash) {
-		this.parentHash = parentHash;
-	}
-	
-	/**
-	 * Get the SHA-1 hash of the problem from which this problem was derived.
-	 * An empty string means that this is not a derived problem.
-	 * 
-	 * @return the SHA-1 hash of the problem from which this problem was derived
-	 */
-	public String getParentHash() {
-		return parentHash;
 	}
 }
