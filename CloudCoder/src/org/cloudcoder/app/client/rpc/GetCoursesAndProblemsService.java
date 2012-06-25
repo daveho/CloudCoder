@@ -1,4 +1,4 @@
-// NetCoder - a web-based pedagogical programming environment
+// CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
@@ -26,6 +26,10 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+/**
+ * RPC service for getting {@link Course}s and {@link Problem}s
+ * for the currently-authenticated client.
+ */
 @RemoteServiceRelativePath("getCoursesAndProblems")
 public interface GetCoursesAndProblemsService extends RemoteService {
 	/**
