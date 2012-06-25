@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -39,6 +40,17 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws NetCoderAuthenticationException if the client is not authenticated
 	 */
 	public Course[] getCourses() throws NetCoderAuthenticationException;
+	
+	/**
+	 * Get {@link CourseAndCourseRegistration} objects representing
+	 * all of the courses the client is registered for, along with
+	 * registration information (such as instructor status) for each
+	 * course.
+	 * 
+	 * @return list of {@link CourseAndCourseRegistration} objects for client
+	 * @throws NetCoderAuthenticationException if the client is not authenticated
+	 */
+	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws NetCoderAuthenticationException;
 	
 	/**
 	 * Get {@link Problem}s available in given {@link Course}.

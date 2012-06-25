@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.TermAndYear;
 
 import com.google.gwt.cell.client.AbstractCell;
@@ -52,10 +53,11 @@ public class TermAndCourseTreeView extends Composite {
 		
 		private SingleSelectionModel<Course> selectionModel;
 		
-		public Model(Course[] courseList) {
+		public Model(CourseAndCourseRegistration[] courseAndRegList) {
 			// Build sorted collection of TermAndYear objects
 			TreeSet<TermAndYear> termAndYearSet = new TreeSet<TermAndYear>();
-			for (Course course : courseList) {
+			for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+				Course course = courseAndReg.getCourse();
 				termAndYearSet.add(course.getTermAndYear());
 			}
 			
@@ -67,7 +69,8 @@ public class TermAndCourseTreeView extends Composite {
 			for (TermAndYear termAndYear : termAndYearSet) {
 				termAndYearList.add(termAndYear);
 				ArrayList<Course> courseListForTermAndYear = new ArrayList<Course>();
-				for (Course course : courseList) {
+				for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+					Course course = courseAndReg.getCourse();
 					if (course.getTermAndYear().equals(termAndYear)) {
 						courseListForTermAndYear.add(course);
 					}
@@ -145,7 +148,7 @@ public class TermAndCourseTreeView extends Composite {
 	private CellTree cellTree;
 	private Model model;
 	
-	public TermAndCourseTreeView(Course[] courseList) {
+	public TermAndCourseTreeView(CourseAndCourseRegistration[] courseList) {
 		model = new Model(courseList);
 		cellTree = new CellTree(model, null);
 		initWidget(cellTree);

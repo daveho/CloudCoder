@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 
@@ -26,6 +27,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface GetCoursesAndProblemsServiceAsync {
 
 	void getCourses(AsyncCallback<Course[]> callback);
+
+	void getCourseAndCourseRegistrations(
+			AsyncCallback<CourseAndCourseRegistration[]> callback);
 
 	void getProblems(Course course, AsyncCallback<Problem[]> callback);
 

@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -45,6 +46,8 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.view.client.SelectionChangeEvent;
 
 /**
+ * A {@link CloudCoderPage} to browse courses and problems.
+ * 
  * @author David Hovemeyer
  */
 public class CoursesAndProblemsPage2 extends CloudCoderPage {
@@ -129,9 +132,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			this.pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			
 			// Load courses
-			RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
+			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
 				@Override
-				public void onSuccess(Course[] result) {
+				public void onSuccess(CourseAndCourseRegistration[] result) {
 					GWT.log(result.length + " course(s) loaded");
 					addSessionObject(result);
 				}
@@ -149,9 +152,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		 */
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
+			if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseAndCourseRegistration[]) {
 				// Courses are loaded - create and activate TermAndCourseTreeView
-				termAndCourseTreeView = new TermAndCourseTreeView((Course[]) hint);
+				termAndCourseTreeView = new TermAndCourseTreeView((CourseAndCourseRegistration[]) hint);
 				eastLayoutPanel.add(termAndCourseTreeView);
 				eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
 				eastLayoutPanel.setWidgetTopBottom(termAndCourseTreeView, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT, 0.0, Unit.PX);
