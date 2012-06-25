@@ -21,6 +21,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -35,7 +36,27 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public Course[] getCourses() throws NetCoderAuthenticationException;
 	
+	/**
+	 * Get {@link Problem}s available in given {@link Course}.
+	 * The client must be registered in the Course.
+	 * 
+	 * @param course the Course
+	 * @return the Problems available in the course
+	 * @throws NetCoderAuthenticationException if the client is not authenticated,
+	 *         or is not regsitered in the course 
+	 */
 	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException;
 	
+	/**
+	 * Get {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
+	 * This allows the client to get not only the Problems in the Course,
+	 * but also the most recent {@link SubmissionReceipt} for each Problem.
+	 * The client must be registered in the Course.
+	 * 
+	 * @param course the Course
+	 * @return the ProblemAndSubmissionReceipts for the client's work in the Course
+	 * @throws NetCoderAuthenticationException if the client is not authenticated,
+	 *         or is not regsitered in the course 
+	 */
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
 }
