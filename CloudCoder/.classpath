@@ -24,5 +24,6 @@
 			<accessrule kind="nonaccessible" pattern="**/*Test"/>
 		</accessrules>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

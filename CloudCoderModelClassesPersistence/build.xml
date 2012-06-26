@@ -1,0 +1,26 @@
+<project name="CloudCoderModelClassesPersistence" default="jar">
+	<property name="jarfile" value="cloudCoderModelClassesPersist.jar"/>
+	
+	<path id="CloudCoderModelClassesPersistence.classpath">
+		<pathelement location="../CloudCoderModelClasses/bin"/>
+		<fileset dir="lib" includes="**.jar"/>
+	</path>
+
+	<target name="javac">
+		<mkdir dir="bin"/>
+		<javac source="1.6" target="1.6" srcdir="src" destdir="bin">
+			<classpath refid="CloudCoderModelClassesPersistence.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarfile}">
+			<fileset dir="bin" includes="**/*.class"/>
+		</jar>
+	</target>
+	
+	<target name="clean">
+		<delete file="${jarfile}"/>
+		<delete dir="bin"/>
+	</target>
+</project>
