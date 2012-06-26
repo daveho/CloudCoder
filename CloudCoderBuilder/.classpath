@@ -14,6 +14,10 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/daemon.jar" sourcepath="lib/daemon.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses">
+		<accessrules>
+			<accessrule kind="nonaccessible" pattern="**/*Test"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
