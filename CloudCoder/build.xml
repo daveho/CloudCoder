@@ -25,10 +25,19 @@
   -->
   <target name="modelClasses">
     <ant dir="../CloudCoderModelClasses" target="jar"/>
-    <copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" tofile="war/WEB-INF/lib/cloudcoderModelClasses.jar"/>
+    <copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" todir="war/WEB-INF/lib"/>
   </target>
 
-  <target name="libs" depends="modelClasses" description="Copy libs to WEB-INF/lib">
+  <!--
+    Copy the model classes persistence jarfile, include it in
+    war/WEB-INF/lib.
+  -->
+  <target name="modelClassesPersist">
+    <ant dir="../CloudCoderModelClassesPersistence" target="jar"/>
+  	<copy file="../CloudCoderModelClassesPersistence/cloudCoderModelClassesPersist.jar" todir="war/WEB-INF/lib"/>
+  </target>
+
+  <target name="libs" depends="modelClasses,modelClassesPersist" description="Copy libs to WEB-INF/lib">
     <mkdir dir="war/WEB-INF/lib" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet-deps.jar" />
