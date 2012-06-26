@@ -29,6 +29,14 @@ public class ServletUtil {
 		return user;
 	}
 	
+	/**
+	 * Attempt to authenticate a user via IMAP.
+	 * 
+	 * @param username  the username
+	 * @param password  the plaintext password
+	 * @param props     login properties from the servlet context init parameters
+	 * @return true if the user has been authenticated successfully, false if not
+	 */
 	public static boolean authenticateImap(String username,
             String password,
             Properties props)

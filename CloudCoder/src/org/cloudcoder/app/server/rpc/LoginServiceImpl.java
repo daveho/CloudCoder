@@ -55,9 +55,27 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	    // Can this method be called anywhere?
 	    // Does AdminAuthorizationFilter have access to the ServletConfig?
         
-	    User user=null;
-	    Properties props=getLoginPropertiesInitParams();
-	    user = Database.getInstance().authenticateUser(userName, password, props);
+		User user=null;
+		Properties props=getLoginPropertiesInitParams();
+	    
+	    if (LOGIN_IMAP.equals(props.getProperty(LOGIN_SERVICE, ""))) {
+	    	// Login using IMAP
+	    	user = Database.getInstance().getUserWithoutAuthentication(userName);
+	    	if (user != null) {
+	    		// Authenticate via IMAP
+	    		if (!ServletUtil.authenticateImap(userName, password, props)) {
+	    			// Authentication failed
+	    			user = null;
+	    		}
+	    	}
+	    } else {
+	    	// Login by checking provided credentials against database 
+		    user = Database.getInstance().authenticateUser(userName, password);
+	    }
+	    
+	    if (user == null) {
+	    	logger.info("Login failure for user {}", userName);
+	    }
 
 		if (user != null) {
 			// Set User object in server HttpSession so that other

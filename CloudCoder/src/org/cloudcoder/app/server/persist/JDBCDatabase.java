@@ -27,10 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.cloudcoder.app.server.rpc.LoginServiceImpl;
-import org.cloudcoder.app.server.rpc.ServletUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -169,52 +166,53 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public User authenticateUser(final String userName, 
-	        final String password, 
-	        Properties properties)
-	{
-	    // if properties is null, make it empty, which works, but will
-	    // default to using the database for authentication.
-	    // Basically, this saves null pointer checks.
-	    if (properties==null) {
-	        properties=new Properties();
-	    }
-	    final Properties props=properties;
-	    return databaseRun(new AbstractDatabaseRunnable<User>() {
-	        @Override
-	        public User run(Connection conn) throws SQLException {
-	            User user=getUser(conn, userName);
-	            if (LoginServiceImpl.LOGIN_IMAP.equals(props.getProperty(LoginServiceImpl.LOGIN_SERVICE))) {
-	                // Check password using imap
-	                logger.debug("Trying to authenticate "+userName+" using imap to " 
-	                        +props.getProperty(LoginServiceImpl.LOGIN_HOST));
-	                if (!ServletUtil.authenticateImap(userName, password, props)) {
-	                    // cannot authenticate using imap
-	                    return null;
-	                } else {
-	                    // Authenticated!
-	                    return user;
-	                }
-	            } else {
-	                // default is to authenticate against the DB
-	                String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
-                    
-                    logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
-                    
-                    if (!encryptedPassword.equals(user.getPasswordMD5())) {
-                        // Password does not match
-                        return null;
-                    } else {
-                        return user;
-                    }
-	            }
-	        }
-	        @Override
-	        public String getDescription() {
-	            return "retrieving user";
-	        }
-        });
+	public User authenticateUser(final String userName, final String password) {
+		return databaseRun(new AbstractDatabaseRunnable<User>() {
+			@Override
+			public User run(Connection conn) throws SQLException {
+				User user=getUser(conn, userName);
+				
+				// authenticate against the DB
+				String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
+
+				logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
+
+				if (!encryptedPassword.equals(user.getPasswordMD5())) {
+					// Password does not match
+					return null;
+				} else {
+					return user;
+				}
+			}
+			@Override
+			public String getDescription() {
+				return "retrieving user";
+			}
+		});
 	};
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.server.persist.IDatabase#getUserWithoutAuthentication(java.lang.String)
+	 */
+	@Override
+	public User getUserWithoutAuthentication(final String userName) {
+		return databaseRun(new AbstractDatabaseRunnable<User>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public User run(Connection conn) throws SQLException {
+				return getUser(conn, userName);
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "retrieving user for username";
+			}
+		});
+	}
 	
 	@Override
 	public Problem getProblem(final User user, final int problemId) {

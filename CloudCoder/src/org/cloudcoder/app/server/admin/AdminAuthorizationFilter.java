@@ -94,7 +94,7 @@ public abstract class AdminAuthorizationFilter implements Filter {
 		// FIXME: This only works with database authentication
 		// authentication with imap requires use of web.xml
 		// which filter cannot access
-		User user = Database.getInstance().authenticateUser(userName, password, new Properties());
+		User user = Database.getInstance().authenticateUser(userName, password);
 		if (user == null) {
 			logger.info("Admin auth: username/password mismatch for " + userName);
 			AdminServletUtil.unauthorized(resp);
