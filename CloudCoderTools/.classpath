@@ -12,11 +12,7 @@
 			<attribute name="javadoc_location" value="http://jaxen.codehaus.org/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses">
-		<accessrules>
-			<accessrule kind="nonaccessible" pattern="**/*Test"/>
-		</accessrules>
-	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoder"/>
 	<classpathentry kind="output" path="bin"/>

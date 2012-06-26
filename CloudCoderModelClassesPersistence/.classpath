@@ -4,10 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api-2.5.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses">
-		<accessrules>
-			<accessrule kind="nonaccessible" pattern="**/*Test"/>
-		</accessrules>
-	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
