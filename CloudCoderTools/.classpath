@@ -17,6 +17,7 @@
 			<accessrule kind="nonaccessible" pattern="**/*Test"/>
 		</accessrules>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoder"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
