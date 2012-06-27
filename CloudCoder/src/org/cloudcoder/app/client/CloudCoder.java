@@ -23,6 +23,7 @@ import java.util.List;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.page.CourseAdminPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.LoginPage;
@@ -131,6 +132,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			return new CoursesAndProblemsPage2();
 		} else if (name.equals(DevelopmentPage.class.getName())) {
 			return new DevelopmentPage();
+		} else if (name.equals(CourseAdminPage.class.getName())) {
+			return new CourseAdminPage();
 		}
 		
 		// This shouldn't happen (can't find page for Activity),
@@ -195,10 +198,13 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		// This is where we monitor for events that indicate page changes.
 		if (key == Session.Event.LOGIN || key == Session.Event.BACK_HOME) {
 			changePage(new CoursesAndProblemsPage2());
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
+		} else if (key == Session.Event.COURSE_ADMIN) {
+			changePage(new CourseAdminPage());
 		} else if (key == Session.Event.LOGOUT) {
 			changePage(new LoginPage());
 		}

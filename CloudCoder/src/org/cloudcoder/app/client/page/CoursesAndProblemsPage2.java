@@ -247,6 +247,10 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		protected void handleCourseAdminButtonClicked() {
 			GWT.log("Course admin button clicked");
+			Course course = getSession().get(Course.class);
+			if (course != null) {
+				getSession().notifySubscribers(Session.Event.COURSE_ADMIN, course);
+			}
 		}
 	}
 

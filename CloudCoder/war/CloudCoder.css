@@ -9,7 +9,7 @@
 	color: red;
 	font-style: italic;
 }
-.cc-problemName {
+.cc-problemName, .cc-courseLabel {
 	font-weight: bold;
 	font-size: 20px;
 }

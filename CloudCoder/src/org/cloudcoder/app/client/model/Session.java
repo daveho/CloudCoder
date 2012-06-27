@@ -54,6 +54,9 @@ public class Session extends Publisher {
 		
 		/** The user has requested to return to the home page. */
 		BACK_HOME,
+		
+		/** Instructor has chosen to navigate to the course admin page for a coruse. Hint is the {@link Course}. */
+		COURSE_ADMIN,
 	}
 	
 	/**
