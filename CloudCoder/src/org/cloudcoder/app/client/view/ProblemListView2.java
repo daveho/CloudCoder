@@ -86,10 +86,7 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 		 */
 		@Override
 		public String getValue(ProblemAndSubmissionReceipt object) {
-			Date whenAssigned = object.getProblem().getWhenAssignedAsDate();
-			//SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy mm:hh a");
-			DateTimeFormat f = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-			return f.format(whenAssigned);
+			return ViewUtil.formatDate(object.getProblem().getWhenAssignedAsDate());
 		}
 	}
 	
@@ -99,10 +96,7 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 		 */
 		@Override
 		public String getValue(ProblemAndSubmissionReceipt object) {
-			Date whenDue = object.getProblem().getWhenDueAsDate();
-//			SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy mm:hh a");
-			DateTimeFormat f = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-			return f.format(whenDue);
+			return ViewUtil.formatDate(object.getProblem().getWhenDueAsDate());
 		}
 	}
 	

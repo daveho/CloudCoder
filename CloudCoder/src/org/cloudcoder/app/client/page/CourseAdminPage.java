@@ -17,10 +17,10 @@
 
 package org.cloudcoder.app.client.page;
 
-import java.awt.FlowLayout;
-
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -38,8 +38,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
+ * Page for performing course admin actions.
+ * 
  * @author David Hovemeyer
- *
  */
 public class CourseAdminPage extends CloudCoderPage {
 	private enum ButtonPanelAction {
@@ -65,9 +66,13 @@ public class CourseAdminPage extends CloudCoderPage {
 	}
 	
 	private class UI extends Composite implements SessionObserver, Subscriber {
+		private static final double PROBLEM_BUTTON_BAR_HEIGHT_PX = 28.0;
+
 		private PageNavPanel pageNavPanel;
 		private Label courseLabel;
 		private Button[] problemButtons;
+		private CourseAdminProblemListView courseAdminProblemListView;
+		private StatusMessageView statusMessageView;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -110,6 +115,20 @@ public class CourseAdminPage extends CloudCoderPage {
 			}
 			
 			centerPanel.add(problemButtonPanel);
+			centerPanel.setWidgetTopHeight(problemButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
+			centerPanel.setWidgetLeftRight(problemButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			
+			// Create problems list
+			this.courseAdminProblemListView = new CourseAdminProblemListView();
+			centerPanel.add(courseAdminProblemListView);
+			centerPanel.setWidgetTopBottom(courseAdminProblemListView, PROBLEM_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			centerPanel.setWidgetLeftRight(courseAdminProblemListView, 0.0, Unit.PX, 0.0, Unit.PX);
+			
+			// Create a StatusMessageView
+			this.statusMessageView = new StatusMessageView();
+			centerPanel.add(statusMessageView);
+			centerPanel.setWidgetBottomHeight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+			centerPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			dockLayoutPanel.add(centerPanel);
 			
@@ -132,6 +151,8 @@ public class CourseAdminPage extends CloudCoderPage {
 			// Activate views
 			pageNavPanel.setBackHandler(new BackHomeHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			courseAdminProblemListView.activate(session, subscriptionRegistrar);
+			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a course
 			Course course = session.get(Course.class);
@@ -143,7 +164,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		 */
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			// TODO Auto-generated method stub
+			// TODO: handle selection of Problem and activate/deactivate problem buttons appropriately
 			
 		}
 	}
