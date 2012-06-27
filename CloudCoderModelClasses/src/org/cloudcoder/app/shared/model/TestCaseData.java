@@ -30,6 +30,11 @@ import java.io.Serializable;
 public class TestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	//
+	// IMPORTANT: if you add any fields, make sure that you
+	// update the duplicateTestCaseData() method so that they are copied
+	// into the returned object.
+	//
 	private String testCaseName;
 	private String input;
 	private String output;
@@ -75,6 +80,26 @@ public class TestCaseData implements Serializable {
 	 */
 	public boolean isSecret() {
 		return secret;
+	}
+	
+	/**
+	 * Create a TestCaseData object that contains exactly the same
+	 * field values as this one.  Note that the object returned
+	 * will be precisely of type TestCaseData, not a subclass.
+	 * (This method doesn't return a clone of the current
+	 * object if it is a subclass of TestCaseData.)
+	 * 
+	 * @return TestCaseData object with the same field values as this one
+	 */
+	public TestCaseData duplicateTestCaseData() {
+		TestCaseData dup = new TestCaseData();
+		
+		dup.testCaseName = this.testCaseName;
+		dup.input = this.input;
+		dup.output = this.output;
+		dup.secret = this.secret;
+		
+		return dup;
 	}
 
 }

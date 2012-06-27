@@ -114,6 +114,17 @@ public class Problem extends ProblemData
 		return true;
 	}
 
+	/**
+	 * Return a {@link ProblemData} object containing just the "exportable"
+	 * data from this Problem.
+	 * 
+	 * @return the ProblemData from this Problem
+	 */
+	public ProblemData toProblemData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	@Override
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();

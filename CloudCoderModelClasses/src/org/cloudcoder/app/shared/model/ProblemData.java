@@ -28,6 +28,11 @@ package org.cloudcoder.app.shared.model;
 public class ProblemData implements ActivityObject {
 	private static final long serialVersionUID = 1L;
 
+	//
+	// IMPORTANT: if you add any fields, make sure that you
+	// update the duplicateProblemData() method so that they are copied
+	// into the returned object.
+	//
 	private ProblemType problemType;
 	private String testName;
 	private String briefDescription;
@@ -231,5 +236,32 @@ public class ProblemData implements ActivityObject {
 	 */
 	public ProblemLicense getLicense() {
 		return license;
+	}
+
+	/**
+	 * Create a ProblemData object that contains exactly the same
+	 * field values as this one.  Note that the object returned
+	 * will be precisely of type ProblemData, not a subclass.
+	 * (This method doesn't return a clone of the current
+	 * object if it is a subclass of ProblemData.)
+	 * 
+	 * @return ProblemData object with the same field values as this one
+	 */
+	public ProblemData duplicateProblemData() {
+		ProblemData dup = new ProblemData();
+
+		dup.problemType = this.problemType;
+		dup.testName = this.testName;
+		dup.briefDescription = this.briefDescription;
+		dup.description = this.description;
+		dup.skeleton = this.skeleton;
+		dup.schemaVersion = this.schemaVersion;
+		dup.authorName = this.authorName;
+		dup.authorEmail = this.authorEmail;
+		dup.authorWebsite = this.authorWebsite;
+		dup.timestampUTC = this.timestampUTC;
+		dup.license = this.license;
+		
+		return dup;
 	}
 }
