@@ -34,7 +34,7 @@ public class ProblemAndTestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private ProblemData problemData;
-	private List<TestCase> testCaseList;
+	private List<TestCaseData> testCaseList;
 	private String parentHash;
 	
 	public ProblemAndTestCaseData() {
@@ -49,11 +49,11 @@ public class ProblemAndTestCaseData implements Serializable {
 		return problemData;
 	}
 	
-	public void addTestCase(TestCase testCase) {
-		testCaseList.add(testCase);
+	public void addTestCase(TestCaseData testCaseData) {
+		testCaseList.add(testCaseData);
 	}
 	
-	public List<TestCase> getTestCaseList() {
+	public List<TestCaseData> getTestCaseList() {
 		return Collections.unmodifiableList(testCaseList);
 	}
 	

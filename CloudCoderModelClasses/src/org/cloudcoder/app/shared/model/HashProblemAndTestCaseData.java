@@ -52,8 +52,8 @@ public class HashProblemAndTestCaseData {
 		hashProblemData(problemAndTestCaseData.getProblemData());
 
 		// Incorporate each TestCase
-		for (TestCase testCase : problemAndTestCaseData.getTestCaseList()) {
-			hashTestCase(testCase);
+		for (TestCaseData testCaseData : problemAndTestCaseData.getTestCaseList()) {
+			hashTestCaseData(testCaseData);
 		}
 
 		// Return the computed hash as a hex string
@@ -79,11 +79,11 @@ public class HashProblemAndTestCaseData {
 		// TODO: based on schema version, may need to digest additional fields
 	}
 
-	private void hashTestCase(TestCase testCase) {
-		updateString(testCase.getTestCaseName());
-		updateString(testCase.getInput());
-		updateString(testCase.getOutput());
-		updateBoolean(testCase.isSecret());
+	private void hashTestCaseData(TestCaseData testCaseData) {
+		updateString(testCaseData.getTestCaseName());
+		updateString(testCaseData.getInput());
+		updateString(testCaseData.getOutput());
+		updateBoolean(testCaseData.isSecret());
 	}
 
 	private void updateString(String s) {
