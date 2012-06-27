@@ -35,6 +35,9 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.view.client.SelectionChangeEvent;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
+import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * View to show problems in the {@link CourseAdminPage}.
@@ -43,6 +46,7 @@ import com.google.gwt.user.client.ui.ResizeComposite;
  */
 public class CourseAdminProblemListView extends ResizeComposite implements Subscriber, SessionObserver {
 	private DataGrid<Problem> grid;
+	private Session session;
 	
 	/**
 	 * Constructor.
@@ -114,8 +118,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		 */
 		@Override
 		public String getValue(Problem object) {
-			// FIXME: there is no visible attribute in Problem, need to add one
-			return "true";
+			return object.isVisible() ? "true" : "false";
 		}
 	}
 
@@ -124,6 +127,23 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	 */
 	@Override
 	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		this.session = session;
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
+		// Set selection model.
+		// When a Problem is selected, it will be added to the Session.
+		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
+		selectionModel.addSelectionChangeHandler(new Handler() {
+			@Override
+			public void onSelectionChange(SelectionChangeEvent event) {
+				Problem selected = selectionModel.getSelectedObject();
+				if (selected != null) {
+					session.add(selected);
+				}
+			}
+		});
+		grid.setSelectionModel(selectionModel);
+		
 		// If the session contains a list of ProblemAndSubmissionReceipts, display the problems.
 		// Otherwise, initiate loading of problems for course.
 		ProblemAndSubmissionReceipt[] problemAndSubmissionReceiptList = session.get(ProblemAndSubmissionReceipt[].class);
@@ -131,18 +151,22 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			displayProblems(problemAndSubmissionReceiptList);
 		} else {
 			Course course = session.get(Course.class);
-			RPC.getCoursesAndProblemsService.getProblems(course, new AsyncCallback<Problem[]>() {
-				@Override
-				public void onSuccess(Problem[] result) {
-					displayProblems(result);
-				}
-				
-				@Override
-				public void onFailure(Throwable caught) {
-					session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not load problems for course"));
-				}
-			});
+			loadProblems(session, course);
 		}
+	}
+
+	private void loadProblems(final Session session, Course course) {
+		RPC.getCoursesAndProblemsService.getProblems(course, new AsyncCallback<Problem[]>() {
+			@Override
+			public void onSuccess(Problem[] result) {
+				displayProblems(result);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not load problems for course"));
+			}
+		});
 	}
 
 	/* (non-Javadoc)
@@ -150,8 +174,13 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	 */
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		// TODO Auto-generated method stub
-		
+		if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
+			// Course selected, load its problems.
+			// Note that this isn't really needed by CourseAdminPage (because there
+			// is only one Course which is pre-selected), but if this view is
+			// reused in another page at some point, this might be useful.
+			loadProblems(session, (Course)hint);
+		}
 	}
 
 	protected void displayProblems(ProblemAndSubmissionReceipt[] problemAndSubmissionReceiptList) {

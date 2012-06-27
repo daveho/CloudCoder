@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -62,6 +63,10 @@ public class CourseAdminPage extends CloudCoderPage {
 		 */
 		public String getName() {
 			return name;
+		}
+		
+		public boolean isEnabledByDefault() {
+			return this == NEW;
 		}
 	}
 	
@@ -111,6 +116,7 @@ public class CourseAdminPage extends CloudCoderPage {
 						onProblemButtonClick(action);
 					}
 				});
+				button.setEnabled(action.isEnabledByDefault());
 				problemButtonPanel.add(button);
 			}
 			
@@ -164,8 +170,19 @@ public class CourseAdminPage extends CloudCoderPage {
 		 */
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			// TODO: handle selection of Problem and activate/deactivate problem buttons appropriately
+			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
+				onSelectProblem((Problem) hint);
+			}
 			
+		}
+
+		private void onSelectProblem(Problem problem) {
+			// Problem selected: enable/disable buttons appropriately
+			problemButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
+			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(!problem.isVisible());
+			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem.isVisible());
+			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);
+			problemButtons[ButtonPanelAction.SHARE.ordinal()].setEnabled(true);
 		}
 	}
 

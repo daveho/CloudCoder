@@ -106,6 +106,14 @@ public class Problem extends ProblemData
 		this.whenDue = whenDue;
 	}
 
+	/**
+	 * @return true if this Problem is visible, false otherwise
+	 */
+	public boolean isVisible() {
+		// FIXME: implement this for real
+		return true;
+	}
+
 	@Override
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
