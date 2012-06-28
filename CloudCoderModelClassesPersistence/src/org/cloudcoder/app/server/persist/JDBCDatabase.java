@@ -34,6 +34,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Problem;
@@ -221,11 +222,14 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select " + PROBLEMS + ".* from " + PROBLEMS + ", " + COURSES + ", " + COURSE_REGISTRATIONS + " " +
-						" where " + PROBLEMS + ".problem_id = ? " +
-						"   and " + COURSES + ".id = " + PROBLEMS + ".course_id " +
-						"   and " + COURSE_REGISTRATIONS + ".course_id = " + COURSES + ".id " +
-						"   and " + COURSE_REGISTRATIONS + ".user_id = ?"
+						"select p.* from " + PROBLEMS + "as p, " + COURSES + "as c, " + COURSE_REGISTRATIONS + " as r " +
+						" where p.problem_id = ? " +
+						"   and c.id = p.course_id " +
+						"   and r.course_id = c.id " +
+						"   and r.user_id = ?" +
+						//  An instructor can see any problem in a course.
+						//  A student can only see a problem if it is visible.
+						"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)"
 				);
 				stmt.setInt(1, problemId);
 				stmt.setInt(2, user.getId());
@@ -492,11 +496,16 @@ public class JDBCDatabase implements IDatabase {
 				// Get all submission receipts for this user/course.
 				// Note that we join on course_registrations in order to ensure 
 				// that user is authorized to get information about the course.
+				// We also check for each problem that the user is either an instructor
+				// or that the problem is visible, since we don't want to show
+				// information for problems that the student shouldn't have
+				// access to.
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + PROBLEMS + " as p, " + EVENTS + " as e, " + COURSE_REGISTRATIONS + " as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
+						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
 						"   and p.course_id = cr.course_id " +
 						"   and e.problem_id = p.problem_id " +
 						"   and e.user_id = cr.user_id " +
@@ -1068,6 +1077,9 @@ public class JDBCDatabase implements IDatabase {
 		//
 		// Note that we have to join on course registrations to ensure
 		// that we return courses that the user is actually registered for.
+		// For each problem, we also have to check that the user is either
+		// an instructor or that the problem is visible.  Students should
+		// not be allowed to see problems that are not visible.
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
@@ -1075,6 +1087,7 @@ public class JDBCDatabase implements IDatabase {
 				" where p.course_id = c.id " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
+				"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
 				"   and c.id = ?"
 		);
 		stmt.setInt(1, user.getId());
@@ -1121,6 +1134,7 @@ public class JDBCDatabase implements IDatabase {
 		problem.setCourseId(resultSet.getInt(index++));
 		problem.setWhenAssigned(resultSet.getLong(index++));
 		problem.setWhenDue(resultSet.getLong(index++));
+		problem.setVisible(resultSet.getBoolean(index++));
 		loadProblemData(problem, resultSet, index);
 	}
 
@@ -1257,6 +1271,7 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setInt(index++, problem.getCourseId());
 		stmt.setLong(index++, problem.getWhenAssigned());
 		stmt.setLong(index++, problem.getWhenDue());
+		stmt.setBoolean(index++, problem.isVisible());
 		storeProblemData(problem, stmt, index);
 	}
 

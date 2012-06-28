@@ -82,8 +82,27 @@ public interface IDatabase {
 	 * @return list of triples (Course, Term, CourseRegistration)
 	 */
 	public List<? extends Object[]> getCoursesForUser(User user);
+	
+	/**
+	 * Return a {@link ProblemList} containing all of the {@link Problem}s in a particular
+	 * {@link Course} that the given {@link User} has permission to see.
+	 * 
+	 * @param user    the User
+	 * @param course  the Course
+	 * @return the ProblemList containing the Problems that the user has permission to see
+	 */
 	public ProblemList getProblemsInCourse(User user, Course course);
+	
+	/**
+	 * Get list of {@link ProblemAndSubmissionReceipt}s for the problems the
+	 * given {@link User} is allowed to see in the given {@link Course}.
+	 *   
+	 * @param user    the User
+	 * @param course  the Course
+	 * @return list of {@link ProblemAndSubmissionReceipt}s
+	 */
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
+	
 	public void storeChanges(Change[] changeList);
 	public List<TestCase> getTestCasesForProblem(int problemId);
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);

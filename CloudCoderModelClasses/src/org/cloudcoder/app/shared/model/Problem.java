@@ -33,11 +33,12 @@ public class Problem extends ProblemData
 	private Integer courseId;
 	private long whenAssigned;
 	private long whenDue;
+	private boolean visible;
 	
 	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 4;
+	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 5;
 
 	/**
 	 * @return the id
@@ -107,11 +108,19 @@ public class Problem extends ProblemData
 	}
 
 	/**
-	 * @return true if this Problem is visible, false otherwise
+	 * Set whether or not this Problem is visible to students.
+	 * 
+	 * @param visible true if this Problem is visible to students, false otherwise
+	 */
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+	
+	/**
+	 * @return true if this Problem is visible to students, false otherwise
 	 */
 	public boolean isVisible() {
-		// FIXME: implement this for real
-		return true;
+		return visible;
 	}
 
 	@Override
