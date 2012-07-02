@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.EditModelObjectField;
+import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
