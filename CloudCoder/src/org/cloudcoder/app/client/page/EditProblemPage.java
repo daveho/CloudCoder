@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -28,7 +30,9 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -43,11 +47,31 @@ public class EditProblemPage extends CloudCoderPage {
 	private class UI extends ResizeComposite implements SessionObserver, Subscriber {
 		
 		private List<EditModelObjectField<Problem, ?>> editProblemFieldList;
+		private Label pageLabel;
+		private PageNavPanel pageNavPanel;
 		
 		public UI() {
 			editProblemFieldList = new ArrayList<EditModelObjectField<Problem, ?>>();
 			createProblemFieldEditors();
 			
+			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
+			
+			// At top of page, show name of course and a PageNavPanel
+			LayoutPanel northPanel = new LayoutPanel();
+			this.pageLabel = new Label("");
+			pageLabel.setStyleName("cc-courseLabel");
+			northPanel.add(pageLabel);
+			northPanel.setWidgetLeftRight(pageLabel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
+			northPanel.setWidgetTopBottom(pageLabel, 0.0, Unit.PX, 0.0, Unit.PX);
+			
+			this.pageNavPanel = new PageNavPanel();
+			northPanel.add(pageNavPanel);
+			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, Unit.PX);
+			northPanel.setWidgetTopBottom(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
+			
+			// Create a LayoutPanel for the editors for the Problem and its TestCases
 			LayoutPanel panel = new LayoutPanel();
 			
 			// Add editor widgets for Problem fields
@@ -61,7 +85,9 @@ public class EditProblemPage extends CloudCoderPage {
 				y += editor.getHeightPx();
 			}
 			
-			initWidget(new ScrollPanel(panel));
+			dockLayoutPanel.add(panel);
+			
+			initWidget(dockLayoutPanel);
 		}
 
 		private void createProblemFieldEditors() {
@@ -82,7 +108,18 @@ public class EditProblemPage extends CloudCoderPage {
 		 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
 		 */
 		@Override
-		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			// Activate views
+			final Course course = session.get(Course.class);
+			pageLabel.setText("Edit problem in " + course.toString());
+			pageNavPanel.setBackHandler(new Runnable() {
+				@Override
+				public void run() {
+					session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
+				}
+			});
+			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			
 			// The session should contain a ProblemAndTestCaseList.
 			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
 			
