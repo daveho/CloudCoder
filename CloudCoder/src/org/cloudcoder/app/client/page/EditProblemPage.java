@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.EditEnumField;
 import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -37,7 +39,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
-import com.google.gwt.user.client.ui.ScrollPanel;
 
 /**
  * Page for editing a {@link ProblemAndTestCaseList}.
@@ -93,6 +94,17 @@ public class EditProblemPage extends CloudCoderPage {
 		}
 
 		private void createProblemFieldEditors() {
+			editProblemFieldList.add(new EditEnumField<Problem, ProblemType>("Problem type", ProblemType.class) {
+				@Override
+				protected void setField(Problem modelObj, ProblemType value) {
+					modelObj.setProblemType(value);
+				}
+
+				@Override
+				protected ProblemType getField(Problem modelObj) {
+					return modelObj.getProblemType();
+				}
+			});
 			editProblemFieldList.add(new EditStringField<Problem>("Problem name") {
 				@Override
 				protected void setField(Problem modelObj, String value) {

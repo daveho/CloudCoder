@@ -17,88 +17,92 @@
 
 package org.cloudcoder.app.client.view;
 
-
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ListBox;
 
 /**
- * Implementation of {@link EditModelObjectField} for editing string values
- * using a single-line TextBox.
+ * Editor for an enum field of a model object.
  * 
  * @author David Hovemeyer
  */
-public abstract class EditStringField<ModelObjectType> extends EditModelObjectField<ModelObjectType, String> {
+public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumType>>
+		extends EditModelObjectField<ModelObjectType, EnumType> {
 	
-	public static final double HEIGHT_PX = 32.0;
-
 	private class UI extends Composite {
-		private TextBox textBox;
+		private EnumType[] enumValues;
+		private ListBox listBox;
 
 		public UI() {
 			FlowPanel panel = new FlowPanel();
 			
-			panel.setStyleName("cc-editStringField");
-			
 			InlineLabel label = new InlineLabel(getDescription());
 			panel.add(label);
+
+			this.enumValues = enumCls.getEnumConstants();
+
+			this.listBox = new ListBox();
+			for (EnumType e : enumValues) {
+				listBox.addItem(e.toString());
+			}
 			
-			textBox = new TextBox();
-			textBox.setWidth("300px"); // TODO: allow this to be configurable?
-			panel.add(textBox);
+			panel.add(listBox);
 			
 			initWidget(panel);
 		}
-
-		public String getText() {
-			return textBox.getText();
+		
+		public void setEnumValue(EnumType value) {
+			int index = 0;
+			for (EnumType e : enumValues) {
+				if (e == value) {
+					break;
+				}
+				index++;
+			}
+			listBox.setItemSelected(index, true);
 		}
-
-		public void setText(String value) {
-			textBox.setText(value);
+		
+		public EnumType getEnumValue() {
+			return enumValues[listBox.getSelectedIndex()];
 		}
 	}
 	
+	private Class<EnumType> enumCls;
 	private UI ui;
 	
-	/**
-	 * Constructor.
-	 * 
-	 * @param desc the description that should be used to label the UI widget
-	 */
-	public EditStringField(String desc) {
+	public EditEnumField(String desc, Class<EnumType> enumCls) {
 		super(desc);
-		ui = new UI();
+		this.enumCls = enumCls;
+		this.ui = new UI();
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.EditModelObjectField#getUI()
+	 * @see org.cloudcoder.app.client.view.EditModelObjectField#getUI()
 	 */
 	@Override
 	public IsWidget getUI() {
 		return ui;
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.EditModelObjectField#getHeightPx()
+	 * @see org.cloudcoder.app.client.view.EditModelObjectField#getHeightPx()
 	 */
 	@Override
 	public double getHeightPx() {
-		return HEIGHT_PX;
+		return EditStringField.HEIGHT_PX;
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.EditModelObjectField#commit()
+	 * @see org.cloudcoder.app.client.view.EditModelObjectField#commit()
 	 */
 	@Override
 	public void commit() {
-		setField(getModelObject(), ui.getText());
+		setField(getModelObject(), ui.getEnumValue());
 	}
 	
-	@Override
 	protected void onSetModelObject(ModelObjectType modelObj) {
-		ui.setText(getField(modelObj));
+		ui.setEnumValue(getField(modelObj));
 	}
 }
