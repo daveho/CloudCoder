@@ -222,7 +222,7 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select p.* from " + PROBLEMS + "as p, " + COURSES + "as c, " + COURSE_REGISTRATIONS + " as r " +
+						"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
 						" where p.problem_id = ? " +
 						"   and c.id = p.course_id " +
 						"   and r.course_id = c.id " +
