@@ -102,6 +102,18 @@ public class EditProblemPage extends CloudCoderPage {
 					return modelObj.getTestName();
 				}
 			});
+			editProblemFieldList.add(new EditStringField<Problem>("Brief description") {
+				@Override
+				protected void setField(Problem modelObj, String value) {
+					modelObj.setBriefDescription(value);
+				}
+				
+				@Override
+				protected String getField(Problem modelObj) {
+					return modelObj.getBriefDescription();
+				}
+				
+			});
 		}
 
 		/* (non-Javadoc)
