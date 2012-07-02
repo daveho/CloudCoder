@@ -111,8 +111,6 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
-		List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(problemId);
-		
-		return testCaseList.toArray(new TestCase[testCaseList.size()]);
+		return Database.getInstance().getTestCasesForProblem(user, problemId);
 	}
 }
