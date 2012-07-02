@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.util.Publisher;
 
 /**
@@ -57,6 +58,9 @@ public class Session extends Publisher {
 		
 		/** Instructor has chosen to navigate to the course admin page for a coruse. Hint is the {@link Course}. */
 		COURSE_ADMIN,
+		
+		/** Instructor has chosen to edit a problem and its test cases. Hint is the {@link ProblemAndTestCaseList}. */
+		EDIT_PROBLEM,
 	}
 	
 	/**

@@ -39,6 +39,13 @@ public class Problem extends ProblemData
 	 * Number of fields.
 	 */
 	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 5;
+	
+	/**
+	 * Constructor.
+	 */
+	public Problem() {
+		
+	}
 
 	/**
 	 * @return the id

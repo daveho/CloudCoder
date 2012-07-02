@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemList;
@@ -104,7 +105,29 @@ public interface IDatabase {
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
 	
 	public void storeChanges(Change[] changeList);
+	
+	/**
+	 * Get List of {@link TestCase}s for {@link Problem} with given id.
+	 * Note that no authentication is done to ensure that the caller
+	 * should be able to access the test cases.
+	 * 
+	 * @param problemId the Problem id
+	 * @return list of TestCases for the Problem
+	 */
 	public List<TestCase> getTestCasesForProblem(int problemId);
+
+	/**
+	 * Get the list of {@link TestCase}s for {@link Problem} with given id,
+	 * checking that the given authenticated {@link User} is allowed to access
+	 * the test cases for the problem.
+	 * 
+	 * @param authenticatedUser the authenticated User 
+	 * @param problemId         the Problem id
+	 * @return list of test cases, or null if the user is not authorized to access the test cases
+	 *         (i.e., is not an instructor for the {@link Course} in which the problem is assigned)
+	 */
+	public TestCase[] getTestCasesForProblem(User authenticatedUser, int problemId);
+	
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
 	public void addProblem(Problem problem);

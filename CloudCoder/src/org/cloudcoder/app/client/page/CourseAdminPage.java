@@ -18,11 +18,15 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -31,6 +35,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -151,7 +156,13 @@ public class CourseAdminPage extends CloudCoderPage {
 		protected void onProblemButtonClick(ButtonPanelAction action) {
 			switch (action) {
 			case NEW:
+				Window.alert("Not implemented yet, sorry");
+				break;
+
 			case EDIT:
+				handleEditProblem();
+				break;
+				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
 			case QUIZ:
@@ -159,6 +170,29 @@ public class CourseAdminPage extends CloudCoderPage {
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
+		}
+
+		private void handleEditProblem() {
+			// Get the full ProblemAndTestCaseList for the chosen Problem
+			final Problem chosen = getSession().get(Problem.class);
+			
+			RPC.getCoursesAndProblemsService.getTestCasesForProblem(chosen.getProblemId(), new AsyncCallback<TestCase[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(new StatusMessage(
+							StatusMessage.Category.ERROR, "Could not load test cases for problem: " + caught.getMessage()));
+				}
+
+				@Override
+				public void onSuccess(TestCase[] result) {
+					ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
+					problemAndTestCaseList.setProblem(chosen);
+					problemAndTestCaseList.setTestCaseList(result);
+					
+					getSession().add(problemAndTestCaseList);
+					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, problemAndTestCaseList);
+				}
+			});
 		}
 
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {

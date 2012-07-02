@@ -600,6 +600,49 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	@Override
+	public TestCase[] getTestCasesForProblem(final User authenticatedUser, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnable<TestCase[]>() {
+			@Override
+			public TestCase[] run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select tc.* " +
+						"   from " + TEST_CASES + " as tc, " + PROBLEMS + " as p, " + COURSE_REGISTRATIONS + " as cr " +
+						"  where tc.problem_id = p.problem_id " +
+						"    and p.problem_id = ? " +
+						"    and p.course_id =  cr.course_id " +
+						"    and cr.user_id = ? " +
+						"    and cr.registration_type >= ? " +
+						"order by tc.test_case_id asc"
+						);
+				stmt.setInt(1, problemId);
+				stmt.setInt(2, authenticatedUser.getId());
+				stmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<TestCase> result = new ArrayList<>();
+				while (resultSet.next()) {
+					TestCase testCase = new TestCase();
+					load(testCase, resultSet, 1);
+					result.add(testCase);
+				}
+				
+				if (result.isEmpty()) {
+					// Most likely, the user is not authorized (not an instructor for the course)
+					return null;
+				}
+				
+				// Success!
+				return result.toArray(new TestCase[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return "getting test cases for problem";
+			}
+		});
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.server.persist.IDatabase#insertSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
 	 */

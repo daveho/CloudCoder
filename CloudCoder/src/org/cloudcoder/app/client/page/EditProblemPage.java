@@ -17,30 +17,79 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.ScrollPanel;
 
 /**
- * Page for editing a {@link Problem} and its associated {@link TestCase}s.
+ * Page for editing a {@link ProblemAndTestCaseList}.
  * 
  * @author David Hovemeyer
  */
 public class EditProblemPage extends CloudCoderPage {
 	
 	private class UI extends ResizeComposite implements SessionObserver, Subscriber {
+		
+		private List<EditModelObjectField<Problem, ?>> editProblemFieldList;
+		
+		public UI() {
+			editProblemFieldList = new ArrayList<EditModelObjectField<Problem, ?>>();
+			createProblemFieldEditors();
+			
+			LayoutPanel panel = new LayoutPanel();
+			
+			// Add editor widgets for Problem fields
+			double y = 0.0;
+			for (EditModelObjectField<Problem, ?> editor : editProblemFieldList) {
+				IsWidget widget = editor.getUI();
+				panel.add(widget);
+				panel.setWidgetTopHeight(widget, y, Unit.PX, editor.getHeightPx(), Unit.PX);
+				panel.setWidgetLeftRight(widget, 0.0, Unit.PX, 0.0, Unit.PX);
+				
+				y += editor.getHeightPx();
+			}
+			
+			initWidget(new ScrollPanel(panel));
+		}
+
+		private void createProblemFieldEditors() {
+			editProblemFieldList.add(new EditStringField<Problem>("Problem name") {
+				@Override
+				protected void setField(Problem modelObj, String value) {
+					modelObj.setTestName(value);
+				}
+				
+				@Override
+				protected String getField(Problem modelObj) {
+					return modelObj.getTestName();
+				}
+			});
+		}
 
 		/* (non-Javadoc)
 		 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
 		 */
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+			// The session should contain a ProblemAndTestCaseList.
+			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
+			
+			// Set the Problem in all problem field editors.
+			for (EditModelObjectField<Problem, ?> editor : editProblemFieldList) {
+				editor.setModelObject(problemAndTestCaseList.getProblem());
+			}
 		}
 
 		/* (non-Javadoc)
@@ -91,7 +140,8 @@ public class EditProblemPage extends CloudCoderPage {
 	 */
 	@Override
 	public boolean isActivity() {
-		return true;
+		//return true;
+		return false;
 	}
 	
 }

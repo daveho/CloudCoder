@@ -10,7 +10,9 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.Term;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,5 +102,17 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course);
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getTestCasesForProblem(int)
+	 */
+	@Override
+	public TestCase[] getTestCasesForProblem(int problemId) throws NetCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
+		List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(problemId);
+		
+		return testCaseList.toArray(new TestCase[testCaseList.size()]);
+	}
 }

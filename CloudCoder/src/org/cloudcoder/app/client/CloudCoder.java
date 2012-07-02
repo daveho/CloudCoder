@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CourseAdminPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
+import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
@@ -134,6 +135,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			return new DevelopmentPage();
 		} else if (name.equals(CourseAdminPage.class.getName())) {
 			return new CourseAdminPage();
+		} else if (name.equals(EditProblemPage.class.getName())) {
+			return new EditProblemPage();
 		}
 		
 		// This shouldn't happen (can't find page for Activity),
@@ -207,6 +210,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			changePage(new CourseAdminPage());
 		} else if (key == Session.Event.LOGOUT) {
 			changePage(new LoginPage());
+		} else if (key == Session.Event.EDIT_PROBLEM) {
+			changePage(new EditProblemPage());
 		}
 	}
 }
