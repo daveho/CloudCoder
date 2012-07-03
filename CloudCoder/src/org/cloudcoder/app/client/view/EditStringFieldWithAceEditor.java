@@ -62,7 +62,9 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 
 		public void startEditor() {
 			editor.startEditor();
-			editor.setMode(editorMode);
+			if (editorMode != null) {
+				editor.setMode(editorMode);
+			}
 			editor.setTheme(editorTheme);
 			editor.setFontSize("14px");
 		}
