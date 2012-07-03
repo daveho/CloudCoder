@@ -107,46 +107,46 @@ public class EditProblemPage extends CloudCoderPage {
 		private void createProblemFieldEditors() {
 			editProblemFieldList.add(new EditEnumField<Problem, ProblemType>("Problem type", ProblemType.class) {
 				@Override
-				protected void setField(Problem modelObj, ProblemType value) {
-					modelObj.setProblemType(value);
+				protected void setField(ProblemType value) {
+					getModelObject().setProblemType(value);
 				}
 
 				@Override
-				protected ProblemType getField(Problem modelObj) {
-					return modelObj.getProblemType();
+				protected ProblemType getField() {
+					return getModelObject().getProblemType();
 				}
 			});
 			editProblemFieldList.add(new EditStringField<Problem>("Problem name") {
 				@Override
-				protected void setField(Problem modelObj, String value) {
-					modelObj.setTestName(value);
+				protected void setField(String value) {
+					getModelObject().setTestName(value);
 				}
 				
 				@Override
-				protected String getField(Problem modelObj) {
-					return modelObj.getTestName();
+				protected String getField() {
+					return getModelObject().getTestName();
 				}
 			});
 			editProblemFieldList.add(new EditStringField<Problem>("Brief description") {
 				@Override
-				protected void setField(Problem modelObj, String value) {
-					modelObj.setBriefDescription(value);
+				protected void setField(String value) {
+					getModelObject().setBriefDescription(value);
 				}
 				
 				@Override
-				protected String getField(Problem modelObj) {
-					return modelObj.getBriefDescription();
+				protected String getField() {
+					return getModelObject().getBriefDescription();
 				}
 				
 			});
 			editProblemFieldList.add(new EditStringFieldWithAceEditor<Problem>("Full description (HTML)", AceEditorMode.HTML, AceEditorTheme.VIBRANT_INK) {
 				@Override
-				protected void setField(Problem modelObj, String value) {
-					modelObj.setDescription(value);
+				protected void setField(String value) {
+					getModelObject().setDescription(value);
 				}
 				@Override
-				protected String getField(Problem modelObj) {
-					return modelObj.getDescription();
+				protected String getField() {
+					return getModelObject().getDescription();
 				}
 			});
 		}

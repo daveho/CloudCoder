@@ -53,7 +53,7 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	 */
 	public void setModelObject(ModelObjectType modelObj) {
 		this.modelObj = modelObj;
-		onSetModelObject(modelObj);
+		onSetModelObject();
 	}
 	
 	/**
@@ -86,24 +86,20 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	
 	/**
 	 * Downcall method: called when the model object is set initially.
-	 * 
-	 * @param modelObj the model object
 	 */
-	protected abstract void onSetModelObject(ModelObjectType modelObj);
+	protected abstract void onSetModelObject();
 	
 	/**
 	 * Downcall method to set the field in the model object.
 	 * 
-	 * @param modelObj the model object
 	 * @param value    the field value to set
 	 */
-	protected abstract void setField(ModelObjectType modelObj, FieldType value);
+	protected abstract void setField(FieldType value);
 	
 	/**
 	 * Downcall method to get the value of the field in the model object.
 	 * 
-	 * @param modelObj the model object
 	 * @return the field value
 	 */
-	protected abstract FieldType getField(ModelObjectType modelObj);
+	protected abstract FieldType getField();
 }

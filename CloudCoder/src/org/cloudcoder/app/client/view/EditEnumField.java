@@ -115,10 +115,11 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 	 */
 	@Override
 	public void commit() {
-		setField(getModelObject(), ui.getEnumValue());
+		setField(ui.getEnumValue());
 	}
 	
-	protected void onSetModelObject(ModelObjectType modelObj) {
-		ui.setEnumValue(getField(modelObj));
+	@Override
+	protected void onSetModelObject() {
+		ui.setEnumValue(getField());
 	}
 }

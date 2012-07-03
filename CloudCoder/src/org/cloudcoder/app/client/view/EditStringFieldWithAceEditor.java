@@ -110,17 +110,17 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(getModelObject(), ui.getText());
+		setField(ui.getText());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.view.EditModelObjectField#onSetModelObject(java.lang.Object)
 	 */
 	@Override
-	protected void onSetModelObject(ModelObjectType modelObj) {
+	protected void onSetModelObject() {
 		// At this point, we'll assume that the UI has been added to the page DOM.
 		ui.startEditor();
 		
-		ui.setText(getField(modelObj));
+		ui.setText(getField());
 	}
 }

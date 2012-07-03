@@ -94,11 +94,11 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 	 */
 	@Override
 	public void commit() {
-		setField(getModelObject(), ui.getText());
+		setField(ui.getText());
 	}
 	
 	@Override
-	protected void onSetModelObject(ModelObjectType modelObj) {
-		ui.setText(getField(modelObj));
+	protected void onSetModelObject() {
+		ui.setText(getField());
 	}
 }
