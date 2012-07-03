@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -47,6 +49,20 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 			for (EnumType e : enumValues) {
 				listBox.addItem(e.toString());
 			}
+
+			/*
+			// Use a ChangeHandler to keep track of selecton changes
+			// and commit changes to the model object as appropriate.
+			listBox.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					int index = listBox.getSelectedIndex();
+					if (index >= 0 && index < enumValues.length) {
+						commit();
+					}
+				}
+			});
+			*/
 			
 			panel.add(listBox);
 			
