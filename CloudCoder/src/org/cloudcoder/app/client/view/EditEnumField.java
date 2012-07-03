@@ -50,7 +50,6 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 				listBox.addItem(e.toString());
 			}
 
-			/*
 			// Use a ChangeHandler to keep track of selecton changes
 			// and commit changes to the model object as appropriate.
 			listBox.addChangeHandler(new ChangeHandler() {
@@ -62,7 +61,6 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 					}
 				}
 			});
-			*/
 			
 			panel.add(listBox);
 			

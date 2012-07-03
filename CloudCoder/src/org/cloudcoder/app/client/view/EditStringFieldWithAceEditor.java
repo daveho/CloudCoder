@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -41,6 +42,7 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 	private class UI extends ResizeComposite {
 		private AceEditor editor;
 		private boolean editorStarted;
+		private AceEditorMode currentMode;
 
 		public UI() {
 			LayoutPanel panel = new LayoutPanel();
@@ -70,6 +72,7 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 			editor.startEditor();
 			if (editorMode != null) {
 				editor.setMode(editorMode);
+				currentMode = editorMode;
 			}
 			editor.setTheme(editorTheme);
 			editor.setFontSize("14px");
@@ -85,8 +88,10 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 		}
 
 		public void resetEditorMode() {
-			if (editorMode != null) {
+			if (editorMode != null && editorMode != currentMode) {
 				editor.setMode(editorMode);
+				currentMode = editorMode;
+				GWT.log("Changing editor mode to " + editorMode);
 			}
 		}
 

@@ -27,6 +27,7 @@ import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.EditStringFieldWithAceEditor;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.Problem;
@@ -337,6 +338,7 @@ public class EditProblemPage extends CloudCoderPage {
 					return getModelObject().getProblemType();
 				}
 			});
+			
 			editProblemFieldList.add(new EditStringField<IProblem>("Problem name") {
 				@Override
 				protected void setField(String value) {
@@ -348,6 +350,7 @@ public class EditProblemPage extends CloudCoderPage {
 					return getModelObject().getTestName();
 				}
 			});
+			
 			editProblemFieldList.add(new EditStringField<IProblem>("Brief description") {
 				@Override
 				protected void setField(String value) {
@@ -360,6 +363,7 @@ public class EditProblemPage extends CloudCoderPage {
 				}
 				
 			});
+			
 			EditStringFieldWithAceEditor<IProblem> descriptionEditor =
 					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)") {
 						@Override
@@ -374,6 +378,27 @@ public class EditProblemPage extends CloudCoderPage {
 			descriptionEditor.setEditorMode(AceEditorMode.HTML);
 			descriptionEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			editProblemFieldList.add(descriptionEditor);
+			
+			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
+					new EditStringFieldWithAceEditor<IProblem>("Skeleton code") {
+						@Override
+						public void update() {
+							// Set the editor mode to match the ProblemType
+							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
+							setEditorMode(editorMode);
+							super.update();
+						}
+						@Override
+						protected void setField(String value) {
+							getModelObject().setSkeleton(value);
+						}
+						@Override
+						protected String getField() {
+							return getModelObject().getSkeleton();
+						}
+					};
+			skeletonEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
+			editProblemFieldList.add(skeletonEditor);
 		}
 
 		/* (non-Javadoc)
@@ -398,9 +423,21 @@ public class EditProblemPage extends CloudCoderPage {
 			// The session should contain a ProblemAndTestCaseList.
 			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
 			
+			// Create a ProblemAdapter to serve as the IProblem edited by the problem editors.
+			// Override the onChange() method to update all editors whenever the state of
+			// of the underlying Problem changes.
+			ProblemAdapter problemAdapter = new ProblemAdapter(problemAndTestCaseList.getProblem()) {
+				@Override
+				protected void onChange() {
+					for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
+						editor.update();
+					}
+				}
+			};
+			
 			// Set the Problem in all problem field editors.
 			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
-				editor.setModelObject(problemAndTestCaseList.getProblem());
+				editor.setModelObject(problemAdapter);
 			}
 		}
 
