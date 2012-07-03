@@ -40,6 +40,7 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 	
 	private class UI extends ResizeComposite {
 		private AceEditor editor;
+		private boolean editorStarted;
 
 		public UI() {
 			LayoutPanel panel = new LayoutPanel();
@@ -56,8 +57,13 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 			panel.add(editor);
 			panel.setWidgetLeftRight(editor, 0.0, Unit.PX, 0.0, Unit.PX);
 			panel.setWidgetBottomHeight(editor, 0.0, Unit.PX, (HEIGHT_PX - (LABEL_HEIGHT_PX + 8)), Unit.PX);
+			editorStarted = false;
 			
 			initWidget(panel);
+		}
+
+		public boolean isEditorStarted() {
+			return editorStarted;
 		}
 
 		public void startEditor() {
@@ -67,6 +73,7 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 			}
 			editor.setTheme(editorTheme);
 			editor.setFontSize("14px");
+			editorStarted = true;
 		}
 		
 		public void setText(String text) {
@@ -113,13 +120,13 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 		setField(ui.getText());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.view.EditModelObjectField#onSetModelObject(java.lang.Object)
-	 */
 	@Override
-	protected void onSetModelObject() {
-		// At this point, we'll assume that the UI has been added to the page DOM.
-		ui.startEditor();
+	public void update() {
+		if (!ui.isEditorStarted()) {
+			// At this point, we'll assume that the UI has been added to the page DOM,
+			// so it's safe to start the AceEditor.
+			ui.startEditor();
+		}
 		
 		ui.setText(getField());
 	}

@@ -98,7 +98,7 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 	}
 	
 	@Override
-	protected void onSetModelObject() {
+	public void update() {
 		ui.setText(getField());
 	}
 }

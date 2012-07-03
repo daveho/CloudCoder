@@ -48,12 +48,14 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	
 	/**
 	 * Set the model object.
+	 * Automatically calls {@link #update()} to force the editor
+	 * to sync its contents with the model object's data.
 	 * 
 	 * @param modelObj the model object to set
 	 */
 	public void setModelObject(ModelObjectType modelObj) {
 		this.modelObj = modelObj;
-		onSetModelObject();
+		update();
 	}
 	
 	/**
@@ -85,9 +87,11 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	public abstract void commit();
 	
 	/**
-	 * Downcall method: called when the model object is set initially.
+	 * Force the editor to refresh itself by synchronizing its
+	 * UI state with the model object's state.  Call this method
+	 * when the model object changes.
 	 */
-	protected abstract void onSetModelObject();
+	public abstract void update();
 	
 	/**
 	 * Downcall method to set the field in the model object.

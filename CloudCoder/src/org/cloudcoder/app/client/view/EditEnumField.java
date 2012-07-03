@@ -119,7 +119,7 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 	}
 	
 	@Override
-	protected void onSetModelObject() {
+	public void update() {
 		ui.setEnumValue(getField());
 	}
 }
