@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.EditEnumField;
 import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
+import org.cloudcoder.app.client.view.EditStringFieldWithAceEditor;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
@@ -39,6 +40,9 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
+
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 /**
  * Page for editing a {@link ProblemAndTestCaseList}.
@@ -127,6 +131,16 @@ public class EditProblemPage extends CloudCoderPage {
 					return modelObj.getBriefDescription();
 				}
 				
+			});
+			editProblemFieldList.add(new EditStringFieldWithAceEditor<Problem>("Full description (HTML)", AceEditorMode.HTML, AceEditorTheme.VIBRANT_INK) {
+				@Override
+				protected void setField(Problem modelObj, String value) {
+					modelObj.setDescription(value);
+				}
+				@Override
+				protected String getField(Problem modelObj) {
+					return modelObj.getDescription();
+				}
 			});
 		}
 
