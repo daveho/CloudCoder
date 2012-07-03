@@ -83,17 +83,51 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 		public String getText() {
 			return editor.getText();
 		}
+
+		public void resetEditorMode() {
+			if (editorMode != null) {
+				editor.setMode(editorMode);
+			}
+		}
+
+		public void resetEditorTheme() {
+			if (editorTheme != null) {
+				editor.setTheme(editorTheme);
+			}
+		}
 	}
 
 	private AceEditorMode editorMode;
 	private AceEditorTheme editorTheme;
 	private UI ui;
 
-	public EditStringFieldWithAceEditor(String desc, AceEditorMode editorMode, AceEditorTheme editorTheme) {
+	public EditStringFieldWithAceEditor(String desc) {
 		super(desc);
-		this.editorMode = editorMode;
-		this.editorTheme = editorTheme;
 		this.ui = new UI();
+	}
+	
+	/**
+	 * Set the editor mode.
+	 * 
+	 * @param editorMode the editorMode to set
+	 */
+	public void setEditorMode(AceEditorMode editorMode) {
+		this.editorMode = editorMode;
+		if (ui.isEditorStarted()) {
+			ui.resetEditorMode();
+		}
+	}
+	
+	/**
+	 * Set the editor theme.
+	 * 
+	 * @param editorTheme the editorTheme to set
+	 */
+	public void setEditorTheme(AceEditorTheme editorTheme) {
+		this.editorTheme = editorTheme;
+		if (ui.isEditorStarted()) {
+			ui.resetEditorTheme();
+		}
 	}
 	
 	/* (non-Javadoc)

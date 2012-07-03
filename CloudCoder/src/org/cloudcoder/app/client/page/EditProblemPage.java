@@ -360,16 +360,20 @@ public class EditProblemPage extends CloudCoderPage {
 				}
 				
 			});
-			editProblemFieldList.add(new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)", AceEditorMode.HTML, AceEditorTheme.VIBRANT_INK) {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setDescription(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getDescription();
-				}
-			});
+			EditStringFieldWithAceEditor<IProblem> descriptionEditor =
+					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)") {
+						@Override
+						protected void setField(String value) {
+							getModelObject().setDescription(value);
+						}
+						@Override
+						protected String getField() {
+							return getModelObject().getDescription();
+						}
+					};
+			descriptionEditor.setEditorMode(AceEditorMode.HTML);
+			descriptionEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
+			editProblemFieldList.add(descriptionEditor);
 		}
 
 		/* (non-Javadoc)
