@@ -33,6 +33,7 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
+import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
@@ -293,20 +294,12 @@ public class DevelopmentPage extends CloudCoderPage {
 			
 			// based on programming language used in the Problem,
 			// choose an editor mode
-			AceEditorMode editorMode;
-			switch (language) {
-			case JAVA:
-				editorMode = AceEditorMode.JAVA; break;
-			case PYTHON:
-				editorMode = AceEditorMode.PYTHON; break;
-			case C:
-			case CPLUSPLUS:
-				editorMode = AceEditorMode.C_CPP; break;
-			default:
+			AceEditorMode editorMode = ViewUtil.getModeForLanguage(language);
+			if (editorMode == null) {
 				addSessionObject(new StatusMessage(
 						StatusMessage.Category.ERROR,
 						"Warning: unknown programming language " + language));
-				editorMode = AceEditorMode.JAVA; break;
+				editorMode = AceEditorMode.JAVA;
 			}
 			aceEditor.setMode(editorMode);
 			

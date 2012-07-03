@@ -19,8 +19,13 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Date;
 
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.shared.model.Language;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
+
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 
 /**
  * Utility methods for views.
@@ -30,9 +35,33 @@ import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 public class ViewUtil {
 	/**
 	 * Format a Date as a string.
+	 * 
+	 * @param date the Date to format
+	 * @return the formatted Date
 	 */
 	public static String formatDate(Date date) {
 		DateTimeFormat f = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
 		return f.format(date);
+	}
+	
+	/**
+	 * Determine the {@link AceEditorMode} to use for a given {@link Language}.
+	 * 
+	 * @param language the Language
+	 * @return the AceEditorMode for the Language, or null if the Language is not known
+	 */
+	public static AceEditorMode getModeForLanguage(Language language) {
+		switch (language) {
+		case JAVA:
+			return AceEditorMode.JAVA;
+		case PYTHON:
+			return AceEditorMode.PYTHON;
+		case C:
+		case CPLUSPLUS:
+			return AceEditorMode.C_CPP;
+		}
+		
+		// unknown Language
+		return null;
 	}
 }
