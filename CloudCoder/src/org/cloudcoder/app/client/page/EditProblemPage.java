@@ -53,15 +53,13 @@ public class EditProblemPage extends CloudCoderPage {
 	
 	private class UI extends ResizeComposite implements SessionObserver, Subscriber {
 		
-		private List<EditModelObjectField<Problem, ?>> editProblemFieldList;
+		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
 		private PageNavPanel pageNavPanel;
+		private List<EditModelObjectField<Problem, ?>> editProblemFieldList;
 		
 		public UI() {
-			editProblemFieldList = new ArrayList<EditModelObjectField<Problem, ?>>();
-			createProblemFieldEditors();
-			
-			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
+			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
 			// At top of page, show name of course and a PageNavPanel
 			LayoutPanel northPanel = new LayoutPanel();
@@ -78,7 +76,18 @@ public class EditProblemPage extends CloudCoderPage {
 			
 			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
 			
+			// Creation of the UI for editing problem/test cases will wait until
+			// we know what the Problem is
+			
+			initWidget(dockLayoutPanel);
+		}
+
+		private void createProblemAndTestCaseEditor() {
 			// Create a LayoutPanel for the editors for the Problem and its TestCases
+
+			editProblemFieldList = new ArrayList<EditModelObjectField<Problem, ?>>();
+			createProblemFieldEditors();
+			
 			LayoutPanel panel = new LayoutPanel();
 			
 			// Add editor widgets for Problem fields
@@ -93,8 +102,6 @@ public class EditProblemPage extends CloudCoderPage {
 			}
 			
 			dockLayoutPanel.add(panel);
-			
-			initWidget(dockLayoutPanel);
 		}
 
 		private void createProblemFieldEditors() {
@@ -149,6 +156,9 @@ public class EditProblemPage extends CloudCoderPage {
 		 */
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			// Create UI for editing problem and test cases
+			createProblemAndTestCaseEditor();
+			
 			// Activate views
 			final Course course = session.get(Course.class);
 			pageLabel.setText("Edit problem in " + course.toString());
