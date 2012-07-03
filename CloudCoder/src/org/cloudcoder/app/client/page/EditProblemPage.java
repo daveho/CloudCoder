@@ -44,6 +44,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.ScrollPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
@@ -323,7 +324,9 @@ public class EditProblemPage extends CloudCoderPage {
 				y += editor.getHeightPx();
 			}
 			
-			dockLayoutPanel.add(panel);
+			panel.setHeight(y + "px");
+			
+			dockLayoutPanel.add(new ScrollPanel(panel));
 		}
 
 		private void createProblemFieldEditors() {
