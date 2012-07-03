@@ -25,7 +25,7 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem extends ProblemData
+public class Problem extends ProblemData implements IProblem
 {
 	private static final long serialVersionUID = 1L;
 
@@ -47,85 +47,97 @@ public class Problem extends ProblemData
 		
 	}
 
-	/**
-	 * @return the id
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getProblemId()
 	 */
+	@Override
 	public Integer getProblemId(){
 		return problemId;
 	}
-	/**
-	 * @param id the id to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#setProblemId(java.lang.Integer)
 	 */
+	@Override
 	public void setProblemId(Integer id){
 		this.problemId = id;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getCourseId()
+	 */
+	@Override
 	public Integer getCourseId() {
 		return courseId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#setCourseId(java.lang.Integer)
+	 */
+	@Override
 	public void setCourseId(Integer courseId) {
 		this.courseId = courseId;
 	}
 	
-	/**
-	 * @return the whenAssigned
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenAssigned()
 	 */
+	@Override
 	public long getWhenAssigned() {
 		return whenAssigned;
 	}
 	
-	/**
-	 * Get "when assigned" as a java.util.Date.
-	 * 
-	 * @return "when assigned" as a java.util.Date
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenAssignedAsDate()
 	 */
+	@Override
 	public Date getWhenAssignedAsDate() {
 		return new Date(whenAssigned);
 	}
 	
-	/**
-	 * @param whenAssigned the whenAssigned to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#setWhenAssigned(long)
 	 */
+	@Override
 	public void setWhenAssigned(long whenAssigned) {
 		this.whenAssigned = whenAssigned;
 	}
 	
-	/**
-	 * @return the whenDue
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenDue()
 	 */
+	@Override
 	public long getWhenDue() {
 		return whenDue;
 	}
 	
-	/**
-	 * Get "when due" as a java.util.Date.
-	 * 
-	 * @return "when due" as a java.util.Date.
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenDueAsDate()
 	 */
+	@Override
 	public Date getWhenDueAsDate() {
 		return new Date(whenDue);
 	}
 	
-	/**
-	 * @param whenDue the whenDue to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#setWhenDue(long)
 	 */
+	@Override
 	public void setWhenDue(long whenDue) {
 		this.whenDue = whenDue;
 	}
 
-	/**
-	 * Set whether or not this Problem is visible to students.
-	 * 
-	 * @param visible true if this Problem is visible to students, false otherwise
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#setVisible(boolean)
 	 */
+	@Override
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 	}
 	
-	/**
-	 * @return true if this Problem is visible to students, false otherwise
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblem#isVisible()
 	 */
+	@Override
 	public boolean isVisible() {
 		return visible;
 	}

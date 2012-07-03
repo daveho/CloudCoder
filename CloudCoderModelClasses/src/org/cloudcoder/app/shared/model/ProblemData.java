@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements ActivityObject {
+public class ProblemData implements ActivityObject, IProblemData {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -62,64 +62,90 @@ public class ProblemData implements ActivityObject {
 		super();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setProblemType(org.cloudcoder.app.shared.model.ProblemType)
+	 */
+	@Override
 	public void setProblemType(ProblemType problemType) {
 		this.problemType = problemType;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setProblemType(int)
+	 */
+	@Override
 	public void setProblemType(int problemType) {
 		this.problemType = ProblemType.values()[problemType];
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getProblemType()
+	 */
+	@Override
 	public ProblemType getProblemType() {
 		return problemType;
 	}
 
-	/**
-	 * @return the testName
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getTestName()
 	 */
+	@Override
 	public String getTestName() {
 		return testName;
 	}
 
-	/**
-	 * @param testName the testName to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setTestName(java.lang.String)
 	 */
+	@Override
 	public void setTestName(String testName) {
 		this.testName = testName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setBriefDescription(java.lang.String)
+	 */
+	@Override
 	public void setBriefDescription(String briefDescription) {
 		this.briefDescription = briefDescription;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getBriefDescription()
+	 */
+	@Override
 	public String getBriefDescription() {
 		return briefDescription;
 	}
 
-	/**
-	 * @return the description
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getDescription()
 	 */
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @param description the description to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setDescription(java.lang.String)
 	 */
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * @param skeleton the skeleton to set
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setSkeleton(java.lang.String)
 	 */
+	@Override
 	public void setSkeleton(String skeleton) {
 		this.skeleton = skeleton;
 	}
 
-	/**
-	 * @return the skeleton
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getSkeleton()
 	 */
+	@Override
 	public String getSkeleton() {
 		return skeleton;
 	}
@@ -131,109 +157,98 @@ public class ProblemData implements ActivityObject {
 		return skeleton != null;
 	}
 
-	/**
-	 * Set the schema version.
-	 * 
-	 * @param schemaVersion the schema version
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setSchemaVersion(int)
 	 */
+	@Override
 	public void setSchemaVersion(int schemaVersion) {
 		this.schemaVersion = schemaVersion;
 	}
 	
-	/**
-	 * Get the schema version.
-	 * 
-	 * @return the schema version
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getSchemaVersion()
 	 */
+	@Override
 	public int getSchemaVersion() {
 		return schemaVersion;
 	}
 
-	/**
-	 * Set the name of the author.
-	 * 
-	 * @param authorName the name of the author
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorName(java.lang.String)
 	 */
+	@Override
 	public void setAuthorName(String authorName) {
 		this.authorName = authorName;
 	}
 	
-	/**
-	 * Get the name of the author.
-	 * 
-	 * @return the name of the author
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorName()
 	 */
+	@Override
 	public String getAuthorName() {
 		return authorName;
 	}
 	
-	/**
-	 * Set the author's email address.
-	 * @param authorEmail the author's email address
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorEmail(java.lang.String)
 	 */
+	@Override
 	public void setAuthorEmail(String authorEmail) {
 		this.authorEmail = authorEmail;
 	}
 	
-	/**
-	 * Get the author's email address.
-	 * 
-	 * @return the author's email address
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorEmail()
 	 */
+	@Override
 	public String getAuthorEmail() {
 		return authorEmail;
 	}
 	
-	/**
-	 * Set the URL of the author's website.
-	 * 
-	 * @param authorWebsite the URL of the author's website
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorWebsite(java.lang.String)
 	 */
+	@Override
 	public void setAuthorWebsite(String authorWebsite) {
 		this.authorWebsite = authorWebsite;
 	}
 	
-	/**
-	 * Get the URL of the author's website
-	 * 
-	 * @return the URL of the author's website
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorWebsite()
 	 */
+	@Override
 	public String getAuthorWebsite() {
 		return authorWebsite;
 	}
 	
-	/**
-	 * Get the "creation" timestamp in seconds past the epoch, UTC.
-	 * 
-	 * @param timestampUTC the "creation" timestamp in seconds past the epoch, UTC
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setTimestampUTC(long)
 	 */
+	@Override
 	public void setTimestampUTC(long timestampUTC) {
 		this.timestampUTC = timestampUTC;
 	}
 	
-	/**
-	 * Get the "creation" timestamp in seconds past the epoch, UTC.
-	 * 
-	 * @return the "creation" timestamp in seconds past the epoch, UTC
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getTimestampUTC()
 	 */
+	@Override
 	public long getTimestampUTC() {
 		return timestampUTC;
 	}
 	
-	/**
-	 * Set the license under which this problem is available.
-	 * 
-	 * @param license the license under which this problem is available
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#setLicense(org.cloudcoder.app.shared.model.ProblemLicense)
 	 */
+	@Override
 	public void setLicense(ProblemLicense license) {
 		this.license = license;
 	}
 	
-	/**
-	 * Get the license under which this problem is available.
-	 * 
-	 * @return  the license under which this problem is available
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.IProblemData#getLicense()
 	 */
+	@Override
 	public ProblemLicense getLicense() {
 		return license;
 	}
