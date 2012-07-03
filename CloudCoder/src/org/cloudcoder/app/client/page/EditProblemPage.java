@@ -27,7 +27,7 @@ import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.EditStringFieldWithAceEditor;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -56,7 +56,7 @@ public class EditProblemPage extends CloudCoderPage {
 		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
 		private PageNavPanel pageNavPanel;
-		private List<EditModelObjectField<Problem, ?>> editProblemFieldList;
+		private List<EditModelObjectField<IProblem, ?>> editProblemFieldList;
 		
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -85,14 +85,14 @@ public class EditProblemPage extends CloudCoderPage {
 		private void createProblemAndTestCaseEditor() {
 			// Create a LayoutPanel for the editors for the Problem and its TestCases
 
-			editProblemFieldList = new ArrayList<EditModelObjectField<Problem, ?>>();
+			editProblemFieldList = new ArrayList<EditModelObjectField<IProblem, ?>>();
 			createProblemFieldEditors();
 			
 			LayoutPanel panel = new LayoutPanel();
 			
 			// Add editor widgets for Problem fields
 			double y = 0.0;
-			for (EditModelObjectField<Problem, ?> editor : editProblemFieldList) {
+			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
 				IsWidget widget = editor.getUI();
 				panel.add(widget);
 				panel.setWidgetTopHeight(widget, y, Unit.PX, editor.getHeightPx(), Unit.PX);
@@ -105,7 +105,7 @@ public class EditProblemPage extends CloudCoderPage {
 		}
 
 		private void createProblemFieldEditors() {
-			editProblemFieldList.add(new EditEnumField<Problem, ProblemType>("Problem type", ProblemType.class) {
+			editProblemFieldList.add(new EditEnumField<IProblem, ProblemType>("Problem type", ProblemType.class) {
 				@Override
 				protected void setField(ProblemType value) {
 					getModelObject().setProblemType(value);
@@ -116,7 +116,7 @@ public class EditProblemPage extends CloudCoderPage {
 					return getModelObject().getProblemType();
 				}
 			});
-			editProblemFieldList.add(new EditStringField<Problem>("Problem name") {
+			editProblemFieldList.add(new EditStringField<IProblem>("Problem name") {
 				@Override
 				protected void setField(String value) {
 					getModelObject().setTestName(value);
@@ -127,7 +127,7 @@ public class EditProblemPage extends CloudCoderPage {
 					return getModelObject().getTestName();
 				}
 			});
-			editProblemFieldList.add(new EditStringField<Problem>("Brief description") {
+			editProblemFieldList.add(new EditStringField<IProblem>("Brief description") {
 				@Override
 				protected void setField(String value) {
 					getModelObject().setBriefDescription(value);
@@ -139,7 +139,7 @@ public class EditProblemPage extends CloudCoderPage {
 				}
 				
 			});
-			editProblemFieldList.add(new EditStringFieldWithAceEditor<Problem>("Full description (HTML)", AceEditorMode.HTML, AceEditorTheme.VIBRANT_INK) {
+			editProblemFieldList.add(new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)", AceEditorMode.HTML, AceEditorTheme.VIBRANT_INK) {
 				@Override
 				protected void setField(String value) {
 					getModelObject().setDescription(value);
@@ -174,7 +174,7 @@ public class EditProblemPage extends CloudCoderPage {
 			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
 			
 			// Set the Problem in all problem field editors.
-			for (EditModelObjectField<Problem, ?> editor : editProblemFieldList) {
+			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
 				editor.setModelObject(problemAndTestCaseList.getProblem());
 			}
 		}
