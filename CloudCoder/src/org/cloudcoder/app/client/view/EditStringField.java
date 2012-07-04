@@ -17,11 +17,10 @@
 
 package org.cloudcoder.app.client.view;
 
-
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
@@ -43,7 +42,8 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 			panel.setStyleName("cc-editStringField");
 			panel.setStyleName("cc-fieldEditor", true);
 			
-			InlineLabel label = new InlineLabel(getDescription());
+			Label label = new Label(getDescription());
+			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
 			
 			textBox = new TextBox();

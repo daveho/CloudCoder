@@ -21,8 +21,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 
 /**
@@ -41,7 +41,8 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 			FlowPanel panel = new FlowPanel();
 			panel.setStyleName("cc-fieldEditor", true);
 			
-			InlineLabel label = new InlineLabel(getDescription());
+			Label label = new Label(getDescription());
+			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
 
 			this.enumValues = enumCls.getEnumConstants();

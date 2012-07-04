@@ -9,7 +9,7 @@
 	color: red;
 	font-style: italic;
 }
-.cc-problemName, .cc-courseLabel {
+.cc-problemName, .cc-courseLabel, .cc-fieldEditorLabel {
 	font-weight: bold;
 	font-size: 20px;
 }
@@ -146,6 +146,6 @@
  */
 .cc-fieldEditor {
 	/* Make sure there is a bit of vertical separation between editor widgets. */
-	margin-top: 4px;
-	margin-bottom: 4px;
+	margin-top: 8px;
+	margin-bottom: 8px;
 }

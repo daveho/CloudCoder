@@ -44,6 +44,7 @@ public abstract class EditDateField<ModelObjectType>
 			panel.setStyleName("cc-fieldEditor", true);
 			
 			Label label = new Label(getDescription());
+			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
 			
 			this.datePicker = new DatePicker();

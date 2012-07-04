@@ -18,11 +18,10 @@
 package org.cloudcoder.app.client.view;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.ResizeComposite;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
@@ -36,30 +35,22 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, String> {
 	
-	public static final int HEIGHT_PX = 320;
-	public static final int LABEL_HEIGHT_PX = 20;
-	
-	private class UI extends ResizeComposite {
+	private class UI extends Composite {
 		private AceEditor editor;
 		private boolean editorStarted;
 		private AceEditorMode currentMode;
 
 		public UI() {
-			LayoutPanel panel = new LayoutPanel();
+			FlowPanel panel = new FlowPanel();
 			panel.setStyleName("cc-fieldEditor", true);
 			
-			panel.setWidth("600px");
-			panel.setHeight(HEIGHT_PX + "px");
-			
 			Label label = new Label(getDescription());
+			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
-			panel.setWidgetLeftRight(label, 0.0, Unit.PX, 0.0, Unit.PX);
-			panel.setWidgetTopHeight(label, 0.0, Unit.PX, 32.0, Unit.PX);
 
 			editor = new AceEditor(true);
+			editor.setSize("600px", "300px");
 			panel.add(editor);
-			panel.setWidgetLeftRight(editor, 0.0, Unit.PX, 0.0, Unit.PX);
-			panel.setWidgetBottomHeight(editor, 0.0, Unit.PX, (HEIGHT_PX - (LABEL_HEIGHT_PX + 8)), Unit.PX);
 			editorStarted = false;
 			
 			initWidget(panel);
