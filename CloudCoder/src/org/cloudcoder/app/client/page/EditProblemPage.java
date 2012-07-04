@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.EditDateField;
 import org.cloudcoder.app.client.view.EditEnumField;
 import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
@@ -308,8 +309,7 @@ public class EditProblemPage extends CloudCoderPage {
 			
 			// Add editor widgets for Problem fields
 			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
-				IsWidget widget = editor.getUI();
-				panel.add(widget);
+				panel.add(editor.getUI());
 			}
 			
 			dockLayoutPanel.add(new ScrollPanel(panel));
@@ -390,6 +390,65 @@ public class EditProblemPage extends CloudCoderPage {
 					};
 			skeletonEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			editProblemFieldList.add(skeletonEditor);
+			
+			// We don't need an editor for schema version - problems/testcases are
+			// automatically converted to the latest version when they are imported.
+			
+			editProblemFieldList.add(new EditStringField<IProblem>("Author name") {
+				@Override
+				protected void setField(String value) {
+					getModelObject().setAuthorName(value);
+				}
+				@Override
+				protected String getField() {
+					return getModelObject().getAuthorName();
+				}
+			});
+			
+			editProblemFieldList.add(new EditStringField<IProblem>("Author email") {
+				@Override
+				protected void setField(String value) {
+					getModelObject().setAuthorEmail(value);
+				}
+				@Override
+				protected String getField() {
+					return getModelObject().getAuthorEmail();
+				}
+			});
+			
+			editProblemFieldList.add(new EditStringField<IProblem>("Author website") {
+				@Override
+				protected void setField(String value) {
+					getModelObject().setAuthorWebsite(value);
+				}
+				@Override
+				protected String getField() {
+					return getModelObject().getAuthorWebsite();
+				}
+			});
+			
+			editProblemFieldList.add(new EditDateField<IProblem>("Creation date") {
+				@Override
+				protected void setField(Date value) {
+					getModelObject().setTimestampUTC(value.getTime());
+				}
+				@Override
+				protected Date getField() {
+					return new Date(getModelObject().getTimestampUTC());
+				}
+			});
+			
+			editProblemFieldList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class) {
+				@Override
+				protected void setField(ProblemLicense value) {
+					getModelObject().setLicense(value);
+				}
+
+				@Override
+				protected ProblemLicense getField() {
+					return getModelObject().getLicense();
+				}
+			});
 		}
 
 		/* (non-Javadoc)
