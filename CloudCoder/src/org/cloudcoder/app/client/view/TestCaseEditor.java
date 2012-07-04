@@ -85,11 +85,19 @@ public class TestCaseEditor {
 	private UI ui;
 	private List<EditModelObjectField<TestCase, ?>> fieldEditorList;
 	
+	/**
+	 * Constructor.
+	 */
 	public TestCaseEditor() {
 		fieldEditorList = new ArrayList<EditModelObjectField<TestCase, ?>>();
 		ui = new UI();
 	}
 	
+	/**
+	 * Get the UI widget.
+	 * 
+	 * @return the UI widget
+	 */
 	public IsWidget getUI() {
 		return ui;
 	}
