@@ -46,6 +46,7 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 
 		public UI() {
 			LayoutPanel panel = new LayoutPanel();
+			panel.setStyleName("cc-fieldEditor", true);
 			
 			panel.setWidth("600px");
 			panel.setHeight(HEIGHT_PX + "px");

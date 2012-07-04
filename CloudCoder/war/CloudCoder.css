@@ -140,3 +140,12 @@
 	bottom: 0px;
 	background-color: green;
 }
+
+/*
+ * Styles for model object field editor widgets.
+ */
+.cc-fieldEditor {
+	/* Make sure there is a bit of vertical separation between editor widgets. */
+	margin-top: 4px;
+	margin-bottom: 4px;
+}

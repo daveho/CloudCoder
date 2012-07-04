@@ -40,6 +40,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -302,21 +303,14 @@ public class EditProblemPage extends CloudCoderPage {
 			// Create UI for editing problem and test cases
 			editProblemFieldList = new ArrayList<EditModelObjectField<IProblem, ?>>();
 			createProblemFieldEditors();
-			
-			LayoutPanel panel = new LayoutPanel();
+
+			FlowPanel panel = new FlowPanel();
 			
 			// Add editor widgets for Problem fields
-			double y = 0.0;
 			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
 				IsWidget widget = editor.getUI();
 				panel.add(widget);
-				panel.setWidgetTopHeight(widget, y, Unit.PX, editor.getHeightPx(), Unit.PX);
-				panel.setWidgetLeftRight(widget, 0.0, Unit.PX, 0.0, Unit.PX);
-				
-				y += editor.getHeightPx();
 			}
-			
-			panel.setHeight(y + "px");
 			
 			dockLayoutPanel.add(new ScrollPanel(panel));
 			

@@ -41,6 +41,7 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 			FlowPanel panel = new FlowPanel();
 			
 			panel.setStyleName("cc-editStringField");
+			panel.setStyleName("cc-fieldEditor", true);
 			
 			InlineLabel label = new InlineLabel(getDescription());
 			panel.add(label);

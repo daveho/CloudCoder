@@ -39,6 +39,7 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 
 		public UI() {
 			FlowPanel panel = new FlowPanel();
+			panel.setStyleName("cc-fieldEditor", true);
 			
 			InlineLabel label = new InlineLabel(getDescription());
 			panel.add(label);
