@@ -50,4 +50,22 @@ public class TestCase extends TestCaseData implements Serializable {
 	public int getProblemId() {
 		return problemId;
 	}
+
+	/**
+	 * Factory method for creating an empty TestCase.
+	 * (I.e., where all of the fields are initialized to empty values,
+	 * as opposed to null values.)
+	 * 
+	 * @return an empty TestCase
+	 */
+	public static TestCase createEmpty() {
+		TestCase empty = new TestCase();
+		empty.setId(-1);
+		empty.setProblemId(-1);
+		empty.setTestCaseName("");
+		empty.setInput("");
+		empty.setOutput("");
+		empty.setSecret(false);
+		return empty;
+	}
 }

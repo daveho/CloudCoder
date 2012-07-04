@@ -85,4 +85,17 @@ public class ProblemAndTestCaseList implements ActivityObject {
 		
 		return result;
 	}
+
+	/**
+	 * Add a TestCase.
+	 * 
+	 * @param testCase the TestCase to add
+	 */
+	public void addTestCase(TestCase testCase) {
+		// FIXME: probably we should just use a List to store the TestCases
+		TestCase[] larger = new TestCase[testCaseList.length + 1];
+		System.arraycopy(testCaseList, 0, larger, 0, testCaseList.length);
+		larger[testCaseList.length] = testCase;
+		testCaseList = larger;
+	}
 }
