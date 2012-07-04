@@ -102,14 +102,6 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.view.EditModelObjectField#getHeightPx()
-	 */
-	@Override
-	public double getHeightPx() {
-		return EditStringField.HEIGHT_PX;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.view.EditModelObjectField#commit()
 	 */
 	@Override

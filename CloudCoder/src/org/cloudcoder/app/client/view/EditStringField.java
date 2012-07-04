@@ -83,14 +83,6 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.EditModelObjectField#getHeightPx()
-	 */
-	@Override
-	public double getHeightPx() {
-		return HEIGHT_PX;
-	}
-	
-	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.page.EditModelObjectField#commit()
 	 */
 	@Override

@@ -75,13 +75,6 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	public abstract IsWidget getUI();
 	
 	/**
-	 * Get the height in pixels of the UI widget.
-	 * 
-	 * @return the height in pixels of the UI widget
-	 */
-	public abstract double getHeightPx();
-	
-	/**
 	 * Commit any changes made in the UI to the model object.
 	 */
 	public abstract void commit();

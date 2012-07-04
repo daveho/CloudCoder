@@ -87,15 +87,6 @@ public abstract class EditDateField<ModelObjectType>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.view.EditModelObjectField#getHeightPx()
-	 */
-	@Override
-	public double getHeightPx() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.view.EditModelObjectField#commit()
 	 */
 	@Override

@@ -145,14 +145,6 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.view.EditModelObjectField#getHeightPx()
-	 */
-	@Override
-	public double getHeightPx() {
-		return (double) HEIGHT_PX;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.view.EditModelObjectField#commit()
 	 */
 	@Override
