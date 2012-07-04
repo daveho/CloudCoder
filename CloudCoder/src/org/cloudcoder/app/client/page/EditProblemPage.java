@@ -28,6 +28,7 @@ import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.EditStringFieldWithAceEditor;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.TestCaseEditor;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.IProblem;
@@ -35,6 +36,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -281,7 +283,9 @@ public class EditProblemPage extends CloudCoderPage {
 		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
 		private PageNavPanel pageNavPanel;
+		private FlowPanel centerPanel;
 		private List<EditModelObjectField<IProblem, ?>> editProblemFieldList;
+		private List<TestCaseEditor> testCaseEditorList;
 		
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -305,14 +309,14 @@ public class EditProblemPage extends CloudCoderPage {
 			editProblemFieldList = new ArrayList<EditModelObjectField<IProblem, ?>>();
 			createProblemFieldEditors();
 
-			FlowPanel panel = new FlowPanel();
+			this.centerPanel = new FlowPanel();
 			
 			// Add editor widgets for Problem fields
 			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
-				panel.add(editor.getUI());
+				centerPanel.add(editor.getUI());
 			}
 			
-			dockLayoutPanel.add(new ScrollPanel(panel));
+			dockLayoutPanel.add(new ScrollPanel(centerPanel));
 			
 			initWidget(dockLayoutPanel);
 		}
@@ -486,6 +490,17 @@ public class EditProblemPage extends CloudCoderPage {
 			for (EditModelObjectField<IProblem, ?> editor : editProblemFieldList) {
 				editor.setModelObject(problemAdapter);
 			}
+			
+			// Add TestCaseEditors for test cases.
+			testCaseEditorList = new ArrayList<TestCaseEditor>();
+			for (TestCase testCase : problemAndTestCaseList.getTestCaseList()) {
+				TestCaseEditor testCaseEditor = new TestCaseEditor();
+				testCaseEditorList.add(testCaseEditor);
+				testCaseEditor.setTestCase(testCase);
+				centerPanel.add(testCaseEditor.getUI());
+			}
+			
+			// TODO: add a button to create a new TestCase and TestCaseEditor
 		}
 
 		/* (non-Javadoc)

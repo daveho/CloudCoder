@@ -149,3 +149,12 @@
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
+
+/*
+ * Styles for TestCaseEditor.
+ */
+.cc-testCaseEditor {
+	background: #ccc;
+	border-top: 2px solid #888;
+	border-bottom: 2px solid #888;
+}
