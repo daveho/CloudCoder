@@ -299,15 +299,7 @@ public class EditProblemPage extends CloudCoderPage {
 			
 			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
 			
-			// Creation of the UI for editing problem/test cases will wait until
-			// we know what the Problem is
-			
-			initWidget(dockLayoutPanel);
-		}
-
-		private void createProblemAndTestCaseEditor() {
-			// Create a LayoutPanel for the editors for the Problem and its TestCases
-
+			// Create UI for editing problem and test cases
 			editProblemFieldList = new ArrayList<EditModelObjectField<IProblem, ?>>();
 			createProblemFieldEditors();
 			
@@ -327,6 +319,8 @@ public class EditProblemPage extends CloudCoderPage {
 			panel.setHeight(y + "px");
 			
 			dockLayoutPanel.add(new ScrollPanel(panel));
+			
+			initWidget(dockLayoutPanel);
 		}
 
 		private void createProblemFieldEditors() {
@@ -409,9 +403,6 @@ public class EditProblemPage extends CloudCoderPage {
 		 */
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
-			// Create UI for editing problem and test cases
-			createProblemAndTestCaseEditor();
-			
 			// Activate views
 			final Course course = session.get(Course.class);
 			pageLabel.setText("Edit problem in " + course.toString());
