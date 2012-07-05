@@ -69,8 +69,8 @@ public class EditProblemPage extends CloudCoderPage {
 		private FlowPanel centerPanel;
 		private List<EditModelObjectField<IProblem, ?>> problemFieldEditorList;
 		private List<TestCaseEditor> testCaseEditorList;
-		private Button addProblemButton;
-		private FlowPanel addProblemButtonPanel;
+		private Button addTestCaseButton;
+		private FlowPanel addTestCaseButtonPanel;
 		
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -294,16 +294,16 @@ public class EditProblemPage extends CloudCoderPage {
 			// Add a button to create a new TestCase and TestCaseEditor.
 			// Put it in a FlowPanel to ensure that it's in its own div.
 			// (Could also use this to style/position the button.)
-			this.addProblemButtonPanel = new FlowPanel();
-			addProblemButton = new Button("Add Problem");
-			addProblemButton.addClickHandler(new ClickHandler(){
+			this.addTestCaseButtonPanel = new FlowPanel();
+			addTestCaseButton = new Button("Add Test Case");
+			addTestCaseButton.addClickHandler(new ClickHandler(){
 				@Override
 				public void onClick(ClickEvent event) {
-					handleAddProblem();
+					handleAddTestCase();
 				}
 			});
-			addProblemButtonPanel.add(addProblemButton);
-			centerPanel.add(addProblemButtonPanel);
+			addTestCaseButtonPanel.add(addTestCaseButton);
+			centerPanel.add(addTestCaseButtonPanel);
 		}
 
 		/**
@@ -315,7 +315,7 @@ public class EditProblemPage extends CloudCoderPage {
 			testCaseEditorList.remove(testCaseEditor);
 		}
 
-		protected void handleAddProblem() {
+		protected void handleAddTestCase() {
 			// Add the TestCase to the ProblemAndTestCaseList
 			TestCase testCase = TestCase.createEmpty();
 			getSession().get(ProblemAndTestCaseList.class).addTestCase(testCase);
@@ -323,7 +323,7 @@ public class EditProblemPage extends CloudCoderPage {
 			// Add a new TestCase editor and its UI widget
 			TestCaseEditor testCaseEditor = new TestCaseEditor();
 			testCaseEditorList.add(testCaseEditor);
-			centerPanel.insert(testCaseEditor.getUI(), centerPanel.getWidgetIndex(addProblemButtonPanel));
+			centerPanel.insert(testCaseEditor.getUI(), centerPanel.getWidgetIndex(addTestCaseButtonPanel));
 			testCaseEditor.setTestCase(testCase);
 		}
 	}
