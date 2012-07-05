@@ -167,3 +167,15 @@
 	margin-top: 8px;
 	margin-right: 8px;
 }
+/* We get the components in a EditDateTimeField UI to appear next to each other by floating them left. */
+.cc-editDateTimeFloatLeft {
+	float: left;
+	margin-right: 10px;
+}
+/*
+ * An empty div in EditDateTimeField with this style after the floated divs allows the overall
+ * widget to have a natural height.
+ */ 
+.cc-editDateTimeClearFloats {
+	clear: both;
+}

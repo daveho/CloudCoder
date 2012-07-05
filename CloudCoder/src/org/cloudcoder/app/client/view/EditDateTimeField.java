@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
 //import com.summatech.gwt.client.HourMinutePicker;
 //import com.summatech.gwt.client.HourMinutePicker.PickerFormat;
@@ -44,6 +45,7 @@ public abstract class EditDateTimeField<ModelObjectType>
 
 	private class UI extends Composite {
 		private DatePicker datePicker;
+		private TextBox hourMinuteTextBox;
 		//private HourMinutePicker hourMinutePicker;
 
 		public UI() {
@@ -53,11 +55,28 @@ public abstract class EditDateTimeField<ModelObjectType>
 			label.setStyleName("cc-fieldEditorLabel");
 			panel.add(label);
 			
+			// Add a date picker and float it left
 			this.datePicker = new DatePicker();
+			datePicker.setStyleName("cc-editDateTimeFloatLeft", true);
 			panel.add(datePicker);
 			
 //			this.hourMinutePicker = new HourMinutePicker(PickerFormat._24_HOUR);
 //			panel.add(hourMinutePicker);
+			
+			// Add a label/textbox (for the hour/minute) and float it left
+			FlowPanel hourMinutePanel = new FlowPanel();
+			hourMinutePanel.setStyleName("cc-editDateTimeFloatLeft");
+			Label hourMinuteLabel = new Label("Time (HH:MM)");
+			hourMinutePanel.add(hourMinuteLabel);
+			this.hourMinuteTextBox = new TextBox();
+			hourMinuteTextBox.setWidth("100px");
+			hourMinutePanel.add(hourMinuteTextBox);
+			panel.add(hourMinutePanel);
+			
+			// Add an empty div with clear: both so that the overall widget has a natural height.
+			FlowPanel clear = new FlowPanel();
+			clear.setStyleName("cc-editDateTimeClearFloats");
+			panel.add(clear);
 			
 			initWidget(panel);
 		}
