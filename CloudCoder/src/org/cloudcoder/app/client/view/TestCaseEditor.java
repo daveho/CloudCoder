@@ -22,6 +22,9 @@ import java.util.List;
 
 import org.cloudcoder.app.shared.model.TestCase;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -37,6 +40,22 @@ public class TestCaseEditor {
 			FlowPanel panel = new FlowPanel();
 			panel.setStyleName("cc-testCaseEditor", true);
 			panel.setStyleName("cc-fieldEditor", true);
+			
+			// Create a delete button.
+			// We embed it in a FlowPanel (div) so that it can be floated and positioned.
+			FlowPanel deleteButtonPanel = new FlowPanel();
+			deleteButtonPanel.setStyleName("cc-testCaseDeleteButton", true);
+			Button deleteButton = new Button("Delete");
+			deleteButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (deleteHandler != null) {
+						deleteHandler.run();
+					}
+				}
+			});
+			deleteButtonPanel.add(deleteButton);
+			panel.add(deleteButtonPanel);
 			
 			// Create editors
 			fieldEditorList.add(new EditStringField<TestCase>("Test case name") {
@@ -84,6 +103,7 @@ public class TestCaseEditor {
 	
 	private UI ui;
 	private List<EditModelObjectField<TestCase, ?>> fieldEditorList;
+	private Runnable deleteHandler;
 	
 	/**
 	 * Constructor.
@@ -91,6 +111,15 @@ public class TestCaseEditor {
 	public TestCaseEditor() {
 		fieldEditorList = new ArrayList<EditModelObjectField<TestCase, ?>>();
 		ui = new UI();
+	}
+	
+	/**
+	 * Set the callback to be invoked when the Delete button is clicked. 
+	 * 
+	 * @param deleteHandler the delete handler to set
+	 */
+	public void setDeleteHandler(Runnable deleteHandler) {
+		this.deleteHandler = deleteHandler;
 	}
 	
 	/**

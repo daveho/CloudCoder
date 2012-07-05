@@ -9,7 +9,7 @@
 	color: red;
 	font-style: italic;
 }
-.cc-problemName, .cc-courseLabel, .cc-fieldEditorLabel {
+.cc-problemName, .cc-courseLabel {
 	font-weight: bold;
 	font-size: 20px;
 }
@@ -149,6 +149,10 @@
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
+.cc-fieldEditorLabel {
+	font-size: 16px;
+	font-weight: bold;
+}
 
 /*
  * Styles for TestCaseEditor.
@@ -157,4 +161,9 @@
 	background: #ccc;
 	border-top: 2px solid #888;
 	border-bottom: 2px solid #888;
+}
+.cc-testCaseDeleteButton {
+	float: right;
+	margin-top: 8px;
+	margin-right: 8px;
 }
