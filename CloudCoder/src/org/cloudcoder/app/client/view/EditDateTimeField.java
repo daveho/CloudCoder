@@ -26,8 +26,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
-//import com.summatech.gwt.client.HourMinutePicker;
-//import com.summatech.gwt.client.HourMinutePicker.PickerFormat;
 
 /**
  * Edit a {@link Date} field with a UI that can set both
@@ -41,7 +39,7 @@ public abstract class EditDateTimeField<ModelObjectType>
 	private static final int MILLIS_PER_HOUR = 60*60*1000;
 	private static final int MILLIS_PER_MINUTE = 60*1000;
 	private static final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat("yyyy MM dd");
-	private static final DateTimeFormat HOUR_MINUTE_FORMAT = DateTimeFormat.getFormat("HH mm");
+	private static final DateTimeFormat HOUR_MINUTE_FORMAT = DateTimeFormat.getFormat("HH:mm");
 
 	private class UI extends Composite {
 		private DatePicker datePicker;
@@ -59,9 +57,6 @@ public abstract class EditDateTimeField<ModelObjectType>
 			this.datePicker = new DatePicker();
 			datePicker.setStyleName("cc-editDateTimeFloatLeft", true);
 			panel.add(datePicker);
-			
-//			this.hourMinutePicker = new HourMinutePicker(PickerFormat._24_HOUR);
-//			panel.add(hourMinutePicker);
 			
 			// Add a label/textbox (for the hour/minute) and float it left
 			FlowPanel hourMinutePanel = new FlowPanel();
@@ -88,12 +83,18 @@ public abstract class EditDateTimeField<ModelObjectType>
 			if (datePickerDate != null) {
 				result = datePickerDate;
 				
-//				Integer hour = hourMinutePicker.getHour();
-//				Integer minute = hourMinutePicker.getMinute();
-				
-//				if (hour != null && minute != null) {
-//					result = new Date(result.getTime() + (hour * MILLIS_PER_HOUR) + (minute * MILLIS_PER_MINUTE));
-//				}
+				String hourMinuteString = hourMinuteTextBox.getText();
+				int colon = hourMinuteString.indexOf(':');
+				if (colon > 0) {
+					try {
+						int hour = Integer.parseInt(hourMinuteString.substring(0, colon));
+						int minute = Integer.parseInt(hourMinuteString.substring(colon + 1));
+						
+						result = new Date(result.getTime() + (hour * MILLIS_PER_HOUR) + (minute * MILLIS_PER_MINUTE));
+					} catch (NumberFormatException e) {
+						// invalid format
+					}
+				}
 			}
 			
 			return result;
@@ -107,12 +108,7 @@ public abstract class EditDateTimeField<ModelObjectType>
 			String hourMinuteString = hourMinuteFormat.format(value);
 			
 			datePicker.setValue(dateFormat.parse(dateString));
-			
-			int space = hourMinuteString.indexOf(' ');
-			int hours = Integer.parseInt(hourMinuteString.substring(0, space));
-			int minutes = Integer.parseInt(hourMinuteString.substring(space+1));
-			
-//			hourMinutePicker.setTime("", hours, minutes);
+			hourMinuteTextBox.setText(hourMinuteString);
 		}
 	}
 
