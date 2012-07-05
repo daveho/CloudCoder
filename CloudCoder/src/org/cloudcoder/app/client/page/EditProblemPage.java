@@ -279,7 +279,13 @@ public class EditProblemPage extends CloudCoderPage {
 			// Add TestCaseEditors for test cases.
 			testCaseEditorList = new ArrayList<TestCaseEditor>();
 			for (TestCase testCase : problemAndTestCaseList.getTestCaseList()) {
-				TestCaseEditor testCaseEditor = new TestCaseEditor();
+				final TestCaseEditor testCaseEditor = new TestCaseEditor();
+				testCaseEditor.setDeleteHandler(new Runnable() {
+					@Override
+					public void run() {
+						handleDeleteTestCase(testCaseEditor);
+					}
+				});
 				testCaseEditorList.add(testCaseEditor);
 				testCaseEditor.setTestCase(testCase);
 				centerPanel.add(testCaseEditor.getUI());
@@ -298,6 +304,15 @@ public class EditProblemPage extends CloudCoderPage {
 			});
 			addProblemButtonPanel.add(addProblemButton);
 			centerPanel.add(addProblemButtonPanel);
+		}
+
+		/**
+		 * @param testCaseEditor
+		 */
+		protected void handleDeleteTestCase(TestCaseEditor testCaseEditor) {
+			getSession().get(ProblemAndTestCaseList.class).removeTestCase(testCaseEditor.getTestCase());
+			centerPanel.remove(testCaseEditor.getUI());
+			testCaseEditorList.remove(testCaseEditor);
 		}
 
 		protected void handleAddProblem() {

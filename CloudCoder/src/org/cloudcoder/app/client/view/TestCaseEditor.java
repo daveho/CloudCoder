@@ -104,6 +104,7 @@ public class TestCaseEditor {
 	private UI ui;
 	private List<EditModelObjectField<TestCase, ?>> fieldEditorList;
 	private Runnable deleteHandler;
+	private TestCase testCase;
 	
 	/**
 	 * Constructor.
@@ -137,8 +138,16 @@ public class TestCaseEditor {
 	 * @param testCase the TestCase to edit
 	 */
 	public void setTestCase(TestCase testCase) {
+		this.testCase = testCase;
 		for (EditModelObjectField<TestCase, ?> editor : fieldEditorList) {
 			editor.setModelObject(testCase);
 		}
+	}
+
+	/**
+	 * @return the TestCase being edited
+	 */
+	public TestCase getTestCase() {
+		return testCase;
 	}
 }

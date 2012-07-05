@@ -98,4 +98,21 @@ public class ProblemAndTestCaseList implements ActivityObject {
 		larger[testCaseList.length] = testCase;
 		testCaseList = larger;
 	}
+
+	/**
+	 * Remove a TestCase.
+	 * 
+	 * @param testCase the TestCase to remove
+	 */
+	public void removeTestCase(TestCase testCase) {
+		// FIXME: probably we should just use a List to store the TestCases
+		TestCase[] smaller = new TestCase[testCaseList.length - 1];
+		int index = 0;
+		for (TestCase tc : testCaseList) {
+			if (tc != testCase) {
+				smaller[index++] = tc;
+			}
+		}
+		testCaseList = smaller;
+	}
 }
