@@ -14,7 +14,10 @@
 
   <!-- Other module inherits                                      -->
   <inherits name='edu.ycp.cs.dh.acegwt.AceGWT'/>
-
+  <!--
+  <inherits name="com.summatech.gwt.GwtTimepicker" />
+  -->
+  
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.cloudcoder.app.client.CloudCoder'/>
 

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.EditDateField;
+import org.cloudcoder.app.client.view.EditDateTimeField;
 import org.cloudcoder.app.client.view.EditEnumField;
 import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
@@ -236,6 +237,28 @@ public class EditProblemPage extends CloudCoderPage {
 				@Override
 				protected ProblemLicense getField() {
 					return getModelObject().getLicense();
+				}
+			});
+			
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned") {
+				@Override
+				protected void setField(Date value) {
+					getModelObject().setWhenAssigned(value.getTime());
+				}
+				@Override
+				protected Date getField() {
+					return getModelObject().getWhenAssignedAsDate();
+				}
+			});
+			
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due") {
+				@Override
+				protected void setField(Date value) {
+					getModelObject().setWhenDue(value.getTime());
+				}
+				@Override
+				protected Date getField() {
+					return getModelObject().getWhenDueAsDate();
 				}
 			});
 		}
