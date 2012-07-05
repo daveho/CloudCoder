@@ -37,8 +37,6 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.util.Publisher;
-import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -63,7 +61,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  */
 public class EditProblemPage extends CloudCoderPage {
 		
-	private class UI extends ResizeComposite implements SessionObserver, Subscriber {
+	private class UI extends ResizeComposite implements SessionObserver {
 		
 		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
@@ -313,14 +311,6 @@ public class EditProblemPage extends CloudCoderPage {
 			centerPanel.insert(testCaseEditor.getUI(), centerPanel.getWidgetIndex(addProblemButtonPanel));
 			testCaseEditor.setTestCase(testCase);
 		}
-
-		/* (non-Javadoc)
-		 * @see org.cloudcoder.app.shared.util.Subscriber#eventOccurred(java.lang.Object, org.cloudcoder.app.shared.util.Publisher, java.lang.Object)
-		 */
-		@Override
-		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		}
-		
 	}
 	
 	private UI ui;
