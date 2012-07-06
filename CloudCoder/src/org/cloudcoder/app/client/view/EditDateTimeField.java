@@ -20,6 +20,8 @@ package org.cloudcoder.app.client.view;
 import java.util.Date;
 
 import com.google.gwt.i18n.shared.DateTimeFormat;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -36,10 +38,15 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 public abstract class EditDateTimeField<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, Date> {
 	
-	private static final int MILLIS_PER_HOUR = 60*60*1000;
-	private static final int MILLIS_PER_MINUTE = 60*1000;
-	private static final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat("yyyy MM dd");
-	private static final DateTimeFormat HOUR_MINUTE_FORMAT = DateTimeFormat.getFormat("HH:mm");
+	private static final String DATE_FORMAT_STRING = "yyyy MM dd";
+	private static final String HOUR_MINUTE_FORMAT_STRING = "HH:mm";
+	private static final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat(DATE_FORMAT_STRING);
+	private static final DateTimeFormat HOUR_MINUTE_FORMAT = DateTimeFormat.getFormat(HOUR_MINUTE_FORMAT_STRING);
+	private static final DateTimeFormat DATE_HOUR_MINUTE_FORMAT =
+			DateTimeFormat.getFormat(DATE_FORMAT_STRING + " " + HOUR_MINUTE_FORMAT_STRING);
+	
+	private static final RegExp HOUR_MINUTE_PATTERN =
+			RegExp.compile("^\\s*(\\d\\d?)\\s*:\\s*(\\d\\d?)\\s*$");
 
 	private class UI extends Composite {
 		private DatePicker datePicker;
@@ -77,24 +84,30 @@ public abstract class EditDateTimeField<ModelObjectType>
 		}
 
 		public Date getDate() {
+			Date datePickerDate = datePicker.getValue();
+			if (datePickerDate == null) {
+				// No valid date - there's really nothing useful we can return.
+				return null;
+			}
+			
 			Date result = null;
 			
-			Date datePickerDate = datePicker.getValue();
-			if (datePickerDate != null) {
+			String hourMinuteString = hourMinuteTextBox.getText();
+			MatchResult match = HOUR_MINUTE_PATTERN.exec(hourMinuteString);
+			
+			if (match != null) {
+				// We have a valid date, hour, and minute.
+				// Assemble them into a Date.
+				result = DATE_HOUR_MINUTE_FORMAT.parse(
+						DATE_FORMAT.format(datePickerDate) +
+						" " +
+						match.getGroup(1) +
+						":" +
+						match.getGroup(2));
+			} else {
+				// We have a valid date, but not hour and minute.
+				// Just accept what we got from the DatePicker.
 				result = datePickerDate;
-				
-				String hourMinuteString = hourMinuteTextBox.getText();
-				int colon = hourMinuteString.indexOf(':');
-				if (colon > 0) {
-					try {
-						int hour = Integer.parseInt(hourMinuteString.substring(0, colon));
-						int minute = Integer.parseInt(hourMinuteString.substring(colon + 1));
-						
-						result = new Date(result.getTime() + (hour * MILLIS_PER_HOUR) + (minute * MILLIS_PER_MINUTE));
-					} catch (NumberFormatException e) {
-						// invalid format
-					}
-				}
 			}
 			
 			return result;
