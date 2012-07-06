@@ -43,7 +43,6 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -81,6 +80,7 @@ public class EditProblemPage extends CloudCoderPage {
 		private List<TestCaseEditor> testCaseEditorList;
 		private Button addTestCaseButton;
 		private FlowPanel addTestCaseButtonPanel;
+		private ProblemAndTestCaseList problemAndTestCaseListOrig;
 		
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -294,6 +294,13 @@ public class EditProblemPage extends CloudCoderPage {
 		 */
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			/*
+			// Make a copy of the ProblemAndTestCaseList being edited.
+			// This will allow us to detect whether or not it has been changed
+			// by the user.
+			this.problemAndTestCaseListOrig = session.get(ProblemAndTestCaseList.class).clone();
+			*/
+			
 			// Activate views
 			final Course course = session.get(Course.class);
 			pageLabel.setText("Edit problem in " + course.toString());
@@ -402,17 +409,34 @@ public class EditProblemPage extends CloudCoderPage {
 			confirmDialog.center();
 		}
 		
+		/**
+		 * Commit all changes in the UI to the underlying ProblemAndTestCaseList model object.
+		 */
 		private void commitAll() {
-			// TODO
+			for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
+				editor.commit();
+			}
+			for (TestCaseEditor editor : testCaseEditorList) {
+				editor.commit();
+			}
 		}
 		
+		/**
+		 * @return true if the ProblemAndTestCaseList has been modified, false otherwise
+		 */
 		private boolean isProblemModified() {
-			// TODO
+			/*
+			return !getSession().get(ProblemAndTestCaseList.class).equals(problemAndTestCaseListOrig);
+			*/
 			return true;
 		}
 
 		/**
-		 * @param testCaseEditor
+		 * Called when the user clicks the "Delete" button in a TestCaseEditor.
+		 * Removes the editor from the UI and removes the test case from
+		 * the underlying ProblemAndTestCaseList.
+		 * 
+		 * @param testCaseEditor the TestCaseEditor
 		 */
 		protected void handleDeleteTestCase(TestCaseEditor testCaseEditor) {
 			getSession().get(ProblemAndTestCaseList.class).removeTestCase(testCaseEditor.getTestCase());

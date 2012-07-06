@@ -89,8 +89,16 @@ public class TestCaseEditor {
 					return getModelObject().getOutput();
 				}
 			});
-			
-			// TODO: need editor for secret boolean field
+			fieldEditorList.add(new EditBooleanField<TestCase>("Secret", "If checked, the test is secret (not revealed to students)") {
+				@Override
+				protected void setField(Boolean value) {
+					getModelObject().setSecret(value);
+				}
+				@Override
+				protected Boolean getField() {
+					return getModelObject().isSecret();
+				}
+			});
 			
 			// Add editors to panel
 			for (EditModelObjectField<TestCase, ?> editor: fieldEditorList) {
@@ -149,5 +157,15 @@ public class TestCaseEditor {
 	 */
 	public TestCase getTestCase() {
 		return testCase;
+	}
+
+	/**
+	 * Commit all changes in the field editor UIs to the underlying
+	 * {@link TestCase} object.
+	 */
+	public void commit() {
+		for (EditModelObjectField<TestCase, ?> editor : fieldEditorList) {
+			editor.commit();
+		}
 	}
 }

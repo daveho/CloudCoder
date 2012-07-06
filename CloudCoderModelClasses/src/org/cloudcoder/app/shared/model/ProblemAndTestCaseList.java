@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndTestCaseList implements ActivityObject {
+public class ProblemAndTestCaseList implements ActivityObject/*, Cloneable*/ {
 	private static final long serialVersionUID = 1L;
 	
 	private Problem problem;
@@ -115,4 +115,17 @@ public class ProblemAndTestCaseList implements ActivityObject {
 		}
 		testCaseList = smaller;
 	}
+	
+	/*
+	@Override
+	public ProblemAndTestCaseList clone() {
+		ProblemAndTestCaseList dup = new ProblemAndTestCaseList();
+		dup.problem = this.problem.clone();
+		dup.testCaseList = new TestCase[this.testCaseList.length];
+		for (int i = 0; i < this.testCaseList.length; i++) {
+			dup.testCaseList[i] = this.testCaseList[i].clone();
+		}
+		return dup;
+	}
+	*/
 }

@@ -25,7 +25,7 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem extends ProblemData implements IProblem
+public class Problem extends ProblemData implements IProblem/*, Cloneable*/
 {
 	private static final long serialVersionUID = 1L;
 
@@ -145,5 +145,26 @@ public class Problem extends ProblemData implements IProblem
 	@Override
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
+	}
+	
+	/*
+	@Override
+	public Problem clone() {
+		return (Problem) super.clone();
+	}
+	*/
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Problem)) {
+			return false;
+		}
+		Problem other = (Problem) obj;
+		return super.equals(other)
+				&& ModelObjectUtil.equals(this.problemId, other.problemId)
+				&& ModelObjectUtil.equals(this.courseId, other.courseId)
+				&& this.whenAssigned == other.whenAssigned
+				&& this.whenDue == other.whenDue
+				&& this.visible == other.visible;
 	}
 }

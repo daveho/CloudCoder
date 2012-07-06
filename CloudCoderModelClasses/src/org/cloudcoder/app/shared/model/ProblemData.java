@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements ActivityObject, IProblemData {
+public class ProblemData implements ActivityObject, IProblemData/*, Cloneable*/ {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -278,5 +278,35 @@ public class ProblemData implements ActivityObject, IProblemData {
 		dup.license = this.license;
 		
 		return dup;
+	}
+
+	/*
+	@Override
+	public ProblemData clone() {
+		try {
+			return (ProblemData) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Impossible");
+		}
+	}
+	*/
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof ProblemData)) {
+			return false;
+		}
+		ProblemData other = (ProblemData) obj;
+		return ModelObjectUtil.equals(this.problemType, other.problemType)
+				&& ModelObjectUtil.equals(this.testName, other.testName)
+				&& ModelObjectUtil.equals(this.briefDescription, other.briefDescription)
+				&& ModelObjectUtil.equals(this.description, other.description)
+				&& ModelObjectUtil.equals(this.skeleton, other.skeleton)
+				&& this.schemaVersion == other.schemaVersion
+				&& ModelObjectUtil.equals(this.authorName, other.authorName)
+				&& ModelObjectUtil.equals(this.authorEmail, other.authorEmail)
+				&& ModelObjectUtil.equals(this.authorWebsite, other.authorWebsite)
+				&& this.timestampUTC == other.timestampUTC
+				&& ModelObjectUtil.equals(this.license, other.license);
 	}
 }

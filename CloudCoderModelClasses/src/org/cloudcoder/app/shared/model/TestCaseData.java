@@ -27,7 +27,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class TestCaseData implements Serializable {
+public class TestCaseData implements Serializable/*, Cloneable*/ {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -102,4 +102,26 @@ public class TestCaseData implements Serializable {
 		return dup;
 	}
 
+	/*
+	@Override
+	public TestCaseData clone() {
+		try {
+			return (TestCaseData) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Impossible");
+		}
+	}
+	*/
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof TestCaseData)) {
+			return false;
+		}
+		TestCaseData other = (TestCaseData) obj;
+		return ModelObjectUtil.equals(this.testCaseName, other.testCaseName)
+				&& ModelObjectUtil.equals(this.input, other.input)
+				&& ModelObjectUtil.equals(this.output, other.output)
+				&& this.secret == other.secret;
+	}
 }
