@@ -51,7 +51,6 @@ public abstract class EditDateTimeField<ModelObjectType>
 	private class UI extends Composite {
 		private DatePicker datePicker;
 		private TextBox hourMinuteTextBox;
-		//private HourMinutePicker hourMinutePicker;
 
 		public UI() {
 			FlowPanel panel = new FlowPanel();
@@ -114,13 +113,12 @@ public abstract class EditDateTimeField<ModelObjectType>
 		}
 
 		public void setDate(Date value) {
-			DateTimeFormat dateFormat = DATE_FORMAT;
-			DateTimeFormat hourMinuteFormat = HOUR_MINUTE_FORMAT;
-			
-			String dateString = dateFormat.format(value);
-			String hourMinuteString = hourMinuteFormat.format(value);
-			
-			datePicker.setValue(dateFormat.parse(dateString));
+			// Convert the Date value to date and hour/minute separately.
+			String dateString = DATE_FORMAT.format(value);
+			String hourMinuteString = HOUR_MINUTE_FORMAT.format(value);
+
+			// Set values in the DatePicker and TextBox.
+			datePicker.setValue(DATE_FORMAT.parse(dateString));
 			hourMinuteTextBox.setText(hourMinuteString);
 		}
 	}
