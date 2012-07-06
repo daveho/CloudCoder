@@ -54,6 +54,7 @@ public abstract class EditDateTimeField<ModelObjectType>
 
 		public UI() {
 			FlowPanel panel = new FlowPanel();
+			panel.setStyleName("cc-fieldEditor");
 			
 			Label label = new Label(getDescription());
 			label.setStyleName("cc-fieldEditorLabel");

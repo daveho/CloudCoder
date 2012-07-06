@@ -35,7 +35,7 @@ public abstract class EditBooleanField<ModelObjectType>
 	private class UI extends Composite {
 		private CheckBox checkBox;
 
-		public UI() {
+		public UI(String checkboxLabel) {
 			FlowPanel panel = new FlowPanel();
 			panel.setStyleName("cc-fieldEditor");
 			
@@ -43,8 +43,7 @@ public abstract class EditBooleanField<ModelObjectType>
 			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
 			
-			this.checkBox = new CheckBox();
-			checkBox.setText(checkboxLabel);
+			this.checkBox = new CheckBox(checkboxLabel);
 			panel.add(checkBox);
 			
 			initWidget(panel);
@@ -60,7 +59,6 @@ public abstract class EditBooleanField<ModelObjectType>
 	}
 
 	private UI ui;
-	private String checkboxLabel;
 
 	/**
 	 * Constructor.
@@ -70,8 +68,7 @@ public abstract class EditBooleanField<ModelObjectType>
 	 */
 	public EditBooleanField(String desc, String checkboxLabel) {
 		super(desc);
-		ui = new UI();
-		this.checkboxLabel = checkboxLabel;
+		ui = new UI(checkboxLabel);
 	}
 	
 	/* (non-Javadoc)
