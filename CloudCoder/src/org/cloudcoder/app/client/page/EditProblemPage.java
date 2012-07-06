@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.EditBooleanField;
 import org.cloudcoder.app.client.view.EditDateField;
 import org.cloudcoder.app.client.view.EditDateTimeField;
 import org.cloudcoder.app.client.view.EditEnumField;
@@ -260,6 +261,19 @@ public class EditProblemPage extends CloudCoderPage {
 				protected Date getField() {
 					return getModelObject().getWhenDueAsDate();
 				}
+			});
+			
+			problemFieldEditorList.add(new EditBooleanField<IProblem>(
+					"Problem visible to students",
+					"Check to make problem visible to students") {
+						@Override
+						protected void setField(Boolean value) {
+							getModelObject().setVisible(value);
+						}
+						@Override
+						protected Boolean getField() {
+							return getModelObject().isVisible();
+						}
 			});
 		}
 
