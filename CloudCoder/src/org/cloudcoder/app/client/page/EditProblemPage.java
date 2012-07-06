@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.EditBooleanField;
 import org.cloudcoder.app.client.view.EditDateField;
 import org.cloudcoder.app.client.view.EditDateTimeField;
@@ -42,6 +43,7 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -63,6 +65,10 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  * @author David Hovemeyer
  */
 public class EditProblemPage extends CloudCoderPage {
+	
+	private enum Confirm {
+		OK, CANCEL,
+	}
 		
 	private class UI extends ResizeComposite implements SessionObserver {
 		
@@ -291,13 +297,32 @@ public class EditProblemPage extends CloudCoderPage {
 			// Activate views
 			final Course course = session.get(Course.class);
 			pageLabel.setText("Edit problem in " + course.toString());
+			
+			// The nested Runnable objects here are due to the strange way DialogBoxes
+			// work in GWT - show() and center() return immediately rather than waiting
+			// for the dialog to be dismissed.  Thus, it is necessary to use a callback
+			// to capture a choice made in a dialog box.  Bleh.
 			pageNavPanel.setBackHandler(new Runnable() {
 				@Override
 				public void run() {
-					session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
+					leavePage(new Runnable() {
+						public void run() {
+							session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
+						}
+					});
 				}
 			});
-			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			pageNavPanel.setLogoutHandler(new Runnable() {
+				@Override
+				public void run() {
+					leavePage(new Runnable(){
+						@Override
+						public void run() {
+							new LogoutHandler(session).run();
+						}
+					});
+				}
+			});
 			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a ProblemAndTestCaseList.
@@ -348,6 +373,42 @@ public class EditProblemPage extends CloudCoderPage {
 			});
 			addTestCaseButtonPanel.add(addTestCaseButton);
 			centerPanel.add(addTestCaseButtonPanel);
+		}
+		
+		private void leavePage(final Runnable action) {
+			// Commit all changes made in the editors to the model objects.
+			commitAll();
+
+			// If the Problem has not been modified, then it's fine to leave the page
+			// without a prompt.
+			if (!isProblemModified()) {
+				action.run();
+				return;
+			}
+			
+			// Prompt user to confirm leaving page (and abandoning changes to Problem)
+			ChoiceDialogBox<Confirm> confirmDialog = new ChoiceDialogBox<Confirm>(
+					"Save changes to problem?",
+					"The problem has been modified: are you sure you want to abandon the changes?",
+					new ChoiceDialogBox.ChoiceHandler<Confirm>() {
+						public void handleChoice(Confirm choice) {
+							if (choice == Confirm.OK) {
+								action.run();
+							}
+						}
+					});
+			confirmDialog.addChoice("Abandon changes", Confirm.OK);
+			confirmDialog.addChoice("Don't abandon changes", Confirm.CANCEL);
+			confirmDialog.center();
+		}
+		
+		private void commitAll() {
+			// TODO
+		}
+		
+		private boolean isProblemModified() {
+			// TODO
+			return true;
 		}
 
 		/**
