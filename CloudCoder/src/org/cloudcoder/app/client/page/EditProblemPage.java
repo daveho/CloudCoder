@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.EditModelObjectField;
 import org.cloudcoder.app.client.view.EditStringField;
 import org.cloudcoder.app.client.view.EditStringFieldWithAceEditor;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestCaseEditor;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
@@ -68,6 +69,7 @@ public class EditProblemPage extends CloudCoderPage {
 		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
 		private PageNavPanel pageNavPanel;
+		private StatusMessageView statusMessageView;
 		private FlowPanel centerPanel;
 		private List<EditModelObjectField<IProblem, ?>> problemFieldEditorList;
 		private List<TestCaseEditor> testCaseEditorList;
@@ -91,6 +93,10 @@ public class EditProblemPage extends CloudCoderPage {
 			northPanel.setWidgetTopBottom(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
+			
+			// At bottom of page, show a StatusMessageView
+			this.statusMessageView = new StatusMessageView();
+			dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
 			
 			// Create UI for editing problem and test cases
 			problemFieldEditorList = new ArrayList<EditModelObjectField<IProblem, ?>>();
@@ -292,6 +298,7 @@ public class EditProblemPage extends CloudCoderPage {
 				}
 			});
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a ProblemAndTestCaseList.
 			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
