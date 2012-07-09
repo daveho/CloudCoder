@@ -621,7 +621,7 @@ public class JDBCDatabase implements IDatabase {
 				stmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
 				
 				ResultSet resultSet = executeQuery(stmt);
-				List<TestCase> result = new ArrayList<>();
+				List<TestCase> result = new ArrayList<TestCase>();
 				while (resultSet.next()) {
 					TestCase testCase = new TestCase();
 					load(testCase, resultSet, 1);
