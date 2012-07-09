@@ -24,7 +24,7 @@ askprop("What MySQL username will the webapp use to connect to the database?",
 askprop("What MySQL password will the webapp use to connect to the database?",
 	"cloudcoder.db.passwd", undef);
 askprop("What MySQL database will contain the CloudCoder tables?",
-	"cloudcoder.db.databaseName", "cloudcoder");
+	"cloudcoder.db.databaseName", "cloudcoderdb");
 askprop("What host will CloudCoder connect to to access the MySQL database?",
 	"cloudcoder.db.host", "localhost");
 askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
