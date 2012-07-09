@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements ActivityObject, IProblemData/*, Cloneable*/ {
+public class ProblemData implements ActivityObject, IProblemData {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -252,44 +252,25 @@ public class ProblemData implements ActivityObject, IProblemData/*, Cloneable*/ 
 	public ProblemLicense getLicense() {
 		return license;
 	}
-
+	
 	/**
-	 * Create a ProblemData object that contains exactly the same
-	 * field values as this one.  Note that the object returned
-	 * will be precisely of type ProblemData, not a subclass.
-	 * (This method doesn't return a clone of the current
-	 * object if it is a subclass of ProblemData.)
+	 * Copy all data in the given ProblemData object into this one.
 	 * 
-	 * @return ProblemData object with the same field values as this one
+	 * @param other another ProblemData object
 	 */
-	public ProblemData duplicateProblemData() {
-		ProblemData dup = new ProblemData();
-
-		dup.problemType = this.problemType;
-		dup.testName = this.testName;
-		dup.briefDescription = this.briefDescription;
-		dup.description = this.description;
-		dup.skeleton = this.skeleton;
-		dup.schemaVersion = this.schemaVersion;
-		dup.authorName = this.authorName;
-		dup.authorEmail = this.authorEmail;
-		dup.authorWebsite = this.authorWebsite;
-		dup.timestampUTC = this.timestampUTC;
-		dup.license = this.license;
-		
-		return dup;
+	public void copyFrom(ProblemData other) {
+		this.problemType = other.problemType;
+		this.testName = other.testName;
+		this.briefDescription = other.briefDescription;
+		this.description = other.description;
+		this.skeleton = other.skeleton;
+		this.schemaVersion = other.schemaVersion;
+		this.authorName = other.authorName;
+		this.authorEmail = other.authorEmail;
+		this.authorWebsite = other.authorWebsite;
+		this.timestampUTC = other.timestampUTC;
+		this.license = other.license;
 	}
-
-	/*
-	@Override
-	public ProblemData clone() {
-		try {
-			return (ProblemData) super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new IllegalStateException("Impossible");
-		}
-	}
-	*/
 	
 	@Override
 	public boolean equals(Object obj) {

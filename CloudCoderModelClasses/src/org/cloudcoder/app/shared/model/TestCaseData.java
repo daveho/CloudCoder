@@ -27,13 +27,12 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class TestCaseData implements Serializable/*, Cloneable*/ {
+public class TestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	//
 	// IMPORTANT: if you add any fields, make sure that you
-	// update the duplicateTestCaseData() method so that they are copied
-	// into the returned object.
+	// update the copyFrom() method accordingly.
 	//
 	private String testCaseName;
 	private String input;
@@ -83,35 +82,16 @@ public class TestCaseData implements Serializable/*, Cloneable*/ {
 	}
 	
 	/**
-	 * Create a TestCaseData object that contains exactly the same
-	 * field values as this one.  Note that the object returned
-	 * will be precisely of type TestCaseData, not a subclass.
-	 * (This method doesn't return a clone of the current
-	 * object if it is a subclass of TestCaseData.)
+	 * Copy all data in the given TestCaseData object into this one.
 	 * 
-	 * @return TestCaseData object with the same field values as this one
+	 * @param other another TestCaseData object
 	 */
-	public TestCaseData duplicateTestCaseData() {
-		TestCaseData dup = new TestCaseData();
-		
-		dup.testCaseName = this.testCaseName;
-		dup.input = this.input;
-		dup.output = this.output;
-		dup.secret = this.secret;
-		
-		return dup;
+	public void copyFrom(TestCaseData other) {
+		this.testCaseName = other.testCaseName;
+		this.input = other.input;
+		this.output = other.output;
+		this.secret = other.secret;
 	}
-
-	/*
-	@Override
-	public TestCaseData clone() {
-		try {
-			return (TestCaseData) super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new IllegalStateException("Impossible");
-		}
-	}
-	*/
 	
 	@Override
 	public boolean equals(Object obj) {

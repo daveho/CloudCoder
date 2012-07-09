@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase extends TestCaseData implements Serializable, Cloneable {
+public class TestCase extends TestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -69,12 +69,16 @@ public class TestCase extends TestCaseData implements Serializable, Cloneable {
 		return empty;
 	}
 	
-	/*
-	@Override
-	public TestCase clone() {
-		return (TestCase) super.clone();
+	/**
+	 * Copy all data in the given TestCase object into this one.
+	 * 
+	 * @param other another TestCase object
+	 */
+	public void copyFrom(TestCase other) {
+		super.copyFrom(other);
+		this.id = other.id;
+		this.problemId = other.problemId;
 	}
-	*/
 	
 	@Override
 	public boolean equals(Object obj) {

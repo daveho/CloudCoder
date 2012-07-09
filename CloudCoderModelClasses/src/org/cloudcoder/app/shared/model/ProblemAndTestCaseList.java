@@ -77,10 +77,14 @@ public class ProblemAndTestCaseList implements ActivityObject/*, Cloneable*/ {
 	public ProblemAndTestCaseData toProblemAndTestCaseData() {
 		ProblemAndTestCaseData result = new ProblemAndTestCaseData();
 
-		result.setProblemData(problem.duplicateProblemData());
+		ProblemData problemData = new ProblemData();
+		problemData.copyFrom(problem);
+		result.setProblemData(problemData);
 
 		for (TestCase testCase : testCaseList) {
-			result.addTestCase(testCase.duplicateTestCaseData());
+			TestCaseData testCaseData = new TestCaseData();
+			testCaseData.copyFrom(testCase);
+			result.addTestCase(testCaseData);
 		}
 		
 		return result;
