@@ -38,7 +38,7 @@ public class ProblemAndTestCaseData implements Serializable {
 	private String parentHash;
 	
 	public ProblemAndTestCaseData() {
-		testCaseList = new ArrayList<>();
+		testCaseList = new ArrayList<TestCaseData>();
 	}
 	
 	public void setProblemData(ProblemData problemData) {
