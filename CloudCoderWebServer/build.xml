@@ -76,9 +76,9 @@
 	</target>
 	
     <target name="clean">
-        <delete>
+        <delete quiet="true">
         	<fileset dir="bin" includes="**"/>
         </delete>
-    	<delete file="cloudcoderApp.jar"/>
+    	<delete quiet="true" file="cloudcoderApp.jar"/>
     </target>
 </project>
