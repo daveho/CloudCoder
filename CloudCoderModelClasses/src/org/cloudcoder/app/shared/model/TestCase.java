@@ -82,7 +82,7 @@ public class TestCase extends TestCaseData implements Serializable {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof Problem)) {
+		if (obj == null || !(obj instanceof TestCase)) {
 			return false;
 		}
 		TestCase other = (TestCase) obj;

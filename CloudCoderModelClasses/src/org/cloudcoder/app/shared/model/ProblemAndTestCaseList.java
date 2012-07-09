@@ -119,17 +119,40 @@ public class ProblemAndTestCaseList implements ActivityObject/*, Cloneable*/ {
 		}
 		testCaseList = smaller;
 	}
-	
-	/*
-	@Override
-	public ProblemAndTestCaseList clone() {
-		ProblemAndTestCaseList dup = new ProblemAndTestCaseList();
-		dup.problem = this.problem.clone();
-		dup.testCaseList = new TestCase[this.testCaseList.length];
-		for (int i = 0; i < this.testCaseList.length; i++) {
-			dup.testCaseList[i] = this.testCaseList[i].clone();
+
+	/**
+	 * Copy all data in the given ProblemAndTestCaseList object into this one.
+	 * 
+	 * @param other another ProblemAndTestCaseList object
+	 */
+	public void copyFrom(ProblemAndTestCaseList other) {
+		if (other.problem == null) {
+			this.problem = null;
+		} else {
+			this.problem = new Problem();
+			this.problem.copyFrom(other.problem);
 		}
-		return dup;
+
+		if (other.testCaseList == null) {
+			this.testCaseList = null;
+		} else {
+			this.testCaseList = new TestCase[other.testCaseList.length];
+			for (int i = 0; i < other.testCaseList.length; i++) {
+				this.testCaseList[i] = new TestCase();
+				this.testCaseList[i].copyFrom(other.testCaseList[i]);
+			}
+		}
 	}
-	*/
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof ProblemAndTestCaseList)) {
+			return false;
+		}
+		
+		ProblemAndTestCaseList other = (ProblemAndTestCaseList) obj;
+		
+		return ModelObjectUtil.equals(this.problem, other.problem)
+				&& ModelObjectUtil.arrayEquals(this.testCaseList, other.testCaseList);
+	}
 }

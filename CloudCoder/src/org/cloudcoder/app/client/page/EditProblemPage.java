@@ -294,12 +294,11 @@ public class EditProblemPage extends CloudCoderPage {
 		 */
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
-			/*
 			// Make a copy of the ProblemAndTestCaseList being edited.
 			// This will allow us to detect whether or not it has been changed
 			// by the user.
-			this.problemAndTestCaseListOrig = session.get(ProblemAndTestCaseList.class).clone();
-			*/
+			this.problemAndTestCaseListOrig = new ProblemAndTestCaseList();
+			problemAndTestCaseListOrig.copyFrom(session.get(ProblemAndTestCaseList.class));
 			
 			// Activate views
 			final Course course = session.get(Course.class);
@@ -425,10 +424,7 @@ public class EditProblemPage extends CloudCoderPage {
 		 * @return true if the ProblemAndTestCaseList has been modified, false otherwise
 		 */
 		private boolean isProblemModified() {
-			/*
 			return !getSession().get(ProblemAndTestCaseList.class).equals(problemAndTestCaseListOrig);
-			*/
-			return true;
 		}
 
 		/**
