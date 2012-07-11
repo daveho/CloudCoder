@@ -82,6 +82,9 @@ public class CloudCoderDaemon implements IDaemon {
 			handler.setWar(codeBase + (endsInDir ? "" : "/") + "war");
 		}
 		handler.setContextPath(config.getContext());
+
+		// Add it to the server
+		server.setHandler(handler);
 		
 		// Make all cloudcoder.* configuration parameters available
 		// as context init parameters.
@@ -92,9 +95,6 @@ public class CloudCoderDaemon implements IDaemon {
 				handler.getServletContext().setInitParameter(key, value);
 			}
 		}
-
-		// Add it to the server
-		server.setHandler(handler);
 
 		// Other misc. options
 		server.setThreadPool(new QueuedThreadPool(20));
