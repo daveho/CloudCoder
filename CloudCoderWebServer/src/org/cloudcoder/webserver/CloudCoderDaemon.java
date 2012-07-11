@@ -89,7 +89,7 @@ public class CloudCoderDaemon implements IDaemon {
 			if (key.startsWith("cloudcoder.")) {
 				String value = configProperties.getProperty(key);
 				LoggerFactory.getLogger(this.getClass()).info("Setting init parameter " + key + "=" + value);
-				handler.setInitParameter(key, value);
+				handler.getServletContext().setInitParameter(key, value);
 			}
 		}
 
