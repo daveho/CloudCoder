@@ -62,8 +62,10 @@
 			<!-- Copy classes and other files from required libraries and Jetty. -->
 			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
 			
-			<!-- Include the webapp. -->
-			<fileset dir="../CloudCoder" includes="war/**"/>
+			<!-- Include the webapp.
+			     However, exclude the slf4j jars, since Jetty will already have
+			     them on its classpath, and we don't want two copies. -->
+			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar" />
 			
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>

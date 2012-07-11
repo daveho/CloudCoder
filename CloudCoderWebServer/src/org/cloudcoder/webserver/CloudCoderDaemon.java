@@ -10,6 +10,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link IDaemon} to start the CloudCoder web application
@@ -87,6 +88,7 @@ public class CloudCoderDaemon implements IDaemon {
 		for (String key : configProperties.stringPropertyNames()) {
 			if (key.startsWith("cloudcoder.")) {
 				String value = configProperties.getProperty(key);
+				LoggerFactory.getLogger(this.getClass()).info("Setting init parameter " + key + "=" + value);
 				handler.setInitParameter(key, value);
 			}
 		}
