@@ -176,11 +176,11 @@ public class EditProblemPage extends CloudCoderPage {
 			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
 					new EditStringFieldWithAceEditor<IProblem>("Skeleton code") {
 						@Override
-						public void update() {
-							// Set the editor mode to match the ProblemType
+						public void onModelObjectChange() {
+							// Set the editor mode to match the ProblemType.
+							// This handles the case where the problem type is changed.
 							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
 							setEditorMode(editorMode);
-							super.update();
 						}
 						@Override
 						protected void setField(String value) {
@@ -335,13 +335,13 @@ public class EditProblemPage extends CloudCoderPage {
 			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
 			
 			// Create a ProblemAdapter to serve as the IProblem edited by the problem editors.
-			// Override the onChange() method to update all editors whenever the state of
-			// of the underlying Problem changes.
+			// Override the onChange() method to notify editors that the model object has changed
+			// in some way.
 			IProblem problemAdapter = new EditProblemAdapter(problemAndTestCaseList.getProblem()) {
 				@Override
 				protected void onChange() {
 					for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
-						editor.update();
+						editor.onModelObjectChange();
 					}
 				}
 			};

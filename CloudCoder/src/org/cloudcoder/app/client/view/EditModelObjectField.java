@@ -82,9 +82,20 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	/**
 	 * Force the editor to refresh itself by synchronizing its
 	 * UI state with the model object's state.  Call this method
-	 * when the model object changes.
+	 * when the model object changes.  <em>Danger</em>: if the
+	 * editor has local changes that haven't been saved to the
+	 * model object, they will be lost!
 	 */
 	public abstract void update();
+	
+	/**
+	 * Called when the underlying model object has changed.
+	 * This should be overridden only in the case where the editor
+	 * wants to change its state in response to the value of a
+	 * field which it is <em>not</em> editing.
+	 */
+	public void onModelObjectChange() {
+	}
 	
 	/**
 	 * Downcall method to set the field in the model object.
