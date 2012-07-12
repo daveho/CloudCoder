@@ -17,7 +17,7 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Compute a hash of the data in a {@link ProblemAndTestCaseData} object.
@@ -29,7 +29,6 @@ import java.nio.charset.Charset;
 public class HashProblemAndTestCaseData {
 	private ProblemAndTestCaseData problemAndTestCaseData;
 	private SHA1 sha1;
-	private Charset utf8;
 	
 	/**
 	 * Constructor.
@@ -39,7 +38,6 @@ public class HashProblemAndTestCaseData {
 	public HashProblemAndTestCaseData(ProblemAndTestCaseData problemAndTestCaseData) {
 		this.problemAndTestCaseData = problemAndTestCaseData;
 		this.sha1 = new SHA1();
-		this.utf8 = Charset.forName("UTF-8");
 	}
 	
 	/**
@@ -89,7 +87,11 @@ public class HashProblemAndTestCaseData {
 	private void updateString(String s) {
 		// Note: we always digest the trimmed version of the string,
 		// and always using UTF-8 to convert to bytes.
-		sha1.update(s.trim().getBytes(utf8));
+		try {
+			sha1.update(s.trim().getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("Can't convert string to UTF-8 bytes?");
+		}
 	}
 	
 	private void updateInt(int value) {
