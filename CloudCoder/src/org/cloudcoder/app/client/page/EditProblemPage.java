@@ -217,12 +217,21 @@ public class EditProblemPage extends CloudCoderPage {
 			descriptionEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			problemFieldEditorList.add(descriptionEditor);
 			
+			// In the editor for the skeleton, we keep the editor mode in sync
+			// with the problem type.  (I.e., for a Java problem we want Java
+			// mode, for Python we want Python mode, etc.)
 			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
 					new EditStringFieldWithAceEditor<IProblem>("Skeleton code") {
 						@Override
+						public void update() {
+							setLanguage();
+							super.update();
+						}
+						@Override
 						public void onModelObjectChange() {
-							// Set the editor mode to match the ProblemType.
-							// This handles the case where the problem type is changed.
+							setLanguage();
+						}
+						private void setLanguage() {
 							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
 							setEditorMode(editorMode);
 						}
