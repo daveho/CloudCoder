@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.EditBooleanField;
 import org.cloudcoder.app.client.view.EditDateField;
@@ -46,6 +48,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -70,7 +73,8 @@ public class EditProblemPage extends CloudCoderPage {
 	}
 		
 	private class UI extends ResizeComposite implements SessionObserver {
-		
+		private static final double SAVE_BUTTON_HEIGHT_PX = 32.0;
+
 		private DockLayoutPanel dockLayoutPanel;
 		private Label pageLabel;
 		private PageNavPanel pageNavPanel;
@@ -85,7 +89,8 @@ public class EditProblemPage extends CloudCoderPage {
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
-			// At top of page, show name of course and a PageNavPanel
+			// At top of page, show name of course, a PageNavPanel,
+			// and a button for saving the edited problem/testcases.
 			LayoutPanel northPanel = new LayoutPanel();
 			this.pageLabel = new Label("");
 			pageLabel.setStyleName("cc-courseLabel");
@@ -98,7 +103,19 @@ public class EditProblemPage extends CloudCoderPage {
 			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, Unit.PX);
 			northPanel.setWidgetTopBottom(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
-			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
+			Button saveButton = new Button("Save problem!");
+			saveButton.setStyleName("cc-emphButton");
+			saveButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					handleSaveProblem();
+				}
+			});
+			northPanel.add(saveButton);
+			northPanel.setWidgetLeftWidth(saveButton, 0.0, Unit.PX, 140.0, Unit.PX);
+			northPanel.setWidgetBottomHeight(saveButton, 0.0, Unit.PX, SAVE_BUTTON_HEIGHT_PX, Unit.PX);
+			
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT + SAVE_BUTTON_HEIGHT_PX);
 			
 			// At bottom of page, show a StatusMessageView
 			this.statusMessageView = new StatusMessageView();
@@ -118,6 +135,33 @@ public class EditProblemPage extends CloudCoderPage {
 			dockLayoutPanel.add(new ScrollPanel(centerPanel));
 			
 			initWidget(dockLayoutPanel);
+		}
+
+		protected void handleSaveProblem() {
+			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
+			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, new AsyncCallback<ProblemAndTestCaseList>() {
+				@Override
+				public void onSuccess(ProblemAndTestCaseList result) {
+					getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "Problem saved successfully"));
+					
+					// Make the returned ProblemAndTestCaseList current
+					problemAndTestCaseListOrig.copyFrom(result);
+					problemAndTestCaseList.copyFrom(result);
+					
+					// The TestCaseEditors must be updated, because the TestCase objects
+					// they are editing have changed.
+					int count = 0;
+					TestCase[] currentTestCases = problemAndTestCaseList.getTestCaseList();
+					for (TestCaseEditor editor : testCaseEditorList) {
+						editor.setTestCase(currentTestCases[count++]);
+					}
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save problem: " + caught.getMessage()));
+				}
+			});
 		}
 
 		private void createProblemFieldEditors() {

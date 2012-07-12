@@ -87,4 +87,16 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @return the list of TestCases for the Problem
 	 */
 	public TestCase[] getTestCasesForProblem(int problemId) throws NetCoderAuthenticationException;
+	
+	/**
+	 * Store given {@link ProblemAndTestCaseList} in the database.
+	 * The authenticated user must be registered as an instructor for the course
+	 * in which the problem is assigned.
+	 * If the problem already has a valid problem id, it will be updated.
+	 * If the problem does not yet have a valid problem id, it will be inserted.
+	 * 
+	 * @param problemAndTestCaseList the ProblemAndTestCaseList to store
+	 * @return the updated ProblemAndTestCaseList (which may have had ids assigned, etc.)
+	 */
+	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList) throws NetCoderAuthenticationException;
 }
