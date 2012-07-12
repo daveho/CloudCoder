@@ -174,4 +174,30 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 				&& this.whenDue == other.whenDue
 				&& this.visible == other.visible;
 	}
+
+	public static Problem createEmpty() {
+		Problem empty = new Problem();
+
+		// Problem fields
+		empty.problemId = null;
+		empty.courseId = null;
+		empty.whenAssigned = 0L;
+		empty.whenDue = 0L;
+		empty.visible = false;
+		
+		// ProblemData fields
+		empty.setProblemType(ProblemType.JAVA_METHOD);
+		empty.setTestName("");
+		empty.setBriefDescription("");
+		empty.setDescription("");
+		empty.setSkeleton("");
+		empty.setSchemaVersion(ProblemData.CURRENT_SCHEMA_VERSION);
+		empty.setAuthorName("");
+		empty.setAuthorEmail("");
+		empty.setAuthorWebsite("");
+		empty.setTimestampUTC(System.currentTimeMillis());
+		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
+		
+		return empty;
+	}
 }

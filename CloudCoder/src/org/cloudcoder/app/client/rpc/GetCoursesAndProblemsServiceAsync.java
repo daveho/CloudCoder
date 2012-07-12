@@ -42,7 +42,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 			AsyncCallback<TestCase[]> callback);
 
 	void storeProblemAndTestCaseList(
-			ProblemAndTestCaseList problemAndTestCaseList,
+			ProblemAndTestCaseList problemAndTestCaseList, Course course,
 			AsyncCallback<ProblemAndTestCaseList> callback);
 
 }

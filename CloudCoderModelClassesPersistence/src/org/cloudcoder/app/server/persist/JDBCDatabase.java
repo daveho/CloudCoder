@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,10 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemList;
@@ -93,7 +96,7 @@ public class JDBCDatabase implements IDatabase {
 			throw new IllegalStateException("Could not load mysql jdbc driver", e);
 		}
 	}
-	
+
 	private static class InUseConnection {
 		Connection conn;
 		int refCount;
@@ -430,31 +433,7 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnable<List<? extends Object[]>>() {
 			@Override
 			public List<? extends Object[]> run(Connection conn) throws SQLException {
-				List<Object[]> result = new ArrayList<Object[]>();
-
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
-						" where c.id = r.course_id " + 
-						"   and c.term_id = t.id " +
-						"   and r.user_id = ? " +
-						" order by c.year desc, t.seq desc"
-				);
-				stmt.setInt(1, user.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				while (resultSet.next()) {
-					Course course = new Course();
-					load(course, resultSet, 1);
-					Term term = new Term();
-					load(term, resultSet, Course.NUM_FIELDS + 1);
-					CourseRegistration reg = new CourseRegistration();
-					load(reg, resultSet, Course.NUM_FIELDS + Term.NUM_FIELDS + 1);
-					result.add(new Object[]{course, term, reg});
-				}
-				
-				return result;
+				return doGetCoursesForUser(user, conn, this);
 			}
 			@Override
 			public String getDescription() {
@@ -714,6 +693,7 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	@Override
 	public void addProblem(final Problem problem) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
@@ -721,23 +701,7 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"insert into " + PROBLEMS + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
-						PreparedStatement.RETURN_GENERATED_KEYS
-				);
-				
-				storeNoId(problem, stmt, 1);
-				
-				stmt.executeUpdate();
-				
-				ResultSet generatedKey = getGeneratedKeys(stmt);
-				if (!generatedKey.next()) {
-					throw new SQLException("Could not get generated key for inserted problem");
-				}
-				problem.setProblemId(generatedKey.getInt(1));
-				
-				return true;
+				return doInsertProblem(problem, conn, (AbstractDatabaseRunnable<?>) this);
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
@@ -749,6 +713,7 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	@Override
 	public void addTestCases(final Problem problem, final List<TestCase> testCaseList) {
 		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
 			/* (non-Javadoc)
@@ -756,31 +721,10 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
-						PreparedStatement.RETURN_GENERATED_KEYS
-				);
+				AbstractDatabaseRunnable<?> databaseRunnable = this;
 				
-				for (TestCase testCase : testCaseList) {
-					testCase.setProblemId(problem.getProblemId());
-					storeNoId(testCase, stmt, 1);
-					stmt.addBatch();
-				}
-				
-				stmt.executeBatch();
-				
-				ResultSet generatedKeys = getGeneratedKeys(stmt);
-				int count = 0;
-				while (generatedKeys.next()) {
-					testCaseList.get(count).setId(generatedKeys.getInt(1));
-					count++;
-				}
-				if (count != testCaseList.size()) {
-					throw new SQLException("wrong number of generated keys for inserted test cases");
-				}
-				
-				return true;
+				return doInsertTestCases(problem, testCaseList, conn,
+						databaseRunnable);
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
@@ -975,6 +919,91 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	/**
+	 * Database runnable for storing (inserting or updating) a problem
+	 * and its test cases.
+	 */
+	private final class StoreProblemAndTestCaseList extends AbstractDatabaseRunnable<ProblemAndTestCaseList> {
+		private ProblemAndTestCaseList problemAndTestCaseList;
+		private Course course;
+		private User user;
+		private NetCoderAuthenticationException authException;
+		
+		public StoreProblemAndTestCaseList(
+				ProblemAndTestCaseList problemAndTestCaseList,
+				Course course,
+				User user) {
+			this.problemAndTestCaseList = problemAndTestCaseList;
+			this.course = course;
+			this.user = user;
+		}
+
+		@Override
+		public ProblemAndTestCaseList run(Connection conn) throws SQLException {
+			// Ensure problem and course id match.
+			if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
+				authException = new NetCoderAuthenticationException("Problem does not match course");
+				return null;
+			}
+			
+			// Check that user is registered as an instructor in the course.
+			boolean isInstructor = false;
+			List<? extends Object[]> courses = doGetCoursesForUser(user, conn, this);
+			for (Object[] tuple : courses) {
+				CourseRegistration courseReg = (CourseRegistration) tuple[2];
+				if (courseReg.getCourseId() == course.getId()
+						&& courseReg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
+						isInstructor = true;
+					break;
+				}
+			}
+			if (!isInstructor) {
+				authException = new NetCoderAuthenticationException("not instructor in course");
+			}
+			
+			// If the problem id is not set, then insert the problem.
+			// Otherwise, update the existing problem.
+			if (problemAndTestCaseList.getProblem().getProblemId() == null) {
+				// Insert problem and test cases
+				doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
+				doInsertTestCases(
+						problemAndTestCaseList.getProblem(),
+						Arrays.asList(problemAndTestCaseList.getTestCaseList()),
+						conn,
+						this);
+			} else {
+				// Update problem and test cases
+				// TODO: implement this
+				logger.warn("Should be updating problem and test cases");
+			}
+			
+			// Success!
+			return problemAndTestCaseList;
+		}
+		
+
+		@Override
+		public String getDescription() {
+			return "storing problem and test cases";
+		}
+
+		public void throwIfAuthException() throws NetCoderAuthenticationException {
+			if (authException != null) {
+				throw authException;
+			}
+		}
+	}
+	
+	@Override
+	public ProblemAndTestCaseList storeProblemAndTestCaseList(
+			ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
+			throws NetCoderAuthenticationException {
+		StoreProblemAndTestCaseList databaseRunnable = new StoreProblemAndTestCaseList(problemAndTestCaseList, course, user);
+		ProblemAndTestCaseList result = databaseRun(databaseRunnable);
+		databaseRunnable.throwIfAuthException();
+		return result;
+	}
 
 	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
 		try {
@@ -1158,6 +1187,90 @@ public class JDBCDatabase implements IDatabase {
 			AbstractDatabaseRunnable<ProblemSummary> abstractDatabaseRunnable) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	private List<? extends Object[]> doGetCoursesForUser(
+			final User user,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		List<Object[]> result = new ArrayList<Object[]>();
+
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
+				" where c.id = r.course_id " + 
+				"   and c.term_id = t.id " +
+				"   and r.user_id = ? " +
+				" order by c.year desc, t.seq desc"
+		);
+		stmt.setInt(1, user.getId());
+		
+		ResultSet resultSet = databaseRunnable.executeQuery(stmt);
+		
+		while (resultSet.next()) {
+			Course course = new Course();
+			load(course, resultSet, 1);
+			Term term = new Term();
+			load(term, resultSet, Course.NUM_FIELDS + 1);
+			CourseRegistration reg = new CourseRegistration();
+			load(reg, resultSet, Course.NUM_FIELDS + Term.NUM_FIELDS + 1);
+			result.add(new Object[]{course, term, reg});
+		}
+		
+		return result;
+	}
+
+	private Boolean doInsertProblem(
+			final Problem problem,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + PROBLEMS + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
+		);
+		
+		storeNoId(problem, stmt, 1);
+		
+		stmt.executeUpdate();
+		
+		ResultSet generatedKey = databaseRunnable.getGeneratedKeys(stmt);
+		if (!generatedKey.next()) {
+			throw new SQLException("Could not get generated key for inserted problem");
+		}
+		problem.setProblemId(generatedKey.getInt(1));
+		
+		return true;
+	}
+
+	private Boolean doInsertTestCases(final Problem problem,
+			final List<TestCase> testCaseList, Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
+		);
+		
+		for (TestCase testCase : testCaseList) {
+			testCase.setProblemId(problem.getProblemId());
+			storeNoId(testCase, stmt, 1);
+			stmt.addBatch();
+		}
+		
+		stmt.executeBatch();
+		
+		ResultSet generatedKeys = databaseRunnable.getGeneratedKeys(stmt);
+		int count = 0;
+		while (generatedKeys.next()) {
+			testCaseList.get(count).setId(generatedKeys.getInt(1));
+			count++;
+		}
+		if (count != testCaseList.size()) {
+			throw new SQLException("wrong number of generated keys for inserted test cases");
+		}
+		
+		return true;
 	}
 
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

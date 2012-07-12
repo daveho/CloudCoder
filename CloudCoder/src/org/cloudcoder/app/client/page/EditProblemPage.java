@@ -139,7 +139,8 @@ public class EditProblemPage extends CloudCoderPage {
 
 		protected void handleSaveProblem() {
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
-			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, new AsyncCallback<ProblemAndTestCaseList>() {
+			final Course course = getSession().get(Course.class);
+			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
 					getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "Problem saved successfully"));
@@ -347,15 +348,20 @@ public class EditProblemPage extends CloudCoderPage {
 		 */
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			// The session should contain a ProblemAndTestCaseList.
+			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
+
 			// Make a copy of the ProblemAndTestCaseList being edited.
 			// This will allow us to detect whether or not it has been changed
 			// by the user.
 			this.problemAndTestCaseListOrig = new ProblemAndTestCaseList();
-			problemAndTestCaseListOrig.copyFrom(session.get(ProblemAndTestCaseList.class));
+			problemAndTestCaseListOrig.copyFrom(problemAndTestCaseList);
 			
 			// Activate views
 			final Course course = session.get(Course.class);
-			pageLabel.setText("Edit problem in " + course.toString());
+			pageLabel.setText(
+					(problemAndTestCaseList.getProblem().getProblemId()== null ? "Create new" : "Edit") +
+					" problem in " + course.toString());
 			
 			// The nested Runnable objects here are due to the strange way DialogBoxes
 			// work in GWT - show() and center() return immediately rather than waiting
@@ -383,9 +389,6 @@ public class EditProblemPage extends CloudCoderPage {
 				}
 			});
 			statusMessageView.activate(session, subscriptionRegistrar);
-			
-			// The session should contain a ProblemAndTestCaseList.
-			ProblemAndTestCaseList problemAndTestCaseList = session.get(ProblemAndTestCaseList.class);
 			
 			// Create a ProblemAdapter to serve as the IProblem edited by the problem editors.
 			// Override the onChange() method to notify editors that the model object has changed

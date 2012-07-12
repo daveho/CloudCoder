@@ -156,7 +156,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		protected void onProblemButtonClick(ButtonPanelAction action) {
 			switch (action) {
 			case NEW:
-				Window.alert("Not implemented yet, sorry");
+				handleNewProblem();
 				break;
 
 			case EDIT:
@@ -193,6 +193,17 @@ public class CourseAdminPage extends CloudCoderPage {
 					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, problemAndTestCaseList);
 				}
 			});
+		}
+		
+		private void handleNewProblem() {
+			Problem problem = Problem.createEmpty();
+			problem.setCourseId(getSession().get(Course.class).getId());
+			TestCase[] testCaseList= new TestCase[0];
+			ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
+			problemAndTestCaseList.setProblem(problem);
+			problemAndTestCaseList.setTestCaseList(testCaseList);
+			getSession().add(problemAndTestCaseList);
+			getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, problemAndTestCaseList);
 		}
 
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {

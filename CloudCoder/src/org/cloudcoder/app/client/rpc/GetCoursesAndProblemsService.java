@@ -98,5 +98,7 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @param problemAndTestCaseList the ProblemAndTestCaseList to store
 	 * @return the updated ProblemAndTestCaseList (which may have had ids assigned, etc.)
 	 */
-	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList) throws NetCoderAuthenticationException;
+	public ProblemAndTestCaseList storeProblemAndTestCaseList(
+			ProblemAndTestCaseList problemAndTestCaseList,
+			Course course) throws NetCoderAuthenticationException;
 }
