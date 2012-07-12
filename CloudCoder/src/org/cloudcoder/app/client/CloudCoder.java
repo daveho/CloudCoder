@@ -17,9 +17,6 @@
 
 package org.cloudcoder.app.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -115,6 +112,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 								
 								// Restore the session objects.
 								for (Object obj : result.getSessionObjects()) {
+									GWT.log("Restoring activity object: " + obj.getClass().getName());
 									session.add(obj);
 								}
 								
@@ -149,14 +147,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		Activity activity = new Activity(page.getClass().getName());
 		
 		// Record the Session objects (the ones that are ActivityObjects)
-		List<ActivityObject> sessionObjectList = new ArrayList<ActivityObject>();
 		for (Object obj : session.getObjects()) {
 			if (obj instanceof ActivityObject) {
-				sessionObjectList.add((ActivityObject) obj);
 				GWT.log("Adding " + obj.getClass().getName() + " to Activity");
+				activity.addSessionObject((ActivityObject) obj);
 			}
 		}
-		activity.setSessionObjects(sessionObjectList.toArray(new ActivityObject[sessionObjectList.size()]));
 		
 		return activity;
 	}

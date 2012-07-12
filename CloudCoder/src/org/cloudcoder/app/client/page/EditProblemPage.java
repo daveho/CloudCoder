@@ -545,8 +545,7 @@ public class EditProblemPage extends CloudCoderPage {
 	 */
 	@Override
 	public boolean isActivity() {
-		//return true;
-		return false;
+		return true;
 	}
 	
 }

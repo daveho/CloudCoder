@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndTestCaseList implements ActivityObject/*, Cloneable*/ {
+public class ProblemAndTestCaseList implements ActivityObject {
 	private static final long serialVersionUID = 1L;
 	
 	private Problem problem;
