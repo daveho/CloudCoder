@@ -10,6 +10,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link IDaemon} to start the CloudCoder web application
@@ -49,11 +50,36 @@ public class CloudCoderDaemon implements IDaemon {
 
 	@Override
 	public void start(String instanceName) {
+		// Configure logging
+		configureLogging();
+
+		// Load the configuration properties embedded in the executable jarfile
 		Properties configProperties = loadProperties("local.properties");
 		CloudCoderConfig config = new CloudCoderConfig(configProperties);
 		
-		// Configure logging
-		configureLogging();
+		// Set "overrides" to cloudcoder.* properties that are defined in the
+		// webapp's web.xml.  Specifically, we need this for database configuration
+		// properties, because the ones in web.xml are hardcoded for development,
+		// and instead we want to use the ones in the embedded config properties.
+		// Unfortunately, Jetty makes it nearly impossible to do arbitrary
+		// configuration of servlet context init params.  So, as a hack,
+		// we stuff them into a system property where JDBCDatabaseConfigServletContextListener
+		// will be able to see them.
+		StringBuilder buf = new StringBuilder();
+		for (String key : configProperties.stringPropertyNames()) {
+			if (key.startsWith("cloudcoder.")) {
+				String value = configProperties.getProperty(key);
+				if (buf.length() > 0) {
+					buf.append("|");
+				}
+				buf.append(key);
+				buf.append("=");
+				buf.append(value);
+			}
+		}
+		String overrides = buf.toString();
+		LoggerFactory.getLogger(this.getClass()).info("Setting config prop overrides: " + overrides);
+		System.setProperty("cloudcoder.config", overrides);
 		
 		// Create an embedded Jetty server
 		this.server = new Server();
@@ -81,15 +107,6 @@ public class CloudCoderDaemon implements IDaemon {
 			handler.setWar(codeBase + (endsInDir ? "" : "/") + "war");
 		}
 		handler.setContextPath(config.getContext());
-		
-		// Make all cloudcoder.* configuration parameters available
-		// as context init parameters.
-		for (String key : configProperties.stringPropertyNames()) {
-			if (key.startsWith("cloudcoder.")) {
-				String value = configProperties.getProperty(key);
-				handler.setInitParameter(key, value);
-			}
-		}
 
 		// Add it to the server
 		server.setHandler(handler);

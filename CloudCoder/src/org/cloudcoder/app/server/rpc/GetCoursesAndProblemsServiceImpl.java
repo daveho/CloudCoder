@@ -113,4 +113,21 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 
 		return Database.getInstance().getTestCasesForProblem(user, problemId);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#storeProblemAndTestCaseList(org.cloudcoder.app.shared.model.ProblemAndTestCaseList)
+	 */
+	@Override
+	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course)
+			throws NetCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		Database.getInstance().storeProblemAndTestCaseList(problemAndTestCaseList, course, user);
+
+		// TODO: implement
+		ProblemAndTestCaseList copy = new ProblemAndTestCaseList();
+		copy.copyFrom(problemAndTestCaseList);
+		return copy;
+	}
 }

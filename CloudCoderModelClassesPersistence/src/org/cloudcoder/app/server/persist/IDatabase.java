@@ -18,7 +18,6 @@
 package org.cloudcoder.app.server.persist;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -28,9 +27,11 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
@@ -176,4 +177,20 @@ public interface IDatabase {
 	 * @param receipt the SubmissionReceipt to update
 	 */
 	public void updateSubmissionReceipt(SubmissionReceipt receipt);
+
+	/**
+	 * Store given {@link ProblemAndTestCaseList} in the database.
+	 * If the problem exists, the existing problem data and test cases will be updated.
+	 * If the problem doesn't exist yet, it (and its test cases) will be created.
+	 * The {@link User} must be registered as an instructor for the {@link Course}
+	 * in which the problem is (or will be) assigned.
+	 * 
+	 * @param problemAndTestCaseList the problem and test cases to be stored (updated or inserted)
+	 * @param course the course in which the problem is (or will be) assigned
+	 * @param user the authenticated user
+	 * @return updated ProblemAndTestCaseList
+	 * @throws NetCoderAuthenticationException if the user is not an instructor in the course)
+	 */
+	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
+		throws NetCoderAuthenticationException;
 }

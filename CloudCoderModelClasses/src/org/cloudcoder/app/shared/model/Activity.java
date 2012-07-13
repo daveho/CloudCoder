@@ -18,10 +18,13 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class which represents the Activity the user
- * is working on.
+ * is working on.  Contains objects that should be restored to the
+ * user's client-side session.
  * 
  * @author David Hovemeyer
  */
@@ -29,35 +32,78 @@ public class Activity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	private ActivityObject[] sessionObjectList;
+	//private ActivityObject[] sessionObjectList;
 	
+	// GWT serialization cannot deal with supertype references.
+	// So, we need a separate field for each ActivityObject subclass
+	// that we want to store in the Activity.  Not terribly elegant,
+	// but effective.
+	private Problem problem;
+	private Course course;
+	private ProblemAndTestCaseList problemAndTestCaseList;
+	
+	/**
+	 * Default constructor.
+	 * Needed only for serialization.
+	 */
 	public Activity() {
 	}
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param name the name of the activity
+	 */
 	public Activity(String name) {
 		this.name = name;
 	}
 	
 	/**
-	 * @return the name
+	 * @return the name of the activity
 	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
-	 * Add an object which should be added to the user's
-	 * session when the activity is resumed. 
-	 * @param obj an object which should be added to the user's session
+	 * Add an {@link ActivityObject} to the activity.
+	 * It will be stored server-side, and will be restored to the
+	 * user's session if they navigate away from cloudcoder but
+	 * then come back.
+	 * 
+	 * @param obj the ActivityObject to add
 	 */
-	public void setSessionObjects(ActivityObject[] sessionObjectList) {
-		this.sessionObjectList = sessionObjectList;
+	public void addSessionObject(ActivityObject obj) {
+		if (obj instanceof Problem) {
+			this.problem = (Problem) obj;
+		} else if (obj instanceof Course) {
+			this.course = (Course) obj;
+		} else if (obj instanceof ProblemAndTestCaseList) {
+			this.problemAndTestCaseList = (ProblemAndTestCaseList) obj;
+		} else {
+			throw new IllegalArgumentException("Unknown ActivityObject subclass: " + obj.getClass().getName());
+		}
 	}
 
 	/**
-	 * @return
+	 * Get all objects that should be added to the client-side session
+	 * when the activity is resumed.
+	 * 
+	 * @return list of ActivityObjects to be restored to the client-side session
 	 */
-	public ActivityObject[] getSessionObjects() {
-		return sessionObjectList;
+	public List<ActivityObject> getSessionObjects() {
+		ArrayList<ActivityObject> result = new ArrayList<ActivityObject>();
+		
+		if (problem != null) {
+			result.add(problem);
+		}
+		if (course != null) {
+			result.add(course);
+		}
+		if (problemAndTestCaseList != null) {
+			result.add(problemAndTestCaseList);
+		}
+		
+		return result;
 	}
 }

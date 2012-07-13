@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.server.persist;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * JDBCDatabase configuration properties singleton.
  * Must be initialized using the create() method before
@@ -84,6 +86,7 @@ public class JDBCDatabaseConfig {
 		if (value == null) {
 			throw new IllegalArgumentException("Database property " + propertyName + " is undefined");
 		}
+		LoggerFactory.getLogger(this.getClass()).info("Database property " + propertyName + "=" + value);
 		return value;
 	}
 	

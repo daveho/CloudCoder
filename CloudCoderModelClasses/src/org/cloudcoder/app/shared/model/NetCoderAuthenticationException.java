@@ -6,4 +6,13 @@ package org.cloudcoder.app.shared.model;
  */
 public class NetCoderAuthenticationException extends Exception {
 	private static final long serialVersionUID = 1L;
+
+	public NetCoderAuthenticationException() {
+		
+	}
+	
+	public NetCoderAuthenticationException(String msg) {
+		super(msg);
+	}
+
 }

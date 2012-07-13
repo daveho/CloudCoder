@@ -17,6 +17,9 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -32,11 +35,33 @@ public class JDBCDatabaseConfigServletContextListener implements ServletContextL
 	 */
 	@Override
 	public void contextInitialized(final ServletContextEvent e) {
+		// Check to see if there are "overrides" to the configuration properties
+		// defined in the servlet context init parameters.
+		final Properties overrideProps = new Properties();
+		String overrides = System.getProperty("cloudcoder.config");
+		if (overrides != null) {
+			StringTokenizer t = new StringTokenizer(overrides, "|");
+			while (t.hasMoreTokens()) {
+				String prop = t.nextToken();
+				int eq = prop.indexOf('=');
+				overrideProps.setProperty(prop.substring(0, eq), prop.substring(eq+1));
+			}
+		}
+		
 		// Initialize the JDBCDatabaseConfig singleton from the
 		// init params in the servlet context.
 		JDBCDatabaseConfig.create(new JDBCDatabaseConfig.ConfigProperties() {
 			@Override
 			public String getDbConfigProperty(String name) {
+				// If an override property exists, it takes precedence.
+				// This will happen, for example, when the CloudCoder webapp is
+				// running in production, and the database configuration properties
+				// are embedded in a properties file within the executable
+				// jarfile.
+				if (overrideProps.getProperty(name) != null) {
+					return overrideProps.getProperty(name);
+				}
+				
 				// As a special case, the cloudcoder.db.portStr property will be
 				// returned as ":8889" (for MAMP) if cloudcoder.db.checkmacos is true
 				// and the os.name system property contains "OS X".  This allows
@@ -51,6 +76,7 @@ public class JDBCDatabaseConfigServletContextListener implements ServletContextL
 					}
 				}
 				
+				// Use the value defined in web.xml.
 				return e.getServletContext().getInitParameter(name);
 			}
 		});

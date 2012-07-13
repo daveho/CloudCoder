@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * The course- and institution-independent data in a {@link Problem}.
  * This class represents the information about a problem that will
@@ -25,7 +27,7 @@ package org.cloudcoder.app.shared.model;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements ActivityObject, IProblemData {
+public class ProblemData implements Serializable, IProblemData {
 	private static final long serialVersionUID = 1L;
 
 	//
