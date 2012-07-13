@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -47,6 +48,12 @@ public class CUtil {
 
 	/** Maximum number of characters per line native code testers should read from an untrusted test process. */
 	public static final int MAX_CHARACTERS_PER_LINE = 200;
+	
+	public static File makeTempDir() 
+	{
+	    final File sysTempDir = new File(System.getProperty("java.io.tmpdir"));
+	    return makeTempDir(sysTempDir.getAbsolutePath());
+	}
 	
 	/**
 	 * Make a temporary directory.
