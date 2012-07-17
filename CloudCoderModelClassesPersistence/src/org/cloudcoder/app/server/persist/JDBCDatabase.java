@@ -132,7 +132,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public ConfigurationSetting getConfigurationSetting(final ConfigurationSettingName name) {
-		return databaseRun(new AbstractDatabaseRunnable<ConfigurationSetting>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ConfigurationSetting>() {
 			@Override
 			public ConfigurationSetting run(Connection conn)
 					throws SQLException {
@@ -171,7 +171,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public User authenticateUser(final String userName, final String password) {
-		return databaseRun(new AbstractDatabaseRunnable<User>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
 			@Override
 			public User run(Connection conn) throws SQLException {
 				User user=getUser(conn, userName);
@@ -200,7 +200,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public User getUserWithoutAuthentication(final String userName) {
-		return databaseRun(new AbstractDatabaseRunnable<User>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -220,7 +220,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public Problem getProblem(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Problem>() {
 			@Override
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
@@ -261,7 +261,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public Problem getProblem(final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<Problem>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Problem>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -292,7 +292,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public Change getMostRecentChange(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<Change>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>() {
 			@Override
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
@@ -324,7 +324,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public Change getMostRecentFullTextChange(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<Change>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>() {
 			@Override
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
@@ -361,7 +361,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public Change getChange(final int changeEventId) {
-		return databaseRun(new AbstractDatabaseRunnable<Change>(){
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>(){
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -394,7 +394,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
-		return databaseRun(new AbstractDatabaseRunnable<List<Change>>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Change>>() {
 			@Override
 			public List<Change> run(Connection conn) throws SQLException {
 				List<Change> result = new ArrayList<Change>();
@@ -430,7 +430,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<? extends Object[]> getCoursesForUser(final User user) {
-		return databaseRun(new AbstractDatabaseRunnable<List<? extends Object[]>>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<? extends Object[]>>() {
 			@Override
 			public List<? extends Object[]> run(Connection conn) throws SQLException {
 				return doGetCoursesForUser(user, conn, this);
@@ -444,7 +444,7 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public ProblemList getProblemsInCourse(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnable<ProblemList>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemList>() {
 			@Override
 			public ProblemList run(Connection conn) throws SQLException {
 				return new ProblemList(doGetProblemsInCourse(user, course, conn, this));
@@ -462,7 +462,7 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
 			final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnable<List<ProblemAndSubmissionReceipt>>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -526,7 +526,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public void storeChanges(final Change[] changeList) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
 				// Store Events
@@ -554,7 +554,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<TestCase> getTestCasesForProblem(final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<List<TestCase>>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<TestCase>>() {
 			@Override
 			public List<TestCase> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
@@ -581,7 +581,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public TestCase[] getTestCasesForProblem(final User authenticatedUser, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnable<TestCase[]>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<TestCase[]>() {
 			@Override
 			public TestCase[] run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
@@ -627,7 +627,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public void insertSubmissionReceipt(final SubmissionReceipt receipt, final TestResult[] testResultList_) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -651,7 +651,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public void getOrAddLatestSubmissionReceipt(final User user, final Problem problem) {
-		databaseRun(new AbstractDatabaseRunnable<SubmissionReceipt>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -695,13 +695,13 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public void addProblem(final Problem problem) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				return doInsertProblem(problem, conn, (AbstractDatabaseRunnable<?>) this);
+				return doInsertProblem(problem, conn, (AbstractDatabaseRunnableNoAuthException<?>) this);
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
@@ -715,13 +715,13 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public void addTestCases(final Problem problem, final List<TestCase> testCaseList) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				AbstractDatabaseRunnable<?> databaseRunnable = this;
+				AbstractDatabaseRunnableNoAuthException<?> databaseRunnable = this;
 				
 				return doInsertTestCases(problem, testCaseList, conn,
 						databaseRunnable);
@@ -741,7 +741,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public ProblemSummary createProblemSummary(final Problem problem) {
-		return databaseRun(new AbstractDatabaseRunnable<ProblemSummary>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemSummary>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -819,7 +819,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public SubmissionReceipt getSubmissionReceipt(final int submissionReceiptId) {
-		return databaseRun(new AbstractDatabaseRunnable<SubmissionReceipt>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -857,7 +857,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public void replaceTestResults(final TestResult[] testResults, final int submissionReceiptId) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -890,7 +890,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public void updateSubmissionReceipt(final SubmissionReceipt receipt) {
-		databaseRun(new AbstractDatabaseRunnable<Boolean>() {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
@@ -920,92 +920,94 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
-	/**
-	 * Database runnable for storing (inserting or updating) a problem
-	 * and its test cases.
-	 */
-	private final class StoreProblemAndTestCaseList extends AbstractDatabaseRunnable<ProblemAndTestCaseList> {
-		private ProblemAndTestCaseList problemAndTestCaseList;
-		private Course course;
-		private User user;
-		private NetCoderAuthenticationException authException;
-		
-		public StoreProblemAndTestCaseList(
-				ProblemAndTestCaseList problemAndTestCaseList,
-				Course course,
-				User user) {
-			this.problemAndTestCaseList = problemAndTestCaseList;
-			this.course = course;
-			this.user = user;
-		}
-
-		@Override
-		public ProblemAndTestCaseList run(Connection conn) throws SQLException {
-			// Ensure problem and course id match.
-			if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
-				authException = new NetCoderAuthenticationException("Problem does not match course");
-				return null;
-			}
-			
-			// Check that user is registered as an instructor in the course.
-			boolean isInstructor = false;
-			List<? extends Object[]> courses = doGetCoursesForUser(user, conn, this);
-			for (Object[] tuple : courses) {
-				CourseRegistration courseReg = (CourseRegistration) tuple[2];
-				if (courseReg.getCourseId() == course.getId()
-						&& courseReg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
-						isInstructor = true;
-					break;
-				}
-			}
-			if (!isInstructor) {
-				authException = new NetCoderAuthenticationException("not instructor in course");
-			}
-			
-			// If the problem id is not set, then insert the problem.
-			// Otherwise, update the existing problem.
-			if (problemAndTestCaseList.getProblem().getProblemId() == null) {
-				// Insert problem and test cases
-				doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
-				doInsertTestCases(
-						problemAndTestCaseList.getProblem(),
-						Arrays.asList(problemAndTestCaseList.getTestCaseList()),
-						conn,
-						this);
-			} else {
-				// Update problem and test cases
-				// TODO: implement this
-				logger.warn("Should be updating problem and test cases");
-			}
-			
-			// Success!
-			return problemAndTestCaseList;
-		}
-		
-
-		@Override
-		public String getDescription() {
-			return "storing problem and test cases";
-		}
-
-		public void throwIfAuthException() throws NetCoderAuthenticationException {
-			if (authException != null) {
-				throw authException;
-			}
-		}
-	}
-	
 	@Override
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
-			ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
+			final ProblemAndTestCaseList problemAndTestCaseList, final Course course, final User user)
 			throws NetCoderAuthenticationException {
-		StoreProblemAndTestCaseList databaseRunnable = new StoreProblemAndTestCaseList(problemAndTestCaseList, course, user);
-		ProblemAndTestCaseList result = databaseRun(databaseRunnable);
-		databaseRunnable.throwIfAuthException();
-		return result;
+		return databaseRunAuth(new AbstractDatabaseRunnable<ProblemAndTestCaseList>() {
+			@Override
+			public ProblemAndTestCaseList run(Connection conn)
+					throws SQLException, NetCoderAuthenticationException {
+				// Ensure problem and course id match.
+				if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
+					throw new NetCoderAuthenticationException("Problem does not match course");
+				}
+				
+				// Check that user is registered as an instructor in the course.
+				boolean isInstructor = false;
+				List<? extends Object[]> courses = doGetCoursesForUser(user, conn, this);
+				for (Object[] tuple : courses) {
+					CourseRegistration courseReg = (CourseRegistration) tuple[2];
+					if (courseReg.getCourseId() == course.getId()
+							&& courseReg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
+							isInstructor = true;
+						break;
+					}
+				}
+				if (!isInstructor) {
+					throw new NetCoderAuthenticationException("not instructor in course");
+				}
+				
+				// If the problem id is not set, then insert the problem.
+				// Otherwise, update the existing problem.
+				if (problemAndTestCaseList.getProblem().getProblemId() == null) {
+					// Insert problem and test cases
+					doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
+					doInsertTestCases(
+							problemAndTestCaseList.getProblem(),
+							Arrays.asList(problemAndTestCaseList.getTestCaseList()),
+							conn,
+							this);
+				} else {
+					// Update problem and test cases
+					// TODO: implement this
+					logger.warn("Should be updating problem and test cases");
+				}
+				
+				// Success!
+				return problemAndTestCaseList;
+			}
+
+			@Override
+			public String getDescription() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
+	}
+	
+	/**
+	 * Run a database transaction and return the result.
+	 * This method is for transactions that extend {@link AbstractDatabaseRunnableNoAuthException}
+	 * and thus are guaranteed not to throw {@link NetCoderAuthenticationException}.
+	 * 
+	 * @param databaseRunnable the transaction to run
+	 * @return the result
+	 */
+	private<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable) {
+		try {
+			return doDatabaseRun(databaseRunnable);
+		} catch (NetCoderAuthenticationException e) {
+			// The fact that the method takes an
+			// AbstractDatabaseRunnableNoAuthException guarantees that the transaction
+			// won't throw NetcoderAuthenticationException.
+			throw new IllegalStateException("Can't happen", e);
+		}
 	}
 
-	private<E> E databaseRun(DatabaseRunnable<E> databaseRunnable) {
+	/**
+	 * Run a database transaction and return the result.
+	 * This method is for transactions that check the authenticity of provided
+	 * user credentials and may throw {@link NetCoderAuthenticationException}.
+	 * 
+	 * @param databaseRunnable the transaction to run
+	 * @return the result
+	 */
+	private<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+		return doDatabaseRun(databaseRunnable);
+	}
+
+	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
 		try {
 			Connection conn = null;
 			boolean committed = false;
@@ -1040,7 +1042,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
 	 * @throws SQLException
 	 */
-	private void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnable<?> dbRunnable)
+	private void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
@@ -1071,7 +1073,7 @@ public class JDBCDatabase implements IDatabase {
 			final SubmissionReceipt receipt,
 			final TestResult[] testResultList_,
 			Connection conn,
-			AbstractDatabaseRunnable<?> dbRunnable)
+			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
 			throws SQLException {
 		// Get TestResults (ensuring that the array is non-null
 		TestResult[] testResultList = testResultList_ != null ? testResultList_ : new TestResult[0];
@@ -1105,7 +1107,7 @@ public class JDBCDatabase implements IDatabase {
 
 	private void doInsertTestResults(TestResult[] testResultList,
 			int submissionReceiptId, Connection conn,
-			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
 		for (TestResult testResult : testResultList) {
 			testResult.setSubmissionReceiptEventId(submissionReceiptId);
 		}
@@ -1144,7 +1146,7 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	protected List<Problem> doGetProblemsInCourse(User user, Course course,
 			Connection conn,
-			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
 		
 		//
 		// Note that we have to join on course registrations to ensure
@@ -1184,7 +1186,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @return
 	 */
 	protected int doCountStudentsInCourse(Problem problem, Connection conn,
-			AbstractDatabaseRunnable<ProblemSummary> abstractDatabaseRunnable) {
+			AbstractDatabaseRunnableNoAuthException<ProblemSummary> abstractDatabaseRunnable) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
