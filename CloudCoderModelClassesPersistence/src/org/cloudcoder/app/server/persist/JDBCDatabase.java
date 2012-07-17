@@ -959,9 +959,8 @@ public class JDBCDatabase implements IDatabase {
 							conn,
 							this);
 				} else {
-					// Update problem and test cases
-					// TODO: implement this
-					logger.warn("Should be updating problem and test cases");
+					doUpdateProblem(problemAndTestCaseList.getProblem(), conn, this);
+//					doUpdateTestCases()
 				}
 				
 				// Success!
@@ -1275,6 +1274,40 @@ public class JDBCDatabase implements IDatabase {
 		return true;
 	}
 
+	private Boolean doUpdateProblem(
+			final Problem problem,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		
+		// FIXME: should really have a way to generate field lists for update statements automatically
+		PreparedStatement update = databaseRunnable.prepareStatement(
+				conn,
+				"update " + PROBLEMS +
+				" set course_id = ? " +
+				"     when_assigned = ? " +
+				"     when_due = ? " +
+				"     visible = ? " +
+				"     problem_type = ? " +
+				"     testname = ? " +
+				"     brief_description = ? " +
+				"     description = ? " +
+				"     skeleton = ? " +
+				"     schema_version = ? " +
+				"     author_name = ? " +
+				"     author_email = ? " +
+				"     author_website = ? " +
+				"     timestamp_utc = ? " +
+				"     license = ? " +
+				" where problem_id = ?"
+				);
+		int index = storeNoId(problem, update, 1);
+		update.setInt(index, problem.getProblemId());
+		
+		update.executeUpdate();
+		
+		return true;
+	}
+	
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
 		configurationSetting.setName(resultSet.getString(index++));
 		configurationSetting.setValue(resultSet.getString(index++));
@@ -1425,15 +1458,16 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, testResult.getStderr());
 	}
 	
-	protected void storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
+	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, problem.getCourseId());
 		stmt.setLong(index++, problem.getWhenAssigned());
 		stmt.setLong(index++, problem.getWhenDue());
 		stmt.setBoolean(index++, problem.isVisible());
-		storeProblemData(problem, stmt, index);
+		index = storeProblemData(problem, stmt, index);
+		return index;
 	}
 
-	protected void storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
+	protected int storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, problemData.getProblemType().ordinal());
 		stmt.setString(index++, problemData.getTestName());
 		stmt.setString(index++, problemData.getBriefDescription());
@@ -1445,6 +1479,7 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, problemData.getAuthorWebsite());
 		stmt.setLong(index++, problemData.getTimestampUTC());
 		stmt.setInt(index++, problemData.getLicense().ordinal());
+		return index;
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
