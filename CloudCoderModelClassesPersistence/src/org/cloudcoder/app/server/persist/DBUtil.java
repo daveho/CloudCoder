@@ -71,29 +71,35 @@ public class DBUtil {
 	 * @return placeholders for an insert statement
 	 */
 	public static String getInsertPlaceholders(ModelObjectSchema schema) {
-		return getInsertPlaceholders(schema, schema.getNumFields());
-	}
-
-	/**
-	 * Get given number of placeholders for an insert statement.
-	 * 
-	 * @param schema the schema for the object being inserted
-	 * @param num number of placeholders (which must be less than or equal to
-	 *            the number of fields)
-	 * @return the placeholders
-	 */
-	public static String getInsertPlaceholders(ModelObjectSchema schema, int num) {
-		if (num > schema.getNumFields()) {
-			throw new IllegalArgumentException();
-		}
-		
 		StringBuilder buf = new StringBuilder();
 		
-		for (int i = 0; i < num; i++) {
+		for (int i = 0; i < schema.getNumFields(); i++) {
 			if (buf.length() > 0) {
 				buf.append(", ");
 			}
 			buf.append("?");
+		}
+		
+		return buf.toString();
+	}
+
+	/**
+	 * Get insert placeholders for all fields except the unique id.
+	 * For the unique id field, a literal NULL value will be specified.
+	 * This is useful for generating an insert statement where the unique
+	 * id is an autoincrement column.
+	 * 
+	 * @param schema the schema of a model object
+	 * @return insert placeholders for all fields except the unique id
+	 */
+	public static String getInsertPlaceholdersNoId(ModelObjectSchema schema) {
+		StringBuilder buf = new StringBuilder();
+		
+		for (ModelObjectField field : schema.getFieldList()) {
+			if (buf.length() > 0) {
+				buf.append(", ");
+			}
+			buf.append(field.isUniqueId() ? "NULL" : "?");
 		}
 		
 		return buf.toString();

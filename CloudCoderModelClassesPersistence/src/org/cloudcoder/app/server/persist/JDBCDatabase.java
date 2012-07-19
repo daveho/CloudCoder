@@ -1234,7 +1234,10 @@ public class JDBCDatabase implements IDatabase {
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"insert into " + PROBLEMS + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
+				"insert into " + PROBLEMS +
+				" values (" +
+				DBUtil.getInsertPlaceholdersNoId(Problem.SCHEMA) +
+				")",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		
