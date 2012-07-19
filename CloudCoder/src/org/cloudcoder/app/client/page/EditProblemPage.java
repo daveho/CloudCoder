@@ -138,6 +138,10 @@ public class EditProblemPage extends CloudCoderPage {
 		}
 
 		protected void handleSaveProblem() {
+			// Commit the contents of all editors
+			commitAll();
+			
+			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getSession().get(Course.class);
 			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
