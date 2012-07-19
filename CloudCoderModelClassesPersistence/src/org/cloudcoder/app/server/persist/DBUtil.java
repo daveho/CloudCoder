@@ -21,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,12 @@ import org.slf4j.LoggerFactory;
  */
 public class DBUtil {
     private static final Logger logger=LoggerFactory.getLogger(DBUtil.class);
+    
+    /**
+     * Quietly close a {@link PreparedStatement}.
+     * 
+     * @param stmt the PreparedStatement to close
+     */
 	public static void closeQuietly(PreparedStatement stmt) {
 		try {
 			if (stmt != null) {
@@ -41,6 +49,11 @@ public class DBUtil {
 		}
 	}
 
+	/**
+	 * Quietly close a {@link ResultSet}.
+	 * 
+	 * @param resultSet the ResultSet to close
+	 */
 	public static void closeQuietly(ResultSet resultSet) {
 		try {
 			if (resultSet != null) {
@@ -49,5 +62,77 @@ public class DBUtil {
 		} catch (SQLException e) {
 		    logger.error("Unable to close result set",e);
 		}
+	}
+	
+	/**
+	 * Get placeholders for an insert statement.
+	 * 
+	 * @param schema the schema for the object being inserted
+	 * @return placeholders for an insert statement
+	 */
+	public static String getInsertPlaceholders(ModelObjectSchema schema) {
+		return getInsertPlaceholders(schema, schema.getNumFields());
+	}
+
+	/**
+	 * Get given number of placeholders for an insert statement.
+	 * 
+	 * @param schema the schema for the object being inserted
+	 * @param num number of placeholders (which must be less than or equal to
+	 *            the number of fields)
+	 * @return the placeholders
+	 */
+	public static String getInsertPlaceholders(ModelObjectSchema schema, int num) {
+		if (num > schema.getNumFields()) {
+			throw new IllegalArgumentException();
+		}
+		
+		StringBuilder buf = new StringBuilder();
+		
+		for (int i = 0; i < num; i++) {
+			if (buf.length() > 0) {
+				buf.append(", ");
+			}
+			buf.append("?");
+		}
+		
+		return buf.toString();
+	}
+	
+	/**
+	 * Get placeholders for an update statement where all fields
+	 * will be updated.
+	 * 
+	 * @return placeholders for an update statement where all fields will be updated
+	 */
+	public static String getUpdatePlaceholders(ModelObjectSchema schema) {
+		return doGetUpdatePlaceholders(schema, true);
+	}
+	
+	/**
+	 * Get placeholders for an update statement where all fields except for
+	 * the unique id field will be updated.
+	 * 
+	 * @return placeholders for an update statement where all fields except the
+	 *         unique id field will be update
+	 */
+	public static String getUpdatePlaceholdersNoId(ModelObjectSchema schema) {
+		return doGetUpdatePlaceholders(schema, false);
+	}
+
+	private static String doGetUpdatePlaceholders(ModelObjectSchema schema, boolean includeUniqueId) {
+		StringBuilder buf = new StringBuilder();
+		
+		for (ModelObjectField field : schema.getFieldList()) {
+			if (!field.isUniqueId() || includeUniqueId) {
+				if (buf.length() > 0) {
+					buf.append(", ");
+				}
+				buf.append(field.getName());
+				buf.append(" = ?");
+			}
+		}
+		
+		return buf.toString();
 	}
 }

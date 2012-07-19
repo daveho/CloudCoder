@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * The course- and institution-independent data in a {@link Problem}.
@@ -32,8 +33,8 @@ public class ProblemData implements Serializable, IProblemData {
 
 	//
 	// IMPORTANT: if you add any fields, make sure that you
-	// update the duplicateProblemData() method so that they are copied
-	// into the returned object.
+	// update the copyProblemData() method so that they are copied
+	// into the destination object.
 	//
 	private ProblemType problemType;
 	private String testName;
@@ -48,9 +49,32 @@ public class ProblemData implements Serializable, IProblemData {
 	private ProblemLicense license;
 	
 	/**
+	 * Description of fields.
+	 * This must be kept in sync with the database schema.
+	 * (Eventually, we should generate the database schema from
+	 * the code, so that it is defined in only one place.)
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
+			Arrays.asList(
+					new ModelObjectField[]{
+							new ModelObjectField("problem_type", Integer.class, 0),
+							new ModelObjectField("testname", String.class, 255),
+							new ModelObjectField("brief_description", String.class, 60),
+							new ModelObjectField("description", String.class, 8192),
+							new ModelObjectField("skeleton", String.class, 400),
+							new ModelObjectField("schema_version", Integer.class, 0),
+							new ModelObjectField("author_name", String.class, 80),
+							new ModelObjectField("author_email", String.class, 80),
+							new ModelObjectField("author_website", String.class, 100),
+							new ModelObjectField("timestamp_utc", Long.class, 0),
+							new ModelObjectField("license", ProblemLicense.class, 0),
+					})
+			);
+	
+	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = 11;
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	/**
 	 * The current ProblemData schema version.

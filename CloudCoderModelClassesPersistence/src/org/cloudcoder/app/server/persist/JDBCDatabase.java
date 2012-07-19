@@ -1279,31 +1279,19 @@ public class JDBCDatabase implements IDatabase {
 			Connection conn,
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		
-		// FIXME: should really have a way to generate field lists for update statements automatically
 		PreparedStatement update = databaseRunnable.prepareStatement(
 				conn,
 				"update " + PROBLEMS +
-				" set course_id = ? " +
-				"     when_assigned = ? " +
-				"     when_due = ? " +
-				"     visible = ? " +
-				"     problem_type = ? " +
-				"     testname = ? " +
-				"     brief_description = ? " +
-				"     description = ? " +
-				"     skeleton = ? " +
-				"     schema_version = ? " +
-				"     author_name = ? " +
-				"     author_email = ? " +
-				"     author_website = ? " +
-				"     timestamp_utc = ? " +
-				"     license = ? " +
+				" set " + DBUtil.getUpdatePlaceholdersNoId(Problem.SCHEMA) +
 				" where problem_id = ?"
 				);
 		int index = storeNoId(problem, update, 1);
 		update.setInt(index, problem.getProblemId());
 		
-		update.executeUpdate();
+		int rowCount = update.executeUpdate();
+		if (rowCount != 1) {
+			throw new SQLException("Could not update problem (no such problem in database?)");
+		}
 		
 		return true;
 	}

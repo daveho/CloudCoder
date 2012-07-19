@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -36,9 +37,29 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	private boolean visible;
 	
 	/**
+	 * Description of fields.
+	 * This must be kept in sync with the database schema.
+	 * (Eventually, we should generate the database schema from
+	 * the code, so that it is defined in only one place.)
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
+			ModelObjectUtil.combineLists(
+					Arrays.asList(
+							new ModelObjectField[]{
+									new ModelObjectField("problem_id", Integer.class, 0),
+									new ModelObjectField("course_id", Integer.class, 0),
+									new ModelObjectField("when_assigned", Long.class, 0),
+									new ModelObjectField("when_due", Long.class, 0),
+									new ModelObjectField("visible", Boolean.class, 0),
+							}),
+							ProblemData.SCHEMA.getFieldList()
+					)
+			);
+	
+	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 5;
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	/**
 	 * Constructor.
