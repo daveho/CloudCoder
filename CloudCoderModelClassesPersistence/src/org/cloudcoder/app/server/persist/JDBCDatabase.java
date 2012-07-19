@@ -959,8 +959,16 @@ public class JDBCDatabase implements IDatabase {
 							conn,
 							this);
 				} else {
+					// Update problem and test cases
 					doUpdateProblem(problemAndTestCaseList.getProblem(), conn, this);
-//					doUpdateTestCases()
+					
+					// We can achieve the effect of updating the test cases by deleting
+					doDeleteTestCases(problemAndTestCaseList.getProblem().getProblemId(), conn, this);
+					doInsertTestCases(
+							problemAndTestCaseList.getProblem(),
+							Arrays.asList(problemAndTestCaseList.getTestCaseList()),
+							conn,
+							this);
 				}
 				
 				// Success!
@@ -969,12 +977,11 @@ public class JDBCDatabase implements IDatabase {
 
 			@Override
 			public String getDescription() {
-				// TODO Auto-generated method stub
-				return null;
+				return " storing problem and test cases";
 			}
 		});
 	}
-	
+
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that extend {@link AbstractDatabaseRunnableNoAuthException}
@@ -1294,6 +1301,18 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		return true;
+	}
+	
+	protected void doDeleteTestCases(
+			Integer problemId,
+			Connection conn,
+			AbstractDatabaseRunnable<ProblemAndTestCaseList> abstractDatabaseRunnable) throws SQLException {
+		PreparedStatement deleteStmt = abstractDatabaseRunnable.prepareStatement(
+				conn,
+				"delete from " + TEST_CASES + " where problem_id = ?");
+		deleteStmt.setInt(1, problemId);
+		
+		deleteStmt.executeUpdate();
 	}
 	
 	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
