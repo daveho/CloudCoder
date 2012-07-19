@@ -45,7 +45,7 @@ public class CProgramTester implements ITester {
 	 */
 	@Override
 	public SubmissionResult testSubmission(Submission submission) {
-		File tempDir = CUtil.makeTempDir("/tmp");
+	    File tempDir=CUtil.makeTempDir();
 		try {
 			return doTestSubmission(submission, tempDir);
 		} finally {
