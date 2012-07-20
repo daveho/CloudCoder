@@ -40,6 +40,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
@@ -377,10 +378,10 @@ public class EditProblemPage extends CloudCoderPage {
 				public void run() {
 					leavePage(new Runnable() {
 						public void run() {
-							// Purge the list of Problems, in case one of them was edited
-							// by this page.  That will force CourseAdminPage to
+							// Purge the list of ProblemAndSubmissionReceipts, in case a
+							// problem was edited by this page.  That will force CourseAdminPage to
 							// reload the problem list for the Course.
-							getSession().remove(Problem[].class);
+							getSession().remove(ProblemAndSubmissionReceipt[].class);
 							
 							session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
 						}
