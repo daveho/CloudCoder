@@ -18,9 +18,27 @@
 package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.List;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -29,7 +47,6 @@ import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionException;
-import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +99,85 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		return future;
 	}
 	
+	private ServerSocket createSSLServerSocket(int port)
+	throws IOException, UnknownHostException, KeyStoreException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, UnrecoverableKeyException, KeyManagementException
+	{
+	    //TODO read these values out of web.xml (currently we always use the defaults)
+        //TODO put non-default values into web.xml by changing the build.xml file
+	    String keyfile="/keystore.jks";
+        String keyStoreType="JKS";
+        String keyStorePassword="changeit";
+        InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
+        
+        // Load the keystore
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+        keyStore.load(keyStoreInputStream, keyStorePassword.toCharArray());
+
+        TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
+        //trustManagerFactory.init(trustStore);
+        // XXX Load the cert (public key) here instead of the private key?
+        trustManagerFactory.init(keyStore);
+
+        // TrustManager
+        X509TrustManager x509TrustManager = null;
+        for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) {
+            if (trustManager instanceof X509TrustManager) {
+                x509TrustManager = (X509TrustManager) trustManager;
+                break;
+            }
+        }
+        if (x509TrustManager == null) {
+            throw new IllegalArgumentException("Cannot find x509TrustManager");
+        }
+
+        // KeyManager
+        KeyManagerFactory keyManagerFactory =
+                KeyManagerFactory.getInstance("SunX509", "SunJSSE");
+        keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
+        X509KeyManager x509KeyManager = null;
+        for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
+            if (keyManager instanceof X509KeyManager) {
+                x509KeyManager = (X509KeyManager) keyManager;
+                break;
+            }
+        }
+        if (x509KeyManager == null) {
+            throw new NullPointerException();
+        }
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        // the final null means use the default secure random source
+        sslContext.init(new KeyManager[]{x509KeyManager},
+                new TrustManager[]{x509TrustManager}, null);
+
+        SSLServerSocketFactory serverSocketFactory =
+                sslContext.getServerSocketFactory();
+        SSLServerSocket serverSocket =
+                (SSLServerSocket) serverSocketFactory.createServerSocket(port);
+
+        //serverSocket.setNeedClientAuth(true);
+        serverSocket.setNeedClientAuth(false);
+        // prevent older protocols from being used, especially SSL2 which is insecure
+        serverSocket.setEnabledProtocols(new String[]{"TLSv1"});
+        return serverSocket;
+	}
+	
 	public void start(int port) throws IOException {
-		ServerSocket serverSocket = new ServerSocket(port);
+		//ServerSocket serverSocket = new ServerSocket(port);
+	    ServerSocket serverSocket = null;
+		
+		try {
+	        serverSocket=createSSLServerSocket(port);
+	        if (serverSocket==null) {
+	            logger.error("Null SSLServerSocket");
+	            throw new RuntimeException("Null SSLServerSocket");
+	        }
+	        
+		} catch (Exception e) {
+		    logger.error("Error while creating SSLServerSocket", e);
+		    throw new RuntimeException(e);
+		}
+		
 		serverTask = new ServerTask(serverSocket);
 		serverThread = new Thread(serverTask);
 		serverThread.start();

@@ -50,6 +50,20 @@ askprop("What port will the CloudCoder webapp use to listen for connections from
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
 
+# TSL/SSL keypair generation
+my $ssl=ask("Would you like to configure TLS/SSL for secure communication between the builders and the server?", "yes");
+if ((lc $ssl) eq 'yes') {
+  askprop("What is the hostname of your institution?",
+	  "cloudcoder.submitsvc.ssl.cn", "None");
+  askprop("What would like to name the keystore that will store your public/private keypair?",
+	  "cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
+  askprop("Cloudcoder will generate a new public/private keypair for secure communication between\n" .
+	  "the builders and the server.  What password would you like to use for the keystore containing\n" .
+	  "this password?",
+	  "cloudcoder.submitsvc.ssl.keystore.password", "changeit");
+}
+
+
 # Web server properties
 askprop("What port will the CloudCoder web server listen on?",
 	"cloudcoder.webserver.port", "8081");
@@ -72,6 +86,15 @@ foreach my $property (@propertyNames) {
 	print $fh "$property=$properties{$property}\n";
 }
 $fh->close();
+
+
+if ((lc $ssl) eq 'yes') {
+  print "Creating public/private keypair for secure communication between the builder and the server";
+  `rm -f CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'}`;
+  `keytool -genkey -noprompt -alias cloudcoder -storepass changeit -keystore CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'} -validity 3600 -keypass $properties{'cloudcoder.submitsvc.ssl.keystore.password'} -dname "CN=$properties{'cloudcoder.submitsvc.ssl.cn'}, OU=None, L=None, ST=None, C=None"`;
+  `cp CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'} CloudCoderBuilder/bin`;
+}
+
 print "Done!\n";
 
 sub ask {
