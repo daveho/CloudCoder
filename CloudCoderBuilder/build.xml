@@ -4,7 +4,10 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <property name="model.class.jar" value="lib/cloudcoderModelClasses.jar"/>
+    <property name="model.class.jar" value="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+
+	<!-- Read CloudCoder global configuration properties. -->
+	<property file="../local.properties"/>
 	
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
@@ -29,15 +32,12 @@
 
     <target name="clean">
         <delete dir="bin"/>
-        <delete file="${model.class.jar}"/>
     	<delete file="${jarname}"/>
     </target>
 
-    <!-- compile shared model classes, copy jar to this project -->
+    <!-- make sure model classes jar file is built -->
     <target name="modelClasses">
-		<delete file="${model.class.jar}"/>
-		<ant dir="../CloudCoderModelClasses" target="jar"/>
-		<copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" tofile="${model.class.jar}"/>
+    	<ant dir="../CloudCoderModelClasses" target="jar" />
     </target>
 
     <target depends="init,modelClasses" name="build">
@@ -57,7 +57,12 @@
 		
 		<jar destfile="${jarname}">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
-			<fileset dir="bin" includes="**"/>
+			<zipgroupfileset file="${model.class.jar}" />
+			<fileset dir="bin" includes="**" excludes="defaultkeystore.jks"/>
+			
+			<!-- Include keystore for secure communications with webapp. -->
+			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
+			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
 			</manifest>

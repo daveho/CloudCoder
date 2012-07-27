@@ -6,7 +6,11 @@
 		<fileset dir="lib" includes="**.jar"/>
 	</path>
 
-	<target name="javac">
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="build"/>
+	</target>
+
+	<target name="javac" depends="modelClasses">
 		<mkdir dir="bin"/>
 		<javac source="1.6" target="1.6" srcdir="src" destdir="bin">
 			<classpath refid="CloudCoderModelClassesPersistence.classpath"/>
@@ -23,6 +27,8 @@
 	
 	<target name="clean">
 		<delete file="${jarfile}"/>
-		<delete dir="bin"/>
+		<delete includeemptydirs="true">
+			<fileset dir="bin" includes="**/*"/>
+		</delete>
 	</target>
 </project>

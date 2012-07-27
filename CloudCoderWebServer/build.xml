@@ -5,6 +5,9 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+
+	<!-- Read CloudCoder global configuration properties. -->
+	<property file="../local.properties"/>
 	
 	<!-- Name of the deployable jarfile to run the webapp. -->
 	<property name="jarname" value="cloudcoderApp.jar" />
@@ -79,7 +82,7 @@
 			<!-- Include the webapp.
 			     However, exclude the slf4j jars, since Jetty will already have
 			     them on its classpath, and we don't want two copies. -->
-			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar,war/logs/**" />
+			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar,war/logs/**,war/WEB-INF/classes/defaultkeystore.jks" />
 			
 			<!-- Include the model classes jar file in webapp's WEB-INF/lib. -->
 			<zipfileset
@@ -91,6 +94,11 @@
 				file="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderModelClassesPersist.jar"/>
 			
+			<!-- Include keystore for secure communications with builder. -->
+			<zipfileset
+				file="../${cloudcoder.submitsvc.ssl.keystore}"
+				fullpath="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.keystore}" />
+
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.webserver.CloudCoderWebServer" />

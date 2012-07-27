@@ -50,18 +50,15 @@ askprop("What port will the CloudCoder webapp use to listen for connections from
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
 
-# TSL/SSL keypair generation
-my $ssl=ask("Would you like to configure TLS/SSL for secure communication between the builders and the server?", "yes");
-if ((lc $ssl) eq 'yes') {
-  askprop("What is the hostname of your institution?",
+# TSL/SSL keystore configuration
+# (for secure communication between builder and webapp)
+askprop("What is the hostname of your institution?",
 	  "cloudcoder.submitsvc.ssl.cn", "None");
-  askprop("What would like to name the keystore that will store your public/private keypair?",
-	  "cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
-  askprop("Cloudcoder will generate a new public/private keypair for secure communication between\n" .
-	  "the builders and the server.  What password would you like to use for the keystore containing\n" .
-	  "this password?",
-	  "cloudcoder.submitsvc.ssl.keystore.password", "changeit");
-}
+askprop("What is the name of the keystore that will store your public/private keypair?\n" .
+	"(A new keystore will be created if it doesn't already exist)",
+	"cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
+askprop("What is the keystore/key password?",
+	"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 
 
 # Web server properties
@@ -88,7 +85,8 @@ foreach my $property (@propertyNames) {
 $fh->close();
 print "Done!\n";
 
-if ((lc $ssl) eq 'yes') {
+# Create a keystore if it doesn't already exist.
+if (! -e $properties{'cloudcoder.submitsvc.ssl.keystore'}) {
 	run('./createKeystore.pl',
 		$properties{'cloudcoder.submitsvc.ssl.keystore'},
 		$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
