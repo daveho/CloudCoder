@@ -86,16 +86,26 @@ foreach my $property (@propertyNames) {
 	print $fh "$property=$properties{$property}\n";
 }
 $fh->close();
-
+print "Done!\n";
 
 if ((lc $ssl) eq 'yes') {
-  print "Creating public/private keypair for secure communication between the builder and the server";
-  `rm -f CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'}`;
-  `keytool -genkey -noprompt -alias cloudcoder -storepass changeit -keystore CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'} -validity 3600 -keypass $properties{'cloudcoder.submitsvc.ssl.keystore.password'} -dname "CN=$properties{'cloudcoder.submitsvc.ssl.cn'}, OU=None, L=None, ST=None, C=None"`;
-  `cp CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'} CloudCoderBuilder/bin`;
-}
+  print "Creating public/private keypair for secure communication between the builder and the server...";
 
-print "Done!\n";
+  my $keystoreFile = "CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'}";
+
+  STDOUT->flush();
+  run('mkdir', '-p', 'CloudCoder/war/WEB-INF/classes');
+  run('rm', '-f', $keystoreFile);
+  run('keytool', '-genkey', '-noprompt',
+    '-alias', 'cloudcoder',
+    '-storepass', 'changeit',
+    '-keystore', $keystoreFile,
+    '-validity', '3600',
+    '-keypass', $properties{'cloudcoder.submitsvc.ssl.keystore.password'},
+    '-dname', "CN=$properties{'cloudcoder.submitsvc.ssl.cn'}, OU=None, L=None, ST=None, C=None");
+  run('cp', $keystoreFile, 'CloudCoderBuilder/bin');
+  print "Done!\n";
+}
 
 sub ask {
 	my ($question, $defval) = @_;
@@ -127,3 +137,6 @@ sub askprop {
 	print "\n";
 }
 
+sub run {
+	system(@_)/256 == 0 || die "Command $_[0] failed\n";
+}
