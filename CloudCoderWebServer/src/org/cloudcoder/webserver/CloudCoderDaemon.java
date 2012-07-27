@@ -146,7 +146,7 @@ public class CloudCoderDaemon implements IDaemon {
 		
 		// Create a temp file
 		File f = File.createTempFile("ccws", ".xml");
-		//f.deleteOnExit();
+		f.deleteOnExit();
 		
 		FileOutputStream fos = new FileOutputStream(f);
 		PrintWriter w = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"));
