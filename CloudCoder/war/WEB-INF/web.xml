@@ -20,12 +20,13 @@
     -->
 
     <!-- MySQL username. -->
-    <param-name>cloudcoder.db.user</param-name><param-value>root</param-value>
+    <param-name>cloudcoder.db.user</param-name>
+    <param-value>rootytooty</param-value>
   </context-param>
   <context-param>
     <!-- MySQL password. -->
     <param-name>cloudcoder.db.passwd</param-name>
-    <param-value>root</param-value>
+    <param-value>roothoganddie</param-value>
   </context-param>
   <context-param>
     <!-- Name of MySQL database where the CloudCoder tables are. -->

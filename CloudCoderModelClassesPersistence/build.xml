@@ -1,5 +1,5 @@
 <project name="CloudCoderModelClassesPersistence" default="jar">
-	<property name="jarfile" value="cloudCoderModelClassesPersist.jar"/>
+	<property name="jarfile" value="cloudcoderModelClassesPersist.jar"/>
 	
 	<path id="CloudCoderModelClassesPersistence.classpath">
 		<pathelement location="../CloudCoderModelClasses/bin"/>
@@ -12,6 +12,8 @@
 			<classpath refid="CloudCoderModelClassesPersistence.classpath"/>
 		</javac>
 	</target>
+
+	<target name="build" depends="javac"/>
 	
 	<target name="jar" depends="javac">
 		<jar destfile="${jarfile}">

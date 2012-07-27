@@ -34,11 +34,26 @@
         </javac>
     </target>
 	
+	<!-- Target to build the webapp. -->
+	<target name="webapp">
+		<ant dir="../CloudCoder" target="build"/>
+	</target>
+	
+	<!-- Target to build model classes library. -->
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" />
+	</target>
+	
+	<!-- Target to build model classes persistence library. -->
+	<target name="modelClassesPersistence">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" />
+	</target>
+	
 	<!--
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
 	-->
-	<target name="jar" depends="build">
+	<target name="jar" depends="build,modelClasses,modelClassesPersistence,webapp">
 		<!--
 			Build single jar containing contents of all required libraries.
 		-->
@@ -53,7 +68,6 @@
 			Build single deployable jarfile containing our launcher code,
 			all requried libraries, and the webapp.  Note that signatures
 			must be removed from the libraries.
-			FIXME: doesn't include the webapp yet.
 		-->
 		<jar destfile="${jarname}">
 			<!-- Copy classes and properties files from the bin directory. -->
@@ -65,7 +79,17 @@
 			<!-- Include the webapp.
 			     However, exclude the slf4j jars, since Jetty will already have
 			     them on its classpath, and we don't want two copies. -->
-			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar" />
+			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar,war/logs/**" />
+			
+			<!-- Include the model classes jar file in webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClasses/cloudcoderModelClasses.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClasses.jar"/>
+
+			<!-- Include the model classes persistence jar file in webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClassesPersist.jar"/>
 			
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>
