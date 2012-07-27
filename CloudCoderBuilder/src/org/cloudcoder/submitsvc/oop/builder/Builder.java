@@ -68,6 +68,8 @@ public class Builder implements Runnable {
 	private NoConnectTimer noConnectTimer;
 	private String host;
 	private int port;
+	private String keystoreFilename;
+	private String keystorePassword;
 	private Map<Integer, Problem> problemIdToProblemMap;
 	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
 	private Socket socket;
@@ -75,11 +77,13 @@ public class Builder implements Runnable {
 	private ObjectOutputStream out;
 	private Map<ProblemType, ITester> testerMap;
 
-	public Builder(String host, int port) {
+	public Builder(String host, int port, String keystoreFilename, String keystorePassword) {
 		this.shutdownRequested = false;
 		this.noConnectTimer = new NoConnectTimer();
 		this.host = host;
 		this.port = port;
+		this.keystoreFilename = keystoreFilename;
+		this.keystorePassword = keystorePassword;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 		this.testerMap=new HashMap<ProblemType, ITester>();
@@ -199,15 +203,12 @@ public class Builder implements Runnable {
 	private Socket createSecureSocket(String host, int port)
 	throws IOException, GeneralSecurityException
 	{
-	    // TODO read from local.properties file
-	    // TODO put into local.properties file
-	    String keyfile="/keystore.jks";
+	    String keyfile="/" + keystoreFilename;
         String keyStoreType="JKS";
-        String keyStorePassword="changeit";
         InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
 
         KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(keyStoreInputStream, keyStorePassword.toCharArray());
+        keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
         
         TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
         //trustManagerFactory.init(trustStore);
@@ -229,7 +230,7 @@ public class Builder implements Runnable {
         // KeyManager
         KeyManagerFactory keyManagerFactory =
                 KeyManagerFactory.getInstance("SunX509", "SunJSSE");
-        keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
+        keyManagerFactory.init(keyStore, keystorePassword.toCharArray());
         X509KeyManager x509KeyManager = null;
         for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
             if (keyManager instanceof X509KeyManager) {

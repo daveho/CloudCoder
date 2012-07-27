@@ -89,22 +89,10 @@ $fh->close();
 print "Done!\n";
 
 if ((lc $ssl) eq 'yes') {
-  print "Creating public/private keypair for secure communication between the builder and the server...";
-
-  my $keystoreFile = "CloudCoder/war/WEB-INF/classes/$properties{'cloudcoder.submitsvc.ssl.keystore'}";
-
-  STDOUT->flush();
-  run('mkdir', '-p', 'CloudCoder/war/WEB-INF/classes');
-  run('rm', '-f', $keystoreFile);
-  run('keytool', '-genkey', '-noprompt',
-    '-alias', 'cloudcoder',
-    '-storepass', 'changeit',
-    '-keystore', $keystoreFile,
-    '-validity', '3600',
-    '-keypass', $properties{'cloudcoder.submitsvc.ssl.keystore.password'},
-    '-dname', "CN=$properties{'cloudcoder.submitsvc.ssl.cn'}, OU=None, L=None, ST=None, C=None");
-  run('cp', $keystoreFile, 'CloudCoderBuilder/bin');
-  print "Done!\n";
+	run('./createKeystore.pl',
+		$properties{'cloudcoder.submitsvc.ssl.keystore'},
+		$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
+		$properties{'cloudcoder.submitsvc.ssl.cn'});
 }
 
 sub ask {

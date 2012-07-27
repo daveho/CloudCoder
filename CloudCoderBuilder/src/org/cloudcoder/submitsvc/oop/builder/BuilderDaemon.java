@@ -52,6 +52,8 @@ public class BuilderDaemon implements IDaemon {
 		public Options(Properties config) {
 			this.config = config;
 		}
+		
+		// The default property values are appropriate for running interactively for development.
 
 		public String getAppHost() {
 			return config.getProperty("cloudcoder.submitsvc.oop.host", "localhost");
@@ -63,6 +65,14 @@ public class BuilderDaemon implements IDaemon {
 
 		public int getNumThreads() {
 			return Integer.parseInt(config.getProperty("cloudcoder.submitsvc.oop.numThreads", "2"));
+		}
+		
+		public String getKeystoreFilename() {
+			return config.getProperty("cloudcoder.submitsvc.ssl.keystore", "defaultkeystore.jks");
+		}
+		
+		public String getKeystorePassword() {
+			return config.getProperty("cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 		}
 	}
 
@@ -92,7 +102,11 @@ public class BuilderDaemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
+			Builder builder_ = new Builder(
+					options.getAppHost(),
+					options.getAppPort(),
+					options.getKeystoreFilename(),
+					options.getKeystorePassword());
 			Thread thread_ = new Thread(builder_);
 	
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);

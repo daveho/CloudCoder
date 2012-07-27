@@ -71,6 +71,20 @@
 	<param-name>cloudcoder.login.service</param-name>
 	<param-value></param-value>
   </context-param>
+  <!--
+  	Name of keystore containing keys to be used for TLS communication
+  	between builder and webapp.  Note: defaultkeystore.jks should
+  	ONLY be used for development, never for deployment!
+  -->
+  <context-param>
+    <param-name>cloudcoder.submitsvc.ssl.keystore</param-name>
+    <param-value>defaultkeystore.jks</param-value>
+  </context-param>
+  <!-- Keystore password. -->
+  <context-param>
+    <param-name>cloudcoder.submitsvc.ssl.keystore.password</param-name>
+    <param-value>changeit</param-value>
+  </context-param>
   
   <!-- host to authenticate against, if using imap authentication
   	against a mail server. 

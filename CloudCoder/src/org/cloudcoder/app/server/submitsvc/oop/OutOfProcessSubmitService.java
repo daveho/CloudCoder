@@ -74,6 +74,8 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 
 	private ServerTask serverTask;
 	private Thread serverThread;
+	private String keystoreFilename;
+	private String keystorePassword;
 	
 	@Override
 	public IFutureSubmissionResult submitAsync(Problem problem, List<TestCase> testCaseList, String programText) 
@@ -102,16 +104,13 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private ServerSocket createSSLServerSocket(int port)
 	throws IOException, UnknownHostException, KeyStoreException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, UnrecoverableKeyException, KeyManagementException
 	{
-	    //TODO read these values out of web.xml (currently we always use the defaults)
-        //TODO put non-default values into web.xml by changing the build.xml file
-	    String keyfile="/keystore.jks";
+	    String keyfile="/" + keystoreFilename;
         String keyStoreType="JKS";
-        String keyStorePassword="changeit";
         InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
         
         // Load the keystore
         KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(keyStoreInputStream, keyStorePassword.toCharArray());
+        keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
 
         TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
         //trustManagerFactory.init(trustStore);
@@ -133,7 +132,7 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
         // KeyManager
         KeyManagerFactory keyManagerFactory =
                 KeyManagerFactory.getInstance("SunX509", "SunJSSE");
-        keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
+        keyManagerFactory.init(keyStore, keystorePassword.toCharArray());
         X509KeyManager x509KeyManager = null;
         for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
             if (keyManager instanceof X509KeyManager) {
@@ -192,6 +191,18 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		try {
+			// Determine keystore filename and password
+			keystoreFilename = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore");
+			if (keystoreFilename == null) {
+				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
+			}
+			keystorePassword = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore.password");
+			if (keystorePassword == null) {
+				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
+			}
+			
+			System.out.println("keystore=" + keystoreFilename + ",password=" + keystorePassword);
+			
 			// See if a non-default port was specified
 			String p = event.getServletContext().getInitParameter("cloudcoder.submitsvc.oop.port");
 			int port = (p != null) ? Integer.parseInt(p) : DEFAULT_PORT;
