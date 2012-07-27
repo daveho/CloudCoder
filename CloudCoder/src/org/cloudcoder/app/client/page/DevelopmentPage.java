@@ -274,6 +274,8 @@ public class DevelopmentPage extends CloudCoderPage {
 			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
+				    //TODO: Is this where a better message should come if we can't
+				    // find a C/C++ compiler?
 					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error: " + caught.getMessage()));
 				}
 
