@@ -34,6 +34,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.util.Arrays;
+
 /**
  * Model object representing a course.
  * 
@@ -42,18 +44,29 @@ package org.cloudcoder.app.shared.model;
 public class Course implements ActivityObject {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Make sure this is kept up to date with the courses table in
-	 * the database.
-	 */
-	public static final int NUM_FIELDS = 6;
-
 	private int id;
 	private String name;
 	private String title;
 	private String url;
 	private int termId;
 	private int year;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+			new ModelObjectField("name", String.class, 20),
+			new ModelObjectField("title", String.class, 100),
+			new ModelObjectField("url", String.class, 120),
+			new ModelObjectField("term_id", Integer.class, 0),
+			new ModelObjectField("year", Integer.class, 0)
+	));
+
+	/**
+	 * Number of fields in the database.
+	 */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	// Note: this field is not stored in the database directly,
 	// but is set by GetCoursesAndProblemsServiceImpl when a user's courses

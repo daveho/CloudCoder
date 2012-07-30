@@ -30,7 +30,8 @@ public class ModelObjectField {
 	private final String name;
 	private final Class<?> type;
 	private final int size;
-	private final boolean isUniqueId;
+//	private final boolean isUniqueId;
+	private ModelObjectIndexType indexType;
 	
 	/**
 	 * Constructor for fields which are not a unique object id.
@@ -40,7 +41,7 @@ public class ModelObjectField {
 	 * @param size the size (e.g., max string length for a string column)
 	 */
 	public ModelObjectField(String name, Class<?> type, int size) {
-		this(name, type, size, false);
+		this(name, type, size, ModelObjectIndexType.NONE);
 	}
 
 	/**
@@ -49,13 +50,13 @@ public class ModelObjectField {
 	 * @param name the field name (can be used as a database column name)
 	 * @param type the Java type of the field
 	 * @param size the size (e.g., max string length for a string column)
-	 * @param isUniqueId true if the field is the unique object id
+	 * @param indexType true if the field is the unique object id
 	 */
-	public ModelObjectField(String name, Class<?> type, int size, boolean isUniqueId) {
+	public ModelObjectField(String name, Class<?> type, int size, ModelObjectIndexType indexType) {
 		this.name = name;
 		this.type = type;
 		this.size = size;
-		this.isUniqueId = isUniqueId;
+		this.indexType = indexType;
 	}
 	
 	/**
@@ -83,6 +84,14 @@ public class ModelObjectField {
 	 * @return true if the field is a unique object id
 	 */
 	public boolean isUniqueId() {
-		return isUniqueId;
+		return indexType == ModelObjectIndexType.IDENTITY;
+	}
+	
+	/**
+	 * Get the field's index type.
+	 * @return the field's index type
+	 */
+	public ModelObjectIndexType getIndexType() {
+		return indexType;
 	}
 }

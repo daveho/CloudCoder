@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * A TestCase for a {@link Problem}.
@@ -31,6 +32,19 @@ public class TestCase extends TestCaseData implements Serializable {
 
 	private int id;
 	private int problemId;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(ModelObjectUtil.combineLists(
+			Arrays.asList(
+					new ModelObjectField("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+					new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE)
+			),
+			TestCaseData.SCHEMA.getFieldList()
+	));
+	
+	
 	public TestCase() {
 		
 	}

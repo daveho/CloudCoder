@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * A TestResult represents the outcome of a particular
@@ -33,6 +34,18 @@ public class TestResult implements Serializable
     private String message;
     private String stdout;
     private String stderr;
+    
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+    		new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+    		new ModelObjectField("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
+    		new ModelObjectField("test_outcome", Integer.class, 0),
+    		new ModelObjectField("message", String.class, 100),
+    		new ModelObjectField("stdout", String.class, Integer.MAX_VALUE),
+    		new ModelObjectField("stderr", String.class, Integer.MAX_VALUE)
+	));
     
     public TestResult() {
     	

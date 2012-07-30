@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * A SubmissionReceipt is a persistent record that a submission
@@ -32,19 +33,31 @@ import java.io.Serializable;
 public class SubmissionReceipt implements Serializable, IContainsEvent {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Number of database fields.
-	 */
-	public static final int NUM_FIELDS = 5;
-
-	private Event event;
-//	private int id;
 	private int eventId;
 	private int lastEditEventId;
 	private int status;
 	private int numTestsAttempted;
 	private int numTestsPassed;
 	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE),
+			new ModelObjectField("last_edit_event_id", Integer.class, 0),
+			new ModelObjectField("status", Integer.class, 0),
+			new ModelObjectField("num_tests_attempted", Integer.class, 0),
+			new ModelObjectField("num_tests_passed", Integer.class, 0)
+	));
+
+	/**
+	 * Number of database fields.
+	 */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
+
+	// Transient cache field for the event object associated with this submission receipt.
+	private Event event;
+
 	public SubmissionReceipt() {
 		this.event = new Event();
 	}

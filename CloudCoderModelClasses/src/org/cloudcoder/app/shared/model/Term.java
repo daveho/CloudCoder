@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Model object representing an academic term (Fall, Spring, etc.)
@@ -26,11 +27,23 @@ import java.io.Serializable;
 public class Term implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public static final int NUM_FIELDS = 3;
-
 	private int id;
 	private String name;
 	private int seq;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+			new ModelObjectField("name", String.class, 20),
+			new ModelObjectField("seq", Integer.class, 0)
+	));
+
+	/**
+	 * Number of database fields.
+	 */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	public Term() {
 		

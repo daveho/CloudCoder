@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Model object representing a user.
@@ -30,6 +31,15 @@ public class User implements Serializable {
 	private int id;
 	private String userName;
 	private String passwordHash;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+			new ModelObjectField("username", String.class, 20, ModelObjectIndexType.UNIQUE),
+			new ModelObjectField("password_hash", String.class, 60)
+	));
 
 	/**
 	 * Constructor.

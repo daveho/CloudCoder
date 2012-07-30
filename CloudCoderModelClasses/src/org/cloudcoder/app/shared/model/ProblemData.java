@@ -63,7 +63,7 @@ public class ProblemData implements Serializable, IProblemData {
 							new ModelObjectField("description", String.class, 8192),
 							new ModelObjectField("skeleton", String.class, 400),
 							new ModelObjectField("schema_version", Integer.class, 0),
-							new ModelObjectField("author_name", String.class, 80),
+							new ModelObjectField("author_name", String.class, 80, ModelObjectIndexType.NON_UNIQUE),
 							new ModelObjectField("author_email", String.class, 80),
 							new ModelObjectField("author_website", String.class, 100),
 							new ModelObjectField("timestamp_utc", Long.class, 0),

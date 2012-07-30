@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Model object representing the registration of a
@@ -33,6 +34,17 @@ public class CourseRegistration implements Serializable {
 	private int userId;
 	private CourseRegistrationType registrationType;
 	private int section;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+			new ModelObjectField("course_id", Integer.class, 0),
+			new ModelObjectField("user_id", Integer.class, 0),
+			new ModelObjectField("registration_type", Integer.class, 0),
+			new ModelObjectField("section", Integer.class, 0)
+	));
 	
 	/**
 	 * Constructor.

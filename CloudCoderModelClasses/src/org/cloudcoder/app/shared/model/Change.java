@@ -37,7 +37,6 @@ public class Change implements Serializable, IContainsEvent {
 	
 	public static final int NUM_FIELDS = 7;
 
-	//private long id;
 	private int eventId;
 	private int type;
 	private int startRow;
@@ -45,7 +44,22 @@ public class Change implements Serializable, IContainsEvent {
 	private int endRow;
 	private int endColumn;
 	private String text;
-
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE),
+			new ModelObjectField("type", Integer.class, 0),
+			new ModelObjectField("start_row", Short.class, 0),
+			new ModelObjectField("end_row", Short.class, 0),
+			new ModelObjectField("start_col", Short.class, 0),
+			new ModelObjectField("end_col", Short.class, 0),
+			new ModelObjectField("text_short", String.class, 80),
+			new ModelObjectField("text", String.class, Integer.MAX_VALUE)
+			));
+	
+	// Transient link to the Event object associated with this Change.
 	private Event event;
 
 

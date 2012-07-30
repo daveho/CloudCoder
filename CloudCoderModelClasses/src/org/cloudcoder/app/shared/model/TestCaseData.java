@@ -18,6 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Class to represent the data of a test case, independent of any
@@ -38,6 +39,16 @@ public class TestCaseData implements Serializable {
 	private String input;
 	private String output;
 	private boolean secret;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
+			new ModelObjectField("test_case_name", String.class, 40),
+			new ModelObjectField("input", String.class, 255),
+			new ModelObjectField("output", String.class, 255),
+			new ModelObjectField("secret", Boolean.class, 0)
+	));
 
 	public TestCaseData() {
 		super();

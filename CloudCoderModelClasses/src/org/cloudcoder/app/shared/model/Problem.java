@@ -45,16 +45,15 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
 			ModelObjectUtil.combineLists(
 					Arrays.asList(
-							new ModelObjectField[]{
-									new ModelObjectField("problem_id", Integer.class, 0, true),
-									new ModelObjectField("course_id", Integer.class, 0),
-									new ModelObjectField("when_assigned", Long.class, 0),
-									new ModelObjectField("when_due", Long.class, 0),
-									new ModelObjectField("visible", Boolean.class, 0),
-							}),
-							ProblemData.SCHEMA.getFieldList()
-					)
-			);
+							new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
+							new ModelObjectField("course_id", Integer.class, 0),
+							new ModelObjectField("when_assigned", Long.class, 0),
+							new ModelObjectField("when_due", Long.class, 0),
+							new ModelObjectField("visible", Boolean.class, 0)
+					),
+					ProblemData.SCHEMA.getFieldList()
+			)
+	);
 	
 	/**
 	 * Number of fields.
