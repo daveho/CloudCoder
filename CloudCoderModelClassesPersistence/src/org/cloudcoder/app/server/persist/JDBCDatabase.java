@@ -62,17 +62,17 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCDatabase implements IDatabase {
 	// Constants for table names
-	private static final String TEST_RESULTS = "cc_test_results";
-	private static final String TEST_CASES = "cc_test_cases";
-	private static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
-	private static final String TERMS = "cc_terms";
-	private static final String EVENTS = "cc_events";
-	private static final String CHANGES = "cc_changes";
-	private static final String COURSE_REGISTRATIONS = "cc_course_registrations";
-	private static final String COURSES = "cc_courses";
-	private static final String PROBLEMS = "cc_problems";
-	private static final String USERS = "cc_users";
-	private static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
+	public static final String TEST_RESULTS = "cc_test_results";
+	public static final String TEST_CASES = "cc_test_cases";
+	public static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
+	public static final String TERMS = "cc_terms";
+	public static final String EVENTS = "cc_events";
+	public static final String CHANGES = "cc_changes";
+	public static final String COURSE_REGISTRATIONS = "cc_course_registrations";
+	public static final String COURSES = "cc_courses";
+	public static final String PROBLEMS = "cc_problems";
+	public static final String USERS = "cc_users";
+	public static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
 
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	
