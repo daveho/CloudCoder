@@ -38,9 +38,6 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	
 	/**
 	 * Description of fields.
-	 * This must be kept in sync with the database schema.
-	 * (Eventually, we should generate the database schema from
-	 * the code, so that it is defined in only one place.)
 	 */
 	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
 			ModelObjectUtil.combineLists(
