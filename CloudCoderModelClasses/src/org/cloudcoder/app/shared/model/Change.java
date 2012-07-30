@@ -50,13 +50,13 @@ public class Change implements Serializable, IContainsEvent {
 	 */
 	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
 			new ModelObjectField("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE),
-			new ModelObjectField("type", Integer.class, 0),
+			new ModelObjectField("type", ChangeType.class, 0),
 			new ModelObjectField("start_row", Short.class, 0),
 			new ModelObjectField("end_row", Short.class, 0),
 			new ModelObjectField("start_col", Short.class, 0),
 			new ModelObjectField("end_col", Short.class, 0),
-			new ModelObjectField("text_short", String.class, 80),
-			new ModelObjectField("text", String.class, Integer.MAX_VALUE)
+			new ModelObjectField("text_short", String.class, 80, ModelObjectIndexType.NONE, true),         // allow null values
+			new ModelObjectField("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, true) // allow null values
 			));
 	
 	// Transient link to the Event object associated with this Change.

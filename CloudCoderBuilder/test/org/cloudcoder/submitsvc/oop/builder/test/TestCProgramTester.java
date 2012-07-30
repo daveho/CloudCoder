@@ -54,7 +54,7 @@ public class TestCProgramTester {
 		problem.setCourseId(1);
 		problem.setProblemId(1);
 		problem.setProblemType(ProblemType.C_PROGRAM);
-		problem.setTestName(testName);
+		problem.setTestname(testName);
 		long now = System.currentTimeMillis();
 		problem.setWhenAssigned(now);
 		problem.setWhenDue(now+1L);

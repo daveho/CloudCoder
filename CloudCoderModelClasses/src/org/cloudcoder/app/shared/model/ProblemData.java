@@ -116,7 +116,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#getTestName()
 	 */
 	@Override
-	public String getTestName() {
+	public String getTestname() {
 		return testName;
 	}
 
@@ -124,7 +124,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#setTestName(java.lang.String)
 	 */
 	@Override
-	public void setTestName(String testName) {
+	public void setTestname(String testName) {
 		this.testName = testName;
 	}
 
@@ -251,7 +251,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#setTimestampUTC(long)
 	 */
 	@Override
-	public void setTimestampUTC(long timestampUTC) {
+	public void setTimestampUtc(long timestampUTC) {
 		this.timestampUTC = timestampUTC;
 	}
 	
@@ -259,7 +259,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#getTimestampUTC()
 	 */
 	@Override
-	public long getTimestampUTC() {
+	public long getTimestampUtc() {
 		return timestampUTC;
 	}
 	

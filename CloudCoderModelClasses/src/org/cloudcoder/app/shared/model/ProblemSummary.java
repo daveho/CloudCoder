@@ -37,7 +37,7 @@ public class ProblemSummary {
 	
 	public void setProblem(Problem problem) {
 		this.problemId = problem.getProblemId();
-		this.testName = problem.getTestName();
+		this.testName = problem.getTestname();
 		this.briefDescription = problem.getBriefDescription();
 	}
 	

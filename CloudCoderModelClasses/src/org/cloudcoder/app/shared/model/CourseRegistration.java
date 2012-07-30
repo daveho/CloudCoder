@@ -42,7 +42,7 @@ public class CourseRegistration implements Serializable {
 			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
 			new ModelObjectField("course_id", Integer.class, 0),
 			new ModelObjectField("user_id", Integer.class, 0),
-			new ModelObjectField("registration_type", Integer.class, 0),
+			new ModelObjectField("registration_type", CourseRegistrationType.class, 0),
 			new ModelObjectField("section", Integer.class, 0)
 	));
 	

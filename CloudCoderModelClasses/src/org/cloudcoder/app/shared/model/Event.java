@@ -32,7 +32,7 @@ public class Event implements Serializable {
 	private int id;
 	private int userId;
 	private int problemId;
-	private int type;
+	private EventType type;
 	private long timestamp;
 	
 	/**
@@ -42,7 +42,7 @@ public class Event implements Serializable {
 			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
 			new ModelObjectField("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
 			new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
-			new ModelObjectField("type", Integer.class, 0),
+			new ModelObjectField("type", EventType.class, 0),
 			new ModelObjectField("timestamp", Long.class, 0)
 	));
 
@@ -53,7 +53,7 @@ public class Event implements Serializable {
 	public Event(int userId, int problemId, EventType type, long timestamp) {
 		this.userId = userId;
 		this.problemId = problemId;
-		this.type = type.ordinal();
+		this.type = type;
 		this.timestamp = timestamp;
 	}
 
@@ -82,19 +82,19 @@ public class Event implements Serializable {
 	}
 
 	public void setType(int type) {
-		this.type = type;
+		this.type = EventType.values()[type];
 	}
 
 	public void setType(EventType type) {
-		this.type = type.ordinal();
+		this.type = type;
 	}
 
-	public int getType() {
+//	public int getType() {
+//		return eventType.ordinal();
+//	}
+
+	public EventType getType() {
 		return type;
-	}
-
-	public EventType getEventType() {
-		return EventType.values()[type];
 	}
 
 	public void setTimestamp(long timestamp) {

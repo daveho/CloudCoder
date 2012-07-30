@@ -21,6 +21,10 @@ public class ConfigurationSetting {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public void setName(ConfigurationSettingName settingName) {
+		this.name = settingName.toString();
+	}
 	
 	public String getName() {
 		return name;

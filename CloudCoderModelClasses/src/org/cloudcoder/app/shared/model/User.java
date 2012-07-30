@@ -67,7 +67,7 @@ public class User implements Serializable {
 	 * Set the user's username.
 	 * @param userName the user's username
 	 */
-	public void setUserName(String userName) {
+	public void setUsername(String userName) {
 		this.userName = userName;
 	}
 	
@@ -75,7 +75,7 @@ public class User implements Serializable {
 	 * Get the user's username.
 	 * @return the user's username
 	 */
-	public String getUserName() {
+	public String getUsername() {
 		return userName;
 	}
 	

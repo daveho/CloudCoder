@@ -30,8 +30,8 @@ public class ConvertToXML {
 		writeString(problemData.getAuthorName(), "authorname", writer);
 		writeString(problemData.getAuthorEmail(), "authoremail", writer);
 		writeString(problemData.getAuthorWebsite(), "authorwebsite", writer);
-		writeString(problemData.getTestName(), "testname", writer);
-		writeLong(problemData.getTimestampUTC(), "timestamp", writer);
+		writeString(problemData.getTestname(), "testname", writer);
+		writeLong(problemData.getTimestampUtc(), "timestamp", writer);
 		writeString(problemData.getLicense().toString(), "license", writer);
 		//writeString(problemData.getParentHash(), "parenthash", writer);
 	}

@@ -186,12 +186,12 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditStringField<IProblem>("Problem name") {
 				@Override
 				protected void setField(String value) {
-					getModelObject().setTestName(value);
+					getModelObject().setTestname(value);
 				}
 				
 				@Override
 				protected String getField() {
-					return getModelObject().getTestName();
+					return getModelObject().getTestname();
 				}
 			});
 			
@@ -292,11 +292,11 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date") {
 				@Override
 				protected void setField(Date value) {
-					getModelObject().setTimestampUTC(value.getTime());
+					getModelObject().setTimestampUtc(value.getTime());
 				}
 				@Override
 				protected Date getField() {
-					return new Date(getModelObject().getTimestampUTC());
+					return new Date(getModelObject().getTimestampUtc());
 				}
 			});
 			

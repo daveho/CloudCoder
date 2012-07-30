@@ -68,7 +68,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		 */
 		@Override
 		public String getValue(Problem object) {
-			return object.getTestName();
+			return object.getTestname();
 		}
 	}
 	

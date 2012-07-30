@@ -40,7 +40,7 @@ public class GenericTest
     
     protected void createProblem(String testName, ProblemType problemType) {
         Problem problem=new Problem();
-        problem.setTestName(testName);
+        problem.setTestname(testName);
         problem.setProblemType(problemType);
         problem.setBriefDescription("Brief Description");
         problem.setDescription("Full Description");

@@ -86,7 +86,7 @@ public class PythonTester implements ITester
             // each test case is a function that invokes the function being tested
             test.append("def "+t.getTestCaseName()+"():\n");
             test.append(indent(spaces)+"return "+t.getOutput()+" == "+
-                    problem.getTestName()+"("+t.getInput()+")\n");
+                    problem.getTestname()+"("+t.getInput()+")\n");
         }
         String result=test.toString();
         int totalLen=TesterUtils.countLines(result);

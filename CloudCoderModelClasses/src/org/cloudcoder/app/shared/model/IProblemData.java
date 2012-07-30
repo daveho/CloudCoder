@@ -36,12 +36,12 @@ public interface IProblemData {
 	/**
 	 * @return the testName
 	 */
-	public abstract String getTestName();
+	public abstract String getTestname();
 
 	/**
 	 * @param testName the testName to set
 	 */
-	public abstract void setTestName(String testName);
+	public abstract void setTestname(String testName);
 
 	public abstract void setBriefDescription(String briefDescription);
 
@@ -127,14 +127,14 @@ public interface IProblemData {
 	 * 
 	 * @param timestampUTC the "creation" timestamp in seconds past the epoch, UTC
 	 */
-	public abstract void setTimestampUTC(long timestampUTC);
+	public abstract void setTimestampUtc(long timestampUTC);
 
 	/**
 	 * Get the "creation" timestamp in seconds past the epoch, UTC.
 	 * 
 	 * @return the "creation" timestamp in seconds past the epoch, UTC
 	 */
-	public abstract long getTimestampUTC();
+	public abstract long getTimestampUtc();
 
 	/**
 	 * Set the license under which this problem is available.

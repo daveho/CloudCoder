@@ -55,76 +55,6 @@ public class ModelObjectSchema {
 	public int getNumFields() {
 		return fieldList.size();
 	}
-	
-//	/**
-//	 * Get placeholders for an insert statement.
-//	 * 
-//	 * @return placeholders for an insert or update statement
-//	 */
-//	public String getInsertPlaceholders() {
-//		return getInsertPlaceholders(getNumColumns());
-//	}
-//
-//	/**
-//	 * Get given number of placeholders for an insert statement.
-//	 * 
-//	 * @param num number of placeholders (which must be less than or equal to
-//	 *            the number of fields)
-//	 * @return the placeholders
-//	 */
-//	public String getInsertPlaceholders(int num) {
-//		if (num > getNumColumns()) {
-//			throw new IllegalArgumentException();
-//		}
-//		
-//		StringBuilder buf = new StringBuilder();
-//		
-//		for (int i = 0; i < num; i++) {
-//			if (buf.length() > 0) {
-//				buf.append(", ");
-//			}
-//			buf.append("?");
-//		}
-//		
-//		return buf.toString();
-//	}
-//	
-//	/**
-//	 * Get placeholders for an update statement where all fields in the schema
-//	 * will be updated.
-//	 * 
-//	 * @return placeholders for an update statement where all fields in the schema will be updated
-//	 */
-//	public String getUpdatePlaceholders() {
-//		return doGetUpdatePlaceholders(true);
-//	}
-//	
-//	/**
-//	 * Get placeholders for an update statement where all fields except for
-//	 * the unique id field will be updated.
-//	 * 
-//	 * @return placeholders for an update statement where all fields except the
-//	 *         unique id field will be update
-//	 */
-//	public String getUpdatePlaceholdersNoId() {
-//		return doGetUpdatePlaceholders(false);
-//	}
-//
-//	private String doGetUpdatePlaceholders(boolean includeUniqueId) {
-//		StringBuilder buf = new StringBuilder();
-//		
-//		for (ModelObjectField dbColumn : fieldList) {
-//			if (!dbColumn.isUniqueId() || includeUniqueId) {
-//				if (buf.length() > 0) {
-//					buf.append(", ");
-//				}
-//				buf.append(dbColumn.getName());
-//				buf.append(" = ?");
-//			}
-//		}
-//		
-//		return buf.toString();
-//	}
 
 	/**
 	 * Get the list of field descriptors.
@@ -133,5 +63,33 @@ public class ModelObjectSchema {
 	 */
 	public List<ModelObjectField> getFieldList() {
 		return fieldList;
+	}
+
+	/**
+	 * Determine whether this schema has a unique id field.
+	 * 
+	 * @return true if the schema has a unique id field, false otherwise
+	 */
+	public boolean hasUniqueId() {
+		for (ModelObjectField field : fieldList) {
+			if (field.isUniqueId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Get the unique id field of this schema.
+	 * 
+	 * @return the unique id field
+	 */
+	public ModelObjectField getUniqueIdField() {
+		for (ModelObjectField field : fieldList) {
+			if (field.isUniqueId()) {
+				return field;
+			}
+		}
+		throw new IllegalArgumentException("Schema has no unique id field");
 	}
 }

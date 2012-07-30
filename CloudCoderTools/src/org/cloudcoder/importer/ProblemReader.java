@@ -24,7 +24,7 @@ public class ProblemReader {
 		Problem problem = new Problem();
 //		problem.setCourseId(courseId);
 		problem.setProblemType(ProblemType.valueOf(getElementText(doc, "/ccproblem/type")));
-		problem.setTestName(getElementText(doc, "/ccproblem/name"));
+		problem.setTestname(getElementText(doc, "/ccproblem/name"));
 		problem.setBriefDescription(getElementText(doc, "/ccproblem/brief"));
 		problem.setDescription(getElementText(doc, "/ccproblem/description"));
 		problem.setWhenAssigned(DateTimeToMillis.convert(getElementText(doc, "/ccproblem/assigned")));

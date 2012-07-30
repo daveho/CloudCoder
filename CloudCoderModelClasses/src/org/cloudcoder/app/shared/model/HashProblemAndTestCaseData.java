@@ -62,7 +62,7 @@ public class HashProblemAndTestCaseData {
 	private void hashProblemData(ProblemData problemData) {
 		// Fields present in schema version 0 and later.
 		updateString(problemData.getProblemType().toString());
-		updateString(problemData.getTestName());
+		updateString(problemData.getTestname());
 		updateString(problemData.getBriefDescription());
 		updateString(problemData.getDescription());
 		updateString(problemData.getSkeleton());
@@ -70,7 +70,7 @@ public class HashProblemAndTestCaseData {
 		updateString(problemData.getAuthorName());
 		updateString(problemData.getAuthorEmail());
 		updateString(problemData.getAuthorWebsite());
-		updateLong(problemData.getTimestampUTC());
+		updateLong(problemData.getTimestampUtc());
 		updateString(problemData.getLicense().toString());
 		// Note: parent hash is NOT digested.
 		

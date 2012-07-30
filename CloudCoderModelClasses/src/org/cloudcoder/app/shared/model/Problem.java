@@ -164,7 +164,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 
 	@Override
 	public String toString() {
-		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
+		return getProblemId()+" testName: "+getTestname()+" "+getDescription();
 	}
 
 	/**
@@ -207,7 +207,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 		
 		// ProblemData fields
 		empty.setProblemType(ProblemType.JAVA_METHOD);
-		empty.setTestName("");
+		empty.setTestname("");
 		empty.setBriefDescription("");
 		empty.setDescription("");
 		empty.setSkeleton("");
@@ -215,7 +215,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 		empty.setAuthorName("");
 		empty.setAuthorEmail("");
 		empty.setAuthorWebsite("");
-		empty.setTimestampUTC(System.currentTimeMillis());
+		empty.setTimestampUtc(System.currentTimeMillis());
 		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
 		
 		return empty;

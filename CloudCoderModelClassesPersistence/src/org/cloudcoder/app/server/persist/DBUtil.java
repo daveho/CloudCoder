@@ -170,8 +170,7 @@ public class DBUtil {
 			sql.append("` ");
 			sql.append(getSQLDatatype(field));
 			
-			// At the moment, we don't need to allow NULL field values.
-			sql.append(" NOT NULL");
+			sql.append(field.isAllowNull() ? " NULL" : " NOT NULL");
 			
 			if (field.getIndexType() == ModelObjectIndexType.IDENTITY) {
 				sql.append(" AUTO_INCREMENT");

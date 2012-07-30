@@ -29,7 +29,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// make sure the client has authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
-		logger.info("Loading courses for user " + user.getUserName());
+		logger.info("Loading courses for user " + user.getUsername());
 		
 		List<? extends Object[]> resultList = Database.getInstance().getCoursesForUser(user);
 		
@@ -55,7 +55,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// make sure the client has authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
-		logger.info("Loading courses and registrations for user " + user.getUserName());
+		logger.info("Loading courses and registrations for user " + user.getUsername());
 		
 		List<? extends Object[]> resultList = Database.getInstance().getCoursesForUser(user);
 		
@@ -84,7 +84,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 
 		List<Problem> resultList = Database.getInstance().getProblemsInCourse(user, course).getProblemList();
 		for (Problem p : resultList) {
-			logger.info(p.getTestName() + " - " + p.getBriefDescription());
+			logger.info(p.getTestname() + " - " + p.getBriefDescription());
 		}
 		
 		return resultList.toArray(new Problem[resultList.size()]);

@@ -32,6 +32,8 @@ public class ModelObjectField {
 	private final int size;
 //	private final boolean isUniqueId;
 	private ModelObjectIndexType indexType;
+	private boolean allowNull;
+	private String beanPropertyName;
 	
 	/**
 	 * Constructor for fields which are not a unique object id.
@@ -41,11 +43,11 @@ public class ModelObjectField {
 	 * @param size the size (e.g., max string length for a string column)
 	 */
 	public ModelObjectField(String name, Class<?> type, int size) {
-		this(name, type, size, ModelObjectIndexType.NONE);
+		this(name, type, size, ModelObjectIndexType.NONE, false);
 	}
 
 	/**
-	 * Constructor for fields which could be a unique object id.
+	 * Constructor for fields which might require an index.
 	 * 
 	 * @param name the field name (can be used as a database column name)
 	 * @param type the Java type of the field
@@ -53,10 +55,25 @@ public class ModelObjectField {
 	 * @param indexType true if the field is the unique object id
 	 */
 	public ModelObjectField(String name, Class<?> type, int size, ModelObjectIndexType indexType) {
+		this(name, type, size, indexType, false);
+	}
+
+	/**
+	 * Constructor for fields which might require an index.
+	 * 
+	 * @param name the field name (can be used as a database column name)
+	 * @param type the Java type of the field
+	 * @param size the size (e.g., max string length for a string column)
+	 * @param indexType true if the field is the unique object id
+	 * @param allowNull true if the field allows null values
+	 */
+	public ModelObjectField(String name, Class<?> type, int size, ModelObjectIndexType indexType, boolean allowNull) {
 		this.name = name;
 		this.type = type;
 		this.size = size;
 		this.indexType = indexType;
+		this.beanPropertyName = getBeanPropertyName(name);
+		this.allowNull = allowNull;
 	}
 	
 	/**
@@ -93,5 +110,37 @@ public class ModelObjectField {
 	 */
 	public ModelObjectIndexType getIndexType() {
 		return indexType;
+	}
+
+	/**
+	 * Check whether or not the field is allowed to have NULL values.
+	 * @return true if the field is allowed to have NULL values, false otherwise
+	 */
+	public boolean isAllowNull() {
+		return allowNull;
+	}
+	
+	/**
+	 * Get this field's bean property name.
+	 * 
+	 * @return this field's bean property name 
+	 */
+	public String getPropertyName() {
+		return beanPropertyName;
+	}
+	
+	private static String getBeanPropertyName(String name) {
+		String[] tokens = name.split("_");
+		StringBuilder buf = new StringBuilder();
+		
+		for (String token : tokens) {
+			if (buf.length() > 0) {
+				token = Character.toUpperCase(token.charAt(0)) + token.substring(1);
+			}
+			
+			buf.append(token);
+		}
+		
+		return buf.toString();
 	}
 }

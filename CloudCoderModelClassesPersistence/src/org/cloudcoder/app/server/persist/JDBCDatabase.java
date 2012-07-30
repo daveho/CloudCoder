@@ -1321,7 +1321,7 @@ public class JDBCDatabase implements IDatabase {
 
 	private void load(User user, ResultSet resultSet, int index) throws SQLException {
 		user.setId(resultSet.getInt(index++));
-		user.setUserName(resultSet.getString(index++));
+		user.setUsername(resultSet.getString(index++));
 		user.setPasswordHash(resultSet.getString(index++));
 	}
 
@@ -1336,7 +1336,7 @@ public class JDBCDatabase implements IDatabase {
 
 	protected void loadProblemData(ProblemData problemData, ResultSet resultSet, int index) throws SQLException {
 		problemData.setProblemType(resultSet.getInt(index++));
-		problemData.setTestName(resultSet.getString(index++));
+		problemData.setTestname(resultSet.getString(index++));
 		problemData.setBriefDescription(resultSet.getString(index++));
 		problemData.setDescription(resultSet.getString(index++));
 		problemData.setSkeleton(resultSet.getString(index++));
@@ -1344,7 +1344,7 @@ public class JDBCDatabase implements IDatabase {
 		problemData.setAuthorName(resultSet.getString(index++));
 		problemData.setAuthorEmail(resultSet.getString(index++));
 		problemData.setAuthorWebsite(resultSet.getString(index++));
-		problemData.setTimestampUTC(resultSet.getLong(index++));
+		problemData.setTimestampUtc(resultSet.getLong(index++));
 		problemData.setLicense(ProblemLicense.fromOrdinal(resultSet.getInt(index++)));
 	}
 
@@ -1418,7 +1418,7 @@ public class JDBCDatabase implements IDatabase {
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, event.getUserId());
 		stmt.setInt(index++, event.getProblemId());
-		stmt.setInt(index++, event.getType());
+		stmt.setInt(index++, event.getType().ordinal());
 		stmt.setLong(index++, event.getTimestamp());
 	}
 
@@ -1474,7 +1474,7 @@ public class JDBCDatabase implements IDatabase {
 
 	protected int storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
 		stmt.setInt(index++, problemData.getProblemType().ordinal());
-		stmt.setString(index++, problemData.getTestName());
+		stmt.setString(index++, problemData.getTestname());
 		stmt.setString(index++, problemData.getBriefDescription());
 		stmt.setString(index++, problemData.getDescription());
 		stmt.setString(index++, problemData.getSkeleton());
@@ -1482,7 +1482,7 @@ public class JDBCDatabase implements IDatabase {
 		stmt.setString(index++, problemData.getAuthorName());
 		stmt.setString(index++, problemData.getAuthorEmail());
 		stmt.setString(index++, problemData.getAuthorWebsite());
-		stmt.setLong(index++, problemData.getTimestampUTC());
+		stmt.setLong(index++, problemData.getTimestampUtc());
 		stmt.setInt(index++, problemData.getLicense().ordinal());
 		return index;
 	}
