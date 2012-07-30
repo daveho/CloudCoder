@@ -197,6 +197,12 @@ public class CourseAdminPage extends CloudCoderPage {
 		
 		private void handleNewProblem() {
 			Problem problem = Problem.createEmpty();
+			
+			// Set default when assigned and when due dates/times
+			// (assigned now, due in 48 hours)
+			problem.setWhenAssigned(System.currentTimeMillis());
+			problem.setWhenDue(problem.getWhenAssigned() + (48L*60L*60L*1000L));
+			
 			problem.setCourseId(getSession().get(Course.class).getId());
 			TestCase[] testCaseList= new TestCase[0];
 			ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
