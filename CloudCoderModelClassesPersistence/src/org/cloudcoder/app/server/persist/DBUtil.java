@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,5 +141,94 @@ public class DBUtil {
 		}
 		
 		return buf.toString();
+	}
+	
+	/**
+	 * Get a CREATE TABLE statement for creating a table with the given schema and name.
+	 * 
+	 * @param schema     the table's schema
+	 * @param tableName  the name of the table
+	 * @return the text of the CREATE TABLE statement
+	 */
+	public static String getCreateTableStatement(ModelObjectSchema schema, String tableName) {
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("CREATE TABLE `");
+		sql.append(tableName);
+		sql.append("` (");
+		
+		int count = 0;
+		
+		// Field descriptors
+		for (ModelObjectField field : schema.getFieldList()) {
+			if (count > 0) {
+				sql.append(",");
+			}
+			sql.append("\n  `");
+			sql.append(field.getName());
+			sql.append("` ");
+			sql.append(getSQLDatatype(field));
+			
+			// At the moment, we don't need to allow NULL field values.
+			sql.append(" NOT NULL");
+			
+			if (field.getIndexType() == ModelObjectIndexType.IDENTITY) {
+				sql.append(" AUTO_INCREMENT");
+			}
+			
+			count++;
+		}
+		
+		// Keys
+		for (ModelObjectField field : schema.getFieldList()) {
+			if (field.getIndexType() == ModelObjectIndexType.NONE) {
+				continue;
+			}
+			
+			if (count > 0) {
+				sql.append(",");
+			}
+			sql.append("\n  ");
+			
+			switch (field.getIndexType()) {
+			case IDENTITY:
+				sql.append("PRIMARY_KEY (`");
+				sql.append(field.getName());
+				sql.append("`)");
+				break;
+				
+			case UNIQUE:
+			case NON_UNIQUE:
+				sql.append(field.getIndexType() == ModelObjectIndexType.UNIQUE ? "UNIQUE " : "");
+				sql.append("KEY `");
+				sql.append(field.getName());
+				sql.append("` (`");
+				sql.append(field.getName());
+				sql.append("`)");
+				break;
+			}
+		}
+		
+		sql.append("\n) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		
+		return sql.toString();
+	}
+
+	private static Object getSQLDatatype(ModelObjectField field) {
+		if (field.getType() == String.class) {
+			// If the field length is Integer.MAX_VALUE, make it a text field.
+			// Otherwise, make it VARCHAR.
+			return field.getSize() == Integer.MAX_VALUE ? "text" : ("varchar(" + field.getSize() + ")");
+		} else if (field.getType() == Short.class) {
+			return "mediumint(9)";
+		} else if (field.getType() == Integer.class) {
+			return "int(11)";
+		} else if (field.getType() == Long.class) {
+			return "bigint(20)";
+		} else if (field.getType() == Boolean.class) {
+			return "tinyint(1)";
+		} else {
+			throw new IllegalArgumentException("Unknown field type: " + field.getType().getName());
+		}
 	}
 }
