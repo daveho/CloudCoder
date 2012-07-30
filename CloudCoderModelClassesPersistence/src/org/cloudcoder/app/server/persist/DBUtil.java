@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -192,7 +193,7 @@ public class DBUtil {
 			
 			switch (field.getIndexType()) {
 			case IDENTITY:
-				sql.append("PRIMARY_KEY (`");
+				sql.append("PRIMARY KEY (`");
 				sql.append(field.getName());
 				sql.append("`)");
 				break;
@@ -227,8 +228,30 @@ public class DBUtil {
 			return "bigint(20)";
 		} else if (field.getType() == Boolean.class) {
 			return "tinyint(1)";
+		} else if (Enum.class.isAssignableFrom(field.getType())) {
+			// Enumeration values are represented as integers (their ordinal values)
+			// in the database
+			return "int(11)";
 		} else {
 			throw new IllegalArgumentException("Unknown field type: " + field.getType().getName());
+		}
+	}
+
+	/**
+	 * Execute a literal SQL statement.
+	 * There is no provision for binding parameters, getting results, etc.
+	 * 
+	 * @param conn  the Connection to use to execute the statement
+	 * @param sql   the statement
+	 * @throws SQLException if an error occurs
+	 */
+	public static void execSql(Connection conn, String sql) throws SQLException {
+		PreparedStatement stmt = null;
+		try {
+			stmt  = conn.prepareStatement(sql);
+			stmt.execute();
+		} finally {
+			closeQuietly(stmt);
 		}
 	}
 }
