@@ -62,10 +62,8 @@
 		-->
 		<jar destfile="deps.jar">
 			<zipgroupfileset dir="lib" includes="**/*.jar" />
+			<zipgroupfileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
 		</jar>
-
-		<!-- Copy the user's local.properties file containing CloudCoder configuration properties. -->
-		<copy file="../local.properties" tofile="bin/org/cloudcoder/webserver/local.properties" />
 		
 		<!--
 			Build single deployable jarfile containing our launcher code,
@@ -73,7 +71,7 @@
 			must be removed from the libraries.
 		-->
 		<jar destfile="${jarname}">
-			<!-- Copy classes and properties files from the bin directory. -->
+			<!-- Copy classes  from the bin directory. -->
 			<fileset dir="bin" includes="**"/>
 
 			<!-- Copy classes and other files from required libraries and Jetty. -->
@@ -98,6 +96,11 @@
 			<zipfileset
 				file="../${cloudcoder.submitsvc.ssl.keystore}"
 				fullpath="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.keystore}" />
+			
+			<!-- Include cloudcoder configuration properties (local.properties) -->
+			<zipfileset
+				file="../local.properties"
+				fullpath="org/cloudcoder/webserver/local.properties"/>
 
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>
