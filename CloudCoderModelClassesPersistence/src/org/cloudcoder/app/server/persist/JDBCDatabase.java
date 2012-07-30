@@ -176,16 +176,12 @@ public class JDBCDatabase implements IDatabase {
 			public User run(Connection conn) throws SQLException {
 				User user=getUser(conn, userName);
 				
-				// authenticate against the DB
-				String encryptedPassword = HashPassword.computeHash(password, user.getSalt());
-
-				logger.debug("Password check: " + encryptedPassword + ", " + user.getPasswordMD5());
-
-				if (!encryptedPassword.equals(user.getPasswordMD5())) {
-					// Password does not match
-					return null;
-				} else {
+				if (BCrypt.checkpw(password, user.getPasswordHash())) {
+					// Plaintext password matches hash: authentication succeeded
 					return user;
+				} else {
+					// Plaintext password does not match hash: authentication failed
+					return null;
 				}
 			}
 			@Override
@@ -1326,8 +1322,7 @@ public class JDBCDatabase implements IDatabase {
 	private void load(User user, ResultSet resultSet, int index) throws SQLException {
 		user.setId(resultSet.getInt(index++));
 		user.setUserName(resultSet.getString(index++));
-		user.setPasswordMD5(resultSet.getString(index++));
-		user.setSalt(resultSet.getString(index++));
+		user.setPasswordHash(resultSet.getString(index++));
 	}
 
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {

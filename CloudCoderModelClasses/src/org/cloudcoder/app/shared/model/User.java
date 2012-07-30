@@ -17,13 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
-
 import java.io.Serializable;
 
 /**
@@ -31,57 +24,64 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-//@Entity
-//@Table(name="users")
 public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-//	@Id
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="id")
 	private int id;
-	
-//	@Column(name="username")
 	private String userName;
-	
-//	@Column(name="password_md5")
-	private String passwordMD5;
-	
-//	@Column(name="salt")
-	private String salt;
+	private String passwordHash;
 
+	/**
+	 * Constructor.
+	 */
 	public User() {
 	}
 	
+	/**
+	 * Set the user's unique id.
+	 * @param id the user's unique id
+	 */
 	public void setId(int id) {
 		this.id = id;
 	}
 	
+	/**
+	 * Get the user's unique id.
+	 * @return the user's unique id
+	 */
 	public int getId() {
 		return id;
 	}
 	
+	/**
+	 * Set the user's username.
+	 * @param userName the user's username
+	 */
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
 	
+	/**
+	 * Get the user's username.
+	 * @return the user's username
+	 */
 	public String getUserName() {
 		return userName;
 	}
 	
-	public void setPasswordMD5(String passwordMD5) {
-		this.passwordMD5 = passwordMD5;
+	/**
+	 * Set the user's bcrypt password hash. 
+	 * @param passwordHash the user's bcrypt password hash
+	 */
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 	
-	public String getPasswordMD5() {
-		return passwordMD5;
-	}
-	
-	public void setSalt(String salt) {
-		this.salt = salt;
-	}
-	
-	public String getSalt() {
-		return salt;
+	/**
+	 * Get the user's bcrypt password hash.
+	 * @return the user's brcypt password hash
+	 */
+	public String getPasswordHash() {
+		return passwordHash;
 	}
 }
