@@ -39,7 +39,6 @@ import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
