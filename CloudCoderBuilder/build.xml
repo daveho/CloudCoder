@@ -52,9 +52,6 @@
 		Build a single executable jarfile.
 	-->
 	<target name="jar" depends="build">
-		<!-- copy local.properties into bin (so it will be included in the executable jarfile) -->
-		<copy file="../local.properties" tofile="bin/org/cloudcoder/submitsvc/oop/builder/local.properties"/>
-		
 		<jar destfile="${jarname}">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
 			<zipgroupfileset file="${model.class.jar}" />
@@ -62,6 +59,9 @@
 			
 			<!-- Include keystore for secure communications with webapp. -->
 			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
+			
+			<!-- Inlcude cloudcoder configuration properties (local.properties) -->
+			<zipfileset file="../local.properties" fullpath="org/cloudcoder/submitsvc/oop/builder/local.properties"/>
 			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>

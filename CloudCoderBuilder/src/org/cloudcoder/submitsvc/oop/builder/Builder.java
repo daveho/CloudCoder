@@ -87,6 +87,8 @@ public class Builder implements Runnable {
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 		this.testerMap=new HashMap<ProblemType, ITester>();
+		
+		logger.info("Builder: using keystore {}", keystoreFilename);
 	}
 	
 	// Map of tester classes for known problem types
