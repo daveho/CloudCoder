@@ -135,12 +135,12 @@ public class CreateWebappDatabase {
 		
 		// Terms
 		System.out.println("Creating terms...");
-		storeTerm(conn, "Winter", 0, JDBCDatabase.TERMS);
-		storeTerm(conn, "Spring", 1, JDBCDatabase.TERMS);
-		storeTerm(conn, "Summer", 2, JDBCDatabase.TERMS);
-		storeTerm(conn, "Summer 1", 3, JDBCDatabase.TERMS);
-		storeTerm(conn, "Summer 2", 4, JDBCDatabase.TERMS);
-		Term fall = storeTerm(conn, "Fall", 5, JDBCDatabase.TERMS);
+		storeTerm(conn, "Winter", 0);
+		storeTerm(conn, "Spring", 1);
+		storeTerm(conn, "Summer", 2);
+		storeTerm(conn, "Summer 1", 3);
+		storeTerm(conn, "Summer 2", 4);
+		Term fall = storeTerm(conn, "Fall", 5);
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
@@ -225,11 +225,11 @@ public class CreateWebappDatabase {
 		DBUtil.execSql(conn, sql);
 	}
 
-	private static Term storeTerm(Connection conn, String name, int seq, String tableName) throws SQLException {
+	private static Term storeTerm(Connection conn, String name, int seq) throws SQLException {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-		storeBean(conn, term, Term.SCHEMA, tableName);
+		storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
 		return term;
 	}
 
