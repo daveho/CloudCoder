@@ -17,6 +17,9 @@
 		<fileset dir="lib">
 			<include name="**/*.jar"/>
 		</fileset>
+		<fileset dir="../CloudCoderJetty/lib">
+			<include name="**/*.jar"/>
+		</fileset>
     </path>
     
 	<target name="init">
@@ -78,9 +81,12 @@
 			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
 			
 			<!-- Include the webapp.
-			     However, exclude the slf4j jars, since Jetty will already have
+			     However, exclude the slf4j and log4j jars, since Jetty will already have
 			     them on its classpath, and we don't want two copies. -->
-			<fileset dir="../CloudCoder" includes="war/**" excludes="**/slf4j*.jar,war/logs/**,war/WEB-INF/classes/defaultkeystore.jks" />
+			<fileset
+				dir="../CloudCoder"
+				includes="war/**"
+				excludes="**/slf4j*.jar,**/log4j*.jar,war/logs/**,war/WEB-INF/classes/defaultkeystore.jks" />
 			
 			<!-- Include the model classes jar file in webapp's WEB-INF/lib. -->
 			<zipfileset
