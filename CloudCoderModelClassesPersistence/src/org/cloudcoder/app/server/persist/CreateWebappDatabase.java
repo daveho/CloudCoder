@@ -20,6 +20,8 @@ package org.cloudcoder.app.server.persist;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -60,7 +62,20 @@ public class CreateWebappDatabase {
 		
 		public ConfigProperties() throws FileNotFoundException, IOException {
 			properties = new Properties();
-			properties.load(new FileReader("../cloudcoder.properties"));
+
+			// See if we can load "cloudcoder.properties" as an embedded resource.
+			URL u = this.getClass().getClassLoader().getResource("cloudcoder.properties");
+			if (u != null) {
+				InputStream in = u.openStream();
+				try {
+					properties.load(in);
+				} finally {
+					in.close();
+				}
+			} else {
+				System.out.println("Warning: loading cloudcoder.properties from filesystem");
+				properties.load(new FileReader("../cloudcoder.properties"));
+			}
 		}
 		
 		public String get(String propName) {
