@@ -5,7 +5,7 @@ use FileHandle;
 
 # Script to collect all configuration information needed to
 # build and deploy the CloudCoder webapp and Builder.
-# Generates a local.properties file.
+# Generates a cloudcoder.properties file.
 
 my @propertyNames = ();
 my %properties = ();
@@ -70,7 +70,7 @@ askprop("Should the CloudCoder web server accept connections only from localhost
 	"(Set this to 'true' if using a reverse proxy, which is recommended)",
 	"cloudcoder.webserver.localhostonly", "true");
 
-my $confirm = ask("Write configuration file (local.properties)?", "yes");
+my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
 if ((lc $confirm) ne 'yes') {
 	print "Properties not written\n";
 	exit 1;
@@ -78,7 +78,7 @@ if ((lc $confirm) ne 'yes') {
 
 print "Writing properties...";
 STDOUT->flush();
-my $fh = new FileHandle(">local.properties");
+my $fh = new FileHandle(">cloudcoder.properties");
 foreach my $property (@propertyNames) {
 	print $fh "$property=$properties{$property}\n";
 }

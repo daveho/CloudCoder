@@ -76,14 +76,14 @@ public class CloudCoderDaemon implements IDaemon {
 		configureLogging();
 
 		// Load the configuration properties embedded in the executable jarfile
-		Properties configProperties = loadProperties("local.properties");
+		Properties configProperties = loadProperties("cloudcoder.properties");
 		CloudCoderConfig config = new CloudCoderConfig(configProperties);
 		
 		// Create an override-web.xml to override context parameters specified in the
 		// webapp's web.xml.  Its web.xml contains configuration values appropriate
 		// for development (which is useful), but we want the configuration values
 		// specified for deployment when the user ran the configure.pl script
-		// (in local.properties).
+		// (in cloudcoder.properties).
 		String overrideWebXml;
 		try {
 			overrideWebXml = createOverrideWebXml(configProperties);
@@ -184,9 +184,8 @@ public class CloudCoderDaemon implements IDaemon {
 	 * @return the Properties contained in the properties file
 	 */
 	protected Properties loadProperties(String fileName) {
-		String propFilePath = this.getClass().getPackage().getName().replace('.', '/') + "/" + fileName;
 		ClassLoader clsLoader = this.getClass().getClassLoader();
-		return Util.loadPropertiesFromResource(clsLoader, propFilePath);
+		return Util.loadPropertiesFromResource(clsLoader, fileName);
 	}
 
 	@Override

@@ -9,7 +9,7 @@
   -->
 
   <!-- Read CloudCoder global configuration properties. -->
-  <property file="../local.properties"/>
+  <property file="../cloudcoder.properties"/>
 
   <path id="project.class.path">
     <pathelement location="war/WEB-INF/classes"/>

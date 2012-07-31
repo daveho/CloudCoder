@@ -7,7 +7,7 @@
     <property name="source" value="1.6"/>
 
 	<!-- Read CloudCoder global configuration properties. -->
-	<property file="../local.properties"/>
+	<property file="../cloudcoder.properties"/>
 	
 	<!-- Name of the deployable jarfile to run the webapp. -->
 	<property name="jarname" value="cloudcoderApp.jar" />
@@ -103,10 +103,10 @@
 				file="../${cloudcoder.submitsvc.ssl.keystore}"
 				fullpath="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.keystore}" />
 			
-			<!-- Include cloudcoder configuration properties (local.properties) -->
+			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset
-				file="../local.properties"
-				fullpath="org/cloudcoder/webserver/local.properties"/>
+				file="../cloudcoder.properties"
+				fullpath="cloudcoder.properties"/>
 
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>

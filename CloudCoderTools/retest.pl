@@ -10,8 +10,8 @@ if (scalar(@ARGV) != 1) {
 	exit 1;
 }
 
-if (! -r '../local.properties') {
-	print STDERR "../local.properties does not exist: do you run configure.pl?\n";
+if (! -r '../cloudcoder.properties') {
+	print STDERR "../cloudcoder.properties does not exist: do you run configure.pl?\n";
 	exit 1;
 }
 
@@ -26,7 +26,7 @@ addAllJarsInDir('../CloudCoder/war/WEB-INF/lib');
 
 #print "classpath=", join(':', @classpath), "\n";
 
-system("java", "-classpath", join(':', @classpath), 'org.cloudcoder.importer.ReTest', '../local.properties', $submissionReceiptId)/256 == 0
+system("java", "-classpath", join(':', @classpath), 'org.cloudcoder.importer.ReTest', '../cloudcoder.properties', $submissionReceiptId)/256 == 0
 	|| die "Failed";
 
 sub addAllJarsInDir {

@@ -84,11 +84,11 @@ public class BuilderDaemon implements IDaemon {
 		// If embedded configuration properties exist, read them
 		Properties config;
 		try {
-			String configPropPath = this.getClass().getPackage().getName().replace('.', '/') + "/local.properties";
+			String configPropPath = "cloudcoder.properties";
 			ClassLoader clsLoader = this.getClass().getClassLoader();
 			config = Util.loadPropertiesFromResource(clsLoader, configPropPath);
 		} catch (IllegalStateException e) {
-			logger.warn("Could not load local.properties, using default config properties");
+			logger.warn("Could not load cloudcoder.properties, using default config properties");
 			config = new Properties();
 		}
 		

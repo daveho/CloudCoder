@@ -60,7 +60,7 @@ public class CreateWebappDatabase {
 		
 		public ConfigProperties() throws FileNotFoundException, IOException {
 			properties = new Properties();
-			properties.load(new FileReader("../local.properties"));
+			properties.load(new FileReader("../cloudcoder.properties"));
 		}
 		
 		public String get(String propName) {

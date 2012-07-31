@@ -7,7 +7,7 @@
     <property name="model.class.jar" value="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
 
 	<!-- Read CloudCoder global configuration properties. -->
-	<property file="../local.properties"/>
+	<property file="../cloudcoder.properties"/>
 	
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
@@ -60,8 +60,8 @@
 			<!-- Include keystore for secure communications with webapp. -->
 			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
 			
-			<!-- Inlcude cloudcoder configuration properties (local.properties) -->
-			<zipfileset file="../local.properties" fullpath="org/cloudcoder/submitsvc/oop/builder/local.properties"/>
+			<!-- Inlcude cloudcoder configuration properties (cloudcoder.properties) -->
+			<zipfileset file="../cloudcoder.properties" fullpath="cloudcoder.properties"/>
 			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
