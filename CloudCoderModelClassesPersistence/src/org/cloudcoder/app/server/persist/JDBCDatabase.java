@@ -1270,7 +1270,7 @@ public class JDBCDatabase implements IDatabase {
 		ResultSet generatedKeys = databaseRunnable.getGeneratedKeys(stmt);
 		int count = 0;
 		while (generatedKeys.next()) {
-			testCaseList.get(count).setId(generatedKeys.getInt(1));
+			testCaseList.get(count).setTestCaseId(generatedKeys.getInt(1));
 			count++;
 		}
 		if (count != testCaseList.size()) {
@@ -1382,7 +1382,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
-		testCase.setId(resultSet.getInt(index++));
+		testCase.setTestCaseId(resultSet.getInt(index++));
 		testCase.setProblemId(resultSet.getInt(index++));
 		testCase.setTestCaseName(resultSet.getString(index++));
 		testCase.setInput(resultSet.getString(index++));

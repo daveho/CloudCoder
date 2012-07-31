@@ -100,18 +100,6 @@
 				file="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderModelClassesPersist.jar"/>
 			
-			<!--
-				Include commons-beanutils and commons-logging in webapp's WEB-INF/lib.
-				The webapp doesn't actually need them, but CreateWebappDatabase does need it,
-				and including it allows our deployable jarfile to create the database.
-			-->
-			<zipfileset
-				file="../CloudCoderModelClassesPersistence/lib/commons-beanutils-1.8.3.jar"
-				fullpath="war/WEB-INF/lib/commons-beanutils-1.8.3.jar"/>
-			<zipfileset
-				file="../CloudCoderModelClassesPersistence/lib/commons-logging-1.1.1.jar"
-				fullpath="war/WEB-INF/lib/commons-logging-1.1.1.jar"/>
-			
 			<!-- Include keystore for secure communications with builder. -->
 			<zipfileset
 				file="../${cloudcoder.submitsvc.ssl.keystore}"

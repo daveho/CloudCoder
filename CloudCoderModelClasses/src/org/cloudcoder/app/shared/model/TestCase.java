@@ -30,7 +30,7 @@ import java.util.Arrays;
 public class TestCase extends TestCaseData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private int id;
+	private int testCaseId;
 	private int problemId;
 	
 	/**
@@ -49,12 +49,12 @@ public class TestCase extends TestCaseData implements Serializable {
 		
 	}
 	
-	public void setId(int id) {
-		this.id = id;
+	public void setTestCaseId(int id) {
+		this.testCaseId = id;
 	}
 	
-	public int getId() {
-		return id;
+	public int getTestCaseId() {
+		return testCaseId;
 	}
 	
 	public void setProblemId(int problemId) {
@@ -74,7 +74,7 @@ public class TestCase extends TestCaseData implements Serializable {
 	 */
 	public static TestCase createEmpty() {
 		TestCase empty = new TestCase();
-		empty.setId(-1);
+		empty.setTestCaseId(-1);
 		empty.setProblemId(-1);
 		empty.setTestCaseName("");
 		empty.setInput("");
@@ -90,7 +90,7 @@ public class TestCase extends TestCaseData implements Serializable {
 	 */
 	public void copyFrom(TestCase other) {
 		super.copyFrom(other);
-		this.id = other.id;
+		this.testCaseId = other.testCaseId;
 		this.problemId = other.problemId;
 	}
 	
@@ -101,7 +101,7 @@ public class TestCase extends TestCaseData implements Serializable {
 		}
 		TestCase other = (TestCase) obj;
 		return super.equals(other)
-				&& this.id == other.id
+				&& this.testCaseId == other.testCaseId
 				&& this.problemId == other.problemId;
 	}
 }

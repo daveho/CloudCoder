@@ -63,7 +63,7 @@ public class TestCProgramTester {
 
 	private TestCase createTestCase(String input, String output, String testCaseName) {
 		TestCase testCase = new TestCase();
-		testCase.setId(1);
+		testCase.setTestCaseId(1);
 		testCase.setInput(input);
 		testCase.setOutput(output);
 		testCase.setProblemId(1);

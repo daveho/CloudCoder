@@ -28,12 +28,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -92,8 +86,6 @@ public class CreateWebappDatabase {
 
 	private static void createWebappDatabase() throws ClassNotFoundException,
 			FileNotFoundException, IOException, SQLException {
-		configureLog4j();
-		
 		Scanner keyboard = new Scanner(System.in);
 		
 		System.out.print("Enter a username for your CloudCoder account: ");
@@ -279,7 +271,7 @@ public class CreateWebappDatabase {
 					continue;
 				}
 				try {
-					Object value = PropertyUtils.getProperty(bean, field.getPropertyName());
+					Object value = BeanUtil.getProperty(bean, field.getPropertyName());
 					if (value instanceof Enum) {
 						// Enum values are converted to integers
 						value = Integer.valueOf(((Enum<?>)value).ordinal());
@@ -304,23 +296,15 @@ public class CreateWebappDatabase {
 				
 				// Set the unique id value in the bean
 				try {
-					BeanUtils.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
+					BeanUtil.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
 				} catch (Exception e) {
-					throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName());
+					e.printStackTrace();
+					throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
 				}
 			}
 		} finally {
 			DBUtil.closeQuietly(genKeys);
 			DBUtil.closeQuietly(stmt);
-		}
-	}
-	
-	private static void configureLog4j() {
-		// See: http://robertmaldon.blogspot.com/2007/09/programmatically-configuring-log4j-and.html
-		Logger rootLogger = Logger.getRootLogger();
-		if (!rootLogger.getAllAppenders().hasMoreElements()) {
-			rootLogger.setLevel(Level.INFO);
-			rootLogger.addAppender(new ConsoleAppender(new PatternLayout("%-5p [%t]: %m%n")));
 		}
 	}
 }
