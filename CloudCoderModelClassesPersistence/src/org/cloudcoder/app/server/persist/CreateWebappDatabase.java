@@ -207,7 +207,7 @@ public class CreateWebappDatabase {
 		problem.setDescription(
 				"<p>Print a line with the following text:</p>\n" +
 				"<blockquote><pre>Hello, world</pre></blockquote>\n"
-		);			// At the moment, we don't need to allow NULL field values.
+		);
 
 		problem.setSkeleton(
 				"#include <stdio.h>\n\n" +
