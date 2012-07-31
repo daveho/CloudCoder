@@ -79,6 +79,19 @@ public class CreateWebappDatabase {
 	}
 	
 	public static void main(String[] args) throws Exception {
+		try {
+			createWebappDatabase();
+		} catch (SQLException e) {
+			// Handle SQLException by printing an error message:
+			// these are likely to be meaningful to the user
+			// (for example, can't create the database because
+			// it already exists.)
+			System.err.println("Database error: " + e.getMessage());
+		}
+	}
+
+	private static void createWebappDatabase() throws ClassNotFoundException,
+			FileNotFoundException, IOException, SQLException {
 		configureLog4j();
 		
 		Scanner keyboard = new Scanner(System.in);
