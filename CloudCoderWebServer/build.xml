@@ -42,9 +42,7 @@
 	
 	<!-- Target to build the webapp. -->
 	<target name="webapp">
-		<!--
 		<ant dir="../CloudCoder" target="build"/>
-		-->
 	</target>
 	
 	<!-- Target to build model classes library. -->
