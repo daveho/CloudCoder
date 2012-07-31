@@ -105,7 +105,11 @@ public class CreateWebappDatabase {
 		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + "/?user=" + dbUser + "&password=" + dbPasswd);
 		
 		System.out.println("Creating database");
-		DBUtil.execSql(conn, "create database " + dbName);
+		DBUtil.execSql(
+				conn,
+				"create database " + dbName +
+				" character set 'utf8' " +
+				" collate 'utf8_general_ci' ");
 		
 		conn.close();
 		
@@ -127,7 +131,8 @@ public class CreateWebappDatabase {
 		
 		// Create initial database contents
 		
-		// Set institution name
+		// Set institution name (and any other configuration settings)
+		System.out.println("Adding configuration settings...");
 		ConfigurationSetting instName = new ConfigurationSetting();
 		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
 		instName.setValue(ccInstitutionName);
