@@ -18,6 +18,7 @@
 package org.cloudcoder.webserver;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -44,14 +45,18 @@ public class NestedJarClassLoader extends ClassLoader {
 	private JarFile jar;
 	private Map<String, String> resourceToNestedJarMap;
 	
-	public NestedJarClassLoader(JarFile jar, ClassLoader parent) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param jar     a {@link JarFile} containing nested jar files from which
+	 *                to load classes and resources
+	 * @param parent  the parent classloader
+	 * @throws IOException if an error occurs scanning the contents of the nested jarfiles
+	 */
+	public NestedJarClassLoader(JarFile jar, ClassLoader parent) throws IOException {
 		super(parent);
 		this.jar = jar;
-		try {
-			scanNestedJarFiles();
-		} catch (IOException e) {
-			throw new IllegalStateException("IOException scanning nested jars", e);
-		}
+		scanNestedJarFiles();
 	}
 	
 	private void scanNestedJarFiles() throws IOException {
@@ -117,6 +122,18 @@ public class NestedJarClassLoader extends ClassLoader {
 			try {
 				File tmp = File.createTempFile("ccws", lastDot >= 0 ? name.substring(lastDot) : ".tmp");
 				tmp.deleteOnExit();
+				
+				// Get the resource data
+				byte[] bytes = loadDataFromNestedJar(nestedJar, name);
+				
+				// Write it to the temp file
+				FileOutputStream fos = new FileOutputStream(tmp);
+				try {
+					fos.write(bytes);
+				} finally {
+					fos.close();
+				}
+				
 				return tmp.toURI().toURL();
 			} catch (IOException e) {
 				System.err.println("Error loading resource " + name + " from " + nestedJar);
