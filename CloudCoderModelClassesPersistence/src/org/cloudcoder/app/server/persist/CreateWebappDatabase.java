@@ -302,15 +302,7 @@ public class CreateWebappDatabase {
 		Logger rootLogger = Logger.getRootLogger();
 		if (!rootLogger.getAllAppenders().hasMoreElements()) {
 			rootLogger.setLevel(Level.INFO);
-			rootLogger.addAppender(new ConsoleAppender(
-					new PatternLayout("%-5p [%t]: %m%n")));
-
-			// The TTCC_CONVERSION_PATTERN contains more info than
-			// the pattern we used for the root logger
-			Logger pkgLogger = rootLogger.getLoggerRepository().getLogger("robertmaldon.moneymachine");
-			pkgLogger.setLevel(Level.DEBUG);
-			pkgLogger.addAppender(new ConsoleAppender(
-					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN)));
+			rootLogger.addAppender(new ConsoleAppender(new PatternLayout("%-5p [%t]: %m%n")));
 		}
 	}
 }
