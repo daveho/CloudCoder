@@ -9,11 +9,28 @@ use FileHandle;
 
 my @propertyNames = ();
 my %properties = ();
+my %prior = ();
 
 print "Welcome to the CloudCoder configuration script!\n";
 print "Please enter the information needed to configure CloudCoder for your system.\n";
 print "You can just hit enter to accept the default value (if there is one).\n";
 print "\n";
+
+if (-r "cloudcoder.properties") {
+	my $reload = ask("You seem to have a cloudcoder.properties file already: use it to\n" .
+		"load defaults?", "yes");
+
+	if ((lc $reload) eq 'yes') {
+		my $prior_fh = new FileHandle("<cloudcoder.properties") || die;
+		while (<$prior_fh>) {
+			chomp;
+			if (/^([^=]+)=(.*)$/) {
+				$prior{$1} = $2;
+			}
+		}
+		$prior_fh->close();
+	}
+}
 
 askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
 	"gwt.sdk", undef);
@@ -114,6 +131,11 @@ sub ask {
 
 sub askprop {
 	my ($question, $property, $defval) = @_;
+
+	# If there are prior properties, use them as defaults.
+	if (exists $prior{$property}) {
+		$defval = $prior{$property};
+	}
 
 	my $value = ask($question, $defval);
 
