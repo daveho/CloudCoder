@@ -58,7 +58,7 @@
 			<fileset dir="bin" includes="**" excludes="defaultkeystore.jks"/>
 			
 			<!-- Include keystore for secure communications with webapp. -->
-			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
+			<zipfileset file="../${cloudcoder.submitsvc.ssl.builder.keystore}" fullpath="${cloudcoder.submitsvc.ssl.builder.keystore}" />
 			
 			<!-- Inlcude cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset file="../cloudcoder.properties" fullpath="cloudcoder.properties"/>

@@ -100,8 +100,8 @@
 			
 			<!-- Include keystore for secure communications with builder. -->
 			<zipfileset
-				file="../${cloudcoder.submitsvc.ssl.keystore}"
-				fullpath="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.keystore}" />
+				file="../${cloudcoder.submitsvc.ssl.webapp.keystore}"
+				fullpath="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.webapp.keystore}" />
 			
 			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset

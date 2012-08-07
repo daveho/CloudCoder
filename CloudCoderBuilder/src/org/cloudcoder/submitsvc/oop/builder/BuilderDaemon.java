@@ -68,11 +68,11 @@ public class BuilderDaemon implements IDaemon {
 		}
 		
 		public String getKeystoreFilename() {
-			return config.getProperty("cloudcoder.submitsvc.ssl.keystore", "defaultkeystore.jks");
+			return config.getProperty("cloudcoder.submitsvc.ssl.builder.keystore", "defaultkeystore.jks");
 		}
 		
 		public String getKeystorePassword() {
-			return config.getProperty("cloudcoder.submitsvc.ssl.keystore.password", "changeit");
+			return config.getProperty("cloudcoder.submitsvc.ssl.keystorepassword", "changeit");
 		}
 	}
 

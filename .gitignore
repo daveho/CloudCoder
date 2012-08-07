@@ -1,3 +1,4 @@
 /cloudcoder.properties
-/keystore.jks
+/webappkeystore.jks
+/builderkeystore.jks
 *~

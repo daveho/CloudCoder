@@ -68,15 +68,13 @@ askprop("What port will the CloudCoder webapp use to listen for connections from
 	"cloudcoder.submitsvc.oop.port", "47374");
 
 # TSL/SSL keystore configuration
-# (for secure communication between builder and webapp)
-askprop("What is the hostname of your institution?",
-	  "cloudcoder.submitsvc.ssl.cn", "None");
-askprop("What is the name of the keystore that will store your public/private keypair?\n" .
-	"(A new keystore will be created if it doesn't already exist)",
-	"cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
-askprop("What is the keystore/key password?",
-	"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
-
+# There is actually nothing the user needs to configure explicitly here.
+# We'll just hard-code the values needed by the webapp and  builder.
+setprop("cloudcoder.submitsvc.ssl.builder.keystore", "builderkeystore.jks");
+#setprop("cloudcoder.submitsvc.ssl.builder.keyalias", "builderkey");
+setprop("cloudcoder.submitsvc.ssl.webapp.keystore", "webappkeystore.jks");
+#setprop("cloudcoder.submitsvc.ssl.webapp.keyalias", "webappkey");
+setprop("cloudcoder.submitsvc.ssl.keystorepasswd", "changeit");
 
 # Web server properties
 askprop("What port will the CloudCoder web server listen on?",
@@ -103,11 +101,9 @@ $fh->close();
 print "Done!\n";
 
 # Create a keystore if it doesn't already exist.
-if (! -e $properties{'cloudcoder.submitsvc.ssl.keystore'}) {
-	run('./createKeystore.pl',
-		$properties{'cloudcoder.submitsvc.ssl.keystore'},
-		$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
-		$properties{'cloudcoder.submitsvc.ssl.cn'});
+if (! -e 'webappkeystore.jks' || ! -e 'builderkeystore.jks') {
+	print "Creating keystores for secure communication between webapp/builder\n";
+	system("./createKeystore2.pl")/256 == 0 || die "Couldn't create keystores\n";
 }
 
 sub ask {
@@ -129,6 +125,12 @@ sub ask {
 	return $value;
 }
 
+sub setprop {
+	my ($property, $value) = @_;
+	push @propertyNames, $property;
+	$properties{$property} = $value;
+}
+
 sub askprop {
 	my ($question, $property, $defval) = @_;
 
@@ -138,9 +140,7 @@ sub askprop {
 	}
 
 	my $value = ask($question, $defval);
-
-	push @propertyNames, $property;
-	$properties{$property} = $value;
+	setprop($property, $value);
 
 	print "\n";
 }

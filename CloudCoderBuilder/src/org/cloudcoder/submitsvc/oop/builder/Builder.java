@@ -18,29 +18,18 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
-
+import org.apache.commons.ssl.KeyMaterial;
+import org.apache.commons.ssl.SSLClient;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -70,6 +59,7 @@ public class Builder implements Runnable {
 	private int port;
 	private String keystoreFilename;
 	private String keystorePassword;
+	private SSLClient sslClient;
 	private Map<Integer, Problem> problemIdToProblemMap;
 	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
 	private Socket socket;
@@ -203,62 +193,21 @@ public class Builder implements Runnable {
 	}
 
 	private Socket createSecureSocket(String host, int port)
-	throws IOException, GeneralSecurityException
+			throws IOException, GeneralSecurityException
 	{
-	    String keyfile="/" + keystoreFilename;
-        String keyStoreType="JKS";
-        InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
+		if (sslClient == null) {
+			sslClient = new SSLClient();
 
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
-        
-        TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
-        //trustManagerFactory.init(trustStore);
-        // XXX Load the cert (public key) here instead of the private key?
-        trustManagerFactory.init(keyStore);
-        
-        // TrustManager
-        X509TrustManager x509TrustManager = null;
-        for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) {
-            if (trustManager instanceof X509TrustManager) {
-                x509TrustManager = (X509TrustManager) trustManager;
-                break;
-            }
-        }
-        if (x509TrustManager == null) {
-            throw new IllegalArgumentException("Cannot find x509TrustManager");
-        }
+			KeyMaterial km = new KeyMaterial(getClass().getResource("/" + keystoreFilename), keystorePassword.toCharArray());
+			sslClient.setKeyMaterial(km);
+			sslClient.setTrustMaterial(km);
+		}
 
-        // KeyManager
-        KeyManagerFactory keyManagerFactory =
-                KeyManagerFactory.getInstance("SunX509", "SunJSSE");
-        keyManagerFactory.init(keyStore, keystorePassword.toCharArray());
-        X509KeyManager x509KeyManager = null;
-        for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
-            if (keyManager instanceof X509KeyManager) {
-                x509KeyManager = (X509KeyManager) keyManager;
-                break;
-            }
-        }
-        if (x509KeyManager == null) {
-            throw new NullPointerException();
-        }
-        
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(new KeyManager[]{x509KeyManager},
-            new TrustManager[]{x509TrustManager}, null);
-
-        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
-        SSLSocket socket =
-            (SSLSocket) socketFactory.createSocket(host, port);
-
-        socket.setEnabledProtocols(new String[]{"TLSv1"});
-        return socket;
+		return sslClient.createSocket(host, port);
 	}
 	
 	public void attemptToConnectToServer() {
 		try {
-			//this.socket = new Socket(host, port);
 		    try {
 		        this.socket=createSecureSocket(host, port);
 		    } catch (GeneralSecurityException e) {

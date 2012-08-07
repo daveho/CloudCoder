@@ -77,12 +77,12 @@
   	ONLY be used for development, never for deployment!
   -->
   <context-param>
-    <param-name>cloudcoder.submitsvc.ssl.keystore</param-name>
+    <param-name>cloudcoder.submitsvc.ssl.webapp.keystore</param-name>
     <param-value>defaultkeystore.jks</param-value>
   </context-param>
   <!-- Keystore password. -->
   <context-param>
-    <param-name>cloudcoder.submitsvc.ssl.keystore.password</param-name>
+    <param-name>cloudcoder.submitsvc.ssl.keystorepassword</param-name>
     <param-value>changeit</param-value>
   </context-param>
   

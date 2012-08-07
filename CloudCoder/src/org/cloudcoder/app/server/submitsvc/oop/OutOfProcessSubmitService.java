@@ -18,30 +18,15 @@
 package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.commons.ssl.KeyMaterial;
+import org.apache.commons.ssl.SSLServer;
 import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.shared.model.Problem;
@@ -76,6 +61,9 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private Thread serverThread;
 	private String keystoreFilename;
 	private String keystorePassword;
+//	private String webappKeyAlias;
+//	private String builderCertAlias;
+	private SSLServer sslServer;
 	
 	@Override
 	public IFutureSubmissionResult submitAsync(Problem problem, List<TestCase> testCaseList, String programText) 
@@ -102,69 +90,19 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	}
 	
 	private ServerSocket createSSLServerSocket(int port)
-	throws IOException, UnknownHostException, KeyStoreException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, UnrecoverableKeyException, KeyManagementException
+			throws IOException, GeneralSecurityException
 	{
-	    String keyfile="/" + keystoreFilename;
-        String keyStoreType="JKS";
-        InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
-        
-        logger.info("Using keystore {}", keystoreFilename);
-        
-        // Load the keystore
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
+		logger.info("Using keystore {}", keystoreFilename);
+		KeyMaterial km = new KeyMaterial(getClass().getResource("/" + keystoreFilename), keystorePassword.toCharArray());
 
-        TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
-        //trustManagerFactory.init(trustStore);
-        // XXX Load the cert (public key) here instead of the private key?
-        trustManagerFactory.init(keyStore);
+		this.sslServer = new SSLServer();
+		sslServer.setKeyMaterial(km);
+		sslServer.addTrustMaterial(km);
 
-        // TrustManager
-        X509TrustManager x509TrustManager = null;
-        for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) {
-            if (trustManager instanceof X509TrustManager) {
-                x509TrustManager = (X509TrustManager) trustManager;
-                break;
-            }
-        }
-        if (x509TrustManager == null) {
-            throw new IllegalArgumentException("Cannot find x509TrustManager");
-        }
-
-        // KeyManager
-        KeyManagerFactory keyManagerFactory =
-                KeyManagerFactory.getInstance("SunX509", "SunJSSE");
-        keyManagerFactory.init(keyStore, keystorePassword.toCharArray());
-        X509KeyManager x509KeyManager = null;
-        for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
-            if (keyManager instanceof X509KeyManager) {
-                x509KeyManager = (X509KeyManager) keyManager;
-                break;
-            }
-        }
-        if (x509KeyManager == null) {
-            throw new NullPointerException();
-        }
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        // the final null means use the default secure random source
-        sslContext.init(new KeyManager[]{x509KeyManager},
-                new TrustManager[]{x509TrustManager}, null);
-
-        SSLServerSocketFactory serverSocketFactory =
-                sslContext.getServerSocketFactory();
-        SSLServerSocket serverSocket =
-                (SSLServerSocket) serverSocketFactory.createServerSocket(port);
-
-        //serverSocket.setNeedClientAuth(true);
-        serverSocket.setNeedClientAuth(false);
-        // prevent older protocols from being used, especially SSL2 which is insecure
-        serverSocket.setEnabledProtocols(new String[]{"TLSv1"});
-        return serverSocket;
+		return sslServer.createServerSocket(port);
 	}
 	
 	public void start(int port) throws IOException {
-		//ServerSocket serverSocket = new ServerSocket(port);
 	    ServerSocket serverSocket = null;
 		
 		try {
@@ -194,14 +132,15 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	public void contextInitialized(ServletContextEvent event) {
 		try {
 			// Determine keystore filename and password
-			keystoreFilename = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore");
-			if (keystoreFilename == null) {
-				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
-			}
-			keystorePassword = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore.password");
-			if (keystorePassword == null) {
-				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
-			}
+			keystoreFilename = getConfigProperty(event, "cloudcoder.submitsvc.ssl.webapp.keystore");
+			keystorePassword = getConfigProperty(event, "cloudcoder.submitsvc.ssl.keystorepassword");
+			
+//			// Determine webapp private key alias
+//			webappKeyAlias = getConfigProperty(event, "cloudcoder.submitsvc.ssl.webapp.keyalias");
+//			
+//			// Determine the keystore alias of the builder's certificate,
+//			// so we can add it to the truststore.
+//			builderCertAlias = getConfigProperty(event, "cloudcoder.submitsvc.ssl.builder.keyalias");
 			
 			System.out.println("keystore=" + keystoreFilename + ",password=" + keystorePassword);
 			
@@ -214,6 +153,14 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not create server thread for oop submit service", e);
 		}
+	}
+
+	private String getConfigProperty(ServletContextEvent event, String propName) {
+		String val = event.getServletContext().getInitParameter(propName);
+		if (val == null) {
+			throw new IllegalArgumentException(propName + " property is not set");
+		}
+		return val;
 	}
 
 	@Override
