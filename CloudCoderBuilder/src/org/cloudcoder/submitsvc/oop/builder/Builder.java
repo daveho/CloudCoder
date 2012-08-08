@@ -18,28 +18,15 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -66,10 +53,7 @@ public class Builder implements Runnable {
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
 	private NoConnectTimer noConnectTimer;
-	private String host;
-	private int port;
-	private String keystoreFilename;
-	private String keystorePassword;
+	private WebappSocketFactory webappSocketFactory;
 	private Map<Integer, Problem> problemIdToProblemMap;
 	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
 	private Socket socket;
@@ -77,18 +61,14 @@ public class Builder implements Runnable {
 	private ObjectOutputStream out;
 	private Map<ProblemType, ITester> testerMap;
 
-	public Builder(String host, int port, String keystoreFilename, String keystorePassword) {
+	public Builder(WebappSocketFactory webappSocketFactory) {
 		this.shutdownRequested = false;
 		this.noConnectTimer = new NoConnectTimer();
-		this.host = host;
-		this.port = port;
-		this.keystoreFilename = keystoreFilename;
-		this.keystorePassword = keystorePassword;
+		this.webappSocketFactory = webappSocketFactory;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 		this.testerMap=new HashMap<ProblemType, ITester>();
 		
-		logger.info("Builder: using keystore {}", keystoreFilename);
 	}
 	
 	// Map of tester classes for known problem types
@@ -202,9 +182,10 @@ public class Builder implements Runnable {
 		return result;
 	}
 
-	private Socket createSecureSocket(String host, int port)
-	throws IOException, GeneralSecurityException
+	private Socket createSecureSocket()
+			throws IOException, GeneralSecurityException
 	{
+/*
 	    String keyfile="/" + keystoreFilename;
         String keyStoreType="JKS";
         InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
@@ -254,13 +235,14 @@ public class Builder implements Runnable {
 
         socket.setEnabledProtocols(new String[]{"TLSv1"});
         return socket;
+*/
+		return webappSocketFactory.connectToWebapp();
 	}
 	
 	public void attemptToConnectToServer() {
 		try {
-			//this.socket = new Socket(host, port);
 		    try {
-		        this.socket=createSecureSocket(host, port);
+		        this.socket=createSecureSocket();
 		    } catch (GeneralSecurityException e) {
 		        throw new RuntimeException(e);
 		    }

@@ -17,6 +17,8 @@
 
 package org.cloudcoder.submitsvc.oop.builder;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -94,6 +96,20 @@ public class BuilderDaemon implements IDaemon {
 		
 		Options options = new Options(config);
 		
+		// Create the WebappSocketFactory which the builder tasks can use to create
+		// connections to the webapp.
+		WebappSocketFactory webappSocketFactory;
+		try {
+			webappSocketFactory = new WebappSocketFactory(
+					options.getAppHost(),
+					options.getAppPort(),
+					options.getKeystoreFilename(),
+					options.getKeystorePassword());
+		} catch (Exception e) {
+			logger.error("Could not create WebappSocketFactory", e);
+			throw new IllegalStateException("Could not create WebappSocketFactory", e);
+		}
+		
 		logger.info("Builder starting");
 		logger.info("appHost={}", options.getAppHost());
 		logger.info("appPort={}", options.getAppPort());
@@ -102,11 +118,7 @@ public class BuilderDaemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder builder_ = new Builder(
-					options.getAppHost(),
-					options.getAppPort(),
-					options.getKeystoreFilename(),
-					options.getKeystorePassword());
+			Builder builder_ = new Builder(webappSocketFactory);
 			Thread thread_ = new Thread(builder_);
 	
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
