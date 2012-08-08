@@ -78,7 +78,7 @@ public class JDBCDatabaseConfig {
 		dbPasswd = getDatabaseProperty(dbProperties, "cloudcoder.db.passwd");
 		dbDatabaseName = getDatabaseProperty(dbProperties, "cloudcoder.db.databaseName");
 		dbHost = getDatabaseProperty(dbProperties, "cloudcoder.db.host");
-		dbPortStr = getDatabaseProperty(dbProperties, "cloudcoder.db.portstr");
+		dbPortStr = getDatabaseProperty(dbProperties, "cloudcoder.db.portStr");
 	}
 
 	private String getDatabaseProperty(ConfigProperties dbProperties, String propertyName) {

@@ -87,6 +87,8 @@ public class JDBCDatabase implements IDatabase {
 				"?user=" +
 				config.getDbUser() +
 				"&password=" + config.getDbPasswd();
+		logger.info("Database URL: "+jdbcUrl);
+		//System.out.println("URL: " +jdbcUrl);
 	}
 	
 	static {
