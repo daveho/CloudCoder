@@ -14,9 +14,7 @@
 
 	<path id="CloudCoderWebServer.classpath">
         <pathelement location="bin"/>
-		<fileset dir="lib">
-			<include name="**/*.jar"/>
-		</fileset>
+		<pathelement location="../CloudCoderJetty/bin"/>
 		<fileset dir="../CloudCoderJetty/lib">
 			<include name="**/*.jar"/>
 		</fileset>
@@ -64,7 +62,6 @@
 			Build single jar containing contents of all required libraries.
 		-->
 		<jar destfile="deps.jar">
-			<zipgroupfileset dir="lib" includes="**/*.jar" />
 			<zipgroupfileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
 		</jar>
 		

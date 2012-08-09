@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/jetty/jetty-ajp-7.4.4.v20110707.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://download.eclipse.org/jetty/stable-7/apidocs/"/>
@@ -113,6 +114,18 @@
 	<classpathentry exported="true" kind="lib" path="lib/jetty/jsp/jetty-jsp-2.1-7.4.4.v20110707.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jetty/jsp/org.apache.jasper.glassfish_2.1.0.v201007080150.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jetty/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/daemon/daemon.jar" sourcepath="lib/daemon/daemon.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j/log4j-1.2.16.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j/slf4j-api-1.6.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.slf4j.org/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
