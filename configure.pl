@@ -10,6 +10,20 @@ use FileHandle;
 my @propertyNames = ();
 my %properties = ();
 my %prior = ();
+my $configRepoWebapp = 0;
+
+if (scalar(@ARGV) >= 1) {
+	# If the "--repo" command-line argument is specified, then
+	# include configuration for the repository webapp (and its
+	# webserver).
+	my $arg = shift @ARGV;
+	if ($arg eq '--repo') {
+		$configRepoWebapp = 1;
+		print "Configuring for CloudCoder exercise repository\n\n";
+	} else {
+		die "Unknown option: $arg\n";
+	}
+}
 
 print "Welcome to the CloudCoder configuration script!\n";
 print "Please enter the information needed to configure CloudCoder for your system.\n";
@@ -87,6 +101,18 @@ askprop("Should the CloudCoder web server accept connections only from localhost
 	"(Set this to 'true' if using a reverse proxy, which is recommended)",
 	"cloudcoder.webserver.localhostonly", "true");
 
+if ($configRepoWebapp) {
+	print ">>> Configuring the CloudCoder exercise repository webapp/webserver <<<\n\n";
+
+	askprop("What port will the exercise repository web server listen on?",
+		"cloudcoder.repoapp.webserver.port", "8082");
+	askprop("What context path should the exercise repository webapp use?",
+		"cloudcoder.repoapp.webserver.contextpath", "/repo");
+	askprop("Should the exercise repository web server accempt connections only from localhost?\n" .
+		"(Set this to 'true' if using a reverse proxy, which is recommended)",
+		"cloudcoder.repoapp.webserver.localhostonly", "true");
+}
+
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
 if ((lc $confirm) ne 'yes') {
 	print "Properties not written\n";
@@ -119,7 +145,7 @@ sub ask {
 	}
 	print "==> ";
 
-	my $value = <>;
+	my $value = <STDIN>;
 	chomp $value;
 
 	if ((defined $defval) && $value =~ /^\s*$/) {

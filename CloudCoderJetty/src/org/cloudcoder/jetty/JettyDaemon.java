@@ -46,6 +46,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
  * @see http://brandontilley.com/2010/03/27/serving-a-gwt-application-with-an-embedded-jetty-server.html
  */
 public abstract class JettyDaemon implements IDaemon {
+	private String webappUrl;
+	
 	/**
 	 * Interface for information about how Jetty should be configured.
 	 */
@@ -99,6 +101,19 @@ public abstract class JettyDaemon implements IDaemon {
 	 *         how Jetty should be configured
 	 */
 	protected abstract Config getJettyConfig();
+	
+	/**
+	 * Specify an explicit URL for the webapp to be executed.
+	 * Normally the webapp URL is constructed from the codebase of the
+	 * executable jarfile, which is the desired behavior for
+	 * deployment.  For development, however, it is useful to be able
+	 * to hard-code the location of the webapp.
+	 * 
+	 * @param webappUrl the URL of the webapp
+	 */
+	public void setWebappUrl(String webappUrl) {
+		this.webappUrl = webappUrl;
+	}
 
 	@Override
 	public void start(String instanceName) {
@@ -134,21 +149,26 @@ public abstract class JettyDaemon implements IDaemon {
 		}
 		server.addConnector(connector);
 
-		// Create WebAppContext, running the web application embedded in the classpath.
+		// Create WebAppContext, running the web application embedded in the classpath
+		// (unless a webapp URL is specified explicitly).
 		WebAppContext handler = new WebAppContext();
 		ProtectionDomain domain = getClass().getProtectionDomain();
-		String codeBase = domain.getCodeSource().getLocation().toExternalForm();
-		if (codeBase.endsWith(".jar")) {
-			// Running out of a jarfile: this is the preferred deployment option.
-			handler.setWar("jar:" + codeBase + "!" + jettyConfig.getWebappResourcePath());
-		} else {
-			// Running from a directory. Untested.
-			boolean endsInDir = codeBase.endsWith("/");
-			if (endsInDir) {
-				codeBase = codeBase.substring(0, codeBase.length() - 1);
+		if (webappUrl == null) {
+			// Attempt to determine the location of the webapp embedded in the classpath.
+			String codeBase = domain.getCodeSource().getLocation().toExternalForm();
+			if (codeBase.endsWith(".jar")) {
+				// Running out of a jarfile: this is the preferred deployment option.
+				webappUrl = "jar:" + codeBase + "!" + jettyConfig.getWebappResourcePath();
+			} else {
+				// Running from a directory. Untested.
+				boolean endsInDir = codeBase.endsWith("/");
+				if (endsInDir) {
+					codeBase = codeBase.substring(0, codeBase.length() - 1);
+				}
+				webappUrl = codeBase + jettyConfig.getWebappResourcePath();
 			}
-			handler.setWar(codeBase + jettyConfig.getWebappResourcePath());
 		}
+		handler.setWar(webappUrl);
 		handler.setContextPath(jettyConfig.getContext());
 		
 		if (overrideWebXml != null) {
