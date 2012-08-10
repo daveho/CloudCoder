@@ -79,16 +79,15 @@ public class JDBCDatabase implements IDatabase {
 	private String jdbcUrl;
 	
 	public JDBCDatabase() {
-		JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
+		JDBCDatabaseConfig.ConfigProperties config = JDBCDatabaseConfig.getInstance().getConfigProperties();
 		jdbcUrl = "jdbc:mysql://" +
-				config.getDbHost() + config.getDbPortStr() +
+				config.getHost() + config.getPortStr() +
 				"/" +
-				config.getDbDatabaseName() +
+				config.getDatabaseName() +
 				"?user=" +
-				config.getDbUser() +
-				"&password=" + config.getDbPasswd();
+				config.getUser() +
+				"&password=" + config.getPasswd();
 		logger.info("Database URL: "+jdbcUrl);
-		//System.out.println("URL: " +jdbcUrl);
 	}
 	
 	static {

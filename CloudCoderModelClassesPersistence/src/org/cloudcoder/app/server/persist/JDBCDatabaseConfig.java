@@ -17,8 +17,6 @@
 
 package org.cloudcoder.app.server.persist;
 
-import org.slf4j.LoggerFactory;
-
 /**
  * JDBCDatabase configuration properties singleton.
  * Must be initialized using the create() method before
@@ -28,27 +26,44 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCDatabaseConfig {
 	/**
-	 * A source of database configuration properties.
+	 * Interface describing the database configuration properties.
 	 */
 	public interface ConfigProperties {
 		/**
-		 * Get the value of a configuration property.
-		 * 
-		 * @param name the name of the configuration property to get
-		 * @return the value of the configuration property
+		 * @return the database user
 		 */
-		public String getDbConfigProperty(String name);
+		public String getUser();
+		
+		/**
+		 * @return the database password
+		 */
+		public String getPasswd();
+		
+		/**
+		 * @return the database name
+		 */
+		public String getDatabaseName();
+		
+		/**
+		 * @return the database host
+		 */
+		public String getHost();
+		
+		/**
+		 * @return the database port string (e.g., ":8889" if using MAMP, empty string if MySQL is listening on its default port)
+		 */
+		public String getPortStr();
 	}
 	
 	private static JDBCDatabaseConfig instance;
 	private static Object instanceLock = new Object();
 	
-	private String dbUser;
-	private String dbPasswd;
-	private String dbDatabaseName;
-	private String dbHost;
-	private String dbPortStr;
+	private ConfigProperties configProperties;
 	
+	private JDBCDatabaseConfig(ConfigProperties configProperties) {
+		this.configProperties = configProperties;
+	}
+
 	/**
 	 * @return the singleton instance of JDBCDatabaseConfig
 	 */
@@ -68,26 +83,8 @@ public class JDBCDatabaseConfig {
 			if (instance != null) {
 				throw new IllegalStateException("JDBCDatabaseConfig already exists");
 			}
-			instance = new JDBCDatabaseConfig();
-			instance.readDatabaseConfigProperties(configProperties);
+			instance = new JDBCDatabaseConfig(configProperties);
 		}
-	}
-
-	private void readDatabaseConfigProperties(ConfigProperties dbProperties) {
-		dbUser = getDatabaseProperty(dbProperties, "cloudcoder.db.user");
-		dbPasswd = getDatabaseProperty(dbProperties, "cloudcoder.db.passwd");
-		dbDatabaseName = getDatabaseProperty(dbProperties, "cloudcoder.db.databaseName");
-		dbHost = getDatabaseProperty(dbProperties, "cloudcoder.db.host");
-		dbPortStr = getDatabaseProperty(dbProperties, "cloudcoder.db.portStr");
-	}
-
-	private String getDatabaseProperty(ConfigProperties dbProperties, String propertyName) {
-		String value = dbProperties.getDbConfigProperty(propertyName);
-		if (value == null) {
-			throw new IllegalArgumentException("Database property " + propertyName + " is undefined");
-		}
-		LoggerFactory.getLogger(this.getClass()).info("Database property " + propertyName + "=" + value);
-		return value;
 	}
 	
 	/**
@@ -99,50 +96,11 @@ public class JDBCDatabaseConfig {
 		}
 	}
 	
-	private static void check(String s) {
-		if (s == null) {
-			throw new IllegalStateException("database config param not set");
-		}
-	}
-	
 	/**
-	 * @return the database username
+	 * Get the database configuration properties. 
+	 * @return the database configuration properties
 	 */
-	public String getDbUser() {
-		check(dbUser);
-		return dbUser;
-	}
-	
-	/**
-	 * @return the database password
-	 */
-	public String getDbPasswd() {
-		check(dbPasswd);
-		return dbPasswd;
-	}
-	
-	/**
-	 * @return the database name (defaults to "cloudcoder" if not explicitly set
-	 *         in servlet context init params)
-	 */
-	public String getDbDatabaseName() {
-		return dbDatabaseName != null ? dbDatabaseName : "cloudcoder";
-	}
-	
-	/**
-	 * @return the host on which the MySQL database is running
-	 *         (returns "localhost" if no db host is set) 
-	 */
-	public String getDbHost() {
-		return dbHost != null ? dbHost : "localhost";
-	}
-	
-	/**
-	 * @return the database port string (if the MySQL server is running
-	 *         on a nonstandard port, then this should be of the form
-	 *         :YYYY, e.g., :8889 for MAMP)
-	 */
-	public String getDbPortStr() {
-		return dbPortStr != null ? dbPortStr : "";
+	public ConfigProperties getConfigProperties() {
+		return configProperties;
 	}
 }

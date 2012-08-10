@@ -166,7 +166,7 @@
     <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
   </listener>
   <listener>
-    <listener-class>org.cloudcoder.app.server.persist.JDBCDatabaseConfigServletContextListener</listener-class>
+    <listener-class>org.cloudcoder.app.server.persist.WebappDatabaseConfigServletContextListener</listener-class>
   </listener>
 
 </web-app>
