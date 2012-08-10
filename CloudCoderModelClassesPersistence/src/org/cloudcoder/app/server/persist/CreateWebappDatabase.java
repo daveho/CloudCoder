@@ -18,14 +18,8 @@
 package org.cloudcoder.app.server.persist;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
@@ -37,7 +31,6 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
-import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemLicense;
@@ -55,42 +48,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class CreateWebappDatabase {
-	private static final boolean DEBUG = false;
-	
-	private static class ConfigProperties {
-		private Properties properties;
-		
-		public ConfigProperties() throws FileNotFoundException, IOException {
-			properties = new Properties();
-
-			// See if we can load "cloudcoder.properties" as an embedded resource.
-			URL u = this.getClass().getClassLoader().getResource("cloudcoder.properties");
-			if (u != null) {
-				InputStream in = u.openStream();
-				try {
-					properties.load(in);
-				} finally {
-					in.close();
-				}
-			} else {
-				System.out.println("Warning: loading cloudcoder.properties from filesystem");
-				properties.load(new FileReader("../cloudcoder.properties"));
-			}
-		}
-		
-		public boolean hasProperty(String propName) {
-		    String value = properties.getProperty("cloudcoder.db." + propName);
-		    return value != null;
-		}
-		
-		public String get(String propName) {
-		    String value = properties.getProperty("cloudcoder.db." + propName);
-			if (value == null) {
-				throw new IllegalArgumentException("Unknown property: " + propName);
-			}
-			return value;
-		}
-	}
+	static final boolean DEBUG = false;
 	
 	public static void main(String[] args) throws Exception {
 		try {
@@ -120,22 +78,14 @@ public class CreateWebappDatabase {
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
-		ConfigProperties config = new ConfigProperties();
+		Properties config = DBUtil.getConfigProperties();
 		
-		String dbUser = config.get("user");
-		String dbPasswd = config.get("passwd");
-		String dbName = config.get("databaseName");
-		String dbHost = config.get("host");
-		String portStr="";
-		if (config.hasProperty("portStr")) {
-		    portStr=config.get("portStr");
+		Connection conn = DBUtil.connectToDatabaseServer(config);
+		
+		String dbName = config.getProperty("cloudcoder.db.databaseName");
+		if (dbName == null) {
+			throw new IllegalStateException("configuration properties do not define cloudcoder.db.databaseName");
 		}
-		
-		// Connect to the database server, but don't specify a database name 
-		System.out.println(dbHost +", "+dbName+", "+dbUser+", "+dbPasswd);
-		String url="jdbc:mysql://" + dbHost + portStr +"/?user=" + dbUser + "&password=" + dbPasswd;
-		System.out.println(url);
-		Connection conn = DriverManager.getConnection(url);
 		
 		System.out.println("Creating database");
 		DBUtil.execSql(
@@ -147,7 +97,7 @@ public class CreateWebappDatabase {
 		conn.close();
 		
 		// Reconnect to the newly-created database
-		conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + portStr + "/" + dbName + "?user=" + dbUser + "&password=" + dbPasswd);
+		conn = DBUtil.connectToDatabase(config);
 		
 		// Create tables and indexes
 		createTable(conn, JDBCDatabase.CHANGES, Change.SCHEMA);
@@ -169,16 +119,16 @@ public class CreateWebappDatabase {
 		ConfigurationSetting instName = new ConfigurationSetting();
 		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
 		instName.setValue(ccInstitutionName);
-		storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
+		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
 		
 		// Terms
 		System.out.println("Creating terms...");
-		storeTerm(conn, "Winter", 0);
-		storeTerm(conn, "Spring", 1);
-		storeTerm(conn, "Summer", 2);
-		storeTerm(conn, "Summer 1", 3);
-		storeTerm(conn, "Summer 2", 4);
-		Term fall = storeTerm(conn, "Fall", 5);
+		CreateWebappDatabase.storeTerm(conn, "Winter", 0);
+		CreateWebappDatabase.storeTerm(conn, "Spring", 1);
+		CreateWebappDatabase.storeTerm(conn, "Summer", 2);
+		CreateWebappDatabase.storeTerm(conn, "Summer 1", 3);
+		CreateWebappDatabase.storeTerm(conn, "Summer 2", 4);
+		Term fall = CreateWebappDatabase.storeTerm(conn, "Fall", 5);
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
@@ -189,14 +139,14 @@ public class CreateWebappDatabase {
 		course.setTerm(fall);
 		course.setYear(2012);
 		course.setUrl("http://cloudcoder.org/");
-		storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
+		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
 		User user = new User();
 		user.setUsername(ccUserName);
 		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
+		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
@@ -205,7 +155,7 @@ public class CreateWebappDatabase {
 		courseReg.setUserId(user.getId());
 		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
 		courseReg.setSection(101);
-		storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
+		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");
@@ -236,7 +186,7 @@ public class CreateWebappDatabase {
 		problem.setTimestampUtc(System.currentTimeMillis());
 		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		
-		storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
+		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
@@ -247,7 +197,7 @@ public class CreateWebappDatabase {
 		testCase.setOutput("^\\s*Hello\\s*,\\s*world\\s*$i");
 		testCase.setSecret(false);
 		
-		storeBean(conn, testCase, TestCase.SCHEMA, JDBCDatabase.TEST_CASES);
+		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCDatabase.TEST_CASES);
 		
 		conn.close();
 		
@@ -256,83 +206,14 @@ public class CreateWebappDatabase {
 
 	private static void createTable(Connection conn, String tableName, ModelObjectSchema schema) throws SQLException {
 		System.out.println("Creating table " + tableName);
-		String sql = DBUtil.getCreateTableStatement(schema, tableName);
-		if (DEBUG) {
-			System.out.println(sql);
-		}
-		DBUtil.execSql(conn, sql);
+		DBUtil.createTable(conn, tableName, schema);
 	}
 
 	private static Term storeTerm(Connection conn, String name, int seq) throws SQLException {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-		storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
+		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
 		return term;
-	}
-
-	// Use introspection to store an arbitrary bean in the database.
-	// Eventually we could use this sort of approach to replace much
-	// of our hand-written JDBC code, although I don't know how great
-	// and idea that would be (for example, it might not yield adequate
-	// performance.)  For just creating the database, it should be
-	// fine.
-	private static void storeBean(Connection conn, Object bean, ModelObjectSchema schema, String tableName) throws SQLException {
-		StringBuilder buf = new StringBuilder();
-		
-		buf.append("insert into " + tableName);
-		buf.append(" values (");
-		buf.append(DBUtil.getInsertPlaceholdersNoId(schema));
-		buf.append(")");
-		
-		PreparedStatement stmt = null;
-		ResultSet genKeys = null;
-		
-		try {
-			stmt = conn.prepareStatement(buf.toString(), schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
-			
-			// Now for the magic: iterate through the schema fields
-			// and bind the query parameters based on the bean properties.
-			int index = 1;
-			for (ModelObjectField field : schema.getFieldList()) {
-				if (field.isUniqueId()) {
-					continue;
-				}
-				try {
-					Object value = BeanUtil.getProperty(bean, field.getPropertyName());
-					if (value instanceof Enum) {
-						// Enum values are converted to integers
-						value = Integer.valueOf(((Enum<?>)value).ordinal());
-					}
-					stmt.setObject(index++, value);
-				} catch (Exception e) {
-					throw new SQLException(
-							"Couldn't get property " + field.getPropertyName() +
-							" of " + bean.getClass().getName() + " object");
-				}
-			}
-			
-			// Execute the insert
-			stmt.executeUpdate();
-			
-			if (schema.hasUniqueId()) {
-				genKeys = stmt.getGeneratedKeys();
-				if (!genKeys.next()) {
-					throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
-				}
-				int id = genKeys.getInt(1);
-				
-				// Set the unique id value in the bean
-				try {
-					BeanUtil.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
-				}
-			}
-		} finally {
-			DBUtil.closeQuietly(genKeys);
-			DBUtil.closeQuietly(stmt);
-		}
 	}
 }
