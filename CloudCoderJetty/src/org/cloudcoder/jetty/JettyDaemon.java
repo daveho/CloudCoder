@@ -177,7 +177,7 @@ public abstract class JettyDaemon implements IDaemon {
 		// be much easier than having to create a file.  However,
 		// we can at least be thankful that it is possible to override
 		// context parameters at all, since it greatly simplifies the
-		// process of configuring CloudCoder for deployment.
+		// process of configuring webapps for deployment.
 		
 		// Create a temp file
 		File f = File.createTempFile("ccws", ".xml");

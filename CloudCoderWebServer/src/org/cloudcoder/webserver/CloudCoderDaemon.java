@@ -73,8 +73,7 @@ public class CloudCoderDaemon extends JettyDaemon {
 
 	@Override
 	public void handleCommand(String command) {
-		// TODO Auto-generated method stub
-		
+		// TODO: implement
 	}
 	
 	/**
