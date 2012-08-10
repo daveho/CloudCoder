@@ -39,6 +39,12 @@ public class CloudCoderRepositoryInteractiveLauncher {
 		// be a sibling of this Eclipse project.)
 		daemon.setWebappUrl("file:../CloudCoderRepository/war");
 		
+		// Allow the webapp to load classes from the system classpath.
+		// We need this because some classes needed by the repository webapp
+		// (such as model classes and persistence) are in separate Eclipse
+		// projects.
+		daemon.setExtraClasspath(System.getProperty("java.class.path").replace(File.pathSeparatorChar, ','));
+		
 		// Setting empty config properties should result in default values
 		// being used, which should be appropriate for development.
 		daemon.setConfigProperties(new Properties());

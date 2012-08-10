@@ -1,3 +1,7 @@
 #topBanner {
 	text-align: right;
 }
+
+.error {
+	color: red;
+}

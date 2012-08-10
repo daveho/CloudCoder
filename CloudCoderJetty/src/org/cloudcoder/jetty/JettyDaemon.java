@@ -47,6 +47,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public abstract class JettyDaemon implements IDaemon {
 	private String webappUrl;
+	private String extraClasspath;
 	
 	/**
 	 * Interface for information about how Jetty should be configured.
@@ -114,6 +115,18 @@ public abstract class JettyDaemon implements IDaemon {
 	public void setWebappUrl(String webappUrl) {
 		this.webappUrl = webappUrl;
 	}
+	
+	/**
+	 * Set extra classpath entries to be used by the webapp.
+	 * This is useful for running in development mode, where some classes
+	 * needed by the webapp are being provided by other projects.
+	 * Entries should be comma- or semicolon-separated.
+	 * 
+	 * @param extraClasspath the extra classpath entries to set
+	 */
+	public void setExtraClasspath(String extraClasspath) {
+		this.extraClasspath = extraClasspath;
+	}
 
 	@Override
 	public void start(String instanceName) {
@@ -170,6 +183,10 @@ public abstract class JettyDaemon implements IDaemon {
 		}
 		handler.setWar(webappUrl);
 		handler.setContextPath(jettyConfig.getContext());
+		if (extraClasspath != null) {
+			handler.setExtraClasspath(extraClasspath);
+			System.out.println("Extra classpath entries: " + extraClasspath);
+		}
 		
 		if (overrideWebXml != null) {
 			// Configure the override-web.xml

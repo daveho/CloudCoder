@@ -4,8 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 	<head>
-		<title>CloudCoder Exercise Repository</title>
-		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/cloudcoderRepo.css"></link>
+		<repo:headStuff title=""/>
 	</head>
 
 	<body>
