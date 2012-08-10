@@ -104,6 +104,18 @@ askprop("Should the CloudCoder web server accept connections only from localhost
 if ($configRepoWebapp) {
 	print ">>> Configuring the CloudCoder exercise repository webapp/webserver <<<\n\n";
 
+	askprop("What MySQL username will the repository webapp use to connect to the database?",
+		"cloudcoder.repoapp.db.user", undef);
+	askprop("What MySQL password will the repository webapp use to connect to the database?",
+		"cloudcoder.repoapp.db.passwd", undef);
+	askprop("What MySQL database will contain the repository tables?",
+		"cloudcoder.repoapp.db.databaseName", "cloudcoderrepodb");
+	askprop("What host will the repository webapp connect to to access the MySQL database?",
+		"cloudcoder.repoapp.db.host", "localhost");
+	askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
+		"Just hit enter if MySQL is running on the standard port.",
+		"cloudcoder.repoapp.db.portStr", undef);
+
 	askprop("What port will the exercise repository web server listen on?",
 		"cloudcoder.repoapp.webserver.port", "8082");
 	askprop("What context path should the exercise repository webapp use?",

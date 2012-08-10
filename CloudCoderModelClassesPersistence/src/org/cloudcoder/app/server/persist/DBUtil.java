@@ -265,32 +265,34 @@ public class DBUtil {
 	 * database on that server.
 	 * 
 	 * @param configProperties CloudCoder configuration properties
+	 * @param prefix           the prefix for database-related configuration properties (e.g., "cloudcoder.db")
 	 * @return the Connection to the database server
 	 * @throws SQLException 
 	 */
-	public static Connection connectToDatabaseServer(Properties config) throws SQLException {
-		return doConnectToDatabaseServer(config, "");
+	public static Connection connectToDatabaseServer(Properties config, String prefix) throws SQLException {
+		return doConnectToDatabaseServer(config, prefix, "");
 	}
 
 	/**
 	 * Connect to the CloudCoder database.
 	 * 
 	 * @param config the CloudCoder configuration properties
-	 * @return the Connection to the CloudCoder dataabase
+	 * @param prefix           the prefix for database-related configuration properties (e.g., "cloudcoder.db")
+	 * @return the Connection to the CloudCoder database
 	 * @throws SQLException 
 	 */
-	public static Connection connectToDatabase(Properties config) throws SQLException {
-		return doConnectToDatabaseServer(config, getProp(config, "cloudcoder.db.databaseName"));
+	public static Connection connectToDatabase(Properties config, String prefix) throws SQLException {
+		return doConnectToDatabaseServer(config, prefix, getProp(config, prefix + ".databaseName"));
 	}
 
-	private static Connection doConnectToDatabaseServer(Properties config, String databaseName) throws SQLException {
-		String dbUser = getProp(config, "cloudcoder.db.user");
-		String dbPasswd = getProp(config, "cloudcoder.db.passwd");
-		String dbHost = getProp(config, "cloudcoder.db.host");
+	private static Connection doConnectToDatabaseServer(Properties config, String prefix, String databaseName) throws SQLException {
+		String dbUser = getProp(config, prefix + ".user");
+		String dbPasswd = getProp(config, prefix + ".passwd");
+		String dbHost = getProp(config, prefix + ".host");
 
 		String portStr = "";
-		if (config.getProperty("cloudcoder.db.portStr") != null) {
-			portStr = config.getProperty("cloudcoder.db.portStr");
+		if (config.getProperty(prefix + ".portStr") != null) {
+			portStr = config.getProperty(prefix + ".portStr");
 		}
 
 		String url="jdbc:mysql://" + dbHost + portStr+ "/" + databaseName + "?user=" + dbUser + "&password=" + dbPasswd;
@@ -420,5 +422,20 @@ public class DBUtil {
 		}
 		
 		return properties;
+	}
+
+	/**
+	 * Create a database.
+	 * 
+	 * @param conn    Connection to the database server
+	 * @param dbName  name of the database to create
+	 * @throws SQLException
+	 */
+	public static void createDatabase(Connection conn, String dbName) throws SQLException {
+		execSql(
+				conn,
+				"create database " + dbName +
+				" character set 'utf8' " +
+				" collate 'utf8_general_ci' ");
 	}
 }

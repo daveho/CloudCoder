@@ -80,7 +80,7 @@ public class CreateWebappDatabase {
 
 		Properties config = DBUtil.getConfigProperties();
 		
-		Connection conn = DBUtil.connectToDatabaseServer(config);
+		Connection conn = DBUtil.connectToDatabaseServer(config, "cloudcoder.db");
 		
 		String dbName = config.getProperty("cloudcoder.db.databaseName");
 		if (dbName == null) {
@@ -88,16 +88,12 @@ public class CreateWebappDatabase {
 		}
 		
 		System.out.println("Creating database");
-		DBUtil.execSql(
-				conn,
-				"create database " + dbName +
-				" character set 'utf8' " +
-				" collate 'utf8_general_ci' ");
+		DBUtil.createDatabase(conn, dbName);
 		
 		conn.close();
 		
 		// Reconnect to the newly-created database
-		conn = DBUtil.connectToDatabase(config);
+		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 		
 		// Create tables and indexes
 		createTable(conn, JDBCDatabase.CHANGES, Change.SCHEMA);
