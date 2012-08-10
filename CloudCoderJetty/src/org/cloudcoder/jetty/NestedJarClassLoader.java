@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.webserver;
+package org.cloudcoder.jetty;
 
 import java.io.File;
 import java.io.FileOutputStream;
