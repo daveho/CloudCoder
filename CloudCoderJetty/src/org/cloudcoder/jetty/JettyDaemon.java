@@ -145,9 +145,9 @@ public abstract class JettyDaemon implements IDaemon {
 			// Running from a directory. Untested.
 			boolean endsInDir = codeBase.endsWith("/");
 			if (endsInDir) {
-				codeBase = codeBase.substring(codeBase.length() - 1);
+				codeBase = codeBase.substring(0, codeBase.length() - 1);
 			}
-			handler.setWar(codeBase +jettyConfig.getWebappResourcePath());
+			handler.setWar(codeBase + jettyConfig.getWebappResourcePath());
 		}
 		handler.setContextPath(jettyConfig.getContext());
 		
