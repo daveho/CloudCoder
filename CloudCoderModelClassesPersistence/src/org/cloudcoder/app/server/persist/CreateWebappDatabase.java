@@ -78,8 +78,13 @@ public class CreateWebappDatabase {
 			}
 		}
 		
+		public boolean hasProperty(String propName) {
+		    String value = properties.getProperty("cloudcoder.db." + propName);
+		    return value != null;
+		}
+		
 		public String get(String propName) {
-			String value = properties.getProperty("cloudcoder.db." + propName);
+		    String value = properties.getProperty("cloudcoder.db." + propName);
 			if (value == null) {
 				throw new IllegalArgumentException("Unknown property: " + propName);
 			}
@@ -95,6 +100,7 @@ public class CreateWebappDatabase {
 			// these are likely to be meaningful to the user
 			// (for example, can't create the database because
 			// it already exists.)
+		    e.printStackTrace(System.err);
 			System.err.println("Database error: " + e.getMessage());
 		}
 	}
@@ -120,9 +126,16 @@ public class CreateWebappDatabase {
 		String dbPasswd = config.get("passwd");
 		String dbName = config.get("databaseName");
 		String dbHost = config.get("host");
+		String portStr="";
+		if (config.hasProperty("portStr")) {
+		    portStr=config.get("portStr");
+		}
 		
 		// Connect to the database server, but don't specify a database name 
-		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + "/?user=" + dbUser + "&password=" + dbPasswd);
+		System.out.println(dbHost +", "+dbName+", "+dbUser+", "+dbPasswd);
+		String url="jdbc:mysql://" + dbHost + portStr +"/?user=" + dbUser + "&password=" + dbPasswd;
+		System.out.println(url);
+		Connection conn = DriverManager.getConnection(url);
 		
 		System.out.println("Creating database");
 		DBUtil.execSql(
@@ -134,7 +147,7 @@ public class CreateWebappDatabase {
 		conn.close();
 		
 		// Reconnect to the newly-created database
-		conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + "/" + dbName + "?user=" + dbUser + "&password=" + dbPasswd);
+		conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + portStr + "/" + dbName + "?user=" + dbUser + "&password=" + dbPasswd);
 		
 		// Create tables and indexes
 		createTable(conn, JDBCDatabase.CHANGES, Change.SCHEMA);
