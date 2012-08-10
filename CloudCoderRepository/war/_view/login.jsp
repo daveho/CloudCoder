@@ -5,13 +5,18 @@
 <html>
 	<head>
 		<repo:headStuff title="Log In"></repo:headStuff>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$("#usernameElt").focus();
+			});
+		</script>
 	</head>
 	<body>
 		<form action="${pageContext.servletContext.contextPath}/login" method="POST">
 			<table>
 				<tr>
 					<td>Username: </td>
-					<td><input name="username" size="20" /></td>
+					<td><input id="usernameElt" name="username" size="20" /></td>
 				</tr>
 				<tr>
 					<td>Password: </td>
