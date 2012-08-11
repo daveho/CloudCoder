@@ -185,57 +185,6 @@ public class Builder implements Runnable {
 	private Socket createSecureSocket()
 			throws IOException, GeneralSecurityException
 	{
-/*
-	    String keyfile="/" + keystoreFilename;
-        String keyStoreType="JKS";
-        InputStream keyStoreInputStream=ClassLoader.class.getResourceAsStream(keyfile);
-
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
-        
-        TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance("PKIX", "SunJSSE");
-        //trustManagerFactory.init(trustStore);
-        // XXX Load the cert (public key) here instead of the private key?
-        trustManagerFactory.init(keyStore);
-        
-        // TrustManager
-        X509TrustManager x509TrustManager = null;
-        for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) {
-            if (trustManager instanceof X509TrustManager) {
-                x509TrustManager = (X509TrustManager) trustManager;
-                break;
-            }
-        }
-        if (x509TrustManager == null) {
-            throw new IllegalArgumentException("Cannot find x509TrustManager");
-        }
-
-        // KeyManager
-        KeyManagerFactory keyManagerFactory =
-                KeyManagerFactory.getInstance("SunX509", "SunJSSE");
-        keyManagerFactory.init(keyStore, keystorePassword.toCharArray());
-        X509KeyManager x509KeyManager = null;
-        for (KeyManager keyManager : keyManagerFactory.getKeyManagers()) {
-            if (keyManager instanceof X509KeyManager) {
-                x509KeyManager = (X509KeyManager) keyManager;
-                break;
-            }
-        }
-        if (x509KeyManager == null) {
-            throw new NullPointerException();
-        }
-        
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(new KeyManager[]{x509KeyManager},
-            new TrustManager[]{x509TrustManager}, null);
-
-        SSLSocketFactory socketFactory = sslContext.getSocketFactory();
-        SSLSocket socket =
-            (SSLSocket) socketFactory.createSocket(host, port);
-
-        socket.setEnabledProtocols(new String[]{"TLSv1"});
-        return socket;
-*/
 		return webappSocketFactory.connectToWebapp();
 	}
 	
