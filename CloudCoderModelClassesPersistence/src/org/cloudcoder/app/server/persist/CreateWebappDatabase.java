@@ -96,17 +96,17 @@ public class CreateWebappDatabase {
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 		
 		// Create tables and indexes
-		createTable(conn, JDBCDatabase.CHANGES, Change.SCHEMA);
-		createTable(conn, JDBCDatabase.CONFIGURATION_SETTINGS, ConfigurationSetting.SCHEMA);
-		createTable(conn, JDBCDatabase.COURSES, Course.SCHEMA);
-		createTable(conn, JDBCDatabase.COURSE_REGISTRATIONS, CourseRegistration.SCHEMA);
-		createTable(conn, JDBCDatabase.EVENTS, Event.SCHEMA);
-		createTable(conn, JDBCDatabase.PROBLEMS, Problem.SCHEMA);
-		createTable(conn, JDBCDatabase.SUBMISSION_RECEIPTS, SubmissionReceipt.SCHEMA);
-		createTable(conn, JDBCDatabase.TERMS, Term.SCHEMA);
-		createTable(conn, JDBCDatabase.TEST_CASES, TestCase.SCHEMA);
-		createTable(conn, JDBCDatabase.TEST_RESULTS, TestResult.SCHEMA);
-		createTable(conn, JDBCDatabase.USERS, User.SCHEMA);
+		createTable(conn, JDBCTableNames.CHANGES, Change.SCHEMA);
+		createTable(conn, JDBCTableNames.CONFIGURATION_SETTINGS, ConfigurationSetting.SCHEMA);
+		createTable(conn, JDBCTableNames.COURSES, Course.SCHEMA);
+		createTable(conn, JDBCTableNames.COURSE_REGISTRATIONS, CourseRegistration.SCHEMA);
+		createTable(conn, JDBCTableNames.EVENTS, Event.SCHEMA);
+		createTable(conn, JDBCTableNames.PROBLEMS, Problem.SCHEMA);
+		createTable(conn, JDBCTableNames.SUBMISSION_RECEIPTS, SubmissionReceipt.SCHEMA);
+		createTable(conn, JDBCTableNames.TERMS, Term.SCHEMA);
+		createTable(conn, JDBCTableNames.TEST_CASES, TestCase.SCHEMA);
+		createTable(conn, JDBCTableNames.TEST_RESULTS, TestResult.SCHEMA);
+		createTable(conn, JDBCTableNames.USERS, User.SCHEMA);
 		
 		// Create initial database contents
 		
@@ -115,7 +115,7 @@ public class CreateWebappDatabase {
 		ConfigurationSetting instName = new ConfigurationSetting();
 		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
 		instName.setValue(ccInstitutionName);
-		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
+		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCTableNames.CONFIGURATION_SETTINGS);
 		
 		// Terms
 		System.out.println("Creating terms...");
@@ -135,14 +135,14 @@ public class CreateWebappDatabase {
 		course.setTerm(fall);
 		course.setYear(2012);
 		course.setUrl("http://cloudcoder.org/");
-		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
+		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCTableNames.COURSES);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
 		User user = new User();
 		user.setUsername(ccUserName);
 		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
+		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCTableNames.USERS);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
@@ -151,7 +151,7 @@ public class CreateWebappDatabase {
 		courseReg.setUserId(user.getId());
 		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
 		courseReg.setSection(101);
-		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
+		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCTableNames.COURSE_REGISTRATIONS);
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");
@@ -182,7 +182,7 @@ public class CreateWebappDatabase {
 		problem.setTimestampUtc(System.currentTimeMillis());
 		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		
-		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
+		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCTableNames.PROBLEMS);
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
@@ -193,7 +193,7 @@ public class CreateWebappDatabase {
 		testCase.setOutput("^\\s*Hello\\s*,\\s*world\\s*$i");
 		testCase.setSecret(false);
 		
-		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCDatabase.TEST_CASES);
+		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCTableNames.TEST_CASES);
 		
 		conn.close();
 		
@@ -209,7 +209,7 @@ public class CreateWebappDatabase {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
+		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCTableNames.TERMS);
 		return term;
 	}
 }

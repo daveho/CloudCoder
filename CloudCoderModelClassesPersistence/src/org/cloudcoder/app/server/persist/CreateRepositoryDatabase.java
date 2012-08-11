@@ -23,6 +23,8 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -63,7 +65,9 @@ public class CreateRepositoryDatabase {
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.repoapp.db");
 		
 		// Create tables
-		createTable(conn, JDBCDatabase.USERS, User.SCHEMA);
+		createTable(conn, JDBCTableNames.USERS, User.SCHEMA);
+		createTable(conn, JDBCTableNames.REPO_PROBLEMS, RepoProblem.SCHEMA);
+		createTable(conn, JDBCTableNames.REPO_TEST_CASES, RepoTestCase.SCHEMA);
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
