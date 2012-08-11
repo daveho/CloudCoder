@@ -12,12 +12,11 @@
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
 
-    <path id="CloudCoderOutOfProcessBuildService.classpath">
-        <pathelement location="${model.class.jar}"/>
-        <pathelement location="bin"/>
-          <fileset dir="lib">
-            <include name="**/*.jar"/>
-          </fileset>
+    <path id="CloudCoderBuilder.classpath">
+		<pathelement location="${model.class.jar}"/>
+		<pathelement location="bin"/>
+		<fileset dir="lib" includes="**/*.jar"/>
+    	<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
     </path>
 
     <target name="init">
@@ -44,7 +43,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="CloudCoderOutOfProcessBuildService.classpath"/>
+            <classpath refid="CloudCoderBuilder.classpath"/>
         </javac>
     </target>
 	
@@ -54,6 +53,7 @@
 	<target name="jar" depends="build">
 		<jar destfile="${jarname}">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
 			<zipgroupfileset file="${model.class.jar}" />
 			<fileset dir="bin" includes="**" excludes="defaultkeystore.jks"/>
 			

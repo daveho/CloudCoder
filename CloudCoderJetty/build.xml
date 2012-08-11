@@ -1,9 +1,8 @@
 <project name="CloudCoderJetty" default="jar">
 	<path id="CloudCoderJetty.classpath">
         <pathelement location="bin"/>
-		<fileset dir="lib">
-			<include name="**/*.jar"/>
-		</fileset>
+		<fileset dir="lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
     </path>
 
 	<target name="javac">

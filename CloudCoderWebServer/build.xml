@@ -15,9 +15,8 @@
 	<path id="CloudCoderWebServer.classpath">
         <pathelement location="bin"/>
 		<pathelement path="../CloudCoderJetty/cloudcoderJetty.jar"/>
-		<fileset dir="../CloudCoderJetty/lib">
-			<include name="**/*.jar"/>
-		</fileset>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
     </path>
     
 	<target name="init">
@@ -68,6 +67,7 @@
 		-->
 		<jar destfile="deps.jar">
 			<zipgroupfileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
 		</jar>
 		
 		<!--
