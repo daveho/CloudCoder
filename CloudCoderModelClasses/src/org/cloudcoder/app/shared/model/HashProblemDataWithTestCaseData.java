@@ -20,14 +20,16 @@ package org.cloudcoder.app.shared.model;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Compute a hash of the data in a {@link ProblemAndTestCaseData} object.
+ * Compute a hash of the data in a {@link IProblemDataWithTestCaseData} object.
  * The hash should be "unique enough" that collisions will not arise
  * in practice.
  * 
  * @author David Hovemeyer
  */
-public class HashProblemAndTestCaseData {
-	private ProblemAndTestCaseData problemAndTestCaseData;
+public class HashProblemDataWithTestCaseData<
+	ObjType extends IProblemDataWithTestCaseData<? extends IProblemData, ? extends ITestCaseData>
+	> {
+	private ObjType problemAndTestCaseData;
 	private SHA1 sha1;
 	
 	/**
@@ -35,7 +37,7 @@ public class HashProblemAndTestCaseData {
 	 * 
 	 * @param problemAndTestCaseData the ProblemData to compute a hash for
 	 */
-	public HashProblemAndTestCaseData(ProblemAndTestCaseData problemAndTestCaseData) {
+	public HashProblemDataWithTestCaseData(ObjType problemAndTestCaseData) {
 		this.problemAndTestCaseData = problemAndTestCaseData;
 		this.sha1 = new SHA1();
 	}
@@ -47,10 +49,10 @@ public class HashProblemAndTestCaseData {
 	 */
 	public String compute() {
 		// Incorporate the ProblemData
-		hashProblemData(problemAndTestCaseData.getProblemData());
+		hashProblemData(problemAndTestCaseData.getProblem());
 
 		// Incorporate each TestCase
-		for (TestCaseData testCaseData : problemAndTestCaseData.getTestCaseList()) {
+		for (ITestCaseData testCaseData : problemAndTestCaseData.getTestCaseData()) {
 			hashTestCaseData(testCaseData);
 		}
 
@@ -59,7 +61,7 @@ public class HashProblemAndTestCaseData {
 		return new ConvertBytesToHex(digest).convert();
 	}
 
-	private void hashProblemData(ProblemData problemData) {
+	private void hashProblemData(IProblemData problemData) {
 		// Fields present in schema version 0 and later.
 		updateString(problemData.getProblemType().toString());
 		updateString(problemData.getTestname());
@@ -77,7 +79,7 @@ public class HashProblemAndTestCaseData {
 		// TODO: based on schema version, may need to digest additional fields
 	}
 
-	private void hashTestCaseData(TestCaseData testCaseData) {
+	private void hashTestCaseData(ITestCaseData testCaseData) {
 		updateString(testCaseData.getTestCaseName());
 		updateString(testCaseData.getInput());
 		updateString(testCaseData.getOutput());
