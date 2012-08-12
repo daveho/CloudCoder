@@ -3,6 +3,9 @@ package org.cloudcoder.app.shared.model.xml;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.cloudcoder.app.shared.model.IProblemData;
+import org.cloudcoder.app.shared.model.IProblemDataWithTestCaseData;
+import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.TestCase;
 
@@ -13,15 +16,15 @@ import org.cloudcoder.app.shared.model.TestCase;
  */
 public class ConvertToXML {
 	/**
-	 * Write the fields of a {@link ProblemData} object to an XMLStreamWriter.
+	 * Write the fields of an {@link IProblemData} object to an XMLStreamWriter.
 	 * Note that this does not create an entire element: it is meant to be called
 	 * to generate ProblemData inside another element.
 	 * 
-	 * @param problemData  the ProblemData object whose fields should be written
+	 * @param problemData  the {@link IProblemData} object whose fields should be written
 	 * @param writer       the XMLStreamWriter to write to
 	 * @throws XMLStreamException
 	 */
-	public static void writeProblemDataFields(ProblemData problemData, XMLStreamWriter writer) throws XMLStreamException {
+	public static void writeProblemDataFields(IProblemData problemData, XMLStreamWriter writer) throws XMLStreamException {
 		writeInt(problemData.getSchemaVersion(), "schemaversion", writer);
 		writeString(problemData.getProblemType().toString(), "problemtype", writer);
 		writeString(problemData.getBriefDescription(), "briefdescription", writer);
@@ -37,19 +40,41 @@ public class ConvertToXML {
 	}
 	
 	/**
-	 * Write a {@link TestCase} to given XMLStreamWriter as a complete element.
+	 * Write the fields of an {@link ITestCaseData} object
+	 * to given XMLStreamWriter.
 	 * 
-	 * @param testCase the TestCase to write
+	 * @param testCaseData the {@link ITestCaseData} whose fields should be written
 	 * @param writer   the XMLStreamWriter to write to
 	 * @throws XMLStreamException
 	 */
-	public static void writeTestCase(TestCase testCase, XMLStreamWriter writer) throws XMLStreamException {
-		writer.writeStartElement("testcase");
+	public static void writeTestCase(ITestCaseData testCaseData, XMLStreamWriter writer) throws XMLStreamException {
+		writeString(testCaseData.getTestCaseName(), "name", writer);
+		writeStringCData(testCaseData.getInput(), "input", writer);
+		writeStringCData(testCaseData.getOutput(), "output", writer);
+		writeBoolean(testCaseData.isSecret(), "secret", writer);
+	}
+	
+	/**
+	 * Write an {@link IProblemDataWithTestCaseData} as a complete element.
+	 * The overall element has the tag <code>problem</code>, and each test
+	 * case is nested in an element with the tag name <code>testcase</code>.
+	 * 
+	 * @param obj the {@link IProblemDataWithTestCaseData} object to write
+	 * @param writer the XMLStreamWriter to write to
+	 * @throws XMLStreamException
+	 */
+	public static void writeProblemDataWithTestCaseData(
+			IProblemDataWithTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
+			XMLStreamWriter writer) throws XMLStreamException {
+		writer.writeStartElement("problem");
 		
-		writeString(testCase.getTestCaseName(), "name", writer);
-		writeStringCData(testCase.getInput(), "input", writer);
-		writeStringCData(testCase.getOutput(), "output", writer);
-		writeBoolean(testCase.isSecret(), "secret", writer);
+		writeProblemDataFields(obj.getProblem(), writer);
+		
+		for (ITestCaseData testCaseData : obj.getTestCaseData()) {
+			writer.writeStartElement("testcase");
+			writeTestCase(testCaseData, writer);
+			writer.writeEndElement();
+		}
 		
 		writer.writeEndElement();
 	}
