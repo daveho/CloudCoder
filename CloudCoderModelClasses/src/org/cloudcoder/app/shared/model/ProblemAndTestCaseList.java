@@ -28,7 +28,7 @@ import java.util.List;
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndTestCaseList implements ActivityObject, IProblemDataWithTestCaseData<Problem, TestCase> {
+public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCaseData<Problem, TestCase> {
 	private static final long serialVersionUID = 1L;
 	
 	private Problem problem;
@@ -80,7 +80,7 @@ public class ProblemAndTestCaseList implements ActivityObject, IProblemDataWithT
 	/**
 	 * Convert to {@link ProblemAndTestCaseData}, which is the
 	 * "exportable" form of a problem and its test cases.
-	 * <em>TODO:</em> Get rid of this: {@link IProblemDataWithTestCaseData}
+	 * <em>TODO:</em> Get rid of this: {@link IProblemAndTestCaseData}
 	 * should serve as a sufficient "neutral" representation of
 	 * a problem and its test cases.
 	 * 

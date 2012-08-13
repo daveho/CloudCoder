@@ -20,14 +20,14 @@ package org.cloudcoder.app.shared.model;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Compute a hash of the data in a {@link IProblemDataWithTestCaseData} object.
+ * Compute a hash of the data in a {@link IProblemAndTestCaseData} object.
  * The hash should be "unique enough" that collisions will not arise
  * in practice.
  * 
  * @author David Hovemeyer
  */
-public class HashProblemDataWithTestCaseData<
-	ObjType extends IProblemDataWithTestCaseData<? extends IProblemData, ? extends ITestCaseData>
+public class HashProblemAndTestCaseData<
+	ObjType extends IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData>
 	> {
 	private ObjType problemAndTestCaseData;
 	private SHA1 sha1;
@@ -37,7 +37,7 @@ public class HashProblemDataWithTestCaseData<
 	 * 
 	 * @param problemAndTestCaseData the ProblemData to compute a hash for
 	 */
-	public HashProblemDataWithTestCaseData(ObjType problemAndTestCaseData) {
+	public HashProblemAndTestCaseData(ObjType problemAndTestCaseData) {
 		this.problemAndTestCaseData = problemAndTestCaseData;
 		this.sha1 = new SHA1();
 	}

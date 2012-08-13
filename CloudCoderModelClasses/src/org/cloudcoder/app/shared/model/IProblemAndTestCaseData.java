@@ -30,7 +30,7 @@ import java.util.List;
  * @param <ProblemDataType>   the actual {@link IProblemData} subtype contained in the object
  * @param <TestCaseDataType>  the actual {@link ITestCaseData} subtype contained in the object
  */
-public interface IProblemDataWithTestCaseData<
+public interface IProblemAndTestCaseData<
 	ProblemDataType extends IProblemData,
 	TestCaseDataType extends ITestCaseData> {
 	
