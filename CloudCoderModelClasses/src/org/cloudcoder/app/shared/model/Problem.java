@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -39,18 +38,28 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
-			ModelObjectUtil.combineLists(
-					Arrays.asList(
-							new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-							new ModelObjectField("course_id", Integer.class, 0),
-							new ModelObjectField("when_assigned", Long.class, 0),
-							new ModelObjectField("when_due", Long.class, 0),
-							new ModelObjectField("visible", Boolean.class, 0)
-					),
-					ProblemData.SCHEMA.getFieldList()
-			)
-	);
+	public static final ModelObjectSchema<Problem> SCHEMA = new ModelObjectSchema<Problem>()
+		.add(new ModelObjectField<Problem, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(Problem obj, Integer value) { obj.setProblemId(value); }
+			public Integer get(Problem obj) { return obj.getProblemId(); }
+		})
+		.add(new ModelObjectField<Problem, Integer>("course_id", Integer.class, 0) {
+			public void set(Problem obj, Integer value) { obj.setCourseId(value); }
+			public Integer get(Problem obj) { return obj.getCourseId(); }
+		})
+		.add(new ModelObjectField<Problem, Long>("when_assigned", Long.class, 0) {
+			public void set(Problem obj, Long value) { obj.setWhenAssigned(value); }
+			public Long get(Problem obj) { return obj.getWhenAssigned(); }
+		})
+		.add(new ModelObjectField<Problem, Long>("when_due", Long.class, 0) {
+			public void set(Problem obj, Long value) { obj.setWhenDue(value); }
+			public Long get(Problem obj) { return obj.getWhenDue(); }
+		})
+		.add(new ModelObjectField<Problem, Boolean>("visible", Boolean.class, 0) {
+			public void set(Problem obj, Boolean value) { obj.setVisible(value); }
+			public Boolean get(Problem obj) { return obj.isVisible(); }
+		})
+		.addAll(ProblemData.SCHEMA.getFieldList());
 	
 	/**
 	 * Number of fields.

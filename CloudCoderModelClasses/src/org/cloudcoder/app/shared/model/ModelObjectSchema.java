@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,25 +26,49 @@ import java.util.List;
  * 
  * @author David Hovemeyer
  */
-public class ModelObjectSchema {
-	private final List<ModelObjectField> fieldList;
-	
+public class ModelObjectSchema<ModelObjectType> {
+	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
+
 	/**
 	 * Constructor.
-	 * 
-	 * @param fieldList descriptors for the schema's fields
 	 */
-	public ModelObjectSchema(List<ModelObjectField> fieldList) {
-		this.fieldList = fieldList;
+	public ModelObjectSchema() {
+		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 	}
 	
+	/**
+	 * Add a {@link ModelObjectField} to the schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param field the field to add to the schema
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> add(ModelObjectField<? super ModelObjectType, ?> field) {
+		fieldList.add(field);
+		return this;
+	}
+	
+	/**
+	 * Add all {@link ModelObjectField}s in given list to this schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param otherFieldList a list of {@link ModelObjectField}s
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> addAll(List<? extends ModelObjectField<? super ModelObjectType, ?>> otherFieldList) {
+		fieldList.addAll(otherFieldList);
+		return this;
+	}
+
 	/**
 	 * Get a field descriptor.
 	 * 
 	 * @param index the index of the field descriptor (0 for the first)
 	 * @return the field descriptor
 	 */
-	public ModelObjectField getField(int index) {
+	public ModelObjectField<? super ModelObjectType, ?> getField(int index) {
 		return fieldList.get(index);
 	}
 	
@@ -61,7 +86,7 @@ public class ModelObjectSchema {
 	 * 
 	 * @return list of field descriptors
 	 */
-	public List<ModelObjectField> getFieldList() {
+	public List<ModelObjectField<? super ModelObjectType, ?>> getFieldList() {
 		return fieldList;
 	}
 
@@ -71,7 +96,7 @@ public class ModelObjectSchema {
 	 * @return true if the schema has a unique id field, false otherwise
 	 */
 	public boolean hasUniqueId() {
-		for (ModelObjectField field : fieldList) {
+		for (ModelObjectField<? super ModelObjectType, ?> field : fieldList) {
 			if (field.isUniqueId()) {
 				return true;
 			}
@@ -84,8 +109,8 @@ public class ModelObjectSchema {
 	 * 
 	 * @return the unique id field
 	 */
-	public ModelObjectField getUniqueIdField() {
-		for (ModelObjectField field : fieldList) {
+	public ModelObjectField<? super ModelObjectType, ?> getUniqueIdField() {
+		for (ModelObjectField<? super ModelObjectType, ?> field : fieldList) {
 			if (field.isUniqueId()) {
 				return field;
 			}

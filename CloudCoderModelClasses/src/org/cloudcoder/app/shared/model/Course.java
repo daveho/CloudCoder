@@ -34,8 +34,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.Arrays;
-
 /**
  * Model object representing a course.
  * 
@@ -54,14 +52,31 @@ public class Course implements ActivityObject {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-			new ModelObjectField("name", String.class, 20),
-			new ModelObjectField("title", String.class, 100),
-			new ModelObjectField("url", String.class, 120),
-			new ModelObjectField("term_id", Integer.class, 0),
-			new ModelObjectField("year", Integer.class, 0)
-	));
+	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>()
+		.add(new ModelObjectField<Course, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(Course obj, Integer value) { obj.setId(value); }
+			public Integer get(Course obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<Course, String>("name", String.class, 20) {
+			public void set(Course obj, String value) { obj.setName(value); }
+			public String get(Course obj) { return obj.getName(); }
+		})
+		.add(new ModelObjectField<Course, String>("title", String.class, 100) {
+			public void set(Course obj, String value) { obj.setTitle(value); }
+			public String get(Course obj) { return obj.getTitle(); }
+		})
+		.add(new ModelObjectField<Course, String>("url", String.class, 120) {
+			public void set(Course obj, String value) { obj.setUrl(value); }
+			public String get(Course obj) { return obj.getUrl(); }
+		})
+		.add(new ModelObjectField<Course, Integer>("term_id", Integer.class, 0) {
+			public void set(Course obj, Integer value) { obj.setTermId(value); }
+			public Integer get(Course obj) { return obj.getTermId(); }
+		})
+		.add(new ModelObjectField<Course, Integer>("year", Integer.class, 0) {
+			public void set(Course obj, Integer value) { obj.setYear(value); }
+			public Integer get(Course obj) { return obj.getYear(); }
+		});
 
 	/**
 	 * Number of fields in the database.

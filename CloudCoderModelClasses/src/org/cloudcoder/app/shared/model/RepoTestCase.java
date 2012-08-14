@@ -17,8 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.Arrays;
-
 /**
  * RepoTestCase represents a test case in the exercise repository.
  * As such, it contains just a unique id, the unique id of the
@@ -36,15 +34,16 @@ public class RepoTestCase extends TestCaseData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
-			ModelObjectUtil.combineLists(
-					Arrays.asList(
-							new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-							new ModelObjectField("repo_problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE)
-					),
-					TestCaseData.SCHEMA.getFieldList()
-			)
-	);
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA = new ModelObjectSchema<RepoTestCase>()
+		.add(new ModelObjectField<RepoTestCase, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(RepoTestCase obj, Integer value) { obj.setId(value); }
+			public Integer get(RepoTestCase obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<RepoTestCase, Integer>("repo_problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(RepoTestCase obj, Integer value) { obj.setRepoProblemId(value); }
+			public Integer get(RepoTestCase obj) { return obj.getRepoProblemId(); }
+		})
+		.addAll(TestCaseData.SCHEMA.getFieldList());
 	
 	/**
 	 * Constructor.

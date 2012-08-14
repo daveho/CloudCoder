@@ -17,8 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.Arrays;
-
 /**
  * RepoProblem represents a problem in the exercise repository.
  * As such, it contains just a unique id, the unique id of the user who
@@ -35,14 +33,16 @@ public class RepoProblem extends ProblemData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
-			ModelObjectUtil.combineLists(
-					Arrays.asList(
-							new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-							new ModelObjectField("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE)),
-					ProblemData.SCHEMA.getFieldList()
-			)
-	);
+	public static final ModelObjectSchema<RepoProblem> SCHEMA = new ModelObjectSchema<RepoProblem>()
+		.add(new ModelObjectField<RepoProblem, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(RepoProblem obj, Integer value) { obj.setId(value); }
+			public Integer get(RepoProblem obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<RepoProblem, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(RepoProblem obj, Integer value) { obj.setUserId(value); }
+			public Integer get(RepoProblem obj) { return obj.getUserId(); }
+		})
+		.addAll(ProblemData.SCHEMA.getFieldList());
 	
 	/** Number of fields. */
 	public static final int NUM_FIELDS = SCHEMA.getNumFields();

@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * "Superclass" for event types.
@@ -38,13 +37,27 @@ public class Event implements Serializable {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-			new ModelObjectField("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
-			new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
-			new ModelObjectField("type", EventType.class, 0),
-			new ModelObjectField("timestamp", Long.class, 0)
-	));
+	public static final ModelObjectSchema<Event> SCHEMA = new ModelObjectSchema<Event>()
+		.add(new ModelObjectField<Event, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(Event obj, Integer value) { obj.setId(value); }
+			public Integer get(Event obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<Event, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(Event obj, Integer value) { obj.setUserId(value); }
+			public Integer get(Event obj) { return obj.getUserId(); }
+		})
+		.add(new ModelObjectField<Event, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(Event obj, Integer value) { obj.setProblemId(value); }
+			public Integer get(Event obj) { return obj.getProblemId(); }
+		})
+		.add(new ModelObjectField<Event, EventType>("type", EventType.class, 0) {
+			public void set(Event obj, EventType value) { obj.setType(value); }
+			public EventType get(Event obj) { return obj.getType(); }
+		})
+		.add(new ModelObjectField<Event, Long>("timestamp", Long.class, 0) {
+			public void set(Event obj, Long value) { obj.setTimestamp(value); }
+			public Long get(Event obj) { return obj.getTimestamp(); }
+		});
 
 	public Event() {
 

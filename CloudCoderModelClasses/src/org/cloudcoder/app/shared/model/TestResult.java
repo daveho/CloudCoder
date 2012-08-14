@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * A TestResult represents the outcome of a particular
@@ -38,14 +37,31 @@ public class TestResult implements Serializable
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-    		new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-    		new ModelObjectField("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE),
-    		new ModelObjectField("test_outcome", Integer.class, 0),
-    		new ModelObjectField("message", String.class, 100),
-    		new ModelObjectField("stdout", String.class, Integer.MAX_VALUE),
-    		new ModelObjectField("stderr", String.class, Integer.MAX_VALUE)
-	));
+	public static final ModelObjectSchema<TestResult> SCHEMA = new ModelObjectSchema<TestResult>()
+		.add(new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(TestResult obj, Integer value) { obj.setId(value); }
+			public Integer get(TestResult obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<TestResult, Integer>("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(TestResult obj, Integer value) { obj.setSubmissionReceiptEventId(value); }
+			public Integer get(TestResult obj) { return obj.getSubmissionReceiptEventId(); }
+		})
+		.add(new ModelObjectField<TestResult, TestOutcome>("test_outcome", TestOutcome.class, 0) {
+			public void set(TestResult obj, TestOutcome value) { obj.setOutcome(value); }
+			public TestOutcome get(TestResult obj) { return obj.getOutcome(); }
+		})
+		.add(new ModelObjectField<TestResult, String>("message", String.class, 100) {
+			public void set(TestResult obj, String value) { obj.setMessage(value); }
+			public String get(TestResult obj) { return obj.getMessage(); }
+		})
+		.add(new ModelObjectField<TestResult, String>("stdout", String.class, Integer.MAX_VALUE) {
+			public void set(TestResult obj, String value) { obj.setStdout(value); }
+			public String get(TestResult obj) { return obj.getStdout(); }
+		})
+		.add(new ModelObjectField<TestResult, String>("stderr", String.class, Integer.MAX_VALUE) {
+			public void set(TestResult obj, String value) { obj.setStderr(value); }
+			public String get(TestResult obj) { return obj.getStderr(); }
+		});
     
     public TestResult() {
     	

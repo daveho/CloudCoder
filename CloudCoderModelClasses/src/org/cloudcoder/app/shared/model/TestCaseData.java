@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Class to represent the data of a test case, independent of any
@@ -43,12 +42,23 @@ public class TestCaseData implements Serializable, ITestCaseData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("test_case_name", String.class, 40),
-			new ModelObjectField("input", String.class, 255),
-			new ModelObjectField("output", String.class, 255),
-			new ModelObjectField("secret", Boolean.class, 0)
-	));
+	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>()
+		.add(new ModelObjectField<TestCaseData, String>("test_case_name", String.class, 40) {
+			public void set(TestCaseData obj, String value) { obj.setTestCaseName(value); }
+			public String get(TestCaseData obj) { return obj.getTestCaseName(); }
+		})
+		.add(new ModelObjectField<TestCaseData, String>("input", String.class, 255) {
+			public void set(TestCaseData obj, String value) { obj.setInput(value); }
+			public String get(TestCaseData obj) { return obj.getInput(); }
+		})
+		.add(new ModelObjectField<TestCaseData, String>("output", String.class, 255) {
+			public void set(TestCaseData obj, String value) { obj.setOutput(value); }
+			public String get(TestCaseData obj) { return obj.getOutput(); }
+		})
+		.add(new ModelObjectField<TestCaseData, Boolean>("secret", Boolean.class, 0) {
+			public void set(TestCaseData obj, Boolean value) { obj.setSecret(value); }
+			public Boolean get(TestCaseData obj) { return obj.isSecret(); }
+		});
 
 	public TestCaseData() {
 		super();

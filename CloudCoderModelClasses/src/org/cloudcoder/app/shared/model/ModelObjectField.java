@@ -23,14 +23,20 @@ package org.cloudcoder.app.shared.model;
  * and whether the field value is a unique object id.
  * This can be used by a persistence layer to map model object
  * properties into a persistent store (such as a database).
+ * It also defines {@link #set(Object, Object)} and {@link #get(Object)}
+ * methods for getting and setting the field value, which
+ * allows reflection-like dynamic getting and setting of field
+ * values without reflection. 
  * 
  * @author David Hovemeyer
+ * 
+ * @param <ModelObjectType> the type of model object containing the field
+ * @param <E> the field type
  */
-public class ModelObjectField {
+public abstract class ModelObjectField<ModelObjectType, E> {
 	private final String name;
 	private final Class<?> type;
 	private final int size;
-//	private final boolean isUniqueId;
 	private ModelObjectIndexType indexType;
 	private boolean allowNull;
 	private String beanPropertyName;
@@ -42,7 +48,7 @@ public class ModelObjectField {
 	 * @param type the Java type of the field
 	 * @param size the size (e.g., max string length for a string column)
 	 */
-	public ModelObjectField(String name, Class<?> type, int size) {
+	public ModelObjectField(String name, Class<E> type, int size) {
 		this(name, type, size, ModelObjectIndexType.NONE, false);
 	}
 
@@ -54,7 +60,7 @@ public class ModelObjectField {
 	 * @param size the size (e.g., max string length for a string column)
 	 * @param indexType true if the field is the unique object id
 	 */
-	public ModelObjectField(String name, Class<?> type, int size, ModelObjectIndexType indexType) {
+	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType) {
 		this(name, type, size, indexType, false);
 	}
 
@@ -67,7 +73,7 @@ public class ModelObjectField {
 	 * @param indexType true if the field is the unique object id
 	 * @param allowNull true if the field allows null values
 	 */
-	public ModelObjectField(String name, Class<?> type, int size, ModelObjectIndexType indexType, boolean allowNull) {
+	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType, boolean allowNull) {
 		this.name = name;
 		this.type = type;
 		this.size = size;
@@ -128,6 +134,22 @@ public class ModelObjectField {
 	public String getPropertyName() {
 		return beanPropertyName;
 	}
+	
+	/**
+	 * Set the value of the field in given model object.
+	 * 
+	 * @param obj   the model object
+	 * @param value the value to set
+	 */
+	public abstract void set(ModelObjectType obj, E value);
+	
+	/**
+	 * Get the value of the field in given model object.
+	 * 
+	 * @param obj  the model object
+	 * @return the fields value
+	 */
+	public abstract E get(ModelObjectType obj);
 	
 	private static String getBeanPropertyName(String name) {
 		String[] tokens = name.split("_");

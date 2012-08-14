@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * The course- and institution-independent data in a {@link Problem}.
@@ -51,22 +50,51 @@ public class ProblemData implements Serializable, IProblemData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(
-			Arrays.asList(
-					new ModelObjectField[]{
-							new ModelObjectField("problem_type", Integer.class, 0),
-							new ModelObjectField("testname", String.class, 255),
-							new ModelObjectField("brief_description", String.class, 60),
-							new ModelObjectField("description", String.class, 8192),
-							new ModelObjectField("skeleton", String.class, 400),
-							new ModelObjectField("schema_version", Integer.class, 0),
-							new ModelObjectField("author_name", String.class, 80, ModelObjectIndexType.NON_UNIQUE),
-							new ModelObjectField("author_email", String.class, 80),
-							new ModelObjectField("author_website", String.class, 100),
-							new ModelObjectField("timestamp_utc", Long.class, 0),
-							new ModelObjectField("license", ProblemLicense.class, 0),
-					})
-			);
+	public static final ModelObjectSchema<ProblemData> SCHEMA = new ModelObjectSchema<ProblemData>()
+		.add(new ModelObjectField<ProblemData, ProblemType>("problem_type", ProblemType.class, 0) {
+			public void set(ProblemData obj, ProblemType value) { obj.setProblemType(value); }
+			public ProblemType get(ProblemData obj) { return obj.getProblemType(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("testname", String.class, 255) {
+			public void set(ProblemData obj, String value) { obj.setTestname(value); }
+			public String get(ProblemData obj) { return obj.getTestname(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("brief_description", String.class, 60) {
+			public void set(ProblemData obj, String value) { obj.setBriefDescription(value); }
+			public String get(ProblemData obj) { return obj.getBriefDescription(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("description", String.class, 8192) {
+			public void set(ProblemData obj, String value) { obj.setDescription(value); }
+			public String get(ProblemData obj) { return obj.getDescription(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("skeleton", String.class, 400) {
+			public void set(ProblemData obj, String value) { obj.setSkeleton(value); }
+			public String get(ProblemData obj) { return obj.getSkeleton(); }
+		})
+		.add(new ModelObjectField<ProblemData, Integer>("schema_version", Integer.class, 0) {
+			public void set(ProblemData obj, Integer value) { obj.setSchemaVersion(value); }
+			public Integer get(ProblemData obj) { return obj.getSchemaVersion(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("author_name", String.class, 80, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(ProblemData obj, String value) { obj.setAuthorName(value); }
+			public String get(ProblemData obj) { return obj.getAuthorName(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("author_email", String.class, 80) {
+			public void set(ProblemData obj, String value) { obj.setAuthorEmail(value); }
+			public String get(ProblemData obj) { return obj.getAuthorEmail(); }
+		})
+		.add(new ModelObjectField<ProblemData, String>("author_website", String.class, 100) {
+			public void set(ProblemData obj, String value) { obj.setAuthorWebsite(value); }
+			public String get(ProblemData obj) { return obj.getAuthorWebsite(); }
+		})
+		.add(new ModelObjectField<ProblemData, Long>("timestamp_utc", Long.class, 0) {
+			public void set(ProblemData obj, Long value) { obj.setTimestampUtc(value); }
+			public Long get(ProblemData obj) { return obj.getTimestampUtc(); }
+		})
+		.add(new ModelObjectField<ProblemData, ProblemLicense>("license", ProblemLicense.class, 0) {
+			public void set(ProblemData obj, ProblemLicense value) { obj.setLicense(value); }
+			public ProblemLicense get(ProblemData obj) { return obj.getLicense(); }
+		});
 	
 	/**
 	 * Number of fields.

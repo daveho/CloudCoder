@@ -78,7 +78,7 @@ public class DBUtil {
 	 * @param schema the schema for the object being inserted
 	 * @return placeholders for an insert statement
 	 */
-	public static String getInsertPlaceholders(ModelObjectSchema schema) {
+	public static String getInsertPlaceholders(ModelObjectSchema<?> schema) {
 		StringBuilder buf = new StringBuilder();
 		
 		for (int i = 0; i < schema.getNumFields(); i++) {
@@ -100,10 +100,10 @@ public class DBUtil {
 	 * @param schema the schema of a model object
 	 * @return insert placeholders for all fields except the unique id
 	 */
-	public static String getInsertPlaceholdersNoId(ModelObjectSchema schema) {
+	public static<E> String getInsertPlaceholdersNoId(ModelObjectSchema<E> schema) {
 		StringBuilder buf = new StringBuilder();
 		
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (buf.length() > 0) {
 				buf.append(", ");
 			}
@@ -119,7 +119,7 @@ public class DBUtil {
 	 * 
 	 * @return placeholders for an update statement where all fields will be updated
 	 */
-	public static String getUpdatePlaceholders(ModelObjectSchema schema) {
+	public static<E> String getUpdatePlaceholders(ModelObjectSchema<E> schema) {
 		return doGetUpdatePlaceholders(schema, true);
 	}
 	
@@ -130,14 +130,14 @@ public class DBUtil {
 	 * @return placeholders for an update statement where all fields except the
 	 *         unique id field will be update
 	 */
-	public static String getUpdatePlaceholdersNoId(ModelObjectSchema schema) {
+	public static<E> String getUpdatePlaceholdersNoId(ModelObjectSchema<E> schema) {
 		return doGetUpdatePlaceholders(schema, false);
 	}
 
-	private static String doGetUpdatePlaceholders(ModelObjectSchema schema, boolean includeUniqueId) {
+	private static<E> String doGetUpdatePlaceholders(ModelObjectSchema<E> schema, boolean includeUniqueId) {
 		StringBuilder buf = new StringBuilder();
 		
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (!field.isUniqueId() || includeUniqueId) {
 				if (buf.length() > 0) {
 					buf.append(", ");
@@ -157,7 +157,7 @@ public class DBUtil {
 	 * @param tableName  the name of the table
 	 * @return the text of the CREATE TABLE statement
 	 */
-	public static String getCreateTableStatement(ModelObjectSchema schema, String tableName) {
+	public static<E> String getCreateTableStatement(ModelObjectSchema<E> schema, String tableName) {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("CREATE TABLE `");
@@ -167,7 +167,7 @@ public class DBUtil {
 		int count = 0;
 		
 		// Field descriptors
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (count > 0) {
 				sql.append(",");
 			}
@@ -186,7 +186,7 @@ public class DBUtil {
 		}
 		
 		// Keys
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (field.getIndexType() == ModelObjectIndexType.NONE) {
 				continue;
 			}
@@ -220,7 +220,7 @@ public class DBUtil {
 		return sql.toString();
 	}
 
-	private static Object getSQLDatatype(ModelObjectField field) {
+	private static Object getSQLDatatype(ModelObjectField<?,?> field) {
 		if (field.getType() == String.class) {
 			// If the field length is Integer.MAX_VALUE, make it a text field.
 			// Otherwise, make it VARCHAR.
@@ -315,7 +315,7 @@ public class DBUtil {
 	 * @param schema     the {@link ModelObjectSchema} describing the type of object to be stored in the table
 	 * @throws SQLException
 	 */
-	public static void createTable(Connection conn, String tableName, ModelObjectSchema schema) throws SQLException {
+	public static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
 		String sql = getCreateTableStatement(schema, tableName);
 		if (CreateWebappDatabase.DEBUG) {
 			System.out.println(sql);
@@ -336,7 +336,7 @@ public class DBUtil {
 	 * @param schema    the {@link ModelObjectSchema} for the bean
 	 * @param tableName the database table to store the bean in
 	 */
-	public static void storeBean(Connection conn, Object bean, ModelObjectSchema schema, String tableName) throws SQLException {
+	public static<E> void storeBean(Connection conn, Object bean, ModelObjectSchema<E> schema, String tableName) throws SQLException {
 		StringBuilder buf = new StringBuilder();
 		
 		buf.append("insert into " + tableName);
@@ -353,7 +353,7 @@ public class DBUtil {
 			// Now for the magic: iterate through the schema fields
 			// and bind the query parameters based on the bean properties.
 			int index = 1;
-			for (ModelObjectField field : schema.getFieldList()) {
+			for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 				if (field.isUniqueId()) {
 					continue;
 				}
