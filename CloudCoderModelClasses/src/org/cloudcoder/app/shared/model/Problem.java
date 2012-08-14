@@ -35,30 +35,46 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	private long whenDue;
 	private boolean visible;
 	
+	/** {@link ModelObjectField} for problem id. */
+	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
+			new ModelObjectField<IProblem, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(IProblem obj, Integer value) { obj.setProblemId(value); }
+		public Integer get(IProblem obj) { return obj.getProblemId(); }
+	};
+	/** {@link ModelObjectField} for course id. */
+	public static final ModelObjectField<IProblem, Integer> COURSE_ID =
+			new ModelObjectField<IProblem, Integer>("course_id", Integer.class, 0) {
+		public void set(IProblem obj, Integer value) { obj.setCourseId(value); }
+		public Integer get(IProblem obj) { return obj.getCourseId(); }
+	};
+	/** {@link ModelObjectField} for assigned date/time. */
+	public static final ModelObjectField<IProblem, Long> WHEN_ASSIGNED =
+			new ModelObjectField<IProblem, Long>("when_assigned", Long.class, 0) {
+		public void set(IProblem obj, Long value) { obj.setWhenAssigned(value); }
+		public Long get(IProblem obj) { return obj.getWhenAssigned(); }
+	};
+	/** {@link ModelObjectField} for due date/time. */
+	public static final ModelObjectField<IProblem, Long> WHEN_DUE =
+			new ModelObjectField<IProblem, Long>("when_due", Long.class, 0) {
+		public void set(IProblem obj, Long value) { obj.setWhenDue(value); }
+		public Long get(IProblem obj) { return obj.getWhenDue(); }
+	};
+	/** {@link ModelObjectField} for visibility to students. */
+	public static final ModelObjectField<IProblem, Boolean> VISIBLE =
+			new ModelObjectField<IProblem, Boolean>("visible", Boolean.class, 0) {
+		public void set(IProblem obj, Boolean value) { obj.setVisible(value); }
+		public Boolean get(IProblem obj) { return obj.isVisible(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA = new ModelObjectSchema<Problem>()
-		.add(new ModelObjectField<Problem, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(Problem obj, Integer value) { obj.setProblemId(value); }
-			public Integer get(Problem obj) { return obj.getProblemId(); }
-		})
-		.add(new ModelObjectField<Problem, Integer>("course_id", Integer.class, 0) {
-			public void set(Problem obj, Integer value) { obj.setCourseId(value); }
-			public Integer get(Problem obj) { return obj.getCourseId(); }
-		})
-		.add(new ModelObjectField<Problem, Long>("when_assigned", Long.class, 0) {
-			public void set(Problem obj, Long value) { obj.setWhenAssigned(value); }
-			public Long get(Problem obj) { return obj.getWhenAssigned(); }
-		})
-		.add(new ModelObjectField<Problem, Long>("when_due", Long.class, 0) {
-			public void set(Problem obj, Long value) { obj.setWhenDue(value); }
-			public Long get(Problem obj) { return obj.getWhenDue(); }
-		})
-		.add(new ModelObjectField<Problem, Boolean>("visible", Boolean.class, 0) {
-			public void set(Problem obj, Boolean value) { obj.setVisible(value); }
-			public Boolean get(Problem obj) { return obj.isVisible(); }
-		})
+	public static final ModelObjectSchema<IProblem> SCHEMA = new ModelObjectSchema<IProblem>()
+		.add(PROBLEM_ID)
+		.add(COURSE_ID)
+		.add(WHEN_ASSIGNED)
+		.add(WHEN_DUE)
+		.add(VISIBLE)
 		.addAll(ProblemData.SCHEMA.getFieldList());
 	
 	/**

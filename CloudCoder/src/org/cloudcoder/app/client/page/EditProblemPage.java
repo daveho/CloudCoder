@@ -39,8 +39,10 @@ import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -171,54 +173,12 @@ public class EditProblemPage extends CloudCoderPage {
 		}
 
 		private void createProblemFieldEditors() {
-			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemType>("Problem type", ProblemType.class) {
-				@Override
-				protected void setField(ProblemType value) {
-					getModelObject().setProblemType(value);
-				}
-
-				@Override
-				protected ProblemType getField() {
-					return getModelObject().getProblemType();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Problem name") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setTestname(value);
-				}
-				
-				@Override
-				protected String getField() {
-					return getModelObject().getTestname();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Brief description") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setBriefDescription(value);
-				}
-				
-				@Override
-				protected String getField() {
-					return getModelObject().getBriefDescription();
-				}
-				
-			});
+			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemType>("Problem type", ProblemType.class, ProblemData.PROBLEM_TYPE));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Problem name", ProblemData.TESTNAME));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Brief description", ProblemData.BRIEF_DESCRIPTION));
 			
 			EditStringFieldWithAceEditor<IProblem> descriptionEditor =
-					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)") {
-						@Override
-						protected void setField(String value) {
-							getModelObject().setDescription(value);
-						}
-						@Override
-						protected String getField() {
-							return getModelObject().getDescription();
-						}
-					};
+					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)", ProblemData.DESCRIPTION);
 			descriptionEditor.setEditorMode(AceEditorMode.HTML);
 			descriptionEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			problemFieldEditorList.add(descriptionEditor);
@@ -227,7 +187,7 @@ public class EditProblemPage extends CloudCoderPage {
 			// with the problem type.  (I.e., for a Java problem we want Java
 			// mode, for Python we want Python mode, etc.)
 			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
-					new EditStringFieldWithAceEditor<IProblem>("Skeleton code") {
+					new EditStringFieldWithAceEditor<IProblem>("Skeleton code", ProblemData.SKELETON) {
 						@Override
 						public void update() {
 							setLanguage();
@@ -241,14 +201,6 @@ public class EditProblemPage extends CloudCoderPage {
 							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
 							setEditorMode(editorMode);
 						}
-						@Override
-						protected void setField(String value) {
-							getModelObject().setSkeleton(value);
-						}
-						@Override
-						protected String getField() {
-							return getModelObject().getSkeleton();
-						}
 					};
 			skeletonEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			problemFieldEditorList.add(skeletonEditor);
@@ -256,96 +208,17 @@ public class EditProblemPage extends CloudCoderPage {
 			// We don't need an editor for schema version - problems/testcases are
 			// automatically converted to the latest version when they are imported.
 			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author name") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorName(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorName();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author email") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorEmail(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorEmail();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author website") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorWebsite(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorWebsite();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setTimestampUtc(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return new Date(getModelObject().getTimestampUtc());
-				}
-			});
-			
-			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class) {
-				@Override
-				protected void setField(ProblemLicense value) {
-					getModelObject().setLicense(value);
-				}
-
-				@Override
-				protected ProblemLicense getField() {
-					return getModelObject().getLicense();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setWhenAssigned(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return getModelObject().getWhenAssignedAsDate();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setWhenDue(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return getModelObject().getWhenDueAsDate();
-				}
-			});
-			
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author name", ProblemData.AUTHOR_NAME));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author email", ProblemData.AUTHOR_EMAIL));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author website", ProblemData.AUTHOR_WEBSITE));
+			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date", ProblemData.TIMESTAMP_UTC));
+			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(
 					"Problem visible to students",
-					"Check to make problem visible to students") {
-						@Override
-						protected void setField(Boolean value) {
-							getModelObject().setVisible(value);
-						}
-						@Override
-						protected Boolean getField() {
-							return getModelObject().isVisible();
-						}
-			});
+					"Check to make problem visible to students",
+					Problem.VISIBLE));
 		}
 
 		/* (non-Javadoc)

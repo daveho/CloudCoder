@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.user.client.ui.IsWidget;
 
 /**
@@ -26,20 +28,32 @@ import com.google.gwt.user.client.ui.IsWidget;
  */
 public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	private final String desc;
+	private ModelObjectField<? super ModelObjectType, FieldType> field;
 	private ModelObjectType modelObj;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param desc the description that should be used to label the UI widget
+	 * @param field the {@link ModelObjectField} being edited
 	 */
-	public EditModelObjectField(String desc) {
+	public EditModelObjectField(String desc, ModelObjectField<? super ModelObjectType, FieldType> field) {
 		this.desc = desc;
+		this.field = field;
 	}
 	
 	/**
 	 * Get the description that should be used to label the UI widget.
-	 * 
+	 *  {
+				@Override
+				protected void setField(String value) {
+					getModelObject().setOutput(value);
+				}
+				@Override
+				protected String getField() {
+					return getModelObject().getOutput();
+				}
+			}
 	 * @return the description that should be used to label the UI widget
 	 */
 	public String getDescription() {
@@ -75,7 +89,16 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	public abstract IsWidget getUI();
 	
 	/**
-	 * Commit any changes made in the UI to the model object.
+	 * Commit any changes made in the UI to the model object. {
+				@Override
+				protected void setField(String value) {
+					getModelObject().setOutput(value);
+				}
+				@Override
+				protected String getField() {
+					return getModelObject().getOutput();
+				}
+			}
 	 */
 	public abstract void commit();
 	
@@ -98,16 +121,20 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	}
 	
 	/**
-	 * Downcall method to set the field in the model object.
+	 * Set the value of the field in the model object.
 	 * 
 	 * @param value    the field value to set
 	 */
-	protected abstract void setField(FieldType value);
+	protected final void setField(FieldType value) {
+		field.set(modelObj, value);
+	}
 	
 	/**
-	 * Downcall method to get the value of the field in the model object.
+	 * Get the value of the field in the model object.
 	 * 
 	 * @return the field value
 	 */
-	protected abstract FieldType getField();
+	protected final FieldType getField() {
+		return field.get(modelObj);
+	}
 }

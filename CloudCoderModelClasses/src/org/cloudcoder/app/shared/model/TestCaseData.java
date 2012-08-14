@@ -39,26 +39,42 @@ public class TestCaseData implements Serializable, ITestCaseData {
 	private String output;
 	private boolean secret;
 	
+	/** {@link ModelObjectField} for test case name. */
+	public static final ModelObjectField<TestCaseData, String> TEST_CASE_NAME =
+		new ModelObjectField<TestCaseData, String>("test_case_name", String.class, 40) {
+			public void set(TestCaseData obj, String value) { obj.setTestCaseName(value); }
+			public String get(TestCaseData obj) { return obj.getTestCaseName(); }
+		};
+	
+	/** {@link ModelObjectField} for input. */
+	public static final ModelObjectField<TestCaseData, String> INPUT =
+		new ModelObjectField<TestCaseData, String>("input", String.class, 255) {
+			public void set(TestCaseData obj, String value) { obj.setInput(value); }
+			public String get(TestCaseData obj) { return obj.getInput(); }
+		};
+
+	/** {@link ModelObjectField} for output. */
+	public static final ModelObjectField<TestCaseData, String> OUTPUT =
+		new ModelObjectField<TestCaseData, String>("output", String.class, 255) {
+			public void set(TestCaseData obj, String value) { obj.setOutput(value); }
+			public String get(TestCaseData obj) { return obj.getOutput(); }
+		};
+
+	/** {@link ModelObjectField} for secret. */
+	public static final ModelObjectField<TestCaseData, Boolean> SECRET =
+		new ModelObjectField<TestCaseData, Boolean>("secret", Boolean.class, 0) {
+			public void set(TestCaseData obj, Boolean value) { obj.setSecret(value); }
+			public Boolean get(TestCaseData obj) { return obj.isSecret(); }
+		};
+	
 	/**
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>()
-		.add(new ModelObjectField<TestCaseData, String>("test_case_name", String.class, 40) {
-			public void set(TestCaseData obj, String value) { obj.setTestCaseName(value); }
-			public String get(TestCaseData obj) { return obj.getTestCaseName(); }
-		})
-		.add(new ModelObjectField<TestCaseData, String>("input", String.class, 255) {
-			public void set(TestCaseData obj, String value) { obj.setInput(value); }
-			public String get(TestCaseData obj) { return obj.getInput(); }
-		})
-		.add(new ModelObjectField<TestCaseData, String>("output", String.class, 255) {
-			public void set(TestCaseData obj, String value) { obj.setOutput(value); }
-			public String get(TestCaseData obj) { return obj.getOutput(); }
-		})
-		.add(new ModelObjectField<TestCaseData, Boolean>("secret", Boolean.class, 0) {
-			public void set(TestCaseData obj, Boolean value) { obj.setSecret(value); }
-			public Boolean get(TestCaseData obj) { return obj.isSecret(); }
-		});
+		.add(TEST_CASE_NAME)
+		.add(INPUT)
+		.add(OUTPUT)
+		.add(SECRET);
 
 	public TestCaseData() {
 		super();

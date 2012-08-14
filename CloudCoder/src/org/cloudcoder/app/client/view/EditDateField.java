@@ -19,6 +19,8 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Date;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
@@ -33,8 +35,8 @@ import com.google.gwt.user.datepicker.client.DatePicker;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditDateField<ModelObjectType>
-		extends EditModelObjectField<ModelObjectType, Date> {
+public class EditDateField<ModelObjectType>
+		extends EditModelObjectField<ModelObjectType, Long> {
 	
 	private class UI extends Composite {
 		private DatePicker datePicker;
@@ -73,9 +75,12 @@ public abstract class EditDateField<ModelObjectType>
 
 	/**
 	 * Constructor.
+	 * 
+	 * @pamam desc description of the field being edited
+	 * @param field the {@link ModelObjectField} being edited
 	 */
-	public EditDateField(String desc) {
-		super(desc);
+	public EditDateField(String desc, ModelObjectField<? super ModelObjectType, Long> field) {
+		super(desc, field);
 		this.ui = new UI();
 	}
 	
@@ -92,7 +97,7 @@ public abstract class EditDateField<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getDate());
+		setField(ui.getDate().getTime());
 	}
 
 	/* (non-Javadoc)
@@ -100,6 +105,6 @@ public abstract class EditDateField<ModelObjectType>
 	 */
 	@Override
 	public void update() {
-		ui.setDate(getField());
+		ui.setDate(new Date(getField()));
 	}
 }
