@@ -51,7 +51,6 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	private final int size;
 	private final ModelObjectIndexType indexType;
 	private final int flags;
-	private final String beanPropertyName;
 	
 	/**
 	 * Constructor for fields which are not a unique object id.
@@ -90,7 +89,6 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 		this.type = type;
 		this.size = size;
 		this.indexType = indexType;
-		this.beanPropertyName = getBeanPropertyName(name);
 		this.flags = flags;
 	}
 	
@@ -150,15 +148,6 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	}
 	
 	/**
-	 * Get this field's bean property name.
-	 * 
-	 * @return this field's bean property name 
-	 */
-	public String getPropertyName() {
-		return beanPropertyName;
-	}
-	
-	/**
 	 * Set the value of the field in given model object.
 	 * 
 	 * @param obj   the model object
@@ -191,20 +180,5 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 					" for setting field " + name);
 		}
 		set(obj, (E) value);
-	}
-	
-	private static String getBeanPropertyName(String name) {
-		String[] tokens = name.split("_");
-		StringBuilder buf = new StringBuilder();
-		
-		for (String token : tokens) {
-			if (buf.length() > 0) {
-				token = Character.toUpperCase(token.charAt(0)) + token.substring(1);
-			}
-			
-			buf.append(token);
-		}
-		
-		return buf.toString();
 	}
 }

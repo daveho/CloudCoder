@@ -349,18 +349,12 @@ public class DBUtil {
 				if (field.isUniqueId()) {
 					continue;
 				}
-				try {
-					Object value = field.get(bean);
-					if (value instanceof Enum) {
-						// Enum values are converted to integers
-						value = Integer.valueOf(((Enum<?>)value).ordinal());
-					}
-					stmt.setObject(index++, value);
-				} catch (Exception e) {
-					throw new SQLException(
-							"Couldn't get property " + field.getPropertyName() +
-							" of " + bean.getClass().getName() + " object");
+				Object value = field.get(bean);
+				if (value instanceof Enum) {
+					// Enum values are converted to integers
+					value = Integer.valueOf(((Enum<?>)value).ordinal());
 				}
+				stmt.setObject(index++, value);
 			}
 			
 			// Execute the insert
