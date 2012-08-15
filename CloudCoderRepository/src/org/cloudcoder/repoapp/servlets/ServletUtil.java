@@ -62,4 +62,40 @@ public class ServletUtil {
 		resp.sendRedirect(servletContext.getContextPath() + path);
 	}
 
+	/**
+	 * Send a BAD REQUEST (400) response.
+	 * 
+	 * @param resp  the HttpServletResponse
+	 * @param msg   a human-readable message to send as the body of the response
+	 * @throws IOException
+	 */
+	public static void badRequest(HttpServletResponse resp, String msg) throws IOException {
+		sendResponse(resp, HttpServletResponse.SC_BAD_REQUEST, msg);
+	}
+
+	/**
+	 * Send a NOT FOUND (404) response.
+	 * 
+	 * @param resp  the HttpServletResponse
+	 * @param msg   a human-readable message to send as the body of the response
+	 * @throws IOException
+	 */
+	public static void notFound(HttpServletResponse resp, String msg) throws IOException {
+		sendResponse(resp, HttpServletResponse.SC_NOT_FOUND, msg);
+	}
+
+	/**
+	 * Send a response.
+	 * 
+	 * @param resp        the HttpServletResponse
+	 * @param statusCode  the status code of the response
+	 * @param msg         a human-readable message
+	 * @throws IOException
+	 */
+	public static void sendResponse(HttpServletResponse resp, int statusCode, String msg) throws IOException {
+		resp.setStatus(statusCode);
+		resp.setContentType("text/plain");
+		resp.getWriter().println(msg);
+	}
+
 }

@@ -31,18 +31,25 @@ public class RepoTestCase extends TestCaseData {
 	private int id;
 	private int repoProblemId;
 	
+	/** {@link ModelObjectField} for unique id. */
+	public static final ModelObjectField<RepoTestCase, Integer> ID =
+			new ModelObjectField<RepoTestCase, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(RepoTestCase obj, Integer value) { obj.setId(value); }
+		public Integer get(RepoTestCase obj) { return obj.getId(); }
+	};
+	/** {@link ModelObjectField} for repository problem id. */
+	public static final ModelObjectField<RepoTestCase, Integer> REPO_PROBLEM_ID =
+			new ModelObjectField<RepoTestCase, Integer>("repo_problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+		public void set(RepoTestCase obj, Integer value) { obj.setRepoProblemId(value); }
+		public Integer get(RepoTestCase obj) { return obj.getRepoProblemId(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<RepoTestCase> SCHEMA = new ModelObjectSchema<RepoTestCase>()
-		.add(new ModelObjectField<RepoTestCase, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(RepoTestCase obj, Integer value) { obj.setId(value); }
-			public Integer get(RepoTestCase obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<RepoTestCase, Integer>("repo_problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-			public void set(RepoTestCase obj, Integer value) { obj.setRepoProblemId(value); }
-			public Integer get(RepoTestCase obj) { return obj.getRepoProblemId(); }
-		})
+		.add(ID)
+		.add(REPO_PROBLEM_ID)
 		.addAll(TestCaseData.SCHEMA.getFieldList());
 	
 	/**

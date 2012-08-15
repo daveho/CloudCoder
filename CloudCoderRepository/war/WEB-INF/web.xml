@@ -19,6 +19,10 @@
 		<servlet-name>Logout</servlet-name>
 		<servlet-class>org.cloudcoder.repoapp.servlets.Logout</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>Export</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Export</servlet-class>
+	</servlet>
 	
 	<!-- Servlet-mapping -->
 	<servlet-mapping>
@@ -32,6 +36,10 @@
 	<servlet-mapping>
 		<servlet-name>Logout</servlet-name>
 		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Export</servlet-name>
+		<url-pattern>/export/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Use the /index servlet as the welcome file -->

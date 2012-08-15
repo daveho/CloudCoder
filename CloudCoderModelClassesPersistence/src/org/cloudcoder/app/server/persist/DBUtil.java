@@ -430,4 +430,33 @@ public class DBUtil {
 				" character set 'utf8' " +
 				" collate 'utf8_general_ci' ");
 	}
+
+	/**
+	 * Convert given value to given type.
+	 * We use this to massage values returned by JDBC so that they
+	 * are correct for storing in a model object field.
+	 * 
+	 * @param value the value to convert
+	 * @param type  the type to convert the value to
+	 * @return the converted value
+	 */
+	public static Object convertValue(Object value, Class<?> type) {
+		// Easy case: value is correct type already
+		if (value.getClass() == type) {
+			return value;
+		}
+		
+		if (type.isEnum()) {
+			// value must be an Integer
+			return type.getEnumConstants()[(Integer)value];
+		} else if (type == Boolean.class) {
+			// value must be some kind of integer
+			if (value instanceof Number) {
+				Number n = (Number) value;
+				return n.intValue() == 0 ? Boolean.FALSE : Boolean.TRUE;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unsupported conversion from " + value.getClass().getName() + " to " + type.getName());
+	}
 }

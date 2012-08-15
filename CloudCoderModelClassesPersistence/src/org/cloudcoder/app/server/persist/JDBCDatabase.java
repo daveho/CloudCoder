@@ -38,6 +38,8 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -46,6 +48,9 @@ import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -965,6 +970,53 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			}
 		});
 	}
+	
+	@Override
+	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(final String hash) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<RepoProblemAndTestCaseList>() {
+			@Override
+			public RepoProblemAndTestCaseList run(Connection conn) throws SQLException {
+				// Query to find the RepoProblem
+				PreparedStatement findRepoProblem = prepareStatement(
+						conn,
+						"select * from " + REPO_PROBLEMS + " as rp " +
+						" where rp." + RepoProblem.HASH.getName() + " = ?");
+				findRepoProblem.setString(1, hash);
+				
+				ResultSet repoProblemRs = executeQuery(findRepoProblem);
+				if (!repoProblemRs.next()) {
+					return null;
+				}
+				
+				RepoProblem repoProblem = new RepoProblem();
+				load(repoProblem, repoProblemRs, 1);
+				
+				RepoProblemAndTestCaseList result = new RepoProblemAndTestCaseList();
+				result.setRepoProblem(repoProblem);
+				
+				// Query to find all RepoTestCases associated with the RepoProblem
+				PreparedStatement findRepoTestCases = prepareStatement(
+						conn,
+						"select * from " + REPO_TEST_CASES + " as rtc " +
+						" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
+				findRepoTestCases.setInt(1, repoProblem.getId());
+				
+				ResultSet repoTestCaseRs = executeQuery(findRepoTestCases);
+				while (repoTestCaseRs.next()) {
+					RepoTestCase repoTestCase = new RepoTestCase();
+					load(repoTestCase, repoTestCaseRs, 1);
+					result.addRepoTestCase(repoTestCase);
+				}
+				
+				return result;
+			}
+
+			@Override
+			public String getDescription() {
+				return " retrieving problem and test cases from the repository";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
@@ -1401,6 +1453,36 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		reg.setUserId(resultSet.getInt(index++));
 		reg.setRegistrationType(resultSet.getInt(index++));
 		reg.setSection(resultSet.getInt(index++));
+	}
+	
+	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
+	}
+	
+	protected void load(RepoTestCase repoTestCase, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
+	}
+
+	/**
+	 * Generic method to load model object data from the current row of
+	 * a ResultSet.
+	 * 
+	 * @param modelObj   the model object
+	 * @param resultSet  the ResultSet
+	 * @param index      the index of the first column containing model object data
+	 * @param schema     the schema of the model object
+	 * @return           the index of the first column after the model object data in the result set
+	 * @throws SQLException
+	 */
+	protected<E> int loadGeneric(E modelObj, ResultSet resultSet, int index, ModelObjectSchema<E> schema) throws SQLException {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			// Note: this could return an object which does not exactly match the field type
+			Object value = resultSet.getObject(index++);
+			value = DBUtil.convertValue(value, field.getType());
+			
+			field.setUntyped(modelObj, value);
+		}
+		return index;
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {

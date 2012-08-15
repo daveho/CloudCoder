@@ -31,22 +31,32 @@ public class RepoProblem extends ProblemData {
 	private int userId;
 	private String hash;
 	
+	/** {@link ModelObjectField} for repo problem id. */
+	public static final ModelObjectField<RepoProblem, Integer> ID =
+			new ModelObjectField<RepoProblem, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(RepoProblem obj, Integer value) { obj.setId(value); }
+		public Integer get(RepoProblem obj) { return obj.getId(); }
+	};
+	/** {@link ModelObjectField} for user id. */
+	public static final ModelObjectField<RepoProblem, Integer> USER_ID =
+			new ModelObjectField<RepoProblem, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+		public void set(RepoProblem obj, Integer value) { obj.setUserId(value); }
+		public Integer get(RepoProblem obj) { return obj.getUserId(); }
+	};
+	/** {@link ModelObjectField} for problem/test case hash code. */
+	public static final ModelObjectField<RepoProblem, String> HASH =
+			new ModelObjectField<RepoProblem, String>("hash", String.class, 40, ModelObjectIndexType.UNIQUE) {
+		public void set(RepoProblem obj, String value) { obj.setHash(value); }
+		public String get(RepoProblem obj) { return obj.getHash(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA = new ModelObjectSchema<RepoProblem>()
-		.add(new ModelObjectField<RepoProblem, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(RepoProblem obj, Integer value) { obj.setId(value); }
-			public Integer get(RepoProblem obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<RepoProblem, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-			public void set(RepoProblem obj, Integer value) { obj.setUserId(value); }
-			public Integer get(RepoProblem obj) { return obj.getUserId(); }
-		})
-		.add(new ModelObjectField<RepoProblem, String>("hash", String.class, 40, ModelObjectIndexType.UNIQUE) {
-			public void set(RepoProblem obj, String value) { obj.setHash(value); }
-			public String get(RepoProblem obj) { return obj.getHash(); }
-		})
+		.add(ID)
+		.add(USER_ID)
+		.add(HASH)
 		.addAll(ProblemData.SCHEMA.getFieldList());
 	
 	/** Number of fields. */

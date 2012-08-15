@@ -65,7 +65,10 @@ public abstract class JDBCDatabaseConfigServletContextListener implements Servle
 
 			@Override
 			public String getDatabaseName() {
-				return getParam(e.getServletContext(), propertyPrefix + ".databaseName", "cloudcoder");
+				return getParam(
+						e.getServletContext(),
+						propertyPrefix + ".databaseName",
+						propertyPrefix.equals("cloudcoder.db") ? "cloudcoder" : "cloudcoderrepodb");
 			}
 
 			@Override
