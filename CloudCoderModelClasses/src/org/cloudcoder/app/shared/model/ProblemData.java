@@ -67,13 +67,13 @@ public class ProblemData implements Serializable, IProblemData {
 	};
 	/** {@link ModelObjectField} for description. */
 	public static final ModelObjectField<IProblemData, String> DESCRIPTION =
-			new ModelObjectField<IProblemData, String>("description", String.class, 8192) {
+			new ModelObjectField<IProblemData, String>("description", String.class, 8192, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
 		public void set(IProblemData obj, String value) { obj.setDescription(value); }
 		public String get(IProblemData obj) { return obj.getDescription(); }
 	};
 	/** {@link ModelObjectField} for skeleton. */
 	public static final ModelObjectField<IProblemData, String> SKELETON =
-			new ModelObjectField<IProblemData, String>("skeleton", String.class, 400) {
+			new ModelObjectField<IProblemData, String>("skeleton", String.class, 400, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
 		public void set(IProblemData obj, String value) { obj.setSkeleton(value); }
 		public String get(IProblemData obj) { return obj.getSkeleton(); }
 	};

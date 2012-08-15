@@ -27,7 +27,6 @@ import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.ProblemData;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCaseData;
 
 /**
@@ -102,108 +101,118 @@ public class XMLConversion {
 	 * @throws XMLStreamException 
 	 */
 	public static void readProblemData(IProblemData problemData, XMLStreamReader reader) throws XMLStreamException {
-
-		// TODO: figure out how to use ModelObjectSchema/ModelObjectField to read and set field values in a generic way
-		
-		/*
 		expectElementStart(PROBLEM_DATA, reader);
+		readModelObjectFields(problemData, ProblemData.SCHEMA, reader);
+		expectElementEnd(reader);
+	}
+	
+	// Low-level data conversion to XML
+
+	private static<E> void writeModelObjectFields(E modelObj, ModelObjectSchema<E> schema, XMLStreamWriter writer) throws XMLStreamException {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			Object value = field.get(modelObj);
+			writer.writeStartElement(field.getName());
+			if (field.getType() == String.class && field.isLiteral()) {
+				// Emit as CDATA
+				writer.writeCData(value.toString());
+			} else {
+				// Emit as normal text
+				writer.writeCharacters(value.toString());
+			}
+			writer.writeEndElement();
+		}
+	}
+	
+	// Low-level data conversion from XML
+	
+	private static void expectElementStart(String elementName, XMLStreamReader reader) throws XMLStreamException {
+		if (reader.getEventType() != XMLStreamReader.START_ELEMENT
+				|| !reader.getLocalName().equals(elementName)) {
+			throw new XMLStreamException("Expected the start of a " + elementName + " element");
+		}
+	}
+
+	private static void expectElementEnd(XMLStreamReader reader) throws XMLStreamException {
+		if (reader.getEventType() != XMLStreamReader.END_ELEMENT) {
+			throw new XMLStreamException("Expected end of element");
+		}
+		// Advance to next event
+		if (reader.hasNext()) {
+			reader.next();
+		}
+	}
+	
+	private static<E> void readModelObjectFields(E modelObj, ModelObjectSchema<E> schema, XMLStreamReader reader) throws XMLStreamException {
 		while (reader.hasNext()) {
 			int eventType = reader.next();
 			if (eventType == XMLStreamReader.END_ELEMENT) {
 				break;
 			} else if (eventType == XMLStreamReader.START_ELEMENT) {
+				// See if it is a known field type
 				String elementName = reader.getLocalName();
-				if (elementName.equals("schemaversion")) {
-					problemData.setSchemaVersion(getElementTextAsInt(reader));
-				} else if (elementName.equals("problemtype")) {
-					problemData.setProblemType(getElementTextAsEnum(reader, ProblemType.class));
-				} else if (elementName.equals("briefdescription")) {
-					problemData.setBriefDescription(getElementTextTrimmed(reader));
-				} else if (elementName.equals("description")) {
-					problemData.setDescription(getElementTextTrimmed(reader));
-				} else if (elementName.equals("skeleton")) {
-					problemData.setSkeleton(getElementTextTrimmed(reader));
-				} else if (elementName.equals("authorname")) {
-					problemData.setAuthorName(getElementTextTrimmed(reader));
-				} else if (elementName.equals("authoremail")) {
-					problemData.setAuthorEmail(getElementTextTrimmed(reader));
+				ModelObjectField<? super E, ?> field = schema.getFieldByName(elementName);
+				if (field != null) {
+					// Read element text
+					String elementText = reader.getElementText();
+					
+					// Decode as field type
+					Object value = decodeString(elementText, field.getType());
+					
+					// Set field value in model object
+					field.setUntyped(modelObj, value);
+				} else {
+					// Ignore the element by skipping to the corresponding END_ELEMENT event
+					skipToEndElement(reader);
 				}
-			} else {
-				// Ignore other kinds of events
 			}
-		}
-		*/
-	}
-	
-	// Low-level data conversion to XML
-	
-	private static<E> void writeModelObjectFields(E modelObj, ModelObjectSchema<E> schema, XMLStreamWriter writer) throws XMLStreamException {
-		// FIXME: need a way for ModelObjectField to convey that CDATA should be emitted instead of plain text
-		
-		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-			Object value = field.get(modelObj);
-			writer.writeStartElement(field.getName());
-			writer.writeCharacters(value.toString());
-			writer.writeEndElement();
+			// ignore other event types...
 		}
 	}
 
-//	private static void writeInt(int value, String elementName, XMLStreamWriter writer) throws XMLStreamException {
-//		writeString(String.valueOf(value), elementName, writer);
-//	}
-//
-//	private static void writeLong(long s, String elementName, XMLStreamWriter writer) throws XMLStreamException {
-//		writeString(String.valueOf(s), elementName, writer);
-//	}
-//
-//	private static void writeBoolean(boolean value, String elementName, XMLStreamWriter writer) throws XMLStreamException {
-//		writeString(String.valueOf(value), elementName, writer);
-//	}
-//
-//	private static void writeString(String s, String elementName, XMLStreamWriter writer) throws XMLStreamException {
-//		writer.writeStartElement(elementName);
-//		writer.writeCharacters(s);
-//		writer.writeEndElement();
-//	}
-//	
-//	private static void writeStringCData(String s, String elementName, XMLStreamWriter writer) throws XMLStreamException {
-//		writer.writeStartElement(elementName);
-//		writer.writeCData(s);
-//		writer.writeEndElement();
-//	}
-	
-	// Low-level data conversion from XML
-	
-	private static void expectElementStart(String elementName, XMLStreamReader reader) throws XMLStreamException {
-		if (reader.getEventType() != XMLStreamReader.START_ELEMENT) {
-			throw new XMLStreamException("not at start of element");
-		}
-		if (!reader.getLocalName().equals(elementName)) {
-			throw new XMLStreamException("Unexpected element (saw '" + reader.getLocalName() + "', expected '" + elementName + "'");
-		}
-	}
-
-	private static int getElementTextAsInt(XMLStreamReader reader) throws XMLStreamException {
-		String elementText = getElementTextTrimmed(reader);
+	private static Object decodeString(String elementText, Class<?> type) throws XMLStreamException {
 		try {
-			return Integer.parseInt(elementText);
+			if (type == String.class) {
+				return elementText;
+			} else if (type == Integer.class) {
+				elementText = elementText.trim();
+				return Integer.parseInt(elementText);
+			} else if (type == Long.class) {
+				elementText = elementText.trim();
+				return Long.parseLong(elementText);
+			} else if (type == Boolean.class) {
+				elementText = elementText.trim();
+				return Boolean.parseBoolean(elementText);
+			} else if (type.isEnum()) {
+				elementText = elementText.trim();
+				for (Object member_ : type.getEnumConstants()) {
+					Enum<?> member = (Enum<?>) member_;
+					if (member.name().equals(elementText)) {
+						return member;
+					}
+				}
+				throw new XMLStreamException("Value " + elementText + " is not a member of " + type.getName());
+			} else {
+				// TODO: other field types?
+				throw new XMLStreamException("Cannot convert string to value of type " + type.getName());
+			}
 		} catch (NumberFormatException e) {
-			throw new XMLStreamException("Illegal integer value: " + elementText);
+			throw new XMLStreamException("Could not convert " + elementText + " to a number", e);
 		}
 	}
 
-	private static<E extends Enum<E>> E getElementTextAsEnum(XMLStreamReader reader, Class<E> enumClass) throws XMLStreamException {
-		String value = getElementTextTrimmed(reader);
-		E[] members = enumClass.getEnumConstants();
-		for (E member : members) {
-			if (member.name().equals(value)) {
-				return member;
+	private static void skipToEndElement(XMLStreamReader reader) throws XMLStreamException {
+		int depth = 0;
+		while (reader.hasNext()) {
+			int eventType = reader.next();
+			if (eventType == XMLStreamReader.END_ELEMENT) {
+				if (depth == 0) {
+					return;
+				} else {
+					depth--;
+				}
+			} else if (eventType == XMLStreamReader.START_ELEMENT) {
+				depth++;
 			}
 		}
-		throw new XMLStreamException("Enum class " + enumClass.getSimpleName() + " has no member named " + value);
-	}
-
-	private static String getElementTextTrimmed(XMLStreamReader reader) throws XMLStreamException {
-		return reader.getElementText().trim();
 	}
 }

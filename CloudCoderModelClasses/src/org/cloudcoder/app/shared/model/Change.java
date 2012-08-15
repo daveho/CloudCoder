@@ -73,13 +73,11 @@ public class Change implements Serializable, IContainsEvent {
 				public void set(Change obj, Integer value) { obj.setEndColumn(value); }
 				public Integer get(Change obj) { return obj.getStartColumn(); }
 		})
-		// allow null values
-		.add(new ModelObjectField<Change, String>("text_short", String.class, 80, ModelObjectIndexType.NONE, true) {
+		.add(new ModelObjectField<Change, String>("text_short", String.class, 80, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
 				public void set(Change obj, String value) { obj.setText(value); }
 				public String get(Change obj) { return obj.getText(); }
 		})
-		// allow null values
-		.add(new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, true) {
+		.add(new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
 				public void set(Change obj, String value) { obj.setText(value); }
 				public String get(Change obj) { return obj.getText(); }
 		});

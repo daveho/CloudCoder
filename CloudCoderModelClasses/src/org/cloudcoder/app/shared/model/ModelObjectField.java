@@ -34,12 +34,24 @@ package org.cloudcoder.app.shared.model;
  * @param <E> the field type
  */
 public abstract class ModelObjectField<ModelObjectType, E> {
+	/**
+	 * Flag to indicate that the field should allow null values.
+	 */
+	public static final int ALLOW_NULL = (1 << 0);
+	
+	/**
+	 * Flag to indicate that the field should be serialized in a way
+	 * that preserves its exact contents.  Significant only for string fields:
+	 * indicates that they should be serialized as CDATA in XML.
+	 */
+	public static final int LITERAL = (1 << 1);
+	
 	private final String name;
 	private final Class<?> type;
 	private final int size;
-	private ModelObjectIndexType indexType;
-	private boolean allowNull;
-	private String beanPropertyName;
+	private final ModelObjectIndexType indexType;
+	private final int flags;
+	private final String beanPropertyName;
 	
 	/**
 	 * Constructor for fields which are not a unique object id.
@@ -49,7 +61,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @param size the size (e.g., max string length for a string column)
 	 */
 	public ModelObjectField(String name, Class<E> type, int size) {
-		this(name, type, size, ModelObjectIndexType.NONE, false);
+		this(name, type, size, ModelObjectIndexType.NONE, 0);
 	}
 
 	/**
@@ -61,7 +73,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @param indexType true if the field is the unique object id
 	 */
 	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType) {
-		this(name, type, size, indexType, false);
+		this(name, type, size, indexType, 0);
 	}
 
 	/**
@@ -71,15 +83,15 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @param type the Java type of the field
 	 * @param size the size (e.g., max string length for a string column)
 	 * @param indexType true if the field is the unique object id
-	 * @param allowNull true if the field allows null values
+	 * @param flags flags to set for this field
 	 */
-	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType, boolean allowNull) {
+	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType, int flags) {
 		this.name = name;
 		this.type = type;
 		this.size = size;
 		this.indexType = indexType;
 		this.beanPropertyName = getBeanPropertyName(name);
-		this.allowNull = allowNull;
+		this.flags = flags;
 	}
 	
 	/**
@@ -123,7 +135,18 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @return true if the field is allowed to have NULL values, false otherwise
 	 */
 	public boolean isAllowNull() {
-		return allowNull;
+		return (flags & ALLOW_NULL) != 0;
+	}
+	
+	/**
+	 * Check whether or not the field requires serialization in a way that preserves
+	 * its exact value (e.g., need to use CDATA to convey string data in XML).
+	 * 
+	 * @return true if the field must be serialized in a way that preserves its
+	 *         exact value
+	 */
+	public boolean isLiteral() {
+		return (flags & LITERAL) != 0;
 	}
 	
 	/**
@@ -150,6 +173,25 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @return the fields value
 	 */
 	public abstract E get(ModelObjectType obj);
+
+	/**
+	 * Set the field value via a plain Object reference.
+	 * Throws IllegalArgumentException if the value's type does not
+	 * match the field's type.
+	 * 
+	 * @param obj    the model object
+	 * @param value  the field value to set
+	 */
+	@SuppressWarnings("unchecked")
+	public void setUntyped(ModelObjectType obj, Object value) {
+		if (value.getClass() != type) {
+			throw new IllegalArgumentException(
+					"Value type " + value.getClass().getName() +
+					" does not match declared type " + type.getClass().getName() +
+					" for setting field " + name);
+		}
+		set(obj, (E) value);
+	}
 	
 	private static String getBeanPropertyName(String name) {
 		String[] tokens = name.split("_");

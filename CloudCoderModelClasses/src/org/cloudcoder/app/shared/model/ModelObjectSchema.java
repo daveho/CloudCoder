@@ -18,7 +18,9 @@
 package org.cloudcoder.app.shared.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Descriptor for the schema (field types) of a model object
@@ -28,12 +30,14 @@ import java.util.List;
  */
 public class ModelObjectSchema<ModelObjectType> {
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
+	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
 
 	/**
 	 * Constructor.
 	 */
 	public ModelObjectSchema() {
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
+		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
 	}
 	
 	/**
@@ -46,6 +50,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 */
 	public ModelObjectSchema<ModelObjectType> add(ModelObjectField<? super ModelObjectType, ?> field) {
 		fieldList.add(field);
+		nameToFieldList.put(field.getName(), field);
 		return this;
 	}
 	
@@ -58,7 +63,9 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * @return a reference to this object
 	 */
 	public ModelObjectSchema<ModelObjectType> addAll(List<? extends ModelObjectField<? super ModelObjectType, ?>> otherFieldList) {
-		fieldList.addAll(otherFieldList);
+		for (ModelObjectField<? super ModelObjectType, ?> field : otherFieldList) {
+			add(field);
+		}
 		return this;
 	}
 
@@ -70,6 +77,16 @@ public class ModelObjectSchema<ModelObjectType> {
 	 */
 	public ModelObjectField<? super ModelObjectType, ?> getField(int index) {
 		return fieldList.get(index);
+	}
+	
+	/**
+	 * Get a field descriptor by name.
+	 * 
+	 * @param name the name of the field
+	 * @return the field descriptor, or null if there is no such field
+	 */
+	public ModelObjectField<? super ModelObjectType, ?> getFieldByName(String fieldName) {
+		return nameToFieldList.get(fieldName);
 	}
 	
 	/**
