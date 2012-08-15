@@ -22,9 +22,7 @@ import java.util.List;
 
 /**
  * This class represents a {@link Problem} and {@link TestCase}s for the problem,
- * as assigned in a specific {@link Course}.  An instance of ProblemAndTestCaseList
- * can be converted to a {@link ProblemAndTestCaseData}, which is the
- * "exportable" form of a problem and its test cases.
+ * as assigned in a specific {@link Course}.
  * 
  * @author David Hovemeyer
  */
@@ -75,32 +73,6 @@ public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCa
 	@Override
 	public List<TestCase> getTestCaseData() {
 		return Arrays.asList(testCaseList);
-	}
-	
-	/**
-	 * Convert to {@link ProblemAndTestCaseData}, which is the
-	 * "exportable" form of a problem and its test cases.
-	 * <em>TODO:</em> Get rid of this: {@link IProblemAndTestCaseData}
-	 * should serve as a sufficient "neutral" representation of
-	 * a problem and its test cases.
-	 * 
-	 * @return the ProblemAndTestCaseData
-	 */
-	@Deprecated
-	public ProblemAndTestCaseData toProblemAndTestCaseData() {
-		ProblemAndTestCaseData result = new ProblemAndTestCaseData();
-
-		ProblemData problemData = new ProblemData();
-		problemData.copyFrom(problem);
-		result.setProblemData(problemData);
-
-		for (TestCase testCase : testCaseList) {
-			TestCaseData testCaseData = new TestCaseData();
-			testCaseData.copyFrom(testCase);
-			result.addTestCase(testCaseData);
-		}
-		
-		return result;
 	}
 
 	/**

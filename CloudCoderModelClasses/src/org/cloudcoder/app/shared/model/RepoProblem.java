@@ -29,6 +29,7 @@ public class RepoProblem extends ProblemData {
 
 	private int id;
 	private int userId;
+	private String hash;
 	
 	/**
 	 * Description of fields.
@@ -41,6 +42,10 @@ public class RepoProblem extends ProblemData {
 		.add(new ModelObjectField<RepoProblem, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
 			public void set(RepoProblem obj, Integer value) { obj.setUserId(value); }
 			public Integer get(RepoProblem obj) { return obj.getUserId(); }
+		})
+		.add(new ModelObjectField<RepoProblem, String>("hash", String.class, 40, ModelObjectIndexType.UNIQUE) {
+			public void set(RepoProblem obj, String value) { obj.setHash(value); }
+			public String get(RepoProblem obj) { return obj.getHash(); }
 		})
 		.addAll(ProblemData.SCHEMA.getFieldList());
 	
@@ -82,5 +87,21 @@ public class RepoProblem extends ProblemData {
 	 */
 	public int getUserId() {
 		return userId;
+	}
+	
+	/**
+	 * Set the SHA1 hash of the problem and its test cases.
+	 * @param hash the hash
+	 */
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+	
+	/**
+	 * Get the SHA1 hash of the problem and its test cases
+	 * @return the hash
+	 */
+	public String getHash() {
+		return hash;
 	}
 }

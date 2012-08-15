@@ -24,6 +24,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 
@@ -72,18 +73,23 @@ public class CreateRepositoryDatabase {
 		// Create an initial user
 		System.out.println("Creating initial user...");
 		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
-		
-		// Create sample repository problem
+
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);
 		CreateSampleData.populateSampleProblemData(repoProblem);
-		DBUtil.storeBean(conn, repoProblem, RepoProblem.SCHEMA, JDBCTableNames.REPO_PROBLEMS);
-		int repoProblemId = repoProblem.getId();
-		
-		// Create test case for sample repository problem
+
 		RepoTestCase repoTestCase = new RepoTestCase();
-		repoTestCase.setRepoProblemId(repoProblemId);
 		CreateSampleData.populateSampleTestCaseData(repoTestCase);
+
+		// At this point, all of the data needed for the hash computation is available.
+		RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
+		exercise.setRepoProblem(repoProblem);
+		exercise.addRepoTestCase(repoTestCase);
+		exercise.computeHash();
+		
+		// Now we can store the problem and its test case in the database
+		DBUtil.storeBean(conn, repoProblem, RepoProblem.SCHEMA, JDBCTableNames.REPO_PROBLEMS);
+		repoTestCase.setRepoProblemId(repoProblem.getId());
 		DBUtil.storeBean(conn, repoTestCase, RepoTestCase.SCHEMA, JDBCTableNames.REPO_TEST_CASES);
 		
 		System.out.println("Done!");
