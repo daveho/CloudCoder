@@ -317,9 +317,6 @@ public class DBUtil {
 	 */
 	public static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
 		String sql = getCreateTableStatement(schema, tableName);
-		if (CreateWebappDatabase.DEBUG) {
-			System.out.println(sql);
-		}
 		execSql(conn, sql);
 	}
 
