@@ -187,7 +187,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 		if (value.getClass() != type) {
 			throw new IllegalArgumentException(
 					"Value type " + value.getClass().getName() +
-					" does not match declared type " + type.getClass().getName() +
+					" does not match declared type " + type.getName() +
 					" for setting field " + name);
 		}
 		set(obj, (E) value);
