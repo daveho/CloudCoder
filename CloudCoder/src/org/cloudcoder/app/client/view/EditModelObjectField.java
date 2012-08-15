@@ -44,16 +44,7 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	
 	/**
 	 * Get the description that should be used to label the UI widget.
-	 *  {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setOutput(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getOutput();
-				}
-			}
+	 * 
 	 * @return the description that should be used to label the UI widget
 	 */
 	public String getDescription() {
@@ -89,16 +80,7 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	public abstract IsWidget getUI();
 	
 	/**
-	 * Commit any changes made in the UI to the model object. {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setOutput(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getOutput();
-				}
-			}
+	 * Commit any changes made in the UI to the model object.
 	 */
 	public abstract void commit();
 	
