@@ -324,19 +324,14 @@ public class DBUtil {
 	}
 
 	/**
-	 * Use introspection to store an arbitrary bean in the database.
-	 * Eventually we could use this sort of approach to replace much
-	 * of our hand-written JDBC code, although I don't know how great
-	 * and idea that would be (for example, it might not yield adequate
-	 * performance.)  For just creating the database, it should be
-	 * fine.
+	 * Store an arbitrary bean in the database.
 	 * 
 	 * @param conn      the Connection to the database
 	 * @param bean      the bean (model object) to store in the database
 	 * @param schema    the {@link ModelObjectSchema} for the bean
 	 * @param tableName the database table to store the bean in
 	 */
-	public static<E> void storeBean(Connection conn, Object bean, ModelObjectSchema<E> schema, String tableName) throws SQLException {
+	public static<E> void storeBean(Connection conn, E bean, ModelObjectSchema<E> schema, String tableName) throws SQLException {
 		StringBuilder buf = new StringBuilder();
 		
 		buf.append("insert into " + tableName);
@@ -358,7 +353,7 @@ public class DBUtil {
 					continue;
 				}
 				try {
-					Object value = BeanUtil.getProperty(bean, field.getPropertyName());
+					Object value = field.get(bean);
 					if (value instanceof Enum) {
 						// Enum values are converted to integers
 						value = Integer.valueOf(((Enum<?>)value).ordinal());
@@ -383,7 +378,7 @@ public class DBUtil {
 				
 				// Set the unique id value in the bean
 				try {
-					BeanUtil.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
+					schema.getUniqueIdField().setUntyped(bean, (Integer)id);
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);

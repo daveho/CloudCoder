@@ -89,7 +89,7 @@ public class CreateRepositoryDatabase {
 		System.out.println("Done!");
 	}
 
-	private static void createTable(Connection conn, String tableName, ModelObjectSchema schema) throws SQLException {
+	private static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
 		System.out.println("Creating table " + tableName);
 		DBUtil.createTable(conn, tableName, schema);
 	}

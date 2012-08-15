@@ -35,14 +35,14 @@ public class TestCase extends TestCaseData implements Serializable, ITestCase {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<TestCase> SCHEMA = new ModelObjectSchema<TestCase>()
-		.add(new ModelObjectField<TestCase, Integer>("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(TestCase obj, Integer value) { obj.setTestCaseId(value); }
-			public Integer get(TestCase obj) { return obj.getTestCaseId(); }
+	public static final ModelObjectSchema<ITestCase> SCHEMA = new ModelObjectSchema<ITestCase>()
+		.add(new ModelObjectField<ITestCase, Integer>("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(ITestCase obj, Integer value) { obj.setTestCaseId(value); }
+			public Integer get(ITestCase obj) { return obj.getTestCaseId(); }
 		})
-		.add(new ModelObjectField<TestCase, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-			public void set(TestCase obj, Integer value) { obj.setProblemId(value); }
-			public Integer get(TestCase obj) { return obj.getProblemId(); }
+		.add(new ModelObjectField<ITestCase, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+			public void set(ITestCase obj, Integer value) { obj.setProblemId(value); }
+			public Integer get(ITestCase obj) { return obj.getProblemId(); }
 		})
 		.addAll(TestCaseData.SCHEMA.getFieldList());
 	
