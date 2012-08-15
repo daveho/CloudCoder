@@ -69,7 +69,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @param name the field name (can be used as a database column name)
 	 * @param type the Java type of the field
 	 * @param size the size (e.g., max string length for a string column)
-	 * @param indexType true if the field is the unique object id
+	 * @param indexType type of index that should be used for this field
 	 */
 	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType) {
 		this(name, type, size, indexType, 0);
@@ -81,7 +81,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * @param name the field name (can be used as a database column name)
 	 * @param type the Java type of the field
 	 * @param size the size (e.g., max string length for a string column)
-	 * @param indexType true if the field is the unique object id
+	 * @param indexType type of index that should be used for this field
 	 * @param flags flags to set for this field
 	 */
 	public ModelObjectField(String name, Class<E> type, int size, ModelObjectIndexType indexType, int flags) {
