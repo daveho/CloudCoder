@@ -45,42 +45,67 @@ public class Change implements Serializable, IContainsEvent {
 	private int endColumn;
 	private String text;
 	
+	/** {@link ModelObjectField} for unique id. */
+	public static final ModelObjectField<Change, Integer> ID =
+			new ModelObjectField<Change, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
+		public void set(Change obj, Integer value) { obj.setEventId(value); }
+		public Integer get(Change obj) { return obj.getEventId(); }
+	};
+	/** {@link ModelObjectField} for change type. */
+	public static final ModelObjectField<Change, ChangeType> TYPE =
+			new ModelObjectField<Change, ChangeType>("type", ChangeType.class, 0) {
+		public void set(Change obj, ChangeType value) { obj.setType(value); }
+		public ChangeType get(Change obj) { return obj.getType(); }
+	};
+	/** {@link ModelObjectField} for start row. */
+	public static final ModelObjectField<Change, Integer> START_ROW =
+			new ModelObjectField<Change, Integer>("start_row", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setStartRow(value); }
+		public Integer get(Change obj) { return obj.getStartRow(); }
+	};
+	/** {@link ModelObjectField} for end row. */
+	public static final ModelObjectField<Change, Integer> END_ROW =
+			new ModelObjectField<Change, Integer>("end_row", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setEndRow(value); }
+		public Integer get(Change obj) { return obj.getEndRow(); }
+	};
+	/** {@link ModelObjectField} for start column. */
+	public static final ModelObjectField<Change, Integer> START_COL =
+			new ModelObjectField<Change, Integer>("start_col", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setStartColumn(value); }
+		public Integer get(Change obj) { return obj.getStartColumn(); }
+	};
+	/** {@link ModelObjectField} for end column. */
+	public static final ModelObjectField<Change, Integer> END_COL =
+			new ModelObjectField<Change, Integer>("end_col", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setEndColumn(value); }
+		public Integer get(Change obj) { return obj.getStartColumn(); }
+	};
+	/** {@link ModelObjectField} for short change text. */
+	public static final ModelObjectField<Change, String> TEXT_SHORT =
+			new ModelObjectField<Change, String>("text_short", String.class, 80, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
+		public void set(Change obj, String value) { obj.setText(value); }
+		public String get(Change obj) { return obj.getText(); }
+	};
+	/** {@link ModelObjectField} for long change text. */
+	public static final ModelObjectField<Change, String> TEXT =
+			new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
+		public void set(Change obj, String value) { obj.setText(value); }
+		public String get(Change obj) { return obj.getText(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<Change> SCHEMA = new ModelObjectSchema<Change>()
-		.add(new ModelObjectField<Change, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
-				public void set(Change obj, Integer value) { obj.setEventId(value); }
-				public Integer get(Change obj) { return obj.getEventId(); }
-		})
-		.add(new ModelObjectField<Change, ChangeType>("type", ChangeType.class, 0) {
-				public void set(Change obj, ChangeType value) { obj.setType(value); }
-				public ChangeType get(Change obj) { return obj.getType(); }
-		})
-		.add(new ModelObjectField<Change, Integer>("start_row", Integer.class, 0) {
-				public void set(Change obj, Integer value) { obj.setStartRow(value); }
-				public Integer get(Change obj) { return obj.getStartRow(); }
-		})
-		.add(new ModelObjectField<Change, Integer>("end_row", Integer.class, 0) {
-				public void set(Change obj, Integer value) { obj.setEndRow(value); }
-				public Integer get(Change obj) { return obj.getEndRow(); }
-		})
-		.add(new ModelObjectField<Change, Integer>("start_col", Integer.class, 0) {
-				public void set(Change obj, Integer value) { obj.setStartColumn(value); }
-				public Integer get(Change obj) { return obj.getStartColumn(); }
-		})
-		.add(new ModelObjectField<Change, Integer>("end_col", Integer.class, 0) {
-				public void set(Change obj, Integer value) { obj.setEndColumn(value); }
-				public Integer get(Change obj) { return obj.getStartColumn(); }
-		})
-		.add(new ModelObjectField<Change, String>("text_short", String.class, 80, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
-				public void set(Change obj, String value) { obj.setText(value); }
-				public String get(Change obj) { return obj.getText(); }
-		})
-		.add(new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
-				public void set(Change obj, String value) { obj.setText(value); }
-				public String get(Change obj) { return obj.getText(); }
-		});
+		.add(ID)
+		.add(TYPE)
+		.add(START_ROW)
+		.add(END_ROW)
+		.add(START_COL)
+		.add(END_COL)
+		.add(TEXT_SHORT)
+		.add(TEXT);
 	
 	// Transient link to the Event object associated with this Change.
 	private Event event;

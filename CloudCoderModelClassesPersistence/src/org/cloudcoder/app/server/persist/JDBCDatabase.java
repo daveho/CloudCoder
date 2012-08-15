@@ -1354,105 +1354,63 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		deleteStmt.executeUpdate();
 	}
 	
-	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
-		configurationSetting.setName(resultSet.getString(index++));
-		configurationSetting.setValue(resultSet.getString(index++));
+	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(configurationSetting, resultSet, index, ConfigurationSetting.SCHEMA);
 	}
 
 	private void load(User user, ResultSet resultSet, int index) throws SQLException {
-		user.setId(resultSet.getInt(index++));
-		user.setUsername(resultSet.getString(index++));
-		user.setPasswordHash(resultSet.getString(index++));
+		loadGeneric(user, resultSet, index, User.SCHEMA);
 	}
 
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
-		problem.setProblemId(resultSet.getInt(index++));
-		problem.setCourseId(resultSet.getInt(index++));
-		problem.setWhenAssigned(resultSet.getLong(index++));
-		problem.setWhenDue(resultSet.getLong(index++));
-		problem.setVisible(resultSet.getBoolean(index++));
-		loadProblemData(problem, resultSet, index);
-	}
-
-	protected void loadProblemData(ProblemData problemData, ResultSet resultSet, int index) throws SQLException {
-		problemData.setProblemType(resultSet.getInt(index++));
-		problemData.setTestname(resultSet.getString(index++));
-		problemData.setBriefDescription(resultSet.getString(index++));
-		problemData.setDescription(resultSet.getString(index++));
-		problemData.setSkeleton(resultSet.getString(index++));
-		problemData.setSchemaVersion(resultSet.getInt(index++));
-		problemData.setAuthorName(resultSet.getString(index++));
-		problemData.setAuthorEmail(resultSet.getString(index++));
-		problemData.setAuthorWebsite(resultSet.getString(index++));
-		problemData.setTimestampUtc(resultSet.getLong(index++));
-		problemData.setLicense(ProblemLicense.fromOrdinal(resultSet.getInt(index++)));
+		loadGeneric(problem, resultSet, index, Problem.SCHEMA);
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-//		change.setId(resultSet.getInt(index++));
-		change.setEventId(resultSet.getInt(index++));
-		change.setType(resultSet.getInt(index++));
-		change.setStartRow(resultSet.getInt(index++));
-		change.setEndRow(resultSet.getInt(index++));
-		change.setStartColumn(resultSet.getInt(index++));
-		change.setEndColumn(resultSet.getInt(index++));
+		// Change objects require special handling because the database
+		// has two columns for the change text (depending on how long the
+		// text is).  Whichever of the columns is not null should be used
+		// as the text value to store in the model object.
 		
-		// Only one of the two text columns (text_short and text)
-		// should be non-null.
-		String shortText = resultSet.getString(index++);
-		String longText = resultSet.getString(index++);
+		String text = null;
 		
-		String text = shortText != null ? shortText : longText;
+		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
+			Object value = resultSet.getObject(index++);
+			if (field != Change.TEXT_SHORT && field != Change.TEXT) {
+				field.setUntyped(change, DBUtil.convertValue(value, field.getType()));
+			} else {
+				// This is the value of either the text_short or text columns.
+				// Use whichever is not null.
+				if (value != null) {
+					text = (String) value;
+				}
+			}
+		}
 		change.setText(text);
 	}
 
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
-		course.setId(resultSet.getInt(index++));
-		course.setName(resultSet.getString(index++));
-		course.setTitle(resultSet.getString(index++));
-		course.setUrl(resultSet.getString(index++));
-		course.setTermId(resultSet.getInt(index++));
-		course.setYear(resultSet.getInt(index++));
+		loadGeneric(course, resultSet, index, Course.SCHEMA);
 	}
 
 	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
-		term.setId(resultSet.getInt(index++));
-		term.setName(resultSet.getString(index++));
-		term.setSeq(resultSet.getInt(index++));
+		loadGeneric(term, resultSet, index, Term.SCHEMA);
 	}
 
 	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
-		testCase.setTestCaseId(resultSet.getInt(index++));
-		testCase.setProblemId(resultSet.getInt(index++));
-		testCase.setTestCaseName(resultSet.getString(index++));
-		testCase.setInput(resultSet.getString(index++));
-		testCase.setOutput(resultSet.getString(index++));
-		testCase.setSecret(resultSet.getBoolean(index++));
+		loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-//		submissionReceipt.setId(resultSet.getInt(index++));
-		submissionReceipt.setEventId(resultSet.getInt(index++));
-		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
-		submissionReceipt.setStatus(resultSet.getInt(index++));
-		submissionReceipt.setNumTestsAttempted(submissionReceipt.getNumTestsAttempted());
-		submissionReceipt.setNumTestsPassed(submissionReceipt.getNumTestsPassed());
+		loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
 	}
 	
 	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
-		event.setId(resultSet.getInt(index++));
-		event.setUserId(resultSet.getInt(index++));
-		event.setProblemId(resultSet.getInt(index++));
-		event.setType(resultSet.getInt(index++));
-		event.setTimestamp(resultSet.getLong(index++));
+		loadGeneric(event, resultSet, index, Event.SCHEMA);
 	}
 	
 	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
-		reg.setId(resultSet.getInt(index++));
-		reg.setCourseId(resultSet.getInt(index++));
-		reg.setUserId(resultSet.getInt(index++));
-		reg.setRegistrationType(resultSet.getInt(index++));
-		reg.setSection(resultSet.getInt(index++));
+		loadGeneric(reg, resultSet, index, CourseRegistration.SCHEMA);
 	}
 	
 	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
