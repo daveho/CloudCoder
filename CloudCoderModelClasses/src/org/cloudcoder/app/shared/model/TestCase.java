@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase extends TestCaseData implements Serializable {
+public class TestCase extends TestCaseData implements Serializable, ITestCase {
 	private static final long serialVersionUID = 1L;
 
 	private int testCaseId;
@@ -51,18 +51,34 @@ public class TestCase extends TestCaseData implements Serializable {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setTestCaseId(int)
+	 */
+	@Override
 	public void setTestCaseId(int id) {
 		this.testCaseId = id;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getTestCaseId()
+	 */
+	@Override
 	public int getTestCaseId() {
 		return testCaseId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setProblemId(int)
+	 */
+	@Override
 	public void setProblemId(int problemId) {
 		this.problemId = problemId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getProblemId()
+	 */
+	@Override
 	public int getProblemId() {
 		return problemId;
 	}

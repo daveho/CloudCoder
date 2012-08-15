@@ -71,10 +71,20 @@ public class CreateRepositoryDatabase {
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		User user = new User();
-		user.setUsername(ccUserName);
-		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
+		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
+		
+		// Create sample repository problem
+		RepoProblem repoProblem = new RepoProblem();
+		repoProblem.setUserId(userId);
+		CreateSampleData.populateSampleProblemData(repoProblem);
+		DBUtil.storeBean(conn, repoProblem, RepoProblem.SCHEMA, JDBCTableNames.REPO_PROBLEMS);
+		int repoProblemId = repoProblem.getId();
+		
+		// Create test case for sample repository problem
+		RepoTestCase repoTestCase = new RepoTestCase();
+		repoTestCase.setRepoProblemId(repoProblemId);
+		CreateSampleData.populateSampleTestCaseData(repoTestCase);
+		DBUtil.storeBean(conn, repoTestCase, RepoTestCase.SCHEMA, JDBCTableNames.REPO_TEST_CASES);
 		
 		System.out.println("Done!");
 	}

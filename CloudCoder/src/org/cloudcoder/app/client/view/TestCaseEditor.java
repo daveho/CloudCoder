@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.TestCase;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -78,7 +79,7 @@ public class TestCaseEditor {
 	private UI ui;
 	private List<EditModelObjectField<TestCase, ?>> fieldEditorList;
 	private Runnable deleteHandler;
-	private TestCase testCase;
+	private ITestCase testCase;
 	
 	/**
 	 * Constructor.
@@ -121,7 +122,7 @@ public class TestCaseEditor {
 	/**
 	 * @return the TestCase being edited
 	 */
-	public TestCase getTestCase() {
+	public ITestCase getTestCase() {
 		return testCase;
 	}
 

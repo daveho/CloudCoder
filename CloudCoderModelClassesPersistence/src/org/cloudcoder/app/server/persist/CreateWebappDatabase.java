@@ -31,10 +31,9 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemLicense;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -128,70 +127,27 @@ public class CreateWebappDatabase {
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
-		Course course = new Course();
-		course.setName("CCDemo");
-		course.setTitle("CloudCoder demo course");
-		course.setTermId(fall.getId());
-		course.setTerm(fall);
-		course.setYear(2012);
-		course.setUrl("http://cloudcoder.org/");
-		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCTableNames.COURSES);
+		int courseId = CreateSampleData.createDemoCourse(conn, fall);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		User user = new User();
-		user.setUsername(ccUserName);
-		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCTableNames.USERS);
+		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
-		CourseRegistration courseReg = new CourseRegistration();
-		courseReg.setCourseId(course.getId());
-		courseReg.setUserId(user.getId());
-		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
-		courseReg.setSection(101);
-		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCTableNames.COURSE_REGISTRATIONS);
+		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR);
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");
 		Problem problem = new Problem();
-		problem.setCourseId(course.getId());
-		problem.setWhenAssigned(System.currentTimeMillis());
-		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
-		problem.setVisible(true);
-		problem.setProblemType(ProblemType.C_PROGRAM);
-		problem.setTestname("hello");
-		problem.setBriefDescription("Print hello, world");
-		problem.setDescription(
-				"<p>Print a line with the following text:</p>\n" +
-				"<blockquote><pre>Hello, world</pre></blockquote>\n"
-		);
-
-		problem.setSkeleton(
-				"#include <stdio.h>\n\n" +
-				"int main(void) {\n" +
-				"\t// TODO - add your code here\n\n" +
-				"\treturn 0;\n" +
-				"}\n"
-				);
-		problem.setSchemaVersion(Problem.CURRENT_SCHEMA_VERSION);
-		problem.setAuthorName("A. User");
-		problem.setAuthorEmail("auser@cs.unseen.edu");
-		problem.setAuthorWebsite("http://cs.unseen.edu/~auser");
-		problem.setTimestampUtc(System.currentTimeMillis());
-		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
-		
+		CreateSampleData.populateSampleProblem(problem, courseId);
 		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCTableNames.PROBLEMS);
+		Integer problemId = problem.getProblemId();
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
-		TestCase testCase = new TestCase();
-		testCase.setProblemId(problem.getProblemId());
-		testCase.setTestCaseName("hello");
-		testCase.setInput("");
-		testCase.setOutput("^\\s*Hello\\s*,\\s*world\\s*$i");
-		testCase.setSecret(false);
+		ITestCase testCase = new TestCase();
+		CreateSampleData.populateSampleTestCase(testCase, problemId);
 		
 		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCTableNames.TEST_CASES);
 		
@@ -200,7 +156,7 @@ public class CreateWebappDatabase {
 		System.out.println("Success!");
 	}
 
-	private static void createTable(Connection conn, String tableName, ModelObjectSchema schema) throws SQLException {
+	private static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
 		System.out.println("Creating table " + tableName);
 		DBUtil.createTable(conn, tableName, schema);
 	}
