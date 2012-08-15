@@ -44,8 +44,6 @@ import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
-import org.cloudcoder.app.shared.model.ProblemData;
-import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.RepoProblem;
@@ -1444,83 +1442,65 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, event.getUserId());
-		stmt.setInt(index++, event.getProblemId());
-		stmt.setInt(index++, event.getType().ordinal());
-		stmt.setLong(index++, event.getTimestamp());
+		storeNoIdGeneric(event, stmt, index, Event.SCHEMA);
 	}
 
 	protected void store(Change change, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, change.getEventId());
-		stmt.setInt(index++, change.getType().ordinal());
-		stmt.setInt(index++, change.getStartRow());
-		stmt.setInt(index++, change.getEndRow());
-		stmt.setInt(index++, change.getStartColumn());
-		stmt.setInt(index++, change.getEndColumn());
+		// Change objects require special handling so that we use the correct
+		// database column to store the change text.
 		
-		// Determine if text can be stored in text_short column,
-		// or if it must be stored in the text (blob) column.
-		String text = change.getText();
+		String changeText = change.getText();
+		boolean isShort = changeText.length() <= Change.MAX_TEXT_LEN_IN_ROW;
+		String textShort = isShort ? changeText : null;
+		String textLong  = !isShort ? changeText : null;
 		
-		String shortText = null;
-		String longText = null;
-		
-		if (text.length() < Change.MAX_TEXT_LEN_IN_ROW) {
-			shortText = text;
-		} else {
-			longText = text;
+		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
+			if (field == Change.TEXT_SHORT) {
+				stmt.setString(index++, textShort);
+			} else if (field == Change.TEXT) {
+				stmt.setString(index++, textLong);
+			} else {
+				stmt.setObject(index++, DBUtil.convertValueToStore(field.get(change)));
+			}
 		}
-		
-		stmt.setString(index++, shortText);
-		stmt.setString(index++, longText);
 	}
 
 	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, receipt.getEventId());
-		stmt.setLong(index++, receipt.getLastEditEventId());
-		stmt.setInt(index++, receipt.getStatus().ordinal());
-		stmt.setInt(index++, receipt.getNumTestsAttempted());
-		stmt.setInt(index++, receipt.getNumTestsPassed());
+		storeNoIdGeneric(receipt, stmt, index, SubmissionReceipt.SCHEMA);
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testResult.getSubmissionReceiptEventId());
-		stmt.setInt(index++, testResult.getOutcome().ordinal());
-		stmt.setString(index++, testResult.getMessage());
-		stmt.setString(index++, testResult.getStdout());
-		stmt.setString(index++, testResult.getStderr());
+		storeNoIdGeneric(testResult, stmt, index, TestResult.SCHEMA);
 	}
 	
 	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, problem.getCourseId());
-		stmt.setLong(index++, problem.getWhenAssigned());
-		stmt.setLong(index++, problem.getWhenDue());
-		stmt.setBoolean(index++, problem.isVisible());
-		index = storeProblemData(problem, stmt, index);
-		return index;
-	}
-
-	protected int storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, problemData.getProblemType().ordinal());
-		stmt.setString(index++, problemData.getTestname());
-		stmt.setString(index++, problemData.getBriefDescription());
-		stmt.setString(index++, problemData.getDescription());
-		stmt.setString(index++, problemData.getSkeleton());
-		stmt.setInt(index++, problemData.getSchemaVersion());
-		stmt.setString(index++, problemData.getAuthorName());
-		stmt.setString(index++, problemData.getAuthorEmail());
-		stmt.setString(index++, problemData.getAuthorWebsite());
-		stmt.setLong(index++, problemData.getTimestampUtc());
-		stmt.setInt(index++, problemData.getLicense().ordinal());
-		return index;
+		return storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testCase.getProblemId());
-		stmt.setString(index++, testCase.getTestCaseName());
-		stmt.setString(index++, testCase.getInput());
-		stmt.setString(index++, testCase.getOutput());
-		stmt.setBoolean(index++, testCase.isSecret());
+		storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
+	}
+
+	/**
+	 * Store the field values of a model object (sans unique id) in the parameters
+	 * of the given PreparedStatement. 
+	 * 
+	 * @param modelObj the model object
+	 * @param stmt     the PreparedStatement
+	 * @param index    the index of the first PreparedStatement parameter where the model object data should be stored
+	 * @param schema   the schema of the model object
+	 * @return the index of the parameter just after where the model object's field values are stored
+	 * @throws SQLException
+	 */
+	protected<E> int storeNoIdGeneric(E modelObj, PreparedStatement stmt, int index, ModelObjectSchema<E> schema) throws SQLException {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			if (!field.isUniqueId()) {
+				Object value = field.get(modelObj);
+				value = DBUtil.convertValueToStore(value);
+				stmt.setObject(index++, value);
+			}
+		}
+		return index;
 	}
 
 	protected Change getChangeAndEvent(ResultSet resultSet) throws SQLException {

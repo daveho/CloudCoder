@@ -453,4 +453,23 @@ public class DBUtil {
 		
 		throw new IllegalArgumentException("Unsupported conversion from " + value.getClass().getName() + " to " + type.getName());
 	}
+
+	/**
+	 * Convert a model object field value so it is suitable for storing
+	 * in the database.  The main issue that is addressed here is
+	 * converting enum values to their ordinal integer values (which is how
+	 * they're stored in the database.)
+	 * 
+	 * @param value a model object field value
+	 * @return value suitable for storing in the database
+	 */
+	public static Object convertValueToStore(Object value) {
+		if (value instanceof Enum) {
+			// Special case: convert enum values to their ordinal integer values
+			Enum<?> member = (Enum<?>) value;
+			//System.out.println("Converting enum value " + value + " to integer " + ((Integer)member.ordinal()));
+			value = (Integer) member.ordinal();
+		}
+		return value;
+	}
 }

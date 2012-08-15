@@ -46,7 +46,7 @@ public class Change implements Serializable, IContainsEvent {
 	private String text;
 	
 	/** {@link ModelObjectField} for unique id. */
-	public static final ModelObjectField<Change, Integer> ID =
+	public static final ModelObjectField<Change, Integer> EVENT_ID =
 			new ModelObjectField<Change, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
 		public void set(Change obj, Integer value) { obj.setEventId(value); }
 		public Integer get(Change obj) { return obj.getEventId(); }
@@ -98,7 +98,7 @@ public class Change implements Serializable, IContainsEvent {
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<Change> SCHEMA = new ModelObjectSchema<Change>()
-		.add(ID)
+		.add(EVENT_ID)
 		.add(TYPE)
 		.add(START_ROW)
 		.add(END_ROW)
