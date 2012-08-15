@@ -31,8 +31,6 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.xml.XMLConversion;
 
-import com.sun.xml.internal.ws.api.streaming.XMLStreamWriterFactory;
-
 /**
  * Servlet to export a problem and its test cases as XML.
  * This servlet will be invoked by the webapp when importing a problem
