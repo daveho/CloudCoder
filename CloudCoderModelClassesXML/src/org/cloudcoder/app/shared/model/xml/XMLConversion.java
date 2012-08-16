@@ -21,6 +21,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCaseData;
@@ -107,26 +108,75 @@ public class XMLConversion {
 		}
 		throw new XMLStreamException("Did not find element start");
 	}
-	
-	public static void readProblemAndTestCaseData(
-			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
+
+	/**
+	 * Read an {@link IProblemAndTestCaseData} object. 
+	 * 
+	 * @param obj              the {@link IProblemAndTestCaseData} object to read
+	 * @param problemFactory   factory for creating the {@link IProblemData} object
+	 * @param testCaseFactory  factory for creating {@link ITestCaseData} objects
+	 * @param reader           the XMLStreamReader
+	 * @throws XMLStreamException
+	 */
+	public static<ProblemDataType extends IProblemData, TestCaseDataType extends ITestCaseData> void readProblemAndTestCaseData(
+			IProblemAndTestCaseData<ProblemDataType, TestCaseDataType> obj,
+			IFactory<ProblemDataType> problemFactory,
+			IFactory<TestCaseDataType> testCaseFactory,
 			XMLStreamReader reader)
 			throws XMLStreamException {
+		expectElementStart(PROBLEM_AND_TEST_CASE_DATA, reader);
 		
+		ProblemDataType problem = problemFactory.create();
+		obj.setProblem(problem);
+		readProblemData(problem, reader);
+		
+		skipToElementStartOrEnd(reader);
+		
+		// Until we haven't reached the end of this element...
+		while (reader.getEventType() != XMLStreamReader.END_ELEMENT) {
+			// Is it a nested element?
+			if (reader.getEventType() == XMLStreamReader.START_ELEMENT) {
+				// Is it a test case data element?
+				if (reader.getLocalName().equals(TEST_CASE_DATA)) {
+					TestCaseDataType testCase = testCaseFactory.create();
+					readTestCaseData(testCase, reader);
+				} else {
+					// Unrecognized nested element: just skip it
+					skipToEndElement(reader);
+				}
+			}
+		}
+		
+		expectElementEnd(reader); // consume close tag
 	}
-	
+
 	/**
-	 * Read an {@link IProblemData} element from given XMLStreamReader,
+	 * Read an {@link IProblemData} object from given XMLStreamReader,
 	 * which must be positioned at the start of an element written by
 	 * {@link #writeProblemData(IProblemData, XMLStreamWriter)}.
 	 * 
-	 * @param problemData
-	 * @param reader
+	 * @param problemData the {@link IProblemData} object to read
+	 * @param reader the XMLStreamReader
 	 * @throws XMLStreamException 
 	 */
 	public static void readProblemData(IProblemData problemData, XMLStreamReader reader) throws XMLStreamException {
 		expectElementStart(PROBLEM_DATA, reader);
 		readModelObjectFields(problemData, ProblemData.SCHEMA, reader);
+		expectElementEnd(reader);
+	}
+	
+	/**
+	 * Read an {@link ITestCaseData} object from given XMLStreamReader,
+	 * which must be positioned at the start of an element written by
+	 * {@link #writeTestCaseData(ITestCaseData, XMLStreamWriter)}.
+	 * 
+	 * @param testCaseData the {@link ITestCaseData} object to read
+	 * @param reader the XMLStreamReader
+	 * @throws XMLStreamException
+	 */
+	public static void readTestCaseData(ITestCaseData testCaseData, XMLStreamReader reader)  throws XMLStreamException {
+		expectElementStart(TEST_CASE_DATA, reader);
+		readModelObjectFields(testCaseData, TestCaseData.SCHEMA, reader);
 		expectElementEnd(reader);
 	}
 	
@@ -148,6 +198,29 @@ public class XMLConversion {
 	}
 	
 	// Low-level data conversion from XML
+	
+	/**
+	 * Skip to the next START_ELEMENT or END_ELEMENT event.
+	 * This is useful when parsing the contents of an element that
+	 * might have a variable (possibly-zero) number of child elements.
+	 * In that case, we want to be able to advance to a child element
+	 * if there is one
+	 *  
+	 * @param reader the XMLStreamReader
+	 * @throws XMLStreamException
+	 */
+	private static void skipToElementStartOrEnd(XMLStreamReader reader) throws XMLStreamException {
+		while (true) {
+			int eventType = reader.getEventType();
+			if (eventType == XMLStreamReader.START_ELEMENT || eventType == XMLStreamReader.END_ELEMENT) {
+				break;
+			}
+			if (!reader.hasNext()) {
+				throw new XMLStreamException("Unexpected end of document");
+			}
+			reader.next();
+		}
+	}
 	
 	private static void expectElementStart(String elementName, XMLStreamReader reader) throws XMLStreamException {
 		if (reader.getEventType() != XMLStreamReader.START_ELEMENT

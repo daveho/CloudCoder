@@ -29,11 +29,6 @@
         </copy>
     </target>
 
-    <target name="clean">
-        <delete dir="bin"/>
-    	<delete file="${jarname}"/>
-    </target>
-
     <!-- make sure model classes jar file is built -->
     <target name="modelClasses">
     	<ant dir="../CloudCoderModelClasses" target="jar" />
@@ -67,5 +62,17 @@
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
 			</manifest>
 		</jar>
+	</target>
+
+    <target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="${jarname}"/>
+    </target>
+	
+	<!-- Clean everything (including projects on which this target depends -->
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>

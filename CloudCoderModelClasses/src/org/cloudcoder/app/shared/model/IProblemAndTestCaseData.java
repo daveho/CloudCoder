@@ -35,6 +35,12 @@ public interface IProblemAndTestCaseData<
 	TestCaseDataType extends ITestCaseData> {
 	
 	/**
+	 * Set the problem data.
+	 * @param problem the problem data to set
+	 */
+	public void setProblem(ProblemDataType problem);
+	
+	/**
 	 * Get the problem data.
 	 * @return the problem data
 	 */
@@ -45,4 +51,10 @@ public interface IProblemAndTestCaseData<
 	 * @return the list of test cases
 	 */
 	public List<TestCaseDataType> getTestCaseData();
+	
+	/**
+	 * Add a test case.
+	 * @param testCase the test case to add
+	 */
+	public void addTestCase(TestCaseDataType testCaseData);
 }

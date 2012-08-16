@@ -30,7 +30,10 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.ReflectionFactory;
+import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.xml.XMLConversion;
 
@@ -111,7 +114,11 @@ public class Exercise extends HttpServlet {
 			
 			exercise = new RepoProblemAndTestCaseList();
 			XMLConversion.skipToFirstElement(reader);
-			XMLConversion.readProblemAndTestCaseData(exercise, reader);
+			XMLConversion.readProblemAndTestCaseData(
+					exercise,
+					ReflectionFactory.forClass(RepoProblem.class),
+					ReflectionFactory.forClass(RepoTestCase.class),
+					reader);
 		} catch (XMLStreamException e) {
 			ServletUtil.badRequest(resp, "Invalid XML data");
 			return;

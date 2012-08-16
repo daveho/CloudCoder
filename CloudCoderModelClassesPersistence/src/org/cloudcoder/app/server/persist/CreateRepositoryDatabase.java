@@ -83,8 +83,8 @@ public class CreateRepositoryDatabase {
 
 		// At this point, all of the data needed for the hash computation is available.
 		RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
-		exercise.setRepoProblem(repoProblem);
-		exercise.addRepoTestCase(repoTestCase);
+		exercise.setProblem(repoProblem);
+		exercise.addTestCase(repoTestCase);
 		exercise.computeHash();
 		
 		// Now we can store the problem and its test case in the database

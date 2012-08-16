@@ -990,7 +990,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				load(repoProblem, repoProblemRs, 1);
 				
 				RepoProblemAndTestCaseList result = new RepoProblemAndTestCaseList();
-				result.setRepoProblem(repoProblem);
+				result.setProblem(repoProblem);
 				
 				// Query to find all RepoTestCases associated with the RepoProblem
 				PreparedStatement findRepoTestCases = prepareStatement(
@@ -1003,7 +1003,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				while (repoTestCaseRs.next()) {
 					RepoTestCase repoTestCase = new RepoTestCase();
 					load(repoTestCase, repoTestCaseRs, 1);
-					result.addRepoTestCase(repoTestCase);
+					result.addTestCase(repoTestCase);
 				}
 				
 				return result;

@@ -45,7 +45,7 @@ public class RepoProblemAndTestCaseList implements IProblemAndTestCaseData<RepoP
 	 * Set the RepoProblem.
 	 * @param repoProblem the RepoProblem
 	 */
-	public void setRepoProblem(RepoProblem repoProblem) {
+	public void setProblem(RepoProblem repoProblem) {
 		this.repoProblem = repoProblem;
 	}
 	
@@ -53,7 +53,7 @@ public class RepoProblemAndTestCaseList implements IProblemAndTestCaseData<RepoP
 	 * Add a RepoTestCase.
 	 * @param repoTestCase the RepoTestCase to add
 	 */
-	public void addRepoTestCase(RepoTestCase repoTestCase) {
+	public void addTestCase(RepoTestCase repoTestCase) {
 		repoTestCaseList.add(repoTestCase);
 	}
 	
