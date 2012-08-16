@@ -18,10 +18,13 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Utility methods for servlets.
@@ -29,7 +32,6 @@ import javax.servlet.http.HttpSession;
  * @author David Hovemeyer
  */
 public class ServletUtil {
-
 	/**
 	 * Remove given type of model object from the session.
 	 * 
@@ -48,6 +50,39 @@ public class ServletUtil {
 	 */
 	public static void addModelObject(HttpSession session, Object obj) {
 		session.setAttribute(obj.getClass().getSimpleName(), obj);
+	}
+	
+	/**
+	 * Get HTTP basic authentication credentials from an HttpServletRequest.
+	 * 
+	 * @param req the HttpServletRequest
+	 * @return the credentials
+	 * @throws AuthenticationException if there are no valid credentials in the request
+	 */
+	public static Credentials getBasicAuthenticationCredentials(HttpServletRequest req) throws AuthenticationException {
+		String authHeader = req.getHeader("Authorization");
+		if (authHeader == null) {
+			throw new AuthenticationException("HTTP basic authentication is required");
+		}
+		
+		// Decode
+		byte[] authHeaderDecodedBytes;
+		try {
+			authHeaderDecodedBytes = DatatypeConverter.parseBase64Binary(authHeader);
+		} catch (IllegalArgumentException e) {
+			throw new AuthenticationException("Invalid authorization string (not valid base64)");
+		}
+		
+		String authHeaderDecoded = new String(authHeaderDecodedBytes, Charset.forName("UTF-8"));
+		int colon = authHeaderDecoded.indexOf(':');
+		if (colon < 0) {
+			throw new AuthenticationException("Invalid authorization string (not in username:password format");
+		}
+		
+		String username = authHeaderDecoded.substring(0, colon);
+		String password = authHeaderDecoded.substring(colon + 1);
+		
+		return new Credentials(username, password);
 	}
 
 	/**
@@ -82,6 +117,19 @@ public class ServletUtil {
 	 */
 	public static void notFound(HttpServletResponse resp, String msg) throws IOException {
 		sendResponse(resp, HttpServletResponse.SC_NOT_FOUND, msg);
+	}
+
+	/**
+	 * Send an UNAUTHORIZED (401) response.
+	 * 
+	 * @param resp  the HttpServletResponse
+	 * @param msg   a human-readable message to send as the body of the response
+	 * @param realm the authentication realm (e.g. "Secure area")
+	 * @throws IOException
+	 */
+	public static void authorizationRequired(HttpServletResponse resp, String msg, String realm) throws IOException {
+		resp.setHeader("WWW-Authenticate", "Basic realm=\"" + realm + "\"");
+		sendResponse(resp, HttpServletResponse.SC_UNAUTHORIZED, msg);
 	}
 
 	/**

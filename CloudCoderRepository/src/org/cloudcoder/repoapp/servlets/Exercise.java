@@ -23,22 +23,27 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.xml.XMLConversion;
 
 /**
- * Servlet to export a problem and its test cases as XML.
- * This servlet will be invoked by the webapp when importing a problem
- * from the repository.
+ * Servlet to import/export exercises (problem and its test cases) as XML.
+ * Supports the import and export features in the main webapp.
+ * GET requests with an SHA-1 hash as the pathinfo export an exercise.
+ * POST requests with basic authentication import an exercise. 
  * 
  * @author David Hovemeyer
  */
-public class Export extends HttpServlet {
+public class Exercise extends HttpServlet {
+	private static final String AUTH_REALM = "Exercise Repository";
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -73,5 +78,49 @@ public class Export extends HttpServlet {
 				throw new ServletException("Couldn't write XML", e);
 			}
 		}
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String pathInfo = req.getPathInfo();
+		if (pathInfo != null && !pathInfo.equals("/")) {
+			ServletUtil.badRequest(resp, "Invalid URI for POST");
+			return;
+		}
+
+		// Authenticate the user
+		Credentials credentials;
+		try {
+			credentials = ServletUtil.getBasicAuthenticationCredentials(req);
+		} catch (AuthenticationException e) {
+			ServletUtil.authorizationRequired(resp, e.getMessage(), AUTH_REALM);
+			return;
+		}
+		
+		User user = Database.getInstance().authenticateUser(credentials.getUsername(), credentials.getPassword());
+		if (user == null) {
+			ServletUtil.authorizationRequired(resp, "Unknown username/password", AUTH_REALM);
+			return;
+		}
+		
+		// Read an exercise from the message body
+		RepoProblemAndTestCaseList exercise;
+		try {
+			XMLInputFactory factory = XMLInputFactory.newInstance();
+			XMLStreamReader reader = factory.createXMLStreamReader(req.getInputStream());
+			
+			exercise = new RepoProblemAndTestCaseList();
+			XMLConversion.skipToFirstElement(reader);
+			XMLConversion.readProblemAndTestCaseData(exercise, reader);
+		} catch (XMLStreamException e) {
+			ServletUtil.badRequest(resp, "Invalid XML data");
+			return;
+		}
+		
+		// Compute hash
+		exercise.computeHash();
+		
+		// Set user id
+		exercise.getProblem().setUserId(user.getId());
 	}
 }

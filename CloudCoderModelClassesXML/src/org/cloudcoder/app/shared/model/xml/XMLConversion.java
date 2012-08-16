@@ -90,6 +90,30 @@ public class XMLConversion {
 	}
 	
 	// Read model objects as XML
+
+	/**
+	 * Convenience method for skipping to the first (root) element in
+	 * an XML document.
+	 * 
+	 * @param reader an XMLStreamReader that is positioned at the beginning of a document
+	 * @throws XMLStreamException
+	 */
+	public static void skipToFirstElement(XMLStreamReader reader) throws XMLStreamException {
+		while (reader.hasNext()) {
+			int eventType = reader.next();
+			if (eventType == XMLStreamReader.START_ELEMENT) {
+				return;
+			}
+		}
+		throw new XMLStreamException("Did not find element start");
+	}
+	
+	public static void readProblemAndTestCaseData(
+			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
+			XMLStreamReader reader)
+			throws XMLStreamException {
+		
+	}
 	
 	/**
 	 * Read an {@link IProblemData} element from given XMLStreamReader,
