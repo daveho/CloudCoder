@@ -53,6 +53,7 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestCaseData;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
@@ -1028,7 +1029,22 @@ public class JDBCDatabase implements IDatabase {
 				// Set user id
 				exercise.getProblem().setUserId(user.getId());
 
-				// TODO: complete
+				// Store the RepoProblem
+				DBUtil.storeModelObject(conn, exercise.getProblem());
+				
+				// Insert RepoTestCases (setting repo problem id of each)
+				String insertRepoTestCaseSql = DBUtil.createInsertStatement(RepoTestCase.SCHEMA);
+				PreparedStatement stmt = prepareStatement(conn, insertRepoTestCaseSql, PreparedStatement.RETURN_GENERATED_KEYS);
+				for (RepoTestCase repoTestCase : exercise.getTestCaseData()) {
+					repoTestCase.setRepoProblemId(exercise.getProblem().getId());
+					DBUtil.bindModelObjectValuesForInsert(repoTestCase, RepoTestCase.SCHEMA, stmt);
+					stmt.addBatch();
+				}
+				stmt.executeBatch();
+
+				// Get generated unique ids of RepoTestCase objects
+				ResultSet genKeys = getGeneratedKeys(stmt);
+				DBUtil.getModelObjectUniqueIds(exercise.getTestCaseData(), RepoTestCase.SCHEMA, genKeys);
 				
 				return true;
 			}

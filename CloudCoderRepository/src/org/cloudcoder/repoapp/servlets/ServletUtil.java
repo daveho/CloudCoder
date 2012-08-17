@@ -65,6 +65,11 @@ public class ServletUtil {
 			throw new AuthenticationException("HTTP basic authentication is required");
 		}
 		
+		if (!authHeader.startsWith("Basic ")) {
+			throw new AuthenticationException("Invalid Authorization header");
+		}
+		authHeader = authHeader.substring("Basic ".length());
+		
 		// Decode
 		byte[] authHeaderDecodedBytes;
 		try {
@@ -74,9 +79,10 @@ public class ServletUtil {
 		}
 		
 		String authHeaderDecoded = new String(authHeaderDecodedBytes, Charset.forName("UTF-8"));
+		System.out.println("Decoded header: " + authHeaderDecoded);
 		int colon = authHeaderDecoded.indexOf(':');
 		if (colon < 0) {
-			throw new AuthenticationException("Invalid authorization string (not in username:password format");
+			throw new AuthenticationException("Invalid authorization string (not in username:password format)");
 		}
 		
 		String username = authHeaderDecoded.substring(0, colon);

@@ -220,10 +220,36 @@ public class XMLConversion {
 		}
 	}
 	
+	private static boolean isAllSpace(String text) {
+		for (int i = 0; i < text.length(); i++) {
+			if (!Character.isSpaceChar(text.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isCurrentEventSpace(XMLStreamReader reader) {
+		return reader.getEventType() == XMLStreamReader.SPACE
+				|| (reader.getEventType() == XMLStreamReader.CHARACTERS && isAllSpace(reader.getText()));
+	}
+
+	private static void skipWS(XMLStreamReader reader) throws XMLStreamException {
+		while (isCurrentEventSpace(reader)) {
+			if (!reader.hasNext()) {
+				return;
+			}
+			reader.next();
+		}
+	}
+	
 	private static void expectElementStart(String elementName, XMLStreamReader reader) throws XMLStreamException {
+		// Skip any whitespace events
+		skipWS(reader);
+		
 		if (reader.getEventType() != XMLStreamReader.START_ELEMENT
 				|| !reader.getLocalName().equals(elementName)) {
-			throw new XMLStreamException("Expected the start of a " + elementName + " element");
+			throw new XMLStreamException("Expected the start of a " + elementName + " element " + reader.getEventType());
 		}
 		
 		// Skip to next event

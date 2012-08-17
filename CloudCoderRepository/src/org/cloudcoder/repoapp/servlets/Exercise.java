@@ -120,6 +120,7 @@ public class Exercise extends HttpServlet {
 					ReflectionFactory.forClass(RepoTestCase.class),
 					reader);
 		} catch (XMLStreamException e) {
+			e.printStackTrace();
 			ServletUtil.badRequest(resp, "Invalid XML data");
 			return;
 		}

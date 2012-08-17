@@ -26,6 +26,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.IModelObject;
@@ -327,58 +329,106 @@ public class DBUtil {
 	 */
 	public static<E extends IModelObject<E>> void storeModelObject(Connection conn, E bean) throws SQLException {
 		ModelObjectSchema<E> schema = bean.getSchema();
-		String tableName = schema.getDbTableName();
 		
-		StringBuilder buf = new StringBuilder();
-		
-		buf.append("insert into " + tableName);
-		buf.append(" values (");
-		buf.append(getInsertPlaceholdersNoId(schema));
-		buf.append(")");
+		String insertSql = createInsertStatement(schema);
 		
 		PreparedStatement stmt = null;
 		ResultSet genKeys = null;
 		
 		try {
-			stmt = conn.prepareStatement(buf.toString(), schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+			stmt = conn.prepareStatement(insertSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
 			
-			// Now for the magic: iterate through the schema fields
-			// and bind the query parameters based on the bean properties.
-			int index = 1;
-			for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-				if (field.isUniqueId()) {
-					continue;
-				}
-				Object value = field.get(bean);
-				if (value instanceof Enum) {
-					// Enum values are converted to integers
-					value = Integer.valueOf(((Enum<?>)value).ordinal());
-				}
-				stmt.setObject(index++, value);
-			}
+			// Bind model object field values
+			bindModelObjectValuesForInsert(bean, schema, stmt);
 			
 			// Execute the insert
 			stmt.executeUpdate();
 			
+			// Store back the unique id to the model object
 			if (schema.hasUniqueId()) {
 				genKeys = stmt.getGeneratedKeys();
-				if (!genKeys.next()) {
-					throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
-				}
-				int id = genKeys.getInt(1);
-				
-				// Set the unique id value in the bean
-				try {
-					schema.getUniqueIdField().setUntyped(bean, (Integer)id);
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
-				}
+				List<E> beans = new ArrayList<E>();
+				beans.add(bean);
+				getModelObjectUniqueIds(beans, schema, genKeys);
 			}
 		} finally {
 			closeQuietly(genKeys);
 			closeQuietly(stmt);
 		}
+	}
+
+	/**
+	 * Get the generated unique id(s) resulting from an insert statement,
+	 * storing them in one or more model objects.
+	 * 
+	 * @param beans   the model object(s) whose unique ids should be set
+	 * @param schema  the model objects' schema
+	 * @param genKeys the {@link ResultSet} with the generated unique ids
+	 * @throws SQLException
+	 */
+	public static <E> void getModelObjectUniqueIds(List<E> beans, ModelObjectSchema<E> schema, ResultSet genKeys)
+			throws SQLException {
+		for (E bean : beans) {
+			if (!genKeys.next()) {
+				throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
+			}
+			int id = genKeys.getInt(1);
+			
+			// Set the unique id value in the bean
+			try {
+				schema.getUniqueIdField().setUntyped(bean, (Integer)id);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
+			}
+		}
+	}
+
+	/**
+	 * Bind all of the field values in given model object to the given
+	 * {@link PreparedStatement}, which should be an insert statement prepared
+	 * from the SQL returned by {@link #createInsertStatement(ModelObjectSchema)}.
+	 * 
+	 * @param bean    the model object
+	 * @param schema  the model object's schema
+	 * @param stmt    the {@link PreparedStatement}
+	 * @throws SQLException
+	 */
+	public static <E> void bindModelObjectValuesForInsert(E bean, ModelObjectSchema<E> schema, PreparedStatement stmt)
+			throws SQLException {
+		// Now for the magic: iterate through the schema fields
+		// and bind the query parameters based on the bean properties.
+		int index = 1;
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			if (field.isUniqueId()) {
+				continue;
+			}
+			Object value = field.get(bean);
+			if (value instanceof Enum) {
+				// Enum values are converted to integers
+				value = Integer.valueOf(((Enum<?>)value).ordinal());
+			}
+			stmt.setObject(index++, value);
+		}
+	}
+
+	/**
+	 * Create an SQL statement for inserting a model object.
+	 * The SQL statement will have placeholders for every model object
+	 * field except for the unique id (if any).
+	 *  
+	 * @param schema the model object schema
+	 * @return the SQL insert statement
+	 */
+	public static <E> String createInsertStatement(ModelObjectSchema<E> schema) {
+		StringBuilder buf = new StringBuilder();
+		
+		buf.append("insert into " + schema.getDbTableName());
+		buf.append(" values (");
+		buf.append(getInsertPlaceholdersNoId(schema));
+		buf.append(")");
+		String insertSql = buf.toString();
+		return insertSql;
 	}
 
 	/**
