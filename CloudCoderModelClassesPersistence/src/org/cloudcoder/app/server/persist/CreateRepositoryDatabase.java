@@ -66,9 +66,9 @@ public class CreateRepositoryDatabase {
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.repoapp.db");
 		
 		// Create tables
-		createTable(conn, JDBCTableNames.USERS, User.SCHEMA);
-		createTable(conn, JDBCTableNames.REPO_PROBLEMS, RepoProblem.SCHEMA);
-		createTable(conn, JDBCTableNames.REPO_TEST_CASES, RepoTestCase.SCHEMA);
+		createTable(conn, User.SCHEMA);
+		createTable(conn, RepoProblem.SCHEMA);
+		createTable(conn, RepoTestCase.SCHEMA);
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
@@ -95,8 +95,8 @@ public class CreateRepositoryDatabase {
 		System.out.println("Done!");
 	}
 
-	private static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
-		System.out.println("Creating table " + tableName);
-		DBUtil.createTable(conn, tableName, schema);
+	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
+		System.out.println("Creating table " + schema.getDbTableName());
+		DBUtil.createTable(conn, schema);
 	}
 }

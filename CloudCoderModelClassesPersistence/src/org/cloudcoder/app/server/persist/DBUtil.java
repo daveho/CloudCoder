@@ -152,17 +152,16 @@ public class DBUtil {
 	}
 	
 	/**
-	 * Get a CREATE TABLE statement for creating a table with the given schema and name.
+	 * Get a CREATE TABLE statement for creating a table with the given schema.
 	 * 
 	 * @param schema     the table's schema
-	 * @param tableName  the name of the table
 	 * @return the text of the CREATE TABLE statement
 	 */
-	public static<E> String getCreateTableStatement(ModelObjectSchema<E> schema, String tableName) {
+	public static<E> String getCreateTableStatement(ModelObjectSchema<E> schema) {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("CREATE TABLE `");
-		sql.append(tableName);
+		sql.append(schema.getDbTableName());
 		sql.append("` (");
 		
 		int count = 0;
@@ -312,12 +311,11 @@ public class DBUtil {
 	 * Create a database table.
 	 * 
 	 * @param conn       the Connection to the database
-	 * @param tableName  the table name
 	 * @param schema     the {@link ModelObjectSchema} describing the type of object to be stored in the table
 	 * @throws SQLException
 	 */
-	public static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
-		String sql = getCreateTableStatement(schema, tableName);
+	public static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
+		String sql = getCreateTableStatement(schema);
 		execSql(conn, sql);
 	}
 

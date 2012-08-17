@@ -31,7 +31,6 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
-import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -95,17 +94,17 @@ public class CreateWebappDatabase {
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 		
 		// Create tables and indexes
-		createTable(conn, JDBCTableNames.CHANGES, Change.SCHEMA);
-		createTable(conn, JDBCTableNames.CONFIGURATION_SETTINGS, ConfigurationSetting.SCHEMA);
-		createTable(conn, JDBCTableNames.COURSES, Course.SCHEMA);
-		createTable(conn, JDBCTableNames.COURSE_REGISTRATIONS, CourseRegistration.SCHEMA);
-		createTable(conn, JDBCTableNames.EVENTS, Event.SCHEMA);
-		createTable(conn, JDBCTableNames.PROBLEMS, Problem.SCHEMA);
-		createTable(conn, JDBCTableNames.SUBMISSION_RECEIPTS, SubmissionReceipt.SCHEMA);
-		createTable(conn, JDBCTableNames.TERMS, Term.SCHEMA);
-		createTable(conn, JDBCTableNames.TEST_CASES, TestCase.SCHEMA);
-		createTable(conn, JDBCTableNames.TEST_RESULTS, TestResult.SCHEMA);
-		createTable(conn, JDBCTableNames.USERS, User.SCHEMA);
+		createTable(conn, Change.SCHEMA);
+		createTable(conn, ConfigurationSetting.SCHEMA);
+		createTable(conn, Course.SCHEMA);
+		createTable(conn, CourseRegistration.SCHEMA);
+		createTable(conn, Event.SCHEMA);
+		createTable(conn, Problem.SCHEMA);
+		createTable(conn, SubmissionReceipt.SCHEMA);
+		createTable(conn, Term.SCHEMA);
+		createTable(conn, TestCase.SCHEMA);
+		createTable(conn, TestResult.SCHEMA);
+		createTable(conn, User.SCHEMA);
 		
 		// Create initial database contents
 		
@@ -156,9 +155,9 @@ public class CreateWebappDatabase {
 		System.out.println("Success!");
 	}
 
-	private static<E> void createTable(Connection conn, String tableName, ModelObjectSchema<E> schema) throws SQLException {
-		System.out.println("Creating table " + tableName);
-		DBUtil.createTable(conn, tableName, schema);
+	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
+		System.out.println("Creating table " + schema.getDbTableName());
+		DBUtil.createTable(conn, schema);
 	}
 
 	private static Term storeTerm(Connection conn, String name, int seq) throws SQLException {
