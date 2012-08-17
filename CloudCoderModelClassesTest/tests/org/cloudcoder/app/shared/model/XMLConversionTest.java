@@ -34,6 +34,24 @@ public class XMLConversionTest {
 					reader);
 			
 			assertEquals(ProblemType.C_PROGRAM, exercise.getProblem().getProblemType());
+			assertEquals("hello", exercise.getProblem().getTestname());
+			assertEquals("Print hello, world", exercise.getProblem().getBriefDescription());
+			assertTrue(exercise.getProblem().getDescription().startsWith("<p>Print a line with the following text:"));
+			assertTrue(exercise.getProblem().getSkeleton().startsWith("#include <stdio.h>"));
+			assertEquals(0, exercise.getProblem().getSchemaVersion());
+			assertEquals("A. User", exercise.getProblem().getAuthorName());
+			assertEquals("auser@cs.unseen.edu", exercise.getProblem().getAuthorEmail());
+			assertEquals("http://cs.unseen.edu/~auser", exercise.getProblem().getAuthorWebsite());
+			assertEquals(1345042044837L, exercise.getProblem().getTimestampUtc());
+			assertEquals(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0, exercise.getProblem().getLicense());
+			
+			assertEquals(1, exercise.getTestCaseData().size());
+			RepoTestCase testCase = exercise.getTestCaseData().get(0);
+			
+			assertEquals("hello", testCase.getTestCaseName());
+			assertEquals("", testCase.getInput());
+			assertEquals("^\\s*Hello\\s*,\\s*world\\s*$i", testCase.getOutput());
+			assertEquals(false, testCase.isSecret());
 		} finally {
 			in.close();
 		}
