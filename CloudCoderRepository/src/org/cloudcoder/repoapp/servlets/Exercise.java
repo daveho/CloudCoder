@@ -123,11 +123,8 @@ public class Exercise extends HttpServlet {
 			ServletUtil.badRequest(resp, "Invalid XML data");
 			return;
 		}
-		
-		// Compute hash
-		exercise.computeHash();
-		
-		// Set user id
-		exercise.getProblem().setUserId(user.getId());
+
+		// Store in database
+		Database.getInstance().storeRepoProblemAndTestCaseList(exercise, user);
 	}
 }

@@ -202,4 +202,12 @@ public interface IDatabase {
 	 * @return the {@link RepoProblemAndTestCaseList}, or null if no such object exists in the database
 	 */
 	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(String hash);
+
+	/**
+	 * Store a {@link RepoProblemAndTestCaseList} in the database.
+	 * 
+	 * @param exercise the {@link RepoProblemAndTestCaseList} to store
+	 * @param user     the {@link User} who is importing the problem into the database
+	 */
+	public void storeRepoProblemAndTestCaseList(RepoProblemAndTestCaseList exercise, User user);
 }

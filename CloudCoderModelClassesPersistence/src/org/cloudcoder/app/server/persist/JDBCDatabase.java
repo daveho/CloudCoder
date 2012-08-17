@@ -1015,6 +1015,29 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			}
 		});
 	}
+	
+	@Override
+	public void storeRepoProblemAndTestCaseList(final RepoProblemAndTestCaseList exercise, final User user) {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn)
+					throws SQLException {
+				// Compute hash
+				exercise.computeHash();
+				
+				// Set user id
+				exercise.getProblem().setUserId(user.getId());
+
+				// TODO: complete
+				
+				return true;
+			}
+			@Override
+			public String getDescription() {
+				return " storing exercise in repository database";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
