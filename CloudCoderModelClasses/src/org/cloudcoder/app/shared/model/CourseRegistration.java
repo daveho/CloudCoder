@@ -37,7 +37,7 @@ public class CourseRegistration implements Serializable, IModelObject<CourseRegi
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<CourseRegistration> SCHEMA = new ModelObjectSchema<CourseRegistration>()
+	public static final ModelObjectSchema<CourseRegistration> SCHEMA = new ModelObjectSchema<CourseRegistration>("course_registration")
 		.add(new ModelObjectField<CourseRegistration, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(CourseRegistration obj, Integer value) { obj.setId(value); }
 			public Integer get(CourseRegistration obj) { return obj.getId(); }

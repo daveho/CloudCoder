@@ -34,7 +34,7 @@ public class User implements Serializable, IModelObject<User> {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<User> SCHEMA = new ModelObjectSchema<User>()
+	public static final ModelObjectSchema<User> SCHEMA = new ModelObjectSchema<User>("user")
 		.add(new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(User obj, Integer value) { obj.setId(value); }
 			public Integer get(User obj) { return obj.getId(); }

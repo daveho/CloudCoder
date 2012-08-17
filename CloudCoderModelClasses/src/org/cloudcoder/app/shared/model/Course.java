@@ -52,7 +52,7 @@ public class Course implements ActivityObject, IModelObject<Course> {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>()
+	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>("course")
 		.add(new ModelObjectField<Course, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(Course obj, Integer value) { obj.setId(value); }
 			public Integer get(Course obj) { return obj.getId(); }

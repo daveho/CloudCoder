@@ -33,7 +33,7 @@ public class Term implements Serializable, IModelObject<Term> {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Term> SCHEMA = new ModelObjectSchema<Term>()
+	public static final ModelObjectSchema<Term> SCHEMA = new ModelObjectSchema<Term>("term")
 		.add(new ModelObjectField<Term, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(Term obj, Integer value) { obj.setId(value); }
 			public Integer get(Term obj) { return obj.getId(); }

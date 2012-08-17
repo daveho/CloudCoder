@@ -31,7 +31,7 @@ public class ConfigurationSetting {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<ConfigurationSetting> SCHEMA = new ModelObjectSchema<ConfigurationSetting>()
+	public static final ModelObjectSchema<ConfigurationSetting> SCHEMA = new ModelObjectSchema<ConfigurationSetting>("configuration_setting")
 		.add(new ModelObjectField<ConfigurationSetting, String>("name", String.class, 60, ModelObjectIndexType.UNIQUE) {
 			public void set(ConfigurationSetting obj, String value) { obj.setName(value); }
 			public String get(ConfigurationSetting obj) { return obj.getName(); }

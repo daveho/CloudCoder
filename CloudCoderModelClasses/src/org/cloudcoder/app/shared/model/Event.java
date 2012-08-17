@@ -37,7 +37,7 @@ public class Event implements Serializable, IModelObject<Event> {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Event> SCHEMA = new ModelObjectSchema<Event>()
+	public static final ModelObjectSchema<Event> SCHEMA = new ModelObjectSchema<Event>("event")
 		.add(new ModelObjectField<Event, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(Event obj, Integer value) { obj.setId(value); }
 			public Integer get(Event obj) { return obj.getId(); }

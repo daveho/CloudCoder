@@ -53,7 +53,7 @@ public class RepoProblem extends ProblemData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA = new ModelObjectSchema<RepoProblem>()
+	public static final ModelObjectSchema<RepoProblem> SCHEMA = new ModelObjectSchema<RepoProblem>("repo_problem")
 		.add(ID)
 		.add(USER_ID)
 		.add(HASH)

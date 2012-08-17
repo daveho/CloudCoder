@@ -97,7 +97,7 @@ public class Change implements Serializable, IContainsEvent, IModelObject<Change
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Change> SCHEMA = new ModelObjectSchema<Change>()
+	public static final ModelObjectSchema<Change> SCHEMA = new ModelObjectSchema<Change>("change")
 		.add(EVENT_ID)
 		.add(TYPE)
 		.add(START_ROW)

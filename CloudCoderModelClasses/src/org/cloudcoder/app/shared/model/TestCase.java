@@ -48,7 +48,7 @@ public class TestCase extends TestCaseData implements Serializable, ITestCase {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<TestCase> SCHEMA = new ModelObjectSchema<TestCase>()
+	public static final ModelObjectSchema<TestCase> SCHEMA = new ModelObjectSchema<TestCase>("test_case")
 		.add(TEST_CASE_ID)
 		.add(PROBLEM_ID)
 		.addAll(ITestCaseData.SCHEMA.getFieldList());

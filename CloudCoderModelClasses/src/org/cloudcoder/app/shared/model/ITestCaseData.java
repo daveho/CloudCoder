@@ -110,7 +110,7 @@ public interface ITestCaseData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<ITestCaseData> SCHEMA = new ModelObjectSchema<ITestCaseData>()
+	public static final ModelObjectSchema<ITestCaseData> SCHEMA = new ModelObjectSchema<ITestCaseData>("itest_case_data")
 		.add(TEST_CASE_NAME)
 		.add(INPUT)
 		.add(OUTPUT)

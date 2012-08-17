@@ -48,7 +48,7 @@ public class ProblemData implements Serializable, IProblemData, IModelObject<Pro
 	private ProblemLicense license;
 	
 	/** Description of fields. */
-	public static final ModelObjectSchema<ProblemData> SCHEMA = new ModelObjectSchema<ProblemData>()
+	public static final ModelObjectSchema<ProblemData> SCHEMA = new ModelObjectSchema<ProblemData>("problem_data")
 			.addAll(IProblemData.SCHEMA.getFieldList());
 	
 	/**

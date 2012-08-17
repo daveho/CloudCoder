@@ -37,7 +37,7 @@ public class TestResult implements Serializable, IModelObject<TestResult>
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<TestResult> SCHEMA = new ModelObjectSchema<TestResult>()
+	public static final ModelObjectSchema<TestResult> SCHEMA = new ModelObjectSchema<TestResult>("test_result")
 		.add(new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(TestResult obj, Integer value) { obj.setId(value); }
 			public Integer get(TestResult obj) { return obj.getId(); }

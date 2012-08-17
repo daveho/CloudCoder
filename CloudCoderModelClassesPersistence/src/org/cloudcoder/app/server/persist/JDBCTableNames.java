@@ -17,27 +17,46 @@
 
 package org.cloudcoder.app.server.persist;
 
+import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoTestCase;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.Term;
+import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.User;
+
 /**
  * Interface defining the names of the database tables
  * used by {@link JDBCDatabase}.
  * 
+ * <em>Deprecated:</em> Database table names should be retrieved using {@link ModelObjectSchema#getDbTableName()}.
+ * This interface is here as a placeholder.
+ * 
  * @author David Hovemeyer
  */
+@Deprecated
 public interface JDBCTableNames {
 
 	// Constants for table names
-	public static final String TEST_RESULTS = "cc_test_results";
-	public static final String TEST_CASES = "cc_test_cases";
-	public static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
-	public static final String TERMS = "cc_terms";
-	public static final String EVENTS = "cc_events";
-	public static final String CHANGES = "cc_changes";
-	public static final String COURSE_REGISTRATIONS = "cc_course_registrations";
-	public static final String COURSES = "cc_courses";
-	public static final String PROBLEMS = "cc_problems";
-	public static final String USERS = "cc_users";
-	public static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
-	public static final String REPO_PROBLEMS = "cc_repo_problems";
-	public static final String REPO_TEST_CASES = "cc_repo_test_cases";
+	public static final String TEST_RESULTS = TestResult.SCHEMA.getDbTableName();
+	public static final String TEST_CASES = TestCase.SCHEMA.getDbTableName();
+	public static final String SUBMISSION_RECEIPTS = SubmissionReceipt.SCHEMA.getDbTableName();
+	public static final String TERMS = Term.SCHEMA.getDbTableName();
+	public static final String EVENTS = Event.SCHEMA.getDbTableName();
+	public static final String CHANGES = Change.SCHEMA.getDbTableName();
+	public static final String COURSE_REGISTRATIONS = CourseRegistration.SCHEMA.getDbTableName();
+	public static final String COURSES = Course.SCHEMA.getDbTableName();
+	public static final String PROBLEMS = Problem.SCHEMA.getDbTableName();
+	public static final String USERS = User.SCHEMA.getDbTableName();
+	public static final String CONFIGURATION_SETTINGS = ConfigurationSetting.SCHEMA.getDbTableName();
+	public static final String REPO_PROBLEMS = RepoProblem.SCHEMA.getDbTableName();
+	public static final String REPO_TEST_CASES = RepoTestCase.SCHEMA.getDbTableName();
 
 }

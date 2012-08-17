@@ -121,7 +121,7 @@ public interface IProblem extends IProblemData {
 	};
 	
 	/** Description of fields. */
-	public static final ModelObjectSchema<IProblem> SCHEMA = new ModelObjectSchema<IProblem>()
+	public static final ModelObjectSchema<IProblem> SCHEMA = new ModelObjectSchema<IProblem>("iproblem")
 			.add(PROBLEM_ID)
 			.add(COURSE_ID)
 			.add(WHEN_ASSIGNED)

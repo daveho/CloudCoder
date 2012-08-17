@@ -47,7 +47,7 @@ public class RepoTestCase extends TestCaseData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<RepoTestCase> SCHEMA = new ModelObjectSchema<RepoTestCase>()
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA = new ModelObjectSchema<RepoTestCase>("repo_test_case")
 		.add(ID)
 		.add(REPO_PROBLEM_ID)
 		.addAll(TestCaseData.SCHEMA.getFieldList());

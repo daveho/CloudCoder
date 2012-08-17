@@ -40,7 +40,7 @@ public class TestCaseData implements Serializable, ITestCaseData, IModelObject<T
 	private boolean secret;
 	
 	/** Description of fields. */
-	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>()
+	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>("test_case_data")
 			.addAll(ITestCaseData.SCHEMA.getFieldList());
 	
 	/** Number of fields. */

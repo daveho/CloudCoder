@@ -29,15 +29,37 @@ import java.util.Map;
  * @author David Hovemeyer
  */
 public class ModelObjectSchema<ModelObjectType> {
+	private final String name;
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
 
 	/**
 	 * Constructor.
+	 * 
+	 * @param name the name of the schema: can be used to derive a database table name,
+	 *             XML element name, etc.
 	 */
-	public ModelObjectSchema() {
+	public ModelObjectSchema(String name) {
+		this.name = name;
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
+	}
+	
+	/**
+	 * Get the schema name.
+	 * @return the schema name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Get the database table name.
+	 * 
+	 * @return the database table name
+	 */
+	public String getDbTableName() {
+		return "cc_" + name + "s";
 	}
 	
 	/**

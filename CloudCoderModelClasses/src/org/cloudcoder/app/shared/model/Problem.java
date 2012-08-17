@@ -38,7 +38,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA = new ModelObjectSchema<Problem>()
+	public static final ModelObjectSchema<Problem> SCHEMA = new ModelObjectSchema<Problem>("problem")
 		.addAll(IProblem.SCHEMA.getFieldList())
 		.addAll(IProblemData.SCHEMA.getFieldList());
 	
