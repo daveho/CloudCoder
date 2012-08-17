@@ -25,7 +25,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class RepoTestCase extends TestCaseData {
+public class RepoTestCase extends TestCaseData implements IModelObject<RepoTestCase> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -57,6 +57,11 @@ public class RepoTestCase extends TestCaseData {
 	 */
 	public RepoTestCase() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<RepoTestCase> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

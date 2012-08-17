@@ -53,7 +53,7 @@ public class CreateSampleData {
 		User user = new User();
 		user.setUsername(ccUserName);
 		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCTableNames.USERS);
+		DBUtil.storeModelObject(conn, user);
 		return user.getId();
 	}
 
@@ -73,7 +73,7 @@ public class CreateSampleData {
 		course.setTerm(term);
 		course.setYear(2012);
 		course.setUrl("http://cloudcoder.org/");
-		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCTableNames.COURSES);
+		DBUtil.storeModelObject(conn, course);
 		return course.getId();
 	}
 
@@ -92,7 +92,7 @@ public class CreateSampleData {
 		courseReg.setUserId(userId);
 		courseReg.setRegistrationType(registrationType);
 		courseReg.setSection(101);
-		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCTableNames.COURSE_REGISTRATIONS);
+		DBUtil.storeModelObject(conn, courseReg);
 	}
 
 	static void populateSampleTestCase(ITestCase testCase, Integer problemId) {

@@ -24,7 +24,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class ConfigurationSetting {
+public class ConfigurationSetting implements IModelObject<ConfigurationSetting> {
 	private String name;
 	private String value;
 	
@@ -43,6 +43,11 @@ public class ConfigurationSetting {
 	
 	public ConfigurationSetting() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<ConfigurationSetting> getSchema() {
+		return SCHEMA;
 	}
 	
 	public void setName(String name) {

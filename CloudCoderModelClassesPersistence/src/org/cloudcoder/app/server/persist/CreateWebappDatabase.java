@@ -114,7 +114,7 @@ public class CreateWebappDatabase {
 		ConfigurationSetting instName = new ConfigurationSetting();
 		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
 		instName.setValue(ccInstitutionName);
-		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCTableNames.CONFIGURATION_SETTINGS);
+		DBUtil.storeModelObject(conn, instName);
 		
 		// Terms
 		System.out.println("Creating terms...");
@@ -141,7 +141,7 @@ public class CreateWebappDatabase {
 		System.out.println("Creating hello, world problem in demo course...");
 		Problem problem = new Problem();
 		CreateSampleData.populateSampleProblem(problem, courseId);
-		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCTableNames.PROBLEMS);
+		DBUtil.storeModelObject(conn, problem);
 		Integer problemId = problem.getProblemId();
 		
 		// Add a TestCase
@@ -149,7 +149,7 @@ public class CreateWebappDatabase {
 		TestCase testCase = new TestCase();
 		CreateSampleData.populateSampleTestCase(testCase, problemId);
 		
-		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCTableNames.TEST_CASES);
+		DBUtil.storeModelObject(conn, testCase);
 		
 		conn.close();
 		
@@ -165,7 +165,7 @@ public class CreateWebappDatabase {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCTableNames.TERMS);
+		DBUtil.storeModelObject(conn, term);
 		return term;
 	}
 }

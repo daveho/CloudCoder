@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
@@ -321,14 +322,15 @@ public class DBUtil {
 	}
 
 	/**
-	 * Store an arbitrary bean in the database.
+	 * Store an arbitrary model object in the database.
 	 * 
 	 * @param conn      the Connection to the database
 	 * @param bean      the bean (model object) to store in the database
-	 * @param schema    the {@link ModelObjectSchema} for the bean
-	 * @param tableName the database table to store the bean in
 	 */
-	public static<E> void storeBean(Connection conn, E bean, ModelObjectSchema<E> schema, String tableName) throws SQLException {
+	public static<E extends IModelObject<E>> void storeModelObject(Connection conn, E bean) throws SQLException {
+		ModelObjectSchema<E> schema = bean.getSchema();
+		String tableName = schema.getDbTableName();
+		
 		StringBuilder buf = new StringBuilder();
 		
 		buf.append("insert into " + tableName);

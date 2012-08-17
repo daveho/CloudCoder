@@ -88,9 +88,9 @@ public class CreateRepositoryDatabase {
 		exercise.computeHash();
 		
 		// Now we can store the problem and its test case in the database
-		DBUtil.storeBean(conn, repoProblem, RepoProblem.SCHEMA, JDBCTableNames.REPO_PROBLEMS);
+		DBUtil.storeModelObject(conn, repoProblem);
 		repoTestCase.setRepoProblemId(repoProblem.getId());
-		DBUtil.storeBean(conn, repoTestCase, RepoTestCase.SCHEMA, JDBCTableNames.REPO_TEST_CASES);
+		DBUtil.storeModelObject(conn, repoTestCase);
 		
 		System.out.println("Done!");
 	}
