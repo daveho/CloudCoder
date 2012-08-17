@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements Serializable, IProblemData {
+public class ProblemData implements Serializable, IProblemData, IModelObject<ProblemData> {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -66,6 +66,11 @@ public class ProblemData implements Serializable, IProblemData {
 	 */
 	public ProblemData() {
 		super();
+	}
+	
+	@Override
+	public ModelObjectSchema<? extends ProblemData> getSchema() {
+		return SCHEMA;
 	}
 
 	/* (non-Javadoc)

@@ -53,6 +53,11 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	public Problem() {
 		
 	}
+	
+	@Override
+	public ModelObjectSchema<Problem> getSchema() {
+		return SCHEMA;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.shared.model.IProblem#getProblemId()

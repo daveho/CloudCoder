@@ -146,7 +146,7 @@ public class CreateWebappDatabase {
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
-		ITestCase testCase = new TestCase();
+		TestCase testCase = new TestCase();
 		CreateSampleData.populateSampleTestCase(testCase, problemId);
 		
 		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCTableNames.TEST_CASES);

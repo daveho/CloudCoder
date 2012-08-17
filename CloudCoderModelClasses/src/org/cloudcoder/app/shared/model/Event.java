@@ -25,7 +25,7 @@ import java.io.Serializable;
  * event, and has a link field (data_id) to a corresponding row in
  * another table with additional information about the specific event.
  */
-public class Event implements Serializable {
+public class Event implements Serializable, IModelObject<Event> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -61,6 +61,11 @@ public class Event implements Serializable {
 
 	public Event() {
 
+	}
+	
+	@Override
+	public ModelObjectSchema<Event> getSchema() {
+		return SCHEMA;
 	}
 	
 	public Event(int userId, int problemId, EventType type, long timestamp) {

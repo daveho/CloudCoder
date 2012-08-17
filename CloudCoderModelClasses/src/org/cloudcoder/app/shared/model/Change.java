@@ -25,7 +25,7 @@ import java.util.Arrays;
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-public class Change implements Serializable, IContainsEvent {
+public class Change implements Serializable, IContainsEvent, IModelObject<Change> {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -113,6 +113,11 @@ public class Change implements Serializable, IContainsEvent {
 	// Zero-arg constructor - required for serialization
 	// also required for persistence
 	public Change() {
+	}
+	
+	@Override
+	public ModelObjectSchema<Change> getSchema() {
+		return SCHEMA;
 	}
 
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId) {

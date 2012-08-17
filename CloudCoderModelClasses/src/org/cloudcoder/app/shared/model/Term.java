@@ -23,7 +23,7 @@ import java.io.Serializable;
  * Model object representing an academic term (Fall, Spring, etc.)
  * @author David Hovemeyer
  */
-public class Term implements Serializable {
+public class Term implements Serializable, IModelObject<Term> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -54,6 +54,11 @@ public class Term implements Serializable {
 	
 	public Term() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<? extends Term> getSchema() {
+		return SCHEMA;
 	}
 	
 	public void setId(int id) {

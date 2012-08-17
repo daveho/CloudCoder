@@ -85,7 +85,7 @@ public class XMLConversion {
 	 */
 	public static void writeTestCaseData(ITestCaseData testCaseData, XMLStreamWriter writer) throws XMLStreamException {
 		writer.writeStartElement(TEST_CASE_DATA);
-		writeModelObjectFields(testCaseData, TestCaseData.SCHEMA, writer);
+		writeModelObjectFields(testCaseData, ITestCaseData.SCHEMA, writer);
 		writer.writeEndElement();
 	}
 	
@@ -175,7 +175,7 @@ public class XMLConversion {
 	 */
 	public static void readTestCaseData(ITestCaseData testCaseData, XMLStreamReader reader)  throws XMLStreamException {
 		expectElementStart(TEST_CASE_DATA, reader);
-		readModelObjectFields(testCaseData, TestCaseData.SCHEMA, reader);
+		readModelObjectFields(testCaseData, ITestCaseData.SCHEMA, reader);
 		expectElementEnd(reader);
 	}
 	

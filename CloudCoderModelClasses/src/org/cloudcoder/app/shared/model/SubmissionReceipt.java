@@ -29,7 +29,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class SubmissionReceipt implements Serializable, IContainsEvent {
+public class SubmissionReceipt implements Serializable, IContainsEvent, IModelObject<SubmissionReceipt> {
 	private static final long serialVersionUID = 1L;
 
 	private int eventId;
@@ -73,6 +73,11 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 
 	public SubmissionReceipt() {
 		this.event = new Event();
+	}
+	
+	@Override
+	public ModelObjectSchema<? extends SubmissionReceipt> getSchema() {
+		return SCHEMA;
 	}
 	
 	/* (non-Javadoc)

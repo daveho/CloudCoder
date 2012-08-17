@@ -69,6 +69,11 @@ public class RepoProblem extends ProblemData {
 		
 	}
 	
+	@Override
+	public ModelObjectSchema<RepoProblem> getSchema() {
+		return SCHEMA;
+	}
+	
 	/**
 	 * Set the unique id.
 	 * @param id the unique id

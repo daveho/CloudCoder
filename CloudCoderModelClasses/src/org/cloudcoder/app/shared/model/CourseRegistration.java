@@ -25,7 +25,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class CourseRegistration implements Serializable {
+public class CourseRegistration implements Serializable, IModelObject<CourseRegistration> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -64,6 +64,11 @@ public class CourseRegistration implements Serializable {
 	 */
 	public CourseRegistration() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<CourseRegistration> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

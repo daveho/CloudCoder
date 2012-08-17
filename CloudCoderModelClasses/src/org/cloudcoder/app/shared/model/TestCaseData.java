@@ -27,7 +27,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class TestCaseData implements Serializable, ITestCaseData {
+public class TestCaseData implements Serializable, ITestCaseData, IModelObject<TestCaseData> {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -39,45 +39,20 @@ public class TestCaseData implements Serializable, ITestCaseData {
 	private String output;
 	private boolean secret;
 	
-	/** {@link ModelObjectField} for test case name. */
-	public static final ModelObjectField<ITestCaseData, String> TEST_CASE_NAME =
-		new ModelObjectField<ITestCaseData, String>("test_case_name", String.class, 40) {
-			public void set(ITestCaseData obj, String value) { obj.setTestCaseName(value); }
-			public String get(ITestCaseData obj) { return obj.getTestCaseName(); }
-		};
+	/** Description of fields. */
+	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>()
+			.addAll(ITestCaseData.SCHEMA.getFieldList());
 	
-	/** {@link ModelObjectField} for input. */
-	public static final ModelObjectField<ITestCaseData, String> INPUT =
-		new ModelObjectField<ITestCaseData, String>("input", String.class, 255) {
-			public void set(ITestCaseData obj, String value) { obj.setInput(value); }
-			public String get(ITestCaseData obj) { return obj.getInput(); }
-		};
-
-	/** {@link ModelObjectField} for output. */
-	public static final ModelObjectField<ITestCaseData, String> OUTPUT =
-		new ModelObjectField<ITestCaseData, String>("output", String.class, 255) {
-			public void set(ITestCaseData obj, String value) { obj.setOutput(value); }
-			public String get(ITestCaseData obj) { return obj.getOutput(); }
-		};
-
-	/** {@link ModelObjectField} for secret. */
-	public static final ModelObjectField<ITestCaseData, Boolean> SECRET =
-		new ModelObjectField<ITestCaseData, Boolean>("secret", Boolean.class, 0) {
-			public void set(ITestCaseData obj, Boolean value) { obj.setSecret(value); }
-			public Boolean get(ITestCaseData obj) { return obj.isSecret(); }
-		};
-	
-	/**
-	 * Description of fields.
-	 */
-	public static final ModelObjectSchema<ITestCaseData> SCHEMA = new ModelObjectSchema<ITestCaseData>()
-		.add(TEST_CASE_NAME)
-		.add(INPUT)
-		.add(OUTPUT)
-		.add(SECRET);
+	/** Number of fields. */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 
 	public TestCaseData() {
 		super();
+	}
+	
+	@Override
+	public ModelObjectSchema<? extends TestCaseData> getSchema() {
+		return SCHEMA;
 	}
 
 	/* (non-Javadoc)

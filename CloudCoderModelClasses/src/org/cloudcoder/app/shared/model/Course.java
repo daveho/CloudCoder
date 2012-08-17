@@ -39,7 +39,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class Course implements ActivityObject {
+public class Course implements ActivityObject, IModelObject<Course> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -93,6 +93,11 @@ public class Course implements ActivityObject {
 	 */
 	public Course() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<Course> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

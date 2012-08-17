@@ -24,7 +24,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class User implements Serializable {
+public class User implements Serializable, IModelObject<User> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -52,6 +52,11 @@ public class User implements Serializable {
 	 * Constructor.
 	 */
 	public User() {
+	}
+	
+	@Override
+	public ModelObjectSchema<? extends User> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

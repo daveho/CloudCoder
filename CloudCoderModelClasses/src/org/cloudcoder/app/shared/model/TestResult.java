@@ -23,7 +23,7 @@ import java.io.Serializable;
  * A TestResult represents the outcome of a particular
  * {@link TestCase} on a particular {@link Submission}.
  */
-public class TestResult implements Serializable
+public class TestResult implements Serializable, IModelObject<TestResult>
 {
     public static final long serialVersionUID=1L;
     
@@ -65,6 +65,11 @@ public class TestResult implements Serializable
     
     public TestResult() {
     	
+    }
+    
+    @Override
+    public ModelObjectSchema<? extends TestResult> getSchema() {
+    	return SCHEMA;
     }
     
     public TestResult(TestOutcome outcome, String message) {
