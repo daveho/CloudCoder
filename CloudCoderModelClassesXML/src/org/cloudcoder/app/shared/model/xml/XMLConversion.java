@@ -245,9 +245,17 @@ public class XMLConversion {
 		}
 	}
 	
+	/**
+	 * Read model object fields until an END_ELEMENT event is reached.
+	 * 
+	 * @param modelObj  the model object
+	 * @param schema    the model object's schema
+	 * @param reader    the XMLStreamReader
+	 * @throws XMLStreamException
+	 */
 	private static<E> void readModelObjectFields(E modelObj, ModelObjectSchema<E> schema, XMLStreamReader reader) throws XMLStreamException {
-		while (reader.hasNext()) {
-			int eventType = reader.next();
+		while (true) {
+			int eventType = reader.getEventType();
 			if (eventType == XMLStreamReader.END_ELEMENT) {
 				break;
 			} else if (eventType == XMLStreamReader.START_ELEMENT) {
@@ -269,6 +277,12 @@ public class XMLConversion {
 				}
 			}
 			// ignore other event types...
+			
+			// Advance to next event
+			if (!reader.hasNext()) {
+				throw new XMLStreamException("Unexpected end of input");
+			}
+			reader.next();
 		}
 	}
 
