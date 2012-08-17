@@ -27,7 +27,6 @@ import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.TestCaseData;
 
 /**
@@ -74,7 +73,7 @@ public class XMLConversion {
 	 */
 	public static void writeProblemData(IProblemData problemData, XMLStreamWriter writer) throws XMLStreamException {
 		writer.writeStartElement(PROBLEM_DATA);
-		writeModelObjectFields(problemData, ProblemData.SCHEMA, writer);
+		writeModelObjectFields(problemData, IProblemData.SCHEMA, writer);
 		writer.writeEndElement();
 	}
 
@@ -161,7 +160,7 @@ public class XMLConversion {
 	 */
 	public static void readProblemData(IProblemData problemData, XMLStreamReader reader) throws XMLStreamException {
 		expectElementStart(PROBLEM_DATA, reader);
-		readModelObjectFields(problemData, ProblemData.SCHEMA, reader);
+		readModelObjectFields(problemData, IProblemData.SCHEMA, reader);
 		expectElementEnd(reader);
 	}
 	
