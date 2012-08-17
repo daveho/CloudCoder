@@ -23,11 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.ReflectionFactory;
@@ -35,10 +30,10 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
-import org.cloudcoder.app.shared.model.xml.XMLConversion;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
 
 /**
- * Servlet to import/export exercises (problem and its test cases) as XML.
+ * Servlet to import/export exercises (problem and its test cases) as JSON.
  * Supports the import and export features in the main webapp.
  * GET requests with an SHA-1 hash as the pathinfo export an exercise.
  * POST requests with basic authentication import an exercise. 
@@ -67,19 +62,10 @@ public class Exercise extends HttpServlet {
 			ServletUtil.notFound(resp, "No exercise with hash " + hash);
 			return;
 		} else {
-			// Write the exercise as XML
+			// Write the exercise as JSON
 			resp.setStatus(HttpServletResponse.SC_OK);
-			resp.setContentType("application/xml");
-			
-			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			try {
-				XMLStreamWriter writer = factory.createXMLStreamWriter(resp.getOutputStream());
-				writer.writeStartDocument();
-				XMLConversion.writeProblemAndTestCaseData(exercise, writer);
-				writer.writeEndDocument();
-			} catch (XMLStreamException e) {
-				throw new ServletException("Couldn't write XML", e);
-			}
+			resp.setContentType("application/json");
+			JSONConversion.writeProblemAndTestCaseData(exercise, resp.getWriter());
 		}
 	}
 	
@@ -107,23 +93,12 @@ public class Exercise extends HttpServlet {
 		}
 		
 		// Read an exercise from the message body
-		RepoProblemAndTestCaseList exercise;
-		try {
-			XMLInputFactory factory = XMLInputFactory.newInstance();
-			XMLStreamReader reader = factory.createXMLStreamReader(req.getInputStream());
-			
-			exercise = new RepoProblemAndTestCaseList();
-			XMLConversion.skipToFirstElement(reader);
-			XMLConversion.readProblemAndTestCaseData(
-					exercise,
-					ReflectionFactory.forClass(RepoProblem.class),
-					ReflectionFactory.forClass(RepoTestCase.class),
-					reader);
-		} catch (XMLStreamException e) {
-			e.printStackTrace();
-			ServletUtil.badRequest(resp, "Invalid XML data");
-			return;
-		}
+		RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
+		JSONConversion.readProblemAndTestCaseData(
+				exercise,
+				ReflectionFactory.forClass(RepoProblem.class),
+				ReflectionFactory.forClass(RepoTestCase.class),
+				req.getReader());
 
 		// Store in database
 		Database.getInstance().storeRepoProblemAndTestCaseList(exercise, user);

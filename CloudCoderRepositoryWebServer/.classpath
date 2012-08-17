@@ -5,6 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderJetty"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesXML"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
