@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase extends TestCaseData implements Serializable, ITestCase {
+public class TestCase extends TestCaseData implements Serializable, ITestCase, IModelObject<TestCase> {
 	private static final long serialVersionUID = 1L;
 
 	private int testCaseId;

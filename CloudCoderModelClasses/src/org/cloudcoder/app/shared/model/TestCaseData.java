@@ -27,7 +27,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class TestCaseData implements Serializable, ITestCaseData, IModelObject<TestCaseData> {
+public class TestCaseData implements Serializable, ITestCaseData {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -38,21 +38,9 @@ public class TestCaseData implements Serializable, ITestCaseData, IModelObject<T
 	private String input;
 	private String output;
 	private boolean secret;
-	
-	/** Description of fields. */
-	public static final ModelObjectSchema<TestCaseData> SCHEMA = new ModelObjectSchema<TestCaseData>("test_case_data")
-			.addAll(ITestCaseData.SCHEMA.getFieldList());
-	
-	/** Number of fields. */
-	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 
 	public TestCaseData() {
 		super();
-	}
-	
-	@Override
-	public ModelObjectSchema<? extends TestCaseData> getSchema() {
-		return SCHEMA;
 	}
 
 	/* (non-Javadoc)

@@ -76,7 +76,7 @@ public class SubmissionReceipt implements Serializable, IContainsEvent, IModelOb
 	}
 	
 	@Override
-	public ModelObjectSchema<? extends SubmissionReceipt> getSchema() {
+	public ModelObjectSchema<SubmissionReceipt> getSchema() {
 		return SCHEMA;
 	}
 	

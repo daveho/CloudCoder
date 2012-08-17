@@ -68,7 +68,7 @@ public class TestResult implements Serializable, IModelObject<TestResult>
     }
     
     @Override
-    public ModelObjectSchema<? extends TestResult> getSchema() {
+    public ModelObjectSchema<TestResult> getSchema() {
     	return SCHEMA;
     }
     

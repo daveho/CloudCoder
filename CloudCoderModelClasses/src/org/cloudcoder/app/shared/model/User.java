@@ -55,7 +55,7 @@ public class User implements Serializable, IModelObject<User> {
 	}
 	
 	@Override
-	public ModelObjectSchema<? extends User> getSchema() {
+	public ModelObjectSchema<User> getSchema() {
 		return SCHEMA;
 	}
 	

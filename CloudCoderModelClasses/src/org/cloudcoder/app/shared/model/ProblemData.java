@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ProblemData implements Serializable, IProblemData, IModelObject<ProblemData> {
+public class ProblemData implements Serializable, IProblemData {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -47,15 +47,6 @@ public class ProblemData implements Serializable, IProblemData, IModelObject<Pro
 	private long timestampUTC;
 	private ProblemLicense license;
 	
-	/** Description of fields. */
-	public static final ModelObjectSchema<ProblemData> SCHEMA = new ModelObjectSchema<ProblemData>("problem_data")
-			.addAll(IProblemData.SCHEMA.getFieldList());
-	
-	/**
-	 * Number of fields.
-	 */
-	public static final int NUM_FIELDS = SCHEMA.getNumFields();
-	
 	/**
 	 * The current ProblemData schema version.
 	 */
@@ -66,11 +57,6 @@ public class ProblemData implements Serializable, IProblemData, IModelObject<Pro
 	 */
 	public ProblemData() {
 		super();
-	}
-	
-	@Override
-	public ModelObjectSchema<? extends ProblemData> getSchema() {
-		return SCHEMA;
 	}
 
 	/* (non-Javadoc)

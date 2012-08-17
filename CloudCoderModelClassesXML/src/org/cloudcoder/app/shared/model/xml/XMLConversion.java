@@ -22,12 +22,12 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.cloudcoder.app.shared.model.IFactory;
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.TestCaseData;
 
 /**
  * Methods for converting CloudCoder model objects to and from XML.
@@ -37,9 +37,7 @@ import org.cloudcoder.app.shared.model.TestCaseData;
 public class XMLConversion {
 	
 	// Element names
-	public static final String PROBLEM_AND_TEST_CASE_DATA = "problemandtestcasedata";
-	public static final String PROBLEM_DATA = "problemdata";
-	public static final String TEST_CASE_DATA = "testcasedata";
+	public static final String PROBLEM_AND_TEST_CASE_DATA = "exercise";
 	
 	// Write model objects as XML
 	
@@ -55,37 +53,39 @@ public class XMLConversion {
 			XMLStreamWriter writer) throws XMLStreamException {
 		writer.writeStartElement(PROBLEM_AND_TEST_CASE_DATA);
 		
-		writeProblemData(obj.getProblem(), writer);
-		
+		writeModelObject(obj.getProblem(), IProblemData.SCHEMA, writer);
+
 		for (ITestCaseData testCaseData : obj.getTestCaseData()) {
-			writeTestCaseData(testCaseData, writer);
+			writeModelObject(testCaseData, ITestCaseData.SCHEMA, writer);
 		}
 		
 		writer.writeEndElement();
 	}
 	
 	/**
-	 * Write an {@link IProblemData} object as a single element.
+	 * Write a model object as an XML element using its schema.
+	 * The model object's schema's name is used as the element name.
 	 * 
-	 * @param problemData the {@link IProblemData} object to write
-	 * @param writer      the XMLStreamWriter
+	 * @param obj    the model object to write
+	 * @param writer the XMLStreamWriter
 	 * @throws XMLStreamException
 	 */
-	public static void writeProblemData(IProblemData problemData, XMLStreamWriter writer) throws XMLStreamException {
-		writer.writeStartElement(PROBLEM_DATA);
-		writeModelObjectFields(problemData, IProblemData.SCHEMA, writer);
-		writer.writeEndElement();
+	public static<E extends IModelObject<E>> void writeModelObject(E obj, XMLStreamWriter writer) throws XMLStreamException {
+		writeModelObject(obj, obj.getSchema(), writer);
 	}
 
 	/**
-	 * Write an {@link ITestCaseData} object as a single element.
-	 * @param testCaseData the {@link ITestCaseData} object to write
-	 * @param writer       the XMLStreamWriter
+	 * Write a model object using given schema.
+	 * The schema name is used as the element name.
+	 * 
+	 * @param obj     the model object to write
+	 * @param schema  the schema to use
+	 * @param writer  the XMLStreamWriter
 	 * @throws XMLStreamException
 	 */
-	public static void writeTestCaseData(ITestCaseData testCaseData, XMLStreamWriter writer) throws XMLStreamException {
-		writer.writeStartElement(TEST_CASE_DATA);
-		writeModelObjectFields(testCaseData, ITestCaseData.SCHEMA, writer);
+	public static <E> void writeModelObject(E obj, ModelObjectSchema<? super E> schema, XMLStreamWriter writer) throws XMLStreamException {
+		writer.writeStartElement(schema.getName());
+		writeModelObjectFields(obj, schema, writer);
 		writer.writeEndElement();
 	}
 	
@@ -115,7 +115,7 @@ public class XMLConversion {
 	 * @param problemFactory   factory for creating the {@link IProblemData} object
 	 * @param testCaseFactory  factory for creating {@link ITestCaseData} objects
 	 * @param reader           the XMLStreamReader
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException			
 	 */
 	public static<ProblemDataType extends IProblemData, TestCaseDataType extends ITestCaseData> void readProblemAndTestCaseData(
 			IProblemAndTestCaseData<ProblemDataType, TestCaseDataType> obj,
@@ -127,7 +127,7 @@ public class XMLConversion {
 		
 		ProblemDataType problem = problemFactory.create();
 		obj.setProblem(problem);
-		readProblemData(problem, reader);
+		readModelObject(problem, IProblemData.SCHEMA, reader);
 		
 		skipToElementStartOrEnd(reader);
 		
@@ -136,9 +136,10 @@ public class XMLConversion {
 			// Is it a nested element?
 			if (reader.getEventType() == XMLStreamReader.START_ELEMENT) {
 				// Is it a test case data element?
-				if (reader.getLocalName().equals(TEST_CASE_DATA)) {
+				if (reader.getLocalName().equals(ITestCaseData.SCHEMA.getName())) {
 					TestCaseDataType testCase = testCaseFactory.create();
-					readTestCaseData(testCase, reader);
+					readModelObject(testCase, ITestCaseData.SCHEMA, reader);
+					obj.addTestCase(testCase);
 				} else {
 					// Unrecognized nested element: just skip it
 					skipToEndElement(reader);
@@ -150,32 +151,30 @@ public class XMLConversion {
 	}
 
 	/**
-	 * Read an {@link IProblemData} object from given XMLStreamReader,
-	 * which must be positioned at the start of an element written by
-	 * {@link #writeProblemData(IProblemData, XMLStreamWriter)}.
+	 * Read a model object from the current element using the model object's schema.
+	 * The current element's name must match the model object's schema's name.
 	 * 
-	 * @param problemData the {@link IProblemData} object to read
-	 * @param reader the XMLStreamReader
-	 * @throws XMLStreamException 
-	 */
-	public static void readProblemData(IProblemData problemData, XMLStreamReader reader) throws XMLStreamException {
-		expectElementStart(PROBLEM_DATA, reader);
-		readModelObjectFields(problemData, IProblemData.SCHEMA, reader);
-		expectElementEnd(reader);
-	}
-	
-	/**
-	 * Read an {@link ITestCaseData} object from given XMLStreamReader,
-	 * which must be positioned at the start of an element written by
-	 * {@link #writeTestCaseData(ITestCaseData, XMLStreamWriter)}.
-	 * 
-	 * @param testCaseData the {@link ITestCaseData} object to read
-	 * @param reader the XMLStreamReader
+	 * @param modelObj the model object
+	 * @param reader   the XMLStreamReader
 	 * @throws XMLStreamException
 	 */
-	public static void readTestCaseData(ITestCaseData testCaseData, XMLStreamReader reader)  throws XMLStreamException {
-		expectElementStart(TEST_CASE_DATA, reader);
-		readModelObjectFields(testCaseData, ITestCaseData.SCHEMA, reader);
+	public static<E extends IModelObject<E>> void readModelObject(E modelObj, XMLStreamReader reader) throws XMLStreamException {
+		readModelObject(modelObj, modelObj.getSchema(), reader);
+	}
+
+	/**
+	 * Read a model object from the current element using the given schema.
+	 * The current element's name must match the schema's name.
+	 * 
+	 * @param modelObj the model object to read
+	 * @param schema   the schema
+	 * @param reader   the XMLStreamReader
+	 * @throws XMLStreamException
+	 */
+	public static<E> void readModelObject(E modelObj, ModelObjectSchema<E> schema, XMLStreamReader reader)
+			throws XMLStreamException {
+		expectElementStart(schema.getName(), reader);
+		readModelObjectFields(modelObj, schema, reader);
 		expectElementEnd(reader);
 	}
 	

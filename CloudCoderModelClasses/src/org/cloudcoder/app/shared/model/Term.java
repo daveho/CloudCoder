@@ -57,7 +57,7 @@ public class Term implements Serializable, IModelObject<Term> {
 	}
 	
 	@Override
-	public ModelObjectSchema<? extends Term> getSchema() {
+	public ModelObjectSchema<Term> getSchema() {
 		return SCHEMA;
 	}
 	

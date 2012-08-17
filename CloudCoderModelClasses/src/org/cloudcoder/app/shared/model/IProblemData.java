@@ -221,7 +221,7 @@ public interface IProblemData {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = new ModelObjectSchema<IProblemData>("iproblem_data")
+	public static final ModelObjectSchema<IProblemData> SCHEMA = new ModelObjectSchema<IProblemData>("problem_data")
 		.add(PROBLEM_TYPE)
 		.add(TESTNAME)
 		.add(BRIEF_DESCRIPTION)
