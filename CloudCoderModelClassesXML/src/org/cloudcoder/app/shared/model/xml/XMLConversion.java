@@ -227,6 +227,12 @@ public class XMLConversion {
 				|| !reader.getLocalName().equals(elementName)) {
 			throw new XMLStreamException("Expected the start of a " + elementName + " element");
 		}
+		
+		// Skip to next event
+		if (!reader.hasNext()) {
+			throw new XMLStreamException("Unexpected end of input");
+		}
+		reader.next();
 	}
 
 	private static void expectElementEnd(XMLStreamReader reader) throws XMLStreamException {
