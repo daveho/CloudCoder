@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author David Hovemeyer
  */
-public class JDBCDatabase implements IDatabase, JDBCTableNames {
+public class JDBCDatabase implements IDatabase {
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 	
 	private String jdbcUrl;
@@ -129,7 +129,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 					throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select s.* from " + CONFIGURATION_SETTINGS + " as s where s.name = ?");
+						"select s.* from " + ConfigurationSetting.SCHEMA.getDbTableName() + " as s where s.name = ?");
 				stmt.setString(1, name.toString());
 				ResultSet resultSet = executeQuery(stmt);
 				if (!resultSet.next()) {
@@ -147,7 +147,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 	}
 	
 	private User getUser(Connection conn, String userName) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from "+USERS+" where username = ?");
+	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where username = ?");
         stmt.setString(1, userName);
         
         ResultSet resultSet = stmt.executeQuery();
@@ -212,7 +212,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
+						"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 						" where p.problem_id = ? " +
 						"   and c.id = p.course_id " +
 						"   and r.course_id = c.id " +
@@ -256,7 +256,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from " + PROBLEMS + " where problem_id = ?");
+						"select * from " + Problem.SCHEMA.getDbTableName() + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				ResultSet resultSet = executeQuery(stmt);
@@ -284,9 +284,9 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)"
@@ -316,9 +316,9 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ? " +
@@ -357,7 +357,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select ch.*, e.* " +
-						"  from " + CHANGES + " as ch, " + EVENTS + " as e " +
+						"  from " + Change.SCHEMA.getDbTableName() + " as ch, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where e.id = ? and ch.event_id = e.id");
 				stmt.setInt(1, changeEventId);
 				
@@ -388,7 +388,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
 						"   and e.id > ? " +
 						"   and e.user_id = ? " +
@@ -468,7 +468,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// access to.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + PROBLEMS + " as p, " + EVENTS + " as e, " + COURSE_REGISTRATIONS + " as cr " +
+						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Problem.SCHEMA.getDbTableName() + " as p, " + Event.SCHEMA.getDbTableName() + " as e, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
 						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
@@ -522,7 +522,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
 					store(change, insertChange, 1);
@@ -546,7 +546,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			public List<TestCase> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from " + TEST_CASES + " where problem_id = ?");
+						"select * from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				List<TestCase> result = new ArrayList<TestCase>();
@@ -574,7 +574,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select tc.* " +
-						"   from " + TEST_CASES + " as tc, " + PROBLEMS + " as p, " + COURSE_REGISTRATIONS + " as cr " +
+						"   from " + TestCase.SCHEMA.getDbTableName() + " as tc, " + Problem.SCHEMA.getDbTableName() + " as p, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
 						"  where tc.problem_id = p.problem_id " +
 						"    and p.problem_id = ? " +
 						"    and p.course_id =  cr.course_id " +
@@ -647,9 +647,9 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// Get most recent submission receipt for user/problem
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + EVENTS + " as e " +
+						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where r.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + SUBMISSION_RECEIPTS + " as rr, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as rr, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where rr.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)");
@@ -741,7 +741,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select sr.*, e.* " +
-						"  from " + SUBMISSION_RECEIPTS + " as sr, " + EVENTS + " as e " +
+						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where sr.event_id = e.id " +
 						"   and e.problem_id = ?");
 				stmt.setInt(1, problem.getProblemId());
@@ -815,8 +815,8 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select sr.*, e.* " +
-						"  from " + SUBMISSION_RECEIPTS + " as sr, " +
-						"       " + EVENTS + " as e " +
+						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " +
+						"       " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where sr.event_id = e.id " +
 						"   and e.event_id = ?");
 				stmt.setInt(1, submissionReceiptId);
@@ -853,7 +853,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// Delete old test results (if any)
 				PreparedStatement delTestResults = prepareStatement(
 						conn,
-						"delete from " + TEST_RESULTS + " where submission_receipt_event_id = ?");
+						"delete from " + TestResult.SCHEMA.getDbTableName() + " where submission_receipt_event_id = ?");
 				delTestResults.setInt(1, submissionReceiptId);
 				delTestResults.executeUpdate();
 				
@@ -887,7 +887,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// following a retest.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"update " + SUBMISSION_RECEIPTS + 
+						"update " + SubmissionReceipt.SCHEMA.getDbTableName() + 
 						"  set status = ?, num_tests_attempted = ?, num_tests_passed = ?");
 				stmt.setInt(1, receipt.getStatus().ordinal());
 				stmt.setInt(2, receipt.getNumTestsAttempted());
@@ -977,7 +977,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// Query to find the RepoProblem
 				PreparedStatement findRepoProblem = prepareStatement(
 						conn,
-						"select * from " + REPO_PROBLEMS + " as rp " +
+						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
 						" where rp." + RepoProblem.HASH.getName() + " = ?");
 				findRepoProblem.setString(1, hash);
 				
@@ -995,7 +995,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 				// Query to find all RepoTestCases associated with the RepoProblem
 				PreparedStatement findRepoTestCases = prepareStatement(
 						conn,
-						"select * from " + REPO_TEST_CASES + " as rtc " +
+						"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
 						" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
 				findRepoTestCases.setInt(1, repoProblem.getId());
 				
@@ -1109,7 +1109,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + EVENTS + " values (NULL, ?, ?, ?, ?)", 
+				"insert into " + Event.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS
 		);
 		for (IContainsEvent change : containsEventList) {
@@ -1150,7 +1150,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + SUBMISSION_RECEIPTS + " values (?, ?, ?, ?, ?)",
+				"insert into " + SubmissionReceipt.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		store(receipt, stmt, 1);
@@ -1176,7 +1176,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + TEST_RESULTS + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TestResult.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		for (TestResult testResult : testResultList) {
@@ -1220,7 +1220,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
+				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where p.course_id = c.id " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
@@ -1262,7 +1262,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
+				"select c.*, t.*, r.* from " + Course.SCHEMA.getDbTableName() + " as c, " + Term.SCHEMA.getDbTableName() + " as t, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where c.id = r.course_id " + 
 				"   and c.term_id = t.id " +
 				"   and r.user_id = ? " +
@@ -1291,7 +1291,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"insert into " + PROBLEMS +
+				"insert into " + Problem.SCHEMA.getDbTableName() +
 				" values (" +
 				DBUtil.getInsertPlaceholdersNoId(Problem.SCHEMA) +
 				")",
@@ -1316,7 +1316,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TestCase.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		
@@ -1348,7 +1348,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 		
 		PreparedStatement update = databaseRunnable.prepareStatement(
 				conn,
-				"update " + PROBLEMS +
+				"update " + Problem.SCHEMA.getDbTableName() +
 				" set " + DBUtil.getUpdatePlaceholdersNoId(Problem.SCHEMA) +
 				" where problem_id = ?"
 				);
@@ -1369,7 +1369,7 @@ public class JDBCDatabase implements IDatabase, JDBCTableNames {
 			AbstractDatabaseRunnable<ProblemAndTestCaseList> abstractDatabaseRunnable) throws SQLException {
 		PreparedStatement deleteStmt = abstractDatabaseRunnable.prepareStatement(
 				conn,
-				"delete from " + TEST_CASES + " where problem_id = ?");
+				"delete from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
 		deleteStmt.setInt(1, problemId);
 		
 		deleteStmt.executeUpdate();
