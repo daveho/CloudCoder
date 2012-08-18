@@ -61,6 +61,16 @@ public class ModelObjectSchema<ModelObjectType> {
 	public String getDbTableName() {
 		return "cc_" + name + "s";
 	}
+
+	/**
+	 * Get a name to use for a list of objects of this schema's type
+	 * in a serialized format (such as XML or JSON).
+	 * 
+	 * @return list element name
+	 */
+	public String getListElementName() {
+		return name + "_list";
+	}
 	
 	/**
 	 * Add a {@link ModelObjectField} to the schema.

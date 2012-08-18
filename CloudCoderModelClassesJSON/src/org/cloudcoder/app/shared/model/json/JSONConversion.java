@@ -20,6 +20,7 @@ package org.cloudcoder.app.shared.model.json;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.Map;
 import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.IProblemData;
-import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
@@ -45,24 +45,25 @@ import org.json.simple.parser.ParseException;
 public class JSONConversion {
 	
 	/**
-	 * Write an {@link IProblemAndTestCaseData} object as a JSON array.
-	 * The first element will be the {@link IProblemData}, and the
-	 * subsequent objects will be the {@link ITestCaseData}.
+	 * Write an {@link IProblemAndTestCaseData} object.
 	 * 
 	 * @param obj    the {@link IProblemAndTestCaseData} object to write
 	 * @param writer the Writer
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unchecked")
 	public static void writeProblemAndTestCaseData(
 			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
 			Writer writer) throws IOException {
-		JSONArray array = new JSONArray();
-		array.add(convertModelObjectToJSON(obj.getProblem(), IProblemData.SCHEMA));
-		for (ITestCaseData testCase : obj.getTestCaseData()) {
-			array.add(convertModelObjectToJSON(testCase, ITestCase.SCHEMA));
-		}
-		JSONValue.writeJSONString(array, writer);
+		
+		LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
+
+		// Add the problem
+		result.put(IProblemData.SCHEMA.getName(), convertModelObjectToJSON(obj.getProblem(), IProblemData.SCHEMA));
+
+		// Add array of test cases
+		addModelObjectList(result, obj.getTestCaseData(), ITestCaseData.SCHEMA);
+		
+		JSONValue.writeJSONString(result, writer);
 	}
 
 	/**
@@ -91,6 +92,38 @@ public class JSONConversion {
 	}
 	
 	/**
+	 * Convert a list of model objects to a JSON array object.
+	 * 
+	 * @param objList list of model objects
+	 * @param schema  the schema for the model objects
+	 * @return a JSON array object
+	 */
+	@SuppressWarnings("unchecked")
+	public static<E> Object convertModelObjectListToJSON(List<? extends E> objList, ModelObjectSchema<E> schema) {
+		JSONArray result = new JSONArray();
+		
+		for (E obj : objList) {
+			result.add(convertModelObjectToJSON(obj, schema));
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Add a list of model objects as a field of given JSON object.
+	 * 
+	 * @param jsonObj      the JSON object to add the list to
+	 * @param modelObjList list of model objects
+	 * @param schema       the schema for the list of model objects
+	 */
+	public static<E> void addModelObjectList(
+			Map<String, Object> jsonObj,
+			List<? extends E> modelObjList,
+			ModelObjectSchema<E> schema) {
+		jsonObj.put(schema.getListElementName(), convertModelObjectListToJSON(modelObjList, schema));
+	}
+	
+	/**
 	 * Read JSON-encoded data into a {@link IProblemAndTestCaseData} object.
 	 * 
 	 * @param obj              the {@link IProblemAndTestCaseData} object
@@ -109,29 +142,94 @@ public class JSONConversion {
 		
 		try {
 			Object parsed = parser.parse(reader);
-			if (!(parsed instanceof List)) {
-				throw new IOException("Expecting JSON list");
-			}
-			
-			List<?> elements = (List<?>) parsed;
-			Iterator<?> i = elements.iterator();
-			
-			// First object is problem data, subsequent objects are test case data
-			
-			// Problem data
+
+			// Convert the problem
 			ProblemDataType problem = problemFactory.create();
-			convertJSONToModelObject(i.next(), problem, IProblemData.SCHEMA);
+			if (!convertJSONFieldToModelObject(parsed, problem, IProblemData.SCHEMA)) {
+				throw new IOException("No problem data!");
+			}
 			obj.setProblem(problem);
 			
-			// Test case data
-			while (i.hasNext()) {
-				TestCaseDataType testCase = testCaseFactory.create();
-				convertJSONToModelObject(i.next(), testCase, ITestCaseData.SCHEMA);
+			// Convert the test cases
+			List<TestCaseDataType> testCaseList = new ArrayList<TestCaseDataType>();
+			if (!convertJSONFieldToModelObjectList(parsed, testCaseList, testCaseFactory, ITestCaseData.SCHEMA)) {
+				throw new IOException("No test case list!");
+			}
+			for (TestCaseDataType testCase : testCaseList) {
 				obj.addTestCase(testCase);
 			}
 		} catch (ParseException e) {
 			throw new IOException("Invalid JSON input", e);
 		}
+	}
+	
+	/**
+	 * Convert a field of a JSON object to a model object.
+	 * 
+	 * @param jsonObj_  the JSON object
+	 * @param modelObj  the model object to populate from the JSON object's field
+	 * @param schema    the model object's schema
+	 * @return true if the conversion was successful, false if there was no such field
+	 * @throws IOException
+	 */
+	public static<E> boolean convertJSONFieldToModelObject(Object jsonObj_, E modelObj, ModelObjectSchema<E> schema)
+			throws IOException {
+		if (!(jsonObj_ instanceof Map)) {
+			throw new IOException("Expecting JSON object");
+		}
+		Map<?,?> jsonObj = (Map<?,?>) jsonObj_;
+		
+		Object value = jsonObj.get(schema.getName());
+		if (value == null) {
+			// No such field
+			return false;
+		}
+		
+		convertJSONToModelObject(value, modelObj, schema);
+		return true;
+	}
+	
+	/**
+	 * Convert a field of a JSON object to a list of model objects.
+	 * The value of the JSON object's field must be an array.
+	 * 
+	 * @param jsonObj_         the JSON object
+	 * @param modelObjList     the list to which the converted model objects should be added
+	 * @param modelObjFactory  factory for creating model objects
+	 * @param schema           the model objects' schema
+	 * @return true if the conversion succeeds, false if there is no such array of model objects
+	 *              in the JSON object
+	 * @throws IOException
+	 */
+	public static<E> boolean convertJSONFieldToModelObjectList(
+			Object jsonObj_,
+			List<E> modelObjList,
+			IFactory<E> modelObjFactory,
+			ModelObjectSchema<? super E> schema) throws IOException {
+		if (!(jsonObj_ instanceof Map)) {
+			throw new IOException("Expecting JSON object");
+		}
+		Map<?,?> jsonObj = (Map<?,?>) jsonObj_;
+		
+		Object value = jsonObj.get(schema.getListElementName());
+		if (value == null) {
+			// No such field
+			return false;
+		}
+		
+		if (!(value instanceof JSONArray)) {
+			throw new IOException("Expecting JSON array for value of " + schema.getListElementName() + " field");
+		}
+		
+		JSONArray array = (JSONArray) value;
+		Iterator<?> i = array.iterator();
+		while (i.hasNext()) {
+			E modelObj = modelObjFactory.create();
+			convertJSONToModelObject(i.next(), modelObj, schema);
+			modelObjList.add(modelObj);
+		}
+		
+		return true;
 	}
 	
 	/**
