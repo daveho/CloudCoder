@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.slf4j.Logger;
@@ -166,11 +167,11 @@ public class DBUtil {
 		sql.append(schema.getDbTableName());
 		sql.append("` (");
 		
-		int count = 0;
+		int createDefinitionCount = 0;
 		
-		// Field descriptors
+		// Columns
 		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-			if (count > 0) {
+			if (createDefinitionCount > 0) {
 				sql.append(",");
 			}
 			sql.append("\n  `");
@@ -184,7 +185,7 @@ public class DBUtil {
 				sql.append(" AUTO_INCREMENT");
 			}
 			
-			count++;
+			createDefinitionCount++;
 		}
 		
 		// Keys
@@ -192,34 +193,75 @@ public class DBUtil {
 			if (field.getIndexType() == ModelObjectIndexType.NONE) {
 				continue;
 			}
+			String keyType = getKeyType(field.getIndexType());
 			
-			if (count > 0) {
+			if (createDefinitionCount > 0) {
 				sql.append(",");
 			}
 			sql.append("\n  ");
-			
+
 			switch (field.getIndexType()) {
 			case IDENTITY:
-				sql.append("PRIMARY KEY (`");
+				sql.append(keyType + " KEY (`");
 				sql.append(field.getName());
 				sql.append("`)");
 				break;
 				
 			case UNIQUE:
 			case NON_UNIQUE:
-				sql.append(field.getIndexType() == ModelObjectIndexType.UNIQUE ? "UNIQUE " : "");
-				sql.append("KEY `");
+				sql.append(keyType + " KEY `");
 				sql.append(field.getName());
 				sql.append("` (`");
 				sql.append(field.getName());
 				sql.append("`)");
 				break;
 			}
+			
+			createDefinitionCount++;
+		}
+		
+		// Indices
+		int indexCount = 0;
+		for (ModelObjectIndex<E> index : schema.getIndexList()) {
+			String indexName = schema.getName() + "_idx_" + (indexCount++);
+
+			String keyType = getKeyType(index.getIndexType());
+			
+			if (createDefinitionCount > 0) {
+				sql.append(",");
+			}
+			sql.append("\n  ");
+			
+			sql.append(keyType + " INDEX ");
+			sql.append(indexName);
+			sql.append(" (");
+			int fieldCount = 0;
+			for (ModelObjectField<? super E, ?> field : index.getFieldList()) {
+				if (fieldCount > 0) {
+					sql.append(", ");
+				}
+				sql.append(field.getName());
+				fieldCount++;
+			}
+			sql.append(")");
+			
+			createDefinitionCount++;
 		}
 		
 		sql.append("\n) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 		
 		return sql.toString();
+	}
+
+	private static String getKeyType(ModelObjectIndexType indexType) {
+		switch (indexType) {
+		case NONE: throw new IllegalArgumentException();
+		case NON_UNIQUE: return "";
+		case UNIQUE: return "UNIQUE";
+		case IDENTITY: return "PRIMARY";
+		default:
+			throw new IllegalArgumentException("Unknown index type " + indexType);
+		}
 	}
 
 	private static Object getSQLDatatype(ModelObjectField<?,?> field) {

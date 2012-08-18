@@ -46,7 +46,15 @@ public class RepoProblemTag {
 	public static final ModelObjectSchema<RepoProblemTag> SCHEMA = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)
-			.add(NAME);
+			.add(NAME)
+			// Add a unique index on all three fields:
+			// this ensures that a user can add a particular tag to a repo problem
+			// only once.
+			.addIndex(new ModelObjectIndex<RepoProblemTag>(ModelObjectIndexType.UNIQUE)
+					.addField(USER_ID)
+					.addField(REPO_PROBLEM_ID)
+					.addField(NAME)
+					);
 	
 	/**
 	 * Constructor.

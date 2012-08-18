@@ -32,6 +32,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	private final String name;
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
+	private final List<ModelObjectIndex<ModelObjectType>> indexList;
 
 	/**
 	 * Constructor.
@@ -43,6 +44,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		this.name = name;
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
+		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
 	}
 	
 	/**
@@ -100,6 +102,19 @@ public class ModelObjectSchema<ModelObjectType> {
 		}
 		return this;
 	}
+	
+	/**
+	 * Add a {@link ModelObjectIndex} to the schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param index the index to add
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> addIndex(ModelObjectIndex<ModelObjectType> index) {
+		indexList.add(index);
+		return this;
+	}
 
 	/**
 	 * Get a field descriptor.
@@ -137,6 +152,14 @@ public class ModelObjectSchema<ModelObjectType> {
 	 */
 	public List<ModelObjectField<? super ModelObjectType, ?>> getFieldList() {
 		return fieldList;
+	}
+	
+	/**
+	 * Get list of indices.
+	 * @return the list of indices
+	 */
+	public List<ModelObjectIndex<ModelObjectType>> getIndexList() {
+		return indexList;
 	}
 
 	/**
