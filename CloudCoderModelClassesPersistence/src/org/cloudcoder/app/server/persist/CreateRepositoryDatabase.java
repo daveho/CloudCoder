@@ -25,6 +25,7 @@ import java.util.Scanner;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 
@@ -69,6 +70,7 @@ public class CreateRepositoryDatabase {
 		createTable(conn, User.SCHEMA);
 		createTable(conn, RepoProblem.SCHEMA);
 		createTable(conn, RepoTestCase.SCHEMA);
+		createTable(conn, RepoProblemTag.SCHEMA);
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
