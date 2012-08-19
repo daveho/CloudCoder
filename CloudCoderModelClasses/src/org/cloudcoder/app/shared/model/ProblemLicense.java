@@ -28,7 +28,8 @@ public enum ProblemLicense {
 	 */
 	NOT_REDISTRIBUTABLE(
 			"Not redistributable",
-			""),
+			"",
+			false),
 	
 	/**
 	 * Creative commons attrib/sharealike (copyleft).
