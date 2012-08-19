@@ -75,11 +75,17 @@ public class ShareProblemDialog extends DialogBox {
 		// TODO: UI for entering repository username and password
 		
 		this.shareButton = new Button("Share!");
+		this.shareButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				onClickShare();
+			}
+		});
 		this.cancelButton = new Button("Cancel");
 		this.cancelButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				// dismiss dialog
+				hide();
 			}
 		});
 		
@@ -95,5 +101,12 @@ public class ShareProblemDialog extends DialogBox {
 		licenseNameLabel.setText(license.getName());
 		licenseUrlLabel.setText(license.getUrl());
 	}
-	
+
+	/**
+	 * 
+	 */
+	protected void onClickShare() {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
@@ -162,10 +163,13 @@ public class CourseAdminPage extends CloudCoderPage {
 				handleEditProblem();
 				break;
 				
+			case SHARE:
+				new ShareProblemDialog().center();
+				break;
+				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
 			case QUIZ:
-			case SHARE:
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
