@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
@@ -101,4 +102,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
 			ProblemAndTestCaseList problemAndTestCaseList,
 			Course course) throws NetCoderAuthenticationException;
+	
+	/**
+	 * Submit an exercise (problem and testcases) to the exercise repository.
+	 * 
+	 * @param exercise the exercise to submit
+	 * @param repoUsername the repository username
+	 * @param repoPassword the repository password
+	 */
+	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
+		throws NetCoderAuthenticationException;
 }

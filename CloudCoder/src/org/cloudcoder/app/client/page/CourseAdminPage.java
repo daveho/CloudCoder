@@ -164,7 +164,7 @@ public class CourseAdminPage extends CloudCoderPage {
 				break;
 				
 			case SHARE:
-				new ShareProblemDialog().center();
+				doShareProblem();
 				break;
 				
 			case MAKE_VISIBLE:
@@ -173,6 +173,11 @@ public class CourseAdminPage extends CloudCoderPage {
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
+		}
+
+		private void doShareProblem() {
+			ShareProblemDialog shareProblemDialog = new ShareProblemDialog();
+			// TODO: get exercise
 		}
 
 		private void handleEditProblem() {

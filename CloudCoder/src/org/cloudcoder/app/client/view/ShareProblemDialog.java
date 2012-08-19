@@ -20,19 +20,28 @@ package org.cloudcoder.app.client.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.client.ui.TextBox;
 
 /**
+ * Dialog for sharing an exercise to the exercise repository.
+ * 
  * @author David Hovemeyer
  */
 public class ShareProblemDialog extends DialogBox {
@@ -42,11 +51,19 @@ public class ShareProblemDialog extends DialogBox {
 	private Label licenseUrlLabel;
 	private Button shareButton;
 	private Button cancelButton;
+	private TextBox repoUsernameTextBox;
+	private PasswordTextBox repoPasswordTextBox;
+	private Label errorLabel;
+	
+	private ProblemAndTestCaseList exercise;
+	
+	private OperationResult result;
 	
 	public ShareProblemDialog() {
 		FlowPanel panel = new FlowPanel();
 		
-		panel.add(new Label("Choose a license, then click Share to upload this exercise to the exercise repository"));
+		panel.add(new Label("Choose a license and enter your exercise repository username and password." +
+				"Then, click Share to upload this exercise to the exercise repository."));
 
 		this.indexToLicenseMap = new HashMap<Integer, ProblemLicense>();
 		this.licenseListBox = new ListBox();
@@ -73,6 +90,16 @@ public class ShareProblemDialog extends DialogBox {
 		panel.add(licenseUrlLabel);
 		
 		// TODO: UI for entering repository username and password
+		panel.add(new InlineLabel("Repository username:"));
+		this.repoUsernameTextBox = new TextBox();
+		panel.add(repoUsernameTextBox);
+		
+		panel.add(new InlineLabel("Repository password:"));
+		this.repoPasswordTextBox = new PasswordTextBox();
+		panel.add(repoPasswordTextBox);
+		
+		this.errorLabel = new Label("");
+		panel.add(errorLabel);
 		
 		this.shareButton = new Button("Share!");
 		this.shareButton.addClickHandler(new ClickHandler() {
@@ -94,6 +121,13 @@ public class ShareProblemDialog extends DialogBox {
 		
 		add(panel);
 	}
+	
+	/**
+	 * @param exercise the exercise to set
+	 */
+	public void setExercise(ProblemAndTestCaseList exercise) {
+		this.exercise = exercise;
+	}
 
 	protected void onLicenseChange() {
 		int selIndex = licenseListBox.getSelectedIndex();
@@ -102,11 +136,28 @@ public class ShareProblemDialog extends DialogBox {
 		licenseUrlLabel.setText(license.getUrl());
 	}
 
-	/**
-	 * 
-	 */
 	protected void onClickShare() {
-		// TODO Auto-generated method stub
+		String repoUsername = repoUsernameTextBox.getText();
+		String repoPassword = repoPasswordTextBox.getText();
 		
+		// Make sure that the repository username and password were entered correctly.
+		if (repoUsername.equals("") || repoPassword.equals("")) {
+			errorLabel.setText("Please enter your repository username and password");
+			return;
+		}
+		
+		RPC.getCoursesAndProblemsService.submitExercise(exercise, repoUsername, repoPassword, new AsyncCallback<OperationResult>() {
+			@Override
+			public void onSuccess(OperationResult result_) {
+				result = result_;
+				hide();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				result = new OperationResult(false, caught.getMessage());
+				hide();
+			}
+		});
 	}
 }
