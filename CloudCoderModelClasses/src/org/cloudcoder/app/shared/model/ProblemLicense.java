@@ -47,10 +47,16 @@ public enum ProblemLicense {
 	
 	private final String name;
 	private final String url;
+	private final boolean permissive;
 	
 	private ProblemLicense(String name, String url) {
+		this(name, url, true);
+	}
+	
+	private ProblemLicense(String name, String url, boolean permissive) {
 		this.name = name;
 		this.url = url;
+		this.permissive = permissive;
 	}
 	
 	/**
@@ -65,6 +71,14 @@ public enum ProblemLicense {
 	 */
 	public String getUrl() {
 		return url;
+	}
+
+	/**
+	 * @return true if this license is permissive (allows free redistribution),
+	 *         false if not
+	 */
+	public boolean isPermissive() {
+		return permissive;
 	}
 	
 	/**
