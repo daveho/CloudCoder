@@ -63,16 +63,16 @@ public class CreateWebappDatabase {
 
 	private static void createWebappDatabase() throws ClassNotFoundException,
 			FileNotFoundException, IOException, SQLException {
+		
+		System.out.println("Please enter some information needed to configure the Cloudcoder");
+		System.out.println("database.  (Hit enter to accept a default value, if there is one.)");
+		
 		Scanner keyboard = new Scanner(System.in);
 		
-		System.out.print("Enter a username for your CloudCoder account: ");
-		String ccUserName = keyboard.nextLine();
-		
-		System.out.print("Enter a password for your CloudCoder account: ");
-		String ccPassword = keyboard.nextLine();
-		
-		System.out.print("What is your institution name (e.g, 'Unseen University')? ");
-		String ccInstitutionName = keyboard.nextLine();
+		String ccUserName = ask(keyboard, "Enter a username for your CloudCoder account: ");
+		String ccPassword = ask(keyboard, "Enter a password for your CloudCoder account");
+		String ccInstitutionName = ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
+		String ccRepoUrl = ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
@@ -110,10 +110,8 @@ public class CreateWebappDatabase {
 		
 		// Set institution name (and any other configuration settings)
 		System.out.println("Adding configuration settings...");
-		ConfigurationSetting instName = new ConfigurationSetting();
-		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
-		instName.setValue(ccInstitutionName);
-		DBUtil.storeModelObject(conn, instName);
+		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_TEXT_INSTITUTION, ccInstitutionName);
+		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_REPOSITORY_URL, ccRepoUrl);
 		
 		// Terms
 		System.out.println("Creating terms...");
@@ -155,6 +153,20 @@ public class CreateWebappDatabase {
 		System.out.println("Success!");
 	}
 
+	private static String ask(Scanner keyboard, String prompt) {
+		return ask(keyboard, prompt, null);
+	}
+	
+	private static String ask(Scanner keyboard, String prompt, String defval) {
+		System.out.println(prompt);
+		System.out.print("[default: " + (defval != null ? defval : "") + "] ==> ");
+		String value = keyboard.nextLine();
+		if (value.trim().equals("") && defval != null) {
+			value = defval;
+		}
+		return value;
+	}
+	
 	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
 		System.out.println("Creating table " + schema.getDbTableName());
 		DBUtil.createTable(conn, schema);

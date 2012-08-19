@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
@@ -563,5 +565,22 @@ public class DBUtil {
 			value = (Integer) member.ordinal();
 		}
 		return value;
+	}
+
+	/**
+	 * Store a {@link ConfigurationSetting}.
+	 * 
+	 * @param conn            the connection to the database
+	 * @param configPropName  the {@link ConfigurationSettingName}
+	 * @param configPropValue the value of the configuration setting
+	 * @throws SQLException
+	 */
+	public static void storeConfigurationSetting(Connection conn,
+			ConfigurationSettingName configPropName, String configPropValue)
+			throws SQLException {
+		ConfigurationSetting instName = new ConfigurationSetting();
+		instName.setName(configPropName);
+		instName.setValue(configPropValue);
+		storeModelObject(conn, instName);
 	}
 }
