@@ -29,7 +29,7 @@ import java.util.Scanner;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.ReflectionFactory;
+import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.User;
 
@@ -44,7 +44,12 @@ public class CreateCourse {
 		System.out.println("Create a CloudCoder course");
 
 		// Get list of terms
-		List<Term> terms = DBUtil.getAllModelObjects(conn, Term.SCHEMA, ReflectionFactory.forClass(Term.class));
+		List<Term> terms = DBUtil.getAllModelObjects(conn, Term.SCHEMA, new IFactory<Term>() {
+			@Override
+			public Term create() {
+				return new Term();
+			}
+		});
 		
 		Term term = choose(keyboard, "What term?", terms);
 		int year = askInt(keyboard, "What year? ");

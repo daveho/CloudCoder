@@ -17,6 +17,8 @@
 
 package org.cloudcoder.webserver;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.jar.JarFile;
@@ -31,12 +33,15 @@ import org.cloudcoder.jetty.NestedJarClassLoader;
  */
 public class CloudCoderWebServer {
 	public static void main(String[] args) throws Exception {
-		// If the command is "createdb", then execute the CreateWebappDatabase
-		// program from the CloudCoderModelClasesPersistence library.
-		// Otherwise, use the CloudCoderDaemonController to handle the command.
 		if (args.length == 1 && args[0].equals("createdb")) {
-			createWebappDatabase();
+			// If the command is "createdb", then execute the CreateWebappDatabase
+			// program from the CloudCoderModelClasesPersistence library.
+			runMain("org.cloudcoder.app.server.persist.CreateWebappDatabase");
+		} else if (args.length == 1 && args[0].equals("createcourse")) {
+			// If command is "createcourse", run the CreateCourse program.
+			runMain("org.cloudcoder.app.server.persist.CreateCourse");
 		} else {
+			// Otherwise, use the CloudCoderDaemonController to handle the command.
 			// CloudCoderDaemonController handles requests to start/control/shutdown
 			// the webapp (and its web server).
 			CloudCoderDaemonController controller = new CloudCoderDaemonController();
@@ -44,16 +49,9 @@ public class CloudCoderWebServer {
 		}
 	}
 	
-	/**
-	 * Run the CreateWebappDatabase program by loading it with a classloader
-	 * that can load classes and resources from nested jarfiles.
-	 * This is kind of ugly, but single-jarfile deployment is a
-	 * beautiful thing, and this gives us the ability to run code
-	 * out of the web application nested in the deployable jarfile.
-	 * 
-	 * @throws Exception
-	 */
-	private static void createWebappDatabase() throws Exception {
+	private static void runMain(String mainClassName) throws IOException,
+			ClassNotFoundException, NoSuchMethodException,
+			IllegalAccessException, InvocationTargetException {
 		ProtectionDomain p = CloudCoderWebServer.class.getProtectionDomain();
 		String codeBase = p.getCodeSource().getLocation().toExternalForm();
 		
@@ -74,7 +72,7 @@ public class CloudCoderWebServer {
 			NestedJarClassLoader classLoader = new NestedJarClassLoader(jarFile, CloudCoderWebServer.class.getClassLoader());
 			
 			// Load and run CreateWebappDatabase's main via reflection.
-			Class<?> createWebappDatabase = classLoader.loadClass("org.cloudcoder.app.server.persist.CreateWebappDatabase");
+			Class<?> createWebappDatabase = classLoader.loadClass(mainClassName);
 			Method main = createWebappDatabase.getMethod("main", new Class<?>[]{String[].class});
 			main.invoke(null, new Object[]{new String[0]});
 		} finally {
