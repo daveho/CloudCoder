@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -643,6 +645,54 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	public void insertUsersFromInputStream(final InputStream in, final Course course) {
+	    try {
+	    databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
+
+            @Override
+            public Boolean run(Connection conn) throws SQLException,NetCoderAuthenticationException
+            {
+                doInsertUsersFromInputStream(in, course, conn);
+                return true;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Inserting users into course "+course.getName();
+            }
+	        
+        });
+	    } catch (NetCoderAuthenticationException e) {
+	        // TODO proper error handling
+	        throw new RuntimeException(e);
+	    }
+	}
+	
+	private void doInsertUsersFromInputStream(InputStream in, Course course, Connection conn)
+	throws SQLException
+	{
+	    conn.setAutoCommit(false);
+	    // Assuming that the users are in the following format:
+	    // firstname   lastname    username    password    email
+        //TODO: CreateWebApp should prompt for firstname/lastname/email as well
+	    //TODO: Add first/last/email to the User record
+	    Scanner scan=new Scanner(in);
+	    PreparedStatement stmt=conn.prepareStatement("insert into " +USERS+
+                " (username, password_hash) values (?, ?)");
+	    
+	    while (scan.hasNextLine()) {
+	        String line=scan.nextLine();
+	        String[] tokens=line.split("\t");
+	        String username=tokens[2];
+	        String password=tokens[3];
+	        stmt.setString(1, username);
+	        stmt.setString(2, password);
+	        stmt.addBatch();
+	    }
+	    stmt.execute();
+	    conn.commit();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.server.persist.IDatabase#addSubmissionReceiptIfNecessary(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Problem)

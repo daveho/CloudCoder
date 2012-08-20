@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Change;
@@ -134,6 +135,8 @@ public interface IDatabase {
 	public void addProblem(Problem problem);
 	public void addTestCases(Problem problem, List<TestCase> testCaseList);
 
+	public void insertUsersFromInputStream(InputStream in, Course course);
+	
 	/**
 	 * Create a {@link ProblemSummary} describing the submissions for
 	 * the given {@link Problem}.
