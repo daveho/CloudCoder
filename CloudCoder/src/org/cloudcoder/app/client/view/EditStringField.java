@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -29,7 +31,7 @@ import com.google.gwt.user.client.ui.TextBox;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditStringField<ModelObjectType> extends EditModelObjectField<ModelObjectType, String> {
+public class EditStringField<ModelObjectType> extends EditModelObjectField<ModelObjectType, String> {
 	
 	public static final double HEIGHT_PX = 32.0;
 
@@ -68,9 +70,10 @@ public abstract class EditStringField<ModelObjectType> extends EditModelObjectFi
 	 * Constructor.
 	 * 
 	 * @param desc the description that should be used to label the UI widget
+	 * @param field the {@link ModelObjectField} being edited
 	 */
-	public EditStringField(String desc) {
-		super(desc);
+	public EditStringField(String desc, ModelObjectField<? super ModelObjectType, String> field) {
+		super(desc, field);
 		ui = new UI();
 	}
 	

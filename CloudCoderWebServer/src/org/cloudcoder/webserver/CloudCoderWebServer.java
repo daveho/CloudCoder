@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.jar.JarFile;
 
+import org.cloudcoder.jetty.NestedJarClassLoader;
+
 /**
  * Main entry point for the self-contained single-jar-file
  * deployment for the CloudCoder web application.

@@ -17,12 +17,24 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.slf4j.Logger;
@@ -72,7 +84,7 @@ public class DBUtil {
 	 * @param schema the schema for the object being inserted
 	 * @return placeholders for an insert statement
 	 */
-	public static String getInsertPlaceholders(ModelObjectSchema schema) {
+	public static String getInsertPlaceholders(ModelObjectSchema<?> schema) {
 		StringBuilder buf = new StringBuilder();
 		
 		for (int i = 0; i < schema.getNumFields(); i++) {
@@ -94,10 +106,10 @@ public class DBUtil {
 	 * @param schema the schema of a model object
 	 * @return insert placeholders for all fields except the unique id
 	 */
-	public static String getInsertPlaceholdersNoId(ModelObjectSchema schema) {
+	public static<E> String getInsertPlaceholdersNoId(ModelObjectSchema<E> schema) {
 		StringBuilder buf = new StringBuilder();
 		
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (buf.length() > 0) {
 				buf.append(", ");
 			}
@@ -113,7 +125,7 @@ public class DBUtil {
 	 * 
 	 * @return placeholders for an update statement where all fields will be updated
 	 */
-	public static String getUpdatePlaceholders(ModelObjectSchema schema) {
+	public static<E> String getUpdatePlaceholders(ModelObjectSchema<E> schema) {
 		return doGetUpdatePlaceholders(schema, true);
 	}
 	
@@ -124,14 +136,14 @@ public class DBUtil {
 	 * @return placeholders for an update statement where all fields except the
 	 *         unique id field will be update
 	 */
-	public static String getUpdatePlaceholdersNoId(ModelObjectSchema schema) {
+	public static<E> String getUpdatePlaceholdersNoId(ModelObjectSchema<E> schema) {
 		return doGetUpdatePlaceholders(schema, false);
 	}
 
-	private static String doGetUpdatePlaceholders(ModelObjectSchema schema, boolean includeUniqueId) {
+	private static<E> String doGetUpdatePlaceholders(ModelObjectSchema<E> schema, boolean includeUniqueId) {
 		StringBuilder buf = new StringBuilder();
 		
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (!field.isUniqueId() || includeUniqueId) {
 				if (buf.length() > 0) {
 					buf.append(", ");
@@ -145,24 +157,23 @@ public class DBUtil {
 	}
 	
 	/**
-	 * Get a CREATE TABLE statement for creating a table with the given schema and name.
+	 * Get a CREATE TABLE statement for creating a table with the given schema.
 	 * 
 	 * @param schema     the table's schema
-	 * @param tableName  the name of the table
 	 * @return the text of the CREATE TABLE statement
 	 */
-	public static String getCreateTableStatement(ModelObjectSchema schema, String tableName) {
+	public static<E> String getCreateTableStatement(ModelObjectSchema<E> schema) {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("CREATE TABLE `");
-		sql.append(tableName);
+		sql.append(schema.getDbTableName());
 		sql.append("` (");
 		
-		int count = 0;
+		int createDefinitionCount = 0;
 		
-		// Field descriptors
-		for (ModelObjectField field : schema.getFieldList()) {
-			if (count > 0) {
+		// Columns
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			if (createDefinitionCount > 0) {
 				sql.append(",");
 			}
 			sql.append("\n  `");
@@ -176,37 +187,67 @@ public class DBUtil {
 				sql.append(" AUTO_INCREMENT");
 			}
 			
-			count++;
+			createDefinitionCount++;
 		}
 		
 		// Keys
-		for (ModelObjectField field : schema.getFieldList()) {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (field.getIndexType() == ModelObjectIndexType.NONE) {
 				continue;
 			}
+			String keyType = getKeyType(field.getIndexType());
 			
-			if (count > 0) {
+			if (createDefinitionCount > 0) {
 				sql.append(",");
 			}
 			sql.append("\n  ");
-			
+
 			switch (field.getIndexType()) {
 			case IDENTITY:
-				sql.append("PRIMARY KEY (`");
+				sql.append(keyType + " KEY (`");
 				sql.append(field.getName());
 				sql.append("`)");
 				break;
 				
 			case UNIQUE:
 			case NON_UNIQUE:
-				sql.append(field.getIndexType() == ModelObjectIndexType.UNIQUE ? "UNIQUE " : "");
-				sql.append("KEY `");
+				sql.append(keyType + " KEY `");
 				sql.append(field.getName());
 				sql.append("` (`");
 				sql.append(field.getName());
 				sql.append("`)");
 				break;
 			}
+			
+			createDefinitionCount++;
+		}
+		
+		// Indices
+		int indexCount = 0;
+		for (ModelObjectIndex<E> index : schema.getIndexList()) {
+			String indexName = schema.getName() + "_idx_" + (indexCount++);
+
+			String keyType = getKeyType(index.getIndexType());
+			
+			if (createDefinitionCount > 0) {
+				sql.append(",");
+			}
+			sql.append("\n  ");
+			
+			sql.append(keyType + " INDEX ");
+			sql.append(indexName);
+			sql.append(" (");
+			int fieldCount = 0;
+			for (ModelObjectField<? super E, ?> field : index.getFieldList()) {
+				if (fieldCount > 0) {
+					sql.append(", ");
+				}
+				sql.append(field.getName());
+				fieldCount++;
+			}
+			sql.append(")");
+			
+			createDefinitionCount++;
 		}
 		
 		sql.append("\n) ENGINE=InnoDB DEFAULT CHARSET=utf8");
@@ -214,7 +255,18 @@ public class DBUtil {
 		return sql.toString();
 	}
 
-	private static Object getSQLDatatype(ModelObjectField field) {
+	private static String getKeyType(ModelObjectIndexType indexType) {
+		switch (indexType) {
+		case NONE: throw new IllegalArgumentException();
+		case NON_UNIQUE: return "";
+		case UNIQUE: return "UNIQUE";
+		case IDENTITY: return "PRIMARY";
+		default:
+			throw new IllegalArgumentException("Unknown index type " + indexType);
+		}
+	}
+
+	private static Object getSQLDatatype(ModelObjectField<?,?> field) {
 		if (field.getType() == String.class) {
 			// If the field length is Integer.MAX_VALUE, make it a text field.
 			// Otherwise, make it VARCHAR.
@@ -254,68 +306,347 @@ public class DBUtil {
 		}
 	}
 
-    // Use introspection to store an arbitrary bean in the database.
-    // Eventually we could use this sort of approach to replace much
-    // of our hand-written JDBC code, although I don't know how great
-    // and idea that would be (for example, it might not yield adequate
-    // performance.)  For just creating the database, it should be
-    // fine.
-    static void storeBean(Connection conn, Object bean, ModelObjectSchema schema, String tableName) throws SQLException {
-    	StringBuilder buf = new StringBuilder();
-    	
-    	buf.append("insert into " + tableName);
-    	buf.append(" values (");
-    	buf.append(getInsertPlaceholdersNoId(schema));
-    	buf.append(")");
-    	
-    	PreparedStatement stmt = null;
-    	ResultSet genKeys = null;
-    	
-    	try {
-    		stmt = conn.prepareStatement(buf.toString(), schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
-    		
-    		// Now for the magic: iterate through the schema fields
-    		// and bind the query parameters based on the bean properties.
-    		int index = 1;
-    		for (ModelObjectField field : schema.getFieldList()) {
-    			if (field.isUniqueId()) {
-    				continue;
-    			}
-    			try {
-    				Object value = BeanUtil.getProperty(bean, field.getPropertyName());
-    				if (value instanceof Enum) {
-    					// Enum values are converted to integers
-    					value = Integer.valueOf(((Enum<?>)value).ordinal());
-    				}
-    				stmt.setObject(index++, value);
-    			} catch (Exception e) {
-    				throw new SQLException(
-    						"Couldn't get property " + field.getPropertyName() +
-    						" of " + bean.getClass().getName() + " object");
-    			}
-    		}
-    		
-    		// Execute the insert
-    		stmt.executeUpdate();
-    		
-    		if (schema.hasUniqueId()) {
-    			genKeys = stmt.getGeneratedKeys();
-    			if (!genKeys.next()) {
-    				throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
-    			}
-    			int id = genKeys.getInt(1);
-    			
-    			// Set the unique id value in the bean
-    			try {
-    				BeanUtil.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    				throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
-    			}
-    		}
-    	} finally {
-    		closeQuietly(genKeys);
-    		closeQuietly(stmt);
-    	}
-    }
+
+//    // Use introspection to store an arbitrary bean in the database.
+//    // Eventually we could use this sort of approach to replace much
+//    // of our hand-written JDBC code, although I don't know how great
+//    // and idea that would be (for example, it might not yield adequate
+//    // performance.)  For just creating the database, it should be
+//    // fine.
+//    static void storeBean(Connection conn, Object bean, ModelObjectSchema schema, String tableName) throws SQLException {
+//    	StringBuilder buf = new StringBuilder();
+//    	
+//    	buf.append("insert into " + tableName);
+//    	buf.append(" values (");
+//    	buf.append(getInsertPlaceholdersNoId(schema));
+//    	buf.append(")");
+//    	
+//    	PreparedStatement stmt = null;
+//    	ResultSet genKeys = null;
+//    	
+//    	try {
+//    		stmt = conn.prepareStatement(buf.toString(), schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+//    		
+//    		// Now for the magic: iterate through the schema fields
+//    		// and bind the query parameters based on the bean properties.
+//    		int index = 1;
+//    		for (ModelObjectField field : schema.getFieldList()) {
+//    			if (field.isUniqueId()) {
+//    				continue;
+//    			}
+//    			try {
+//    				Object value = BeanUtil.getProperty(bean, field.getPropertyName());
+//    				if (value instanceof Enum) {
+//    					// Enum values are converted to integers
+//    					value = Integer.valueOf(((Enum<?>)value).ordinal());
+//    				}
+//    				stmt.setObject(index++, value);
+//    			} catch (Exception e) {
+//    				throw new SQLException(
+//    						"Couldn't get property " + field.getPropertyName() +
+//    						" of " + bean.getClass().getName() + " object");
+//    			}
+//    		}
+//    		
+//    		// Execute the insert
+//    		stmt.executeUpdate();
+//    		
+//    		if (schema.hasUniqueId()) {
+//    			genKeys = stmt.getGeneratedKeys();
+//    			if (!genKeys.next()) {
+//    				throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
+//    			}
+//    			int id = genKeys.getInt(1);
+//    			
+//    			// Set the unique id value in the bean
+//    			try {
+//    				BeanUtil.setProperty(bean, schema.getUniqueIdField().getPropertyName(), id);
+//    			} catch (Exception e) {
+//    				e.printStackTrace();
+//    				throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
+//    			}
+//    		}
+//    	} finally {
+//    		closeQuietly(genKeys);
+//    		closeQuietly(stmt);
+//    	}
+//    }
+
+	/**
+	 * Connect to the database server without connecting to a specific
+	 * database on that server.
+	 * 
+	 * @param configProperties CloudCoder configuration properties
+	 * @param prefix           the prefix for database-related configuration properties (e.g., "cloudcoder.db")
+	 * @return the Connection to the database server
+	 * @throws SQLException 
+	 */
+	public static Connection connectToDatabaseServer(Properties config, String prefix) throws SQLException {
+		return doConnectToDatabaseServer(config, prefix, "");
+	}
+
+	/**
+	 * Connect to the CloudCoder database.
+	 * 
+	 * @param config the CloudCoder configuration properties
+	 * @param prefix           the prefix for database-related configuration properties (e.g., "cloudcoder.db")
+	 * @return the Connection to the CloudCoder database
+	 * @throws SQLException 
+	 */
+	public static Connection connectToDatabase(Properties config, String prefix) throws SQLException {
+		return doConnectToDatabaseServer(config, prefix, getProp(config, prefix + ".databaseName"));
+	}
+
+	private static Connection doConnectToDatabaseServer(Properties config, String prefix, String databaseName) throws SQLException {
+		String dbUser = getProp(config, prefix + ".user");
+		String dbPasswd = getProp(config, prefix + ".passwd");
+		String dbHost = getProp(config, prefix + ".host");
+
+		String portStr = "";
+		if (config.getProperty(prefix + ".portStr") != null) {
+			portStr = config.getProperty(prefix + ".portStr");
+		}
+
+		String url="jdbc:mysql://" + dbHost + portStr+ "/" + databaseName + "?user=" + dbUser + "&password=" + dbPasswd;
+		return DriverManager.getConnection(url);
+	}
+	
+	private static String getProp(Properties properties, String propName) {
+		String value = properties.getProperty(propName);
+		if (value == null) {
+			throw new IllegalArgumentException("configuration property " + propName + " is not defined");
+		}
+		return value;
+	}
+
+	/**
+	 * Create a database table.
+	 * 
+	 * @param conn       the Connection to the database
+	 * @param schema     the {@link ModelObjectSchema} describing the type of object to be stored in the table
+	 * @throws SQLException
+	 */
+	public static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
+		String sql = getCreateTableStatement(schema);
+		execSql(conn, sql);
+	}
+
+	/**
+	 * Store an arbitrary model object in the database.
+	 * 
+	 * @param conn      the Connection to the database
+	 * @param bean      the bean (model object) to store in the database
+	 */
+	public static<E extends IModelObject<E>> void storeModelObject(Connection conn, E bean) throws SQLException {
+		ModelObjectSchema<E> schema = bean.getSchema();
+		
+		String insertSql = createInsertStatement(schema);
+		
+		PreparedStatement stmt = null;
+		ResultSet genKeys = null;
+		
+		try {
+			stmt = conn.prepareStatement(insertSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+			
+			// Bind model object field values
+			bindModelObjectValuesForInsert(bean, schema, stmt);
+			
+			// Execute the insert
+			stmt.executeUpdate();
+			
+			// Store back the unique id to the model object
+			if (schema.hasUniqueId()) {
+				genKeys = stmt.getGeneratedKeys();
+				List<E> beans = new ArrayList<E>();
+				beans.add(bean);
+				getModelObjectUniqueIds(beans, schema, genKeys);
+			}
+		} finally {
+			closeQuietly(genKeys);
+			closeQuietly(stmt);
+		}
+	}
+
+	/**
+	 * Get the generated unique id(s) resulting from an insert statement,
+	 * storing them in one or more model objects.
+	 * 
+	 * @param beans   the model object(s) whose unique ids should be set
+	 * @param schema  the model objects' schema
+	 * @param genKeys the {@link ResultSet} with the generated unique ids
+	 * @throws SQLException
+	 */
+	public static <E> void getModelObjectUniqueIds(List<E> beans, ModelObjectSchema<E> schema, ResultSet genKeys)
+			throws SQLException {
+		for (E bean : beans) {
+			if (!genKeys.next()) {
+				throw new SQLException("Couldn't get generated id for " + bean.getClass().getName()); 
+			}
+			int id = genKeys.getInt(1);
+			
+			// Set the unique id value in the bean
+			try {
+				schema.getUniqueIdField().setUntyped(bean, (Integer)id);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new SQLException("Couldn't set generated unique id for " + bean.getClass().getName(), e);
+			}
+		}
+	}
+
+	/**
+	 * Bind all of the field values in given model object to the given
+	 * {@link PreparedStatement}, which should be an insert statement prepared
+	 * from the SQL returned by {@link #createInsertStatement(ModelObjectSchema)}.
+	 * 
+	 * @param bean    the model object
+	 * @param schema  the model object's schema
+	 * @param stmt    the {@link PreparedStatement}
+	 * @throws SQLException
+	 */
+	public static <E> void bindModelObjectValuesForInsert(E bean, ModelObjectSchema<E> schema, PreparedStatement stmt)
+			throws SQLException {
+		// Now for the magic: iterate through the schema fields
+		// and bind the query parameters based on the bean properties.
+		int index = 1;
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			if (field.isUniqueId()) {
+				continue;
+			}
+			Object value = field.get(bean);
+			if (value instanceof Enum) {
+				// Enum values are converted to integers
+				value = Integer.valueOf(((Enum<?>)value).ordinal());
+			}
+			stmt.setObject(index++, value);
+		}
+	}
+
+	/**
+	 * Create an SQL statement for inserting a model object.
+	 * The SQL statement will have placeholders for every model object
+	 * field except for the unique id (if any).
+	 *  
+	 * @param schema the model object schema
+	 * @return the SQL insert statement
+	 */
+	public static <E> String createInsertStatement(ModelObjectSchema<E> schema) {
+		StringBuilder buf = new StringBuilder();
+		
+		buf.append("insert into " + schema.getDbTableName());
+		buf.append(" values (");
+		buf.append(getInsertPlaceholdersNoId(schema));
+		buf.append(")");
+		String insertSql = buf.toString();
+		return insertSql;
+	}
+
+	/**
+	 * Attempt to load the CloudCoder configuration properties;
+	 * either from an embedded "cloudcoder.properties" resource
+	 * (which would be the case in production) or from the filesystem
+	 * (for development).
+	 * 
+	 * @return the CloudCoder configuration properties
+	 * @throws IOException
+	 */
+	public static Properties getConfigProperties() throws IOException {
+		Properties properties = new Properties();
+	
+		// See if we can load "cloudcoder.properties" as an embedded resource.
+		URL u = CreateWebappDatabase.class.getClassLoader().getResource("cloudcoder.properties");
+		if (u != null) {
+			InputStream in = u.openStream();
+			try {
+				properties.load(in);
+			} finally {
+				in.close();
+			}
+		} else {
+			System.out.println("Warning: loading cloudcoder.properties from filesystem");
+			properties.load(new FileReader("../cloudcoder.properties"));
+		}
+		
+		return properties;
+	}
+
+	/**
+	 * Create a database.
+	 * 
+	 * @param conn    Connection to the database server
+	 * @param dbName  name of the database to create
+	 * @throws SQLException
+	 */
+	public static void createDatabase(Connection conn, String dbName) throws SQLException {
+		execSql(
+				conn,
+				"create database " + dbName +
+				" character set 'utf8' " +
+				" collate 'utf8_general_ci' ");
+	}
+
+	/**
+	 * Convert given value to given type.
+	 * We use this to massage values returned by JDBC so that they
+	 * are correct for storing in a model object field.
+	 * 
+	 * @param value the value to convert
+	 * @param type  the type to convert the value to
+	 * @return the converted value
+	 */
+	public static Object convertValue(Object value, Class<?> type) {
+		// Easy case: value is correct type already
+		if (value.getClass() == type) {
+			return value;
+		}
+		
+		if (type.isEnum()) {
+			// value must be an Integer
+			return type.getEnumConstants()[(Integer)value];
+		} else if (type == Boolean.class) {
+			// value must be some kind of integer
+			if (value instanceof Number) {
+				Number n = (Number) value;
+				return n.intValue() == 0 ? Boolean.FALSE : Boolean.TRUE;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unsupported conversion from " + value.getClass().getName() + " to " + type.getName());
+	}
+
+	/**
+	 * Convert a model object field value so it is suitable for storing
+	 * in the database.  The main issue that is addressed here is
+	 * converting enum values to their ordinal integer values (which is how
+	 * they're stored in the database.)
+	 * 
+	 * @param value a model object field value
+	 * @return value suitable for storing in the database
+	 */
+	public static Object convertValueToStore(Object value) {
+		if (value instanceof Enum) {
+			// Special case: convert enum values to their ordinal integer values
+			Enum<?> member = (Enum<?>) value;
+			//System.out.println("Converting enum value " + value + " to integer " + ((Integer)member.ordinal()));
+			value = (Integer) member.ordinal();
+		}
+		return value;
+	}
+
+	/**
+	 * Store a {@link ConfigurationSetting}.
+	 * 
+	 * @param conn            the connection to the database
+	 * @param configPropName  the {@link ConfigurationSettingName}
+	 * @param configPropValue the value of the configuration setting
+	 * @throws SQLException
+	 */
+	public static void storeConfigurationSetting(Connection conn,
+			ConfigurationSettingName configPropName, String configPropValue)
+			throws SQLException {
+		ConfigurationSetting instName = new ConfigurationSetting();
+		instName.setName(configPropName);
+		instName.setValue(configPropValue);
+		storeModelObject(conn, instName);
+	}
 }

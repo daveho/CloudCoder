@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * A TestCase for a {@link Problem}.
@@ -27,40 +26,71 @@ import java.util.Arrays;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase extends TestCaseData implements Serializable {
+public class TestCase extends TestCaseData implements Serializable, ITestCase, IModelObject<TestCase> {
 	private static final long serialVersionUID = 1L;
 
 	private int testCaseId;
 	private int problemId;
 	
+	/** {@link ModelObjectField} for test case id. */
+	public static final ModelObjectField<TestCase, Integer> TEST_CASE_ID =
+			new ModelObjectField<TestCase, Integer>("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(TestCase obj, Integer value) { obj.setTestCaseId(value); }
+		public Integer get(TestCase obj) { return obj.getTestCaseId(); }
+	};
+	/** {@link ModelObjectField} for problem id. */
+	public static final ModelObjectField<TestCase, Integer> PROBLEM_ID =
+			new ModelObjectField<TestCase, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+		public void set(TestCase obj, Integer value) { obj.setProblemId(value); }
+		public Integer get(TestCase obj) { return obj.getProblemId(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(ModelObjectUtil.combineLists(
-			Arrays.asList(
-					new ModelObjectField("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-					new ModelObjectField("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE)
-			),
-			TestCaseData.SCHEMA.getFieldList()
-	));
+	public static final ModelObjectSchema<TestCase> SCHEMA = new ModelObjectSchema<TestCase>("test_case")
+		.add(TEST_CASE_ID)
+		.add(PROBLEM_ID)
+		.addAll(ITestCaseData.SCHEMA.getFieldList());
 	
 	
 	public TestCase() {
 		
 	}
 	
+	@Override
+	public ModelObjectSchema<TestCase> getSchema() {
+		return SCHEMA;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setTestCaseId(int)
+	 */
+	@Override
 	public void setTestCaseId(int id) {
 		this.testCaseId = id;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getTestCaseId()
+	 */
+	@Override
 	public int getTestCaseId() {
 		return testCaseId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setProblemId(int)
+	 */
+	@Override
 	public void setProblemId(int problemId) {
 		this.problemId = problemId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getProblemId()
+	 */
+	@Override
 	public int getProblemId() {
 		return problemId;
 	}

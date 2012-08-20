@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
@@ -30,7 +32,7 @@ import com.google.gwt.user.client.ui.ListBox;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumType>>
+public class EditEnumField<ModelObjectType, EnumType extends Enum<EnumType>>
 		extends EditModelObjectField<ModelObjectType, EnumType> {
 	
 	private class UI extends Composite {
@@ -88,8 +90,15 @@ public abstract class EditEnumField<ModelObjectType, EnumType extends Enum<EnumT
 	private Class<EnumType> enumCls;
 	private UI ui;
 	
-	public EditEnumField(String desc, Class<EnumType> enumCls) {
-		super(desc);
+	/**
+	 * Constructor.
+	 * 
+	 * @param desc    human-readable description of the field being edited
+	 * @param enumCls the field type class object
+	 * @param field   the {@link ModelObjectField} being edited
+	 */
+	public EditEnumField(String desc, Class<EnumType> enumCls, ModelObjectField<? super ModelObjectType, EnumType> field) {
+		super(desc, field);
 		this.enumCls = enumCls;
 		this.ui = new UI();
 	}

@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -196,4 +197,20 @@ public interface IDatabase {
 	 */
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
 		throws NetCoderAuthenticationException;
+
+	/**
+	 * Get a {@link RepoProblemAndTestCaseList} from the database.
+	 * 
+	 * @param hash the hash of the problem and its associated test cases
+	 * @return the {@link RepoProblemAndTestCaseList}, or null if no such object exists in the database
+	 */
+	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(String hash);
+
+	/**
+	 * Store a {@link RepoProblemAndTestCaseList} in the database.
+	 * 
+	 * @param exercise the {@link RepoProblemAndTestCaseList} to store
+	 * @param user     the {@link User} who is importing the problem into the database
+	 */
+	public void storeRepoProblemAndTestCaseList(RepoProblemAndTestCaseList exercise, User user);
 }

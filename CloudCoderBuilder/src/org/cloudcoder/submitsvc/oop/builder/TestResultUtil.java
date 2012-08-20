@@ -17,6 +17,7 @@
 
 package org.cloudcoder.submitsvc.oop.builder;
 
+import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -34,7 +35,7 @@ public class TestResultUtil {
 	 * @param testCase  the test case that was executed
 	 * @return the TestResult
 	 */
-	public static TestResult createTestResultForTimeout(ITestOutput p, TestCase testCase) {
+	public static TestResult createTestResultForTimeout(ITestOutput p, ITestCase testCase) {
 		TestResult testResult = new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
 		        "timeout",
 		        p.getStdout(),
@@ -104,7 +105,7 @@ public class TestResultUtil {
 	 * @param testCase  the TestCase
 	 * @return the TestResult
 	 */
-	public static TestResult createTestResultForInternalError(ProcessRunner p, TestCase testCase) {
+	public static TestResult createTestResultForInternalError(ProcessRunner p, ITestCase testCase) {
 		TestResult testResult = new TestResult(
 				TestOutcome.INTERNAL_ERROR,
 				"The test failed to execute",

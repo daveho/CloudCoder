@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -32,7 +34,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditStringFieldWithAceEditor<ModelObjectType>
+public class EditStringFieldWithAceEditor<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, String> {
 	
 	private class UI extends Composite {
@@ -98,8 +100,14 @@ public abstract class EditStringFieldWithAceEditor<ModelObjectType>
 	private AceEditorTheme editorTheme;
 	private UI ui;
 
-	public EditStringFieldWithAceEditor(String desc) {
-		super(desc);
+	/**
+	 * Constructor.
+	 * 
+	 * @param desc human-readable description of field being edited
+	 * @param field the {@link ModelObjectField} being edited
+	 */
+	public EditStringFieldWithAceEditor(String desc, ModelObjectField<? super ModelObjectType, String> field) {
+		super(desc, field);
 		this.ui = new UI();
 	}
 	

@@ -10,6 +10,20 @@ use FileHandle;
 my @propertyNames = ();
 my %properties = ();
 my %prior = ();
+my $configRepoWebapp = 0;
+
+if (scalar(@ARGV) >= 1) {
+	# If the "--repo" command-line argument is specified, then
+	# include configuration for the repository webapp (and its
+	# webserver).
+	my $arg = shift @ARGV;
+	if ($arg eq '--repo') {
+		$configRepoWebapp = 1;
+		print "Configuring for CloudCoder exercise repository\n\n";
+	} else {
+		die "Unknown option: $arg\n";
+	}
+}
 
 print "Welcome to the CloudCoder configuration script!\n";
 print "Please enter the information needed to configure CloudCoder for your system.\n";
@@ -35,7 +49,8 @@ if (-r "cloudcoder.properties") {
 askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
 	"gwt.sdk", undef);
 
-# Database configuration properties
+section("Database configuration properties");
+
 askprop("What MySQL username will the webapp use to connect to the database?",
 	"cloudcoder.db.user", undef);
 askprop("What MySQL password will the webapp use to connect to the database?",
@@ -48,7 +63,8 @@ askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for
 	"Just hit enter if MySQL is running on the standard port.",
 	"cloudcoder.db.portStr", undef);
 
-# Login service properties
+section("Login service properties");
+
 askprop("Which login service do you want to use (imap or database)?",
 	"cloudcoder.login.service", "database");
 if ($properties{"cloudcoder.login.service"} eq 'imap') {
@@ -56,7 +72,8 @@ if ($properties{"cloudcoder.login.service"} eq 'imap') {
 		"cloudcoder.login.host", undef);
 }
 
-# Builder properties
+section("Builder properties");
+
 askprop("What host will the CloudCoder webapp be running on?\n" .
 	"(This information is needed by the Builder so it knows how to connect\n" .
 	"to the webapp.)",
@@ -67,8 +84,8 @@ askprop("What port will the CloudCoder webapp use to listen for connections from
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
 
-# TSL/SSL keystore configuration
-# (for secure communication between builder and webapp)
+section("TLS/SSL (secure communication between webapp and builder(s)");
+
 askprop("What is the hostname of your institution?",
 	  "cloudcoder.submitsvc.ssl.cn", "None");
 askprop("What is the name of the keystore that will store your public/private keypair?\n" .
@@ -78,7 +95,8 @@ askprop("What is the keystore/key password?",
 	"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 
 
-# Web server properties
+section("Web server properties (webapp)");
+
 askprop("What port will the CloudCoder web server listen on?",
 	"cloudcoder.webserver.port", "8081");
 askprop("What context path should the webapp use?",
@@ -86,6 +104,32 @@ askprop("What context path should the webapp use?",
 askprop("Should the CloudCoder web server accept connections only from localhost?\n" .
 	"(Set this to 'true' if using a reverse proxy, which is recommended)",
 	"cloudcoder.webserver.localhostonly", "true");
+
+if ($configRepoWebapp) {
+	section("Database configuration (repository webapp)");
+
+	askprop("What MySQL username will the repository webapp use to connect to the database?",
+		"cloudcoder.repoapp.db.user", undef);
+	askprop("What MySQL password will the repository webapp use to connect to the database?",
+		"cloudcoder.repoapp.db.passwd", undef);
+	askprop("What MySQL database will contain the repository tables?",
+		"cloudcoder.repoapp.db.databaseName", "cloudcoderrepodb");
+	askprop("What host will the repository webapp connect to to access the MySQL database?",
+		"cloudcoder.repoapp.db.host", "localhost");
+	askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
+		"Just hit enter if MySQL is running on the standard port.",
+		"cloudcoder.repoapp.db.portStr", undef);
+
+	section("Webserver configuration (repository webapp");
+
+	askprop("What port will the exercise repository web server listen on?",
+		"cloudcoder.repoapp.webserver.port", "8082");
+	askprop("What context path should the exercise repository webapp use?",
+		"cloudcoder.repoapp.webserver.contextpath", "/repo");
+	askprop("Should the exercise repository web server accempt connections only from localhost?\n" .
+		"(Set this to 'true' if using a reverse proxy, which is recommended)",
+		"cloudcoder.repoapp.webserver.localhostonly", "true");
+}
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
 if ((lc $confirm) ne 'yes') {
@@ -110,6 +154,13 @@ if (! -e $properties{'cloudcoder.submitsvc.ssl.keystore'}) {
 		$properties{'cloudcoder.submitsvc.ssl.cn'});
 }
 
+sub section {
+	my ($name) = @_;
+	print "#" x 72, "\n";
+	print " >>> $name <<<\n";
+	print "#" x 72, "\n\n";
+}
+
 sub ask {
 	my ($question, $defval) = @_;
 
@@ -119,7 +170,7 @@ sub ask {
 	}
 	print "==> ";
 
-	my $value = <>;
+	my $value = <STDIN>;
 	chomp $value;
 
 	if ((defined $defval) && $value =~ /^\s*$/) {

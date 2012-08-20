@@ -1,0 +1,2 @@
+This project holds the log4j and slf4j jarfiles, to avoid
+duplicating them in every project.

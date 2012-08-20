@@ -40,15 +40,30 @@ public abstract class UsesDatabase {
 		}
 		JDBCDatabaseConfig.create(new JDBCDatabaseConfig.ConfigProperties() {
 			@Override
-			public String getDbConfigProperty(String name) {
-				String value = config.getProperty(name);
-				if (value == null) {
-					// java.util.Properties treats properties with an empty value
-					// as nonexistent, which is not what we want
-					value = "";
-				}
-				return value;
+			public String getUser() {
+				return config.getProperty("cloudcoder.db.user");
 			}
+
+			@Override
+			public String getPasswd() {
+				return config.getProperty("cloudcoder.db.passwd");
+			}
+
+			@Override
+			public String getDatabaseName() {
+				return config.getProperty("cloudcoder.db.databaseName");
+			}
+
+			@Override
+			public String getHost() {
+				return config.getProperty("cloudcoder.db.host");
+			}
+
+			@Override
+			public String getPortStr() {
+				return config.getProperty("cloudcoder.db.portStr");
+			}
+			
 		});
 	}
 

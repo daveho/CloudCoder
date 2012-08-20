@@ -40,18 +40,22 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
-import org.cloudcoder.app.shared.model.ProblemData;
-import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestCaseData;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
@@ -63,34 +67,22 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-	// Constants for table names
-	public static final String TEST_RESULTS = "cc_test_results";
-	public static final String TEST_CASES = "cc_test_cases";
-	public static final String SUBMISSION_RECEIPTS = "cc_submission_receipts";
-	public static final String TERMS = "cc_terms";
-	public static final String EVENTS = "cc_events";
-	public static final String CHANGES = "cc_changes";
-	public static final String COURSE_REGISTRATIONS = "cc_course_registrations";
-	public static final String COURSES = "cc_courses";
-	public static final String PROBLEMS = "cc_problems";
-	public static final String USERS = "cc_users";
-	public static final String CONFIGURATION_SETTINGS = "cc_configuration_settings";
-
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
-	
+
+    private static final String USERS = "cc_users";
+
 	private String jdbcUrl;
 	
 	public JDBCDatabase() {
-		JDBCDatabaseConfig config = JDBCDatabaseConfig.getInstance();
+		JDBCDatabaseConfig.ConfigProperties config = JDBCDatabaseConfig.getInstance().getConfigProperties();
 		jdbcUrl = "jdbc:mysql://" +
-				config.getDbHost() + config.getDbPortStr() +
+				config.getHost() + config.getPortStr() +
 				"/" +
-				config.getDbDatabaseName() +
+				config.getDatabaseName() +
 				"?user=" +
-				config.getDbUser() +
-				"&password=" + config.getDbPasswd();
+				config.getUser() +
+				"&password=" + config.getPasswd();
 		logger.info("Database URL: "+jdbcUrl);
-		//System.out.println("URL: " +jdbcUrl);
 	}
 	
 	static {
@@ -142,7 +134,7 @@ public class JDBCDatabase implements IDatabase {
 					throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select s.* from " + CONFIGURATION_SETTINGS + " as s where s.name = ?");
+						"select s.* from " + ConfigurationSetting.SCHEMA.getDbTableName() + " as s where s.name = ?");
 				stmt.setString(1, name.toString());
 				ResultSet resultSet = executeQuery(stmt);
 				if (!resultSet.next()) {
@@ -160,7 +152,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	private User getUser(Connection conn, String userName) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from "+USERS+" where username = ?");
+	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where username = ?");
         stmt.setString(1, userName);
         
         ResultSet resultSet = stmt.executeQuery();
@@ -225,7 +217,7 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
+						"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 						" where p.problem_id = ? " +
 						"   and c.id = p.course_id " +
 						"   and r.course_id = c.id " +
@@ -269,7 +261,7 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from " + PROBLEMS + " where problem_id = ?");
+						"select * from " + Problem.SCHEMA.getDbTableName() + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				ResultSet resultSet = executeQuery(stmt);
@@ -297,9 +289,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)"
@@ -329,9 +321,9 @@ public class JDBCDatabase implements IDatabase {
 			public Change run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + CHANGES + " as cc, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where cc.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ? " +
@@ -370,7 +362,7 @@ public class JDBCDatabase implements IDatabase {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select ch.*, e.* " +
-						"  from " + CHANGES + " as ch, " + EVENTS + " as e " +
+						"  from " + Change.SCHEMA.getDbTableName() + " as ch, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where e.id = ? and ch.event_id = e.id");
 				stmt.setInt(1, changeEventId);
 				
@@ -401,7 +393,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select c.* from " + CHANGES + " as c, " + EVENTS + " as e " +
+						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where c.event_id = e.id " +
 						"   and e.id > ? " +
 						"   and e.user_id = ? " +
@@ -481,7 +473,7 @@ public class JDBCDatabase implements IDatabase {
 				// access to.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + PROBLEMS + " as p, " + EVENTS + " as e, " + COURSE_REGISTRATIONS + " as cr " +
+						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Problem.SCHEMA.getDbTableName() + " as p, " + Event.SCHEMA.getDbTableName() + " as e, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
 						" where cr.user_id = ?" +
 						"   and cr.course_id = ? " +
 						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
@@ -535,7 +527,7 @@ public class JDBCDatabase implements IDatabase {
 				// Store Changes
 				PreparedStatement insertChange = prepareStatement(
 						conn,
-						"insert into " + CHANGES + " values (?, ?, ?, ?, ?, ?, ?, ?)"
+						"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
 				);
 				for (Change change : changeList) {
 					store(change, insertChange, 1);
@@ -559,7 +551,7 @@ public class JDBCDatabase implements IDatabase {
 			public List<TestCase> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select * from " + TEST_CASES + " where problem_id = ?");
+						"select * from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
 				stmt.setInt(1, problemId);
 				
 				List<TestCase> result = new ArrayList<TestCase>();
@@ -587,7 +579,7 @@ public class JDBCDatabase implements IDatabase {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select tc.* " +
-						"   from " + TEST_CASES + " as tc, " + PROBLEMS + " as p, " + COURSE_REGISTRATIONS + " as cr " +
+						"   from " + TestCase.SCHEMA.getDbTableName() + " as tc, " + Problem.SCHEMA.getDbTableName() + " as p, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
 						"  where tc.problem_id = p.problem_id " +
 						"    and p.problem_id = ? " +
 						"    and p.course_id =  cr.course_id " +
@@ -708,9 +700,9 @@ public class JDBCDatabase implements IDatabase {
 				// Get most recent submission receipt for user/problem
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from " + SUBMISSION_RECEIPTS + " as r, " + EVENTS + " as e " +
+						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where r.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + SUBMISSION_RECEIPTS + " as rr, " + EVENTS + " as ee " +
+						"   and e.id = (select max(ee.id) from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as rr, " + Event.SCHEMA.getDbTableName() + " as ee " +
 						"                where rr.event_id = ee.id " +
 						"                  and ee.problem_id = ? " +
 						"                  and ee.user_id = ?)");
@@ -802,7 +794,7 @@ public class JDBCDatabase implements IDatabase {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select sr.*, e.* " +
-						"  from " + SUBMISSION_RECEIPTS + " as sr, " + EVENTS + " as e " +
+						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where sr.event_id = e.id " +
 						"   and e.problem_id = ?");
 				stmt.setInt(1, problem.getProblemId());
@@ -876,8 +868,8 @@ public class JDBCDatabase implements IDatabase {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select sr.*, e.* " +
-						"  from " + SUBMISSION_RECEIPTS + " as sr, " +
-						"       " + EVENTS + " as e " +
+						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " +
+						"       " + Event.SCHEMA.getDbTableName() + " as e " +
 						" where sr.event_id = e.id " +
 						"   and e.event_id = ?");
 				stmt.setInt(1, submissionReceiptId);
@@ -914,7 +906,7 @@ public class JDBCDatabase implements IDatabase {
 				// Delete old test results (if any)
 				PreparedStatement delTestResults = prepareStatement(
 						conn,
-						"delete from " + TEST_RESULTS + " where submission_receipt_event_id = ?");
+						"delete from " + TestResult.SCHEMA.getDbTableName() + " where submission_receipt_event_id = ?");
 				delTestResults.setInt(1, submissionReceiptId);
 				delTestResults.executeUpdate();
 				
@@ -948,7 +940,7 @@ public class JDBCDatabase implements IDatabase {
 				// following a retest.
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"update " + SUBMISSION_RECEIPTS + 
+						"update " + SubmissionReceipt.SCHEMA.getDbTableName() + 
 						"  set status = ?, num_tests_attempted = ?, num_tests_passed = ?");
 				stmt.setInt(1, receipt.getStatus().ordinal());
 				stmt.setInt(2, receipt.getNumTestsAttempted());
@@ -1029,6 +1021,91 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(final String hash) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<RepoProblemAndTestCaseList>() {
+			@Override
+			public RepoProblemAndTestCaseList run(Connection conn) throws SQLException {
+				// Query to find the RepoProblem
+				PreparedStatement findRepoProblem = prepareStatement(
+						conn,
+						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
+						" where rp." + RepoProblem.HASH.getName() + " = ?");
+				findRepoProblem.setString(1, hash);
+				
+				ResultSet repoProblemRs = executeQuery(findRepoProblem);
+				if (!repoProblemRs.next()) {
+					return null;
+				}
+				
+				RepoProblem repoProblem = new RepoProblem();
+				load(repoProblem, repoProblemRs, 1);
+				
+				RepoProblemAndTestCaseList result = new RepoProblemAndTestCaseList();
+				result.setProblem(repoProblem);
+				
+				// Query to find all RepoTestCases associated with the RepoProblem
+				PreparedStatement findRepoTestCases = prepareStatement(
+						conn,
+						"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
+						" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
+				findRepoTestCases.setInt(1, repoProblem.getId());
+				
+				ResultSet repoTestCaseRs = executeQuery(findRepoTestCases);
+				while (repoTestCaseRs.next()) {
+					RepoTestCase repoTestCase = new RepoTestCase();
+					load(repoTestCase, repoTestCaseRs, 1);
+					result.addTestCase(repoTestCase);
+				}
+				
+				return result;
+			}
+
+			@Override
+			public String getDescription() {
+				return " retrieving problem and test cases from the repository";
+			}
+		});
+	}
+	
+	@Override
+	public void storeRepoProblemAndTestCaseList(final RepoProblemAndTestCaseList exercise, final User user) {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn)
+					throws SQLException {
+				// Compute hash
+				exercise.computeHash();
+				
+				// Set user id
+				exercise.getProblem().setUserId(user.getId());
+
+				// Store the RepoProblem
+				DBUtil.storeModelObject(conn, exercise.getProblem());
+				
+				// Insert RepoTestCases (setting repo problem id of each)
+				String insertRepoTestCaseSql = DBUtil.createInsertStatement(RepoTestCase.SCHEMA);
+				PreparedStatement stmt = prepareStatement(conn, insertRepoTestCaseSql, PreparedStatement.RETURN_GENERATED_KEYS);
+				for (RepoTestCase repoTestCase : exercise.getTestCaseData()) {
+					repoTestCase.setRepoProblemId(exercise.getProblem().getId());
+					DBUtil.bindModelObjectValuesForInsert(repoTestCase, RepoTestCase.SCHEMA, stmt);
+					stmt.addBatch();
+				}
+				stmt.executeBatch();
+
+				// Get generated unique ids of RepoTestCase objects
+				ResultSet genKeys = getGeneratedKeys(stmt);
+				DBUtil.getModelObjectUniqueIds(exercise.getTestCaseData(), RepoTestCase.SCHEMA, genKeys);
+				
+				return true;
+			}
+			@Override
+			public String getDescription() {
+				return " storing exercise in repository database";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
@@ -1100,7 +1177,7 @@ public class JDBCDatabase implements IDatabase {
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + EVENTS + " values (NULL, ?, ?, ?, ?)", 
+				"insert into " + Event.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS
 		);
 		for (IContainsEvent change : containsEventList) {
@@ -1141,7 +1218,7 @@ public class JDBCDatabase implements IDatabase {
 		// Insert the SubmissionReceipt
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + SUBMISSION_RECEIPTS + " values (?, ?, ?, ?, ?)",
+				"insert into " + SubmissionReceipt.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		store(receipt, stmt, 1);
@@ -1167,7 +1244,7 @@ public class JDBCDatabase implements IDatabase {
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + TEST_RESULTS + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TestResult.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		for (TestResult testResult : testResultList) {
@@ -1211,7 +1288,7 @@ public class JDBCDatabase implements IDatabase {
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select p.* from " + PROBLEMS + " as p, " + COURSES + " as c, " + COURSE_REGISTRATIONS + " as r " +
+				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where p.course_id = c.id " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
@@ -1253,7 +1330,7 @@ public class JDBCDatabase implements IDatabase {
 
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"select c.*, t.*, r.* from " + COURSES + " as c, " + TERMS + " as t, " + COURSE_REGISTRATIONS + " as r " +
+				"select c.*, t.*, r.* from " + Course.SCHEMA.getDbTableName() + " as c, " + Term.SCHEMA.getDbTableName() + " as t, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where c.id = r.course_id " + 
 				"   and c.term_id = t.id " +
 				"   and r.user_id = ? " +
@@ -1282,7 +1359,7 @@ public class JDBCDatabase implements IDatabase {
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"insert into " + PROBLEMS +
+				"insert into " + Problem.SCHEMA.getDbTableName() +
 				" values (" +
 				DBUtil.getInsertPlaceholdersNoId(Problem.SCHEMA) +
 				")",
@@ -1307,7 +1384,7 @@ public class JDBCDatabase implements IDatabase {
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"insert into " + TEST_CASES + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TestCase.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		
@@ -1339,7 +1416,7 @@ public class JDBCDatabase implements IDatabase {
 		
 		PreparedStatement update = databaseRunnable.prepareStatement(
 				conn,
-				"update " + PROBLEMS +
+				"update " + Problem.SCHEMA.getDbTableName() +
 				" set " + DBUtil.getUpdatePlaceholdersNoId(Problem.SCHEMA) +
 				" where problem_id = ?"
 				);
@@ -1360,191 +1437,161 @@ public class JDBCDatabase implements IDatabase {
 			AbstractDatabaseRunnable<ProblemAndTestCaseList> abstractDatabaseRunnable) throws SQLException {
 		PreparedStatement deleteStmt = abstractDatabaseRunnable.prepareStatement(
 				conn,
-				"delete from " + TEST_CASES + " where problem_id = ?");
+				"delete from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
 		deleteStmt.setInt(1, problemId);
 		
 		deleteStmt.executeUpdate();
 	}
 	
-	private void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
-		configurationSetting.setName(resultSet.getString(index++));
-		configurationSetting.setValue(resultSet.getString(index++));
+	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(configurationSetting, resultSet, index, ConfigurationSetting.SCHEMA);
 	}
 
 	private void load(User user, ResultSet resultSet, int index) throws SQLException {
-		user.setId(resultSet.getInt(index++));
-		user.setUsername(resultSet.getString(index++));
-		user.setPasswordHash(resultSet.getString(index++));
+		loadGeneric(user, resultSet, index, User.SCHEMA);
 	}
 
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
-		problem.setProblemId(resultSet.getInt(index++));
-		problem.setCourseId(resultSet.getInt(index++));
-		problem.setWhenAssigned(resultSet.getLong(index++));
-		problem.setWhenDue(resultSet.getLong(index++));
-		problem.setVisible(resultSet.getBoolean(index++));
-		loadProblemData(problem, resultSet, index);
-	}
-
-	protected void loadProblemData(ProblemData problemData, ResultSet resultSet, int index) throws SQLException {
-		problemData.setProblemType(resultSet.getInt(index++));
-		problemData.setTestname(resultSet.getString(index++));
-		problemData.setBriefDescription(resultSet.getString(index++));
-		problemData.setDescription(resultSet.getString(index++));
-		problemData.setSkeleton(resultSet.getString(index++));
-		problemData.setSchemaVersion(resultSet.getInt(index++));
-		problemData.setAuthorName(resultSet.getString(index++));
-		problemData.setAuthorEmail(resultSet.getString(index++));
-		problemData.setAuthorWebsite(resultSet.getString(index++));
-		problemData.setTimestampUtc(resultSet.getLong(index++));
-		problemData.setLicense(ProblemLicense.fromOrdinal(resultSet.getInt(index++)));
+		loadGeneric(problem, resultSet, index, Problem.SCHEMA);
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-//		change.setId(resultSet.getInt(index++));
-		change.setEventId(resultSet.getInt(index++));
-		change.setType(resultSet.getInt(index++));
-		change.setStartRow(resultSet.getInt(index++));
-		change.setEndRow(resultSet.getInt(index++));
-		change.setStartColumn(resultSet.getInt(index++));
-		change.setEndColumn(resultSet.getInt(index++));
+		// Change objects require special handling because the database
+		// has two columns for the change text (depending on how long the
+		// text is).  Whichever of the columns is not null should be used
+		// as the text value to store in the model object.
 		
-		// Only one of the two text columns (text_short and text)
-		// should be non-null.
-		String shortText = resultSet.getString(index++);
-		String longText = resultSet.getString(index++);
+		String text = null;
 		
-		String text = shortText != null ? shortText : longText;
+		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
+			Object value = resultSet.getObject(index++);
+			if (field != Change.TEXT_SHORT && field != Change.TEXT) {
+				field.setUntyped(change, DBUtil.convertValue(value, field.getType()));
+			} else {
+				// This is the value of either the text_short or text columns.
+				// Use whichever is not null.
+				if (value != null) {
+					text = (String) value;
+				}
+			}
+		}
 		change.setText(text);
 	}
 
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
-		course.setId(resultSet.getInt(index++));
-		course.setName(resultSet.getString(index++));
-		course.setTitle(resultSet.getString(index++));
-		course.setUrl(resultSet.getString(index++));
-		course.setTermId(resultSet.getInt(index++));
-		course.setYear(resultSet.getInt(index++));
+		loadGeneric(course, resultSet, index, Course.SCHEMA);
 	}
 
 	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
-		term.setId(resultSet.getInt(index++));
-		term.setName(resultSet.getString(index++));
-		term.setSeq(resultSet.getInt(index++));
+		loadGeneric(term, resultSet, index, Term.SCHEMA);
 	}
 
 	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
-		testCase.setTestCaseId(resultSet.getInt(index++));
-		testCase.setProblemId(resultSet.getInt(index++));
-		testCase.setTestCaseName(resultSet.getString(index++));
-		testCase.setInput(resultSet.getString(index++));
-		testCase.setOutput(resultSet.getString(index++));
-		testCase.setSecret(resultSet.getBoolean(index++));
+		loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-//		submissionReceipt.setId(resultSet.getInt(index++));
-		submissionReceipt.setEventId(resultSet.getInt(index++));
-		submissionReceipt.setLastEditEventId(resultSet.getInt(index++));
-		submissionReceipt.setStatus(resultSet.getInt(index++));
-		submissionReceipt.setNumTestsAttempted(submissionReceipt.getNumTestsAttempted());
-		submissionReceipt.setNumTestsPassed(submissionReceipt.getNumTestsPassed());
+		loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
 	}
 	
 	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
-		event.setId(resultSet.getInt(index++));
-		event.setUserId(resultSet.getInt(index++));
-		event.setProblemId(resultSet.getInt(index++));
-		event.setType(resultSet.getInt(index++));
-		event.setTimestamp(resultSet.getLong(index++));
+		loadGeneric(event, resultSet, index, Event.SCHEMA);
 	}
 	
 	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
-		reg.setId(resultSet.getInt(index++));
-		reg.setCourseId(resultSet.getInt(index++));
-		reg.setUserId(resultSet.getInt(index++));
-		reg.setRegistrationType(resultSet.getInt(index++));
-		reg.setSection(resultSet.getInt(index++));
+		loadGeneric(reg, resultSet, index, CourseRegistration.SCHEMA);
+	}
+	
+	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
+	}
+	
+	protected void load(RepoTestCase repoTestCase, ResultSet resultSet, int index) throws SQLException {
+		loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
+	}
+
+	/**
+	 * Generic method to load model object data from the current row of
+	 * a ResultSet.
+	 * 
+	 * @param modelObj   the model object
+	 * @param resultSet  the ResultSet
+	 * @param index      the index of the first column containing model object data
+	 * @param schema     the schema of the model object
+	 * @return           the index of the first column after the model object data in the result set
+	 * @throws SQLException
+	 */
+	protected<E> int loadGeneric(E modelObj, ResultSet resultSet, int index, ModelObjectSchema<E> schema) throws SQLException {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			// Note: this could return an object which does not exactly match the field type
+			Object value = resultSet.getObject(index++);
+			value = DBUtil.convertValue(value, field.getType());
+			
+			field.setUntyped(modelObj, value);
+		}
+		return index;
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, event.getUserId());
-		stmt.setInt(index++, event.getProblemId());
-		stmt.setInt(index++, event.getType().ordinal());
-		stmt.setLong(index++, event.getTimestamp());
+		storeNoIdGeneric(event, stmt, index, Event.SCHEMA);
 	}
 
 	protected void store(Change change, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, change.getEventId());
-		stmt.setInt(index++, change.getType().ordinal());
-		stmt.setInt(index++, change.getStartRow());
-		stmt.setInt(index++, change.getEndRow());
-		stmt.setInt(index++, change.getStartColumn());
-		stmt.setInt(index++, change.getEndColumn());
+		// Change objects require special handling so that we use the correct
+		// database column to store the change text.
 		
-		// Determine if text can be stored in text_short column,
-		// or if it must be stored in the text (blob) column.
-		String text = change.getText();
+		String changeText = change.getText();
+		boolean isShort = changeText.length() <= Change.MAX_TEXT_LEN_IN_ROW;
+		String textShort = isShort ? changeText : null;
+		String textLong  = !isShort ? changeText : null;
 		
-		String shortText = null;
-		String longText = null;
-		
-		if (text.length() < Change.MAX_TEXT_LEN_IN_ROW) {
-			shortText = text;
-		} else {
-			longText = text;
+		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
+			if (field == Change.TEXT_SHORT) {
+				stmt.setString(index++, textShort);
+			} else if (field == Change.TEXT) {
+				stmt.setString(index++, textLong);
+			} else {
+				stmt.setObject(index++, DBUtil.convertValueToStore(field.get(change)));
+			}
 		}
-		
-		stmt.setString(index++, shortText);
-		stmt.setString(index++, longText);
 	}
 
 	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, receipt.getEventId());
-		stmt.setLong(index++, receipt.getLastEditEventId());
-		stmt.setInt(index++, receipt.getStatus().ordinal());
-		stmt.setInt(index++, receipt.getNumTestsAttempted());
-		stmt.setInt(index++, receipt.getNumTestsPassed());
+		storeNoIdGeneric(receipt, stmt, index, SubmissionReceipt.SCHEMA);
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testResult.getSubmissionReceiptEventId());
-		stmt.setInt(index++, testResult.getOutcome().ordinal());
-		stmt.setString(index++, testResult.getMessage());
-		stmt.setString(index++, testResult.getStdout());
-		stmt.setString(index++, testResult.getStderr());
+		storeNoIdGeneric(testResult, stmt, index, TestResult.SCHEMA);
 	}
 	
 	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, problem.getCourseId());
-		stmt.setLong(index++, problem.getWhenAssigned());
-		stmt.setLong(index++, problem.getWhenDue());
-		stmt.setBoolean(index++, problem.isVisible());
-		index = storeProblemData(problem, stmt, index);
-		return index;
-	}
-
-	protected int storeProblemData(ProblemData problemData, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, problemData.getProblemType().ordinal());
-		stmt.setString(index++, problemData.getTestname());
-		stmt.setString(index++, problemData.getBriefDescription());
-		stmt.setString(index++, problemData.getDescription());
-		stmt.setString(index++, problemData.getSkeleton());
-		stmt.setInt(index++, problemData.getSchemaVersion());
-		stmt.setString(index++, problemData.getAuthorName());
-		stmt.setString(index++, problemData.getAuthorEmail());
-		stmt.setString(index++, problemData.getAuthorWebsite());
-		stmt.setLong(index++, problemData.getTimestampUtc());
-		stmt.setInt(index++, problemData.getLicense().ordinal());
-		return index;
+		return storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
-		stmt.setInt(index++, testCase.getProblemId());
-		stmt.setString(index++, testCase.getTestCaseName());
-		stmt.setString(index++, testCase.getInput());
-		stmt.setString(index++, testCase.getOutput());
-		stmt.setBoolean(index++, testCase.isSecret());
+		storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
+	}
+
+	/**
+	 * Store the field values of a model object (sans unique id) in the parameters
+	 * of the given PreparedStatement. 
+	 * 
+	 * @param modelObj the model object
+	 * @param stmt     the PreparedStatement
+	 * @param index    the index of the first PreparedStatement parameter where the model object data should be stored
+	 * @param schema   the schema of the model object
+	 * @return the index of the parameter just after where the model object's field values are stored
+	 * @throws SQLException
+	 */
+	protected<E> int storeNoIdGeneric(E modelObj, PreparedStatement stmt, int index, ModelObjectSchema<E> schema) throws SQLException {
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			if (!field.isUniqueId()) {
+				Object value = field.get(modelObj);
+				value = DBUtil.convertValueToStore(value);
+				stmt.setObject(index++, value);
+			}
+		}
+		return index;
 	}
 
 	protected Change getChangeAndEvent(ResultSet resultSet) throws SQLException {

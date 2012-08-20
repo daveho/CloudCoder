@@ -12,12 +12,11 @@
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
 
-    <path id="CloudCoderOutOfProcessBuildService.classpath">
-        <pathelement location="${model.class.jar}"/>
-        <pathelement location="bin"/>
-          <fileset dir="lib">
-            <include name="**/*.jar"/>
-          </fileset>
+    <path id="CloudCoderBuilder.classpath">
+		<pathelement location="${model.class.jar}"/>
+		<pathelement location="bin"/>
+		<fileset dir="lib" includes="**/*.jar"/>
+    	<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
     </path>
 
     <target name="init">
@@ -30,11 +29,6 @@
         </copy>
     </target>
 
-    <target name="clean">
-        <delete dir="bin"/>
-    	<delete file="${jarname}"/>
-    </target>
-
     <!-- make sure model classes jar file is built -->
     <target name="modelClasses">
     	<ant dir="../CloudCoderModelClasses" target="jar" />
@@ -44,7 +38,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="CloudCoderOutOfProcessBuildService.classpath"/>
+            <classpath refid="CloudCoderBuilder.classpath"/>
         </javac>
     </target>
 	
@@ -54,6 +48,7 @@
 	<target name="jar" depends="build">
 		<jar destfile="${jarname}">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
 			<zipgroupfileset file="${model.class.jar}" />
 			<fileset dir="bin" includes="**" excludes="defaultkeystore.jks"/>
 			
@@ -67,5 +62,17 @@
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
 			</manifest>
 		</jar>
+	</target>
+
+    <target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="${jarname}"/>
+    </target>
+	
+	<!-- Clean everything (including projects on which this target depends -->
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>

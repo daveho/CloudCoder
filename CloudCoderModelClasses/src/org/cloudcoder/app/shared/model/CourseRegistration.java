@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Model object representing the registration of a
@@ -26,7 +25,7 @@ import java.util.Arrays;
  * 
  * @author David Hovemeyer
  */
-public class CourseRegistration implements Serializable {
+public class CourseRegistration implements Serializable, IModelObject<CourseRegistration> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -38,19 +37,38 @@ public class CourseRegistration implements Serializable {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-			new ModelObjectField("course_id", Integer.class, 0),
-			new ModelObjectField("user_id", Integer.class, 0),
-			new ModelObjectField("registration_type", CourseRegistrationType.class, 0),
-			new ModelObjectField("section", Integer.class, 0)
-	));
+	public static final ModelObjectSchema<CourseRegistration> SCHEMA = new ModelObjectSchema<CourseRegistration>("course_registration")
+		.add(new ModelObjectField<CourseRegistration, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(CourseRegistration obj, Integer value) { obj.setId(value); }
+			public Integer get(CourseRegistration obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<CourseRegistration, Integer>("course_id", Integer.class, 0) {
+			public void set(CourseRegistration obj, Integer value) { obj.setCourseId(value); }
+			public Integer get(CourseRegistration obj) { return obj.getCourseId(); }
+		})
+		.add(new ModelObjectField<CourseRegistration, Integer>("user_id", Integer.class, 0) {
+			public void set(CourseRegistration obj, Integer value) { obj.setUserId(value); }
+			public Integer get(CourseRegistration obj) { return obj.getUserId(); }
+		})
+		.add(new ModelObjectField<CourseRegistration, CourseRegistrationType>("registration_type", CourseRegistrationType.class, 0) {
+			public void set(CourseRegistration obj, CourseRegistrationType value) { obj.setRegistrationType(value); }
+			public CourseRegistrationType get(CourseRegistration obj) { return obj.getRegistrationType(); }
+		})
+		.add(new ModelObjectField<CourseRegistration, Integer>("section", Integer.class, 0) {
+			public void set(CourseRegistration obj, Integer value) { obj.setSection(value); }
+			public Integer get(CourseRegistration obj) { return obj.getSection(); }
+		});
 	
 	/**
 	 * Constructor.
 	 */
 	public CourseRegistration() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<CourseRegistration> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

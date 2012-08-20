@@ -104,11 +104,10 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private ServerSocket createSSLServerSocket(int port)
 	throws IOException, UnknownHostException, KeyStoreException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, UnrecoverableKeyException, KeyManagementException
 	{
-	    String keyfile="/" + keystoreFilename;
-        String keyStoreType="JKS";
-        InputStream keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream(keyfile);
+	    String keyStoreType="JKS";
+        InputStream keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream(keystoreFilename);
         if (keyStoreInputStream == null) {
-        	throw new IOException("Could not load keystore from resource " + keyfile);
+        	throw new IOException("Could not load keystore from resource " + keystoreFilename);
         }
         
         logger.info("Using keystore {}", keystoreFilename);

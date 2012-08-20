@@ -17,7 +17,10 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Descriptor for the schema (field types) of a model object
@@ -25,26 +28,112 @@ import java.util.List;
  * 
  * @author David Hovemeyer
  */
-public class ModelObjectSchema {
-	private final List<ModelObjectField> fieldList;
-	
+public class ModelObjectSchema<ModelObjectType> {
+	private final String name;
+	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
+	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
+	private final List<ModelObjectIndex<ModelObjectType>> indexList;
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param fieldList descriptors for the schema's fields
+	 * @param name the name of the schema: can be used to derive a database table name,
+	 *             XML element name, etc.
 	 */
-	public ModelObjectSchema(List<ModelObjectField> fieldList) {
-		this.fieldList = fieldList;
+	public ModelObjectSchema(String name) {
+		this.name = name;
+		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
+		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
+		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
 	}
 	
+	/**
+	 * Get the schema name.
+	 * @return the schema name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Get the database table name.
+	 * 
+	 * @return the database table name
+	 */
+	public String getDbTableName() {
+		return "cc_" + name + "s";
+	}
+
+	/**
+	 * Get a name to use for a list of objects of this schema's type
+	 * in a serialized format (such as XML or JSON).
+	 * 
+	 * @return list element name
+	 */
+	public String getListElementName() {
+		return name + "_list";
+	}
+	
+	/**
+	 * Add a {@link ModelObjectField} to the schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param field the field to add to the schema
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> add(ModelObjectField<? super ModelObjectType, ?> field) {
+		fieldList.add(field);
+		nameToFieldList.put(field.getName(), field);
+		return this;
+	}
+	
+	/**
+	 * Add all {@link ModelObjectField}s in given list to this schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param otherFieldList a list of {@link ModelObjectField}s
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> addAll(List<? extends ModelObjectField<? super ModelObjectType, ?>> otherFieldList) {
+		for (ModelObjectField<? super ModelObjectType, ?> field : otherFieldList) {
+			add(field);
+		}
+		return this;
+	}
+	
+	/**
+	 * Add a {@link ModelObjectIndex} to the schema.
+	 * Returns a reference to the schema object, so calls
+	 * can be chained.
+	 * 
+	 * @param index the index to add
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> addIndex(ModelObjectIndex<ModelObjectType> index) {
+		indexList.add(index);
+		return this;
+	}
+
 	/**
 	 * Get a field descriptor.
 	 * 
 	 * @param index the index of the field descriptor (0 for the first)
 	 * @return the field descriptor
 	 */
-	public ModelObjectField getField(int index) {
+	public ModelObjectField<? super ModelObjectType, ?> getField(int index) {
 		return fieldList.get(index);
+	}
+	
+	/**
+	 * Get a field descriptor by name.
+	 * 
+	 * @param name the name of the field
+	 * @return the field descriptor, or null if there is no such field
+	 */
+	public ModelObjectField<? super ModelObjectType, ?> getFieldByName(String fieldName) {
+		return nameToFieldList.get(fieldName);
 	}
 	
 	/**
@@ -61,8 +150,16 @@ public class ModelObjectSchema {
 	 * 
 	 * @return list of field descriptors
 	 */
-	public List<ModelObjectField> getFieldList() {
+	public List<ModelObjectField<? super ModelObjectType, ?>> getFieldList() {
 		return fieldList;
+	}
+	
+	/**
+	 * Get list of indices.
+	 * @return the list of indices
+	 */
+	public List<ModelObjectIndex<ModelObjectType>> getIndexList() {
+		return indexList;
 	}
 
 	/**
@@ -71,7 +168,7 @@ public class ModelObjectSchema {
 	 * @return true if the schema has a unique id field, false otherwise
 	 */
 	public boolean hasUniqueId() {
-		for (ModelObjectField field : fieldList) {
+		for (ModelObjectField<? super ModelObjectType, ?> field : fieldList) {
 			if (field.isUniqueId()) {
 				return true;
 			}
@@ -84,8 +181,8 @@ public class ModelObjectSchema {
 	 * 
 	 * @return the unique id field
 	 */
-	public ModelObjectField getUniqueIdField() {
-		for (ModelObjectField field : fieldList) {
+	public ModelObjectField<? super ModelObjectType, ?> getUniqueIdField() {
+		for (ModelObjectField<? super ModelObjectType, ?> field : fieldList) {
 			if (field.isUniqueId()) {
 				return field;
 			}

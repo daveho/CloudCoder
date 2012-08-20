@@ -14,12 +14,9 @@
 
 	<path id="CloudCoderWebServer.classpath">
         <pathelement location="bin"/>
-		<fileset dir="lib">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="../CloudCoderJetty/lib">
-			<include name="**/*.jar"/>
-		</fileset>
+		<pathelement path="../CloudCoderJetty/cloudcoderJetty.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
     </path>
     
 	<target name="init">
@@ -32,7 +29,7 @@
         </copy>
     </target>
 	
-    <target depends="init" name="build">
+    <target depends="init,jetty" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
@@ -55,6 +52,11 @@
 		<ant dir="../CloudCoderModelClassesPersistence" target="jar" />
 	</target>
 	
+	<!-- Target to build the CloudCoder Jetty library. -->
+	<target name="jetty">
+		<ant dir="../CloudCoderJetty" target="jar"/>
+	</target>
+	
 	<!--
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
@@ -64,8 +66,8 @@
 			Build single jar containing contents of all required libraries.
 		-->
 		<jar destfile="deps.jar">
-			<zipgroupfileset dir="lib" includes="**/*.jar" />
 			<zipgroupfileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
 		</jar>
 		
 		<!--
@@ -78,10 +80,13 @@
 			<fileset dir="bin" includes="**"/>
 
 			<!-- Copy classes and other files from required libraries and Jetty. -->
-			<zipfileset src="deps.jar" excludes="META-INF/*.SF"/>
+			<zipfileset src="deps.jar" excludes="META-INF/**"/>
+			
+			<!-- Copy Jetty single-file-deployment support code. -->
+			<zipfileset src="../CloudCoderJetty/cloudcoderJetty.jar" excludes="META-INF/**"/>
 			
 			<!-- Include the webapp.
-			     However, exclude the slf4j and log4j jars, since Jetty will already have
+			     However, exclude the slf4j jars, since Jetty will already have
 			     them on its classpath, and we don't want two copies. -->
 			<fileset
 				dir="../CloudCoder"
@@ -124,4 +129,12 @@
         </delete>
     	<delete quiet="true" file="cloudcoderApp.jar"/>
     </target>
+	
+	<!-- Clean this target and all depended-on targets. -->
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoder" target="clean"/>
+		<ant dir="../CloudCoderModelClasses" target="clean"/>
+		<ant dir="../CloudCoderModelClassesPersistence" target="clean"/>
+		<ant dir="../CloudCoderJetty" target="clean"/>
+	</target>
 </project>

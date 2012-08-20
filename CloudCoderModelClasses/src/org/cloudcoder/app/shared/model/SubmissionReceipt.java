@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * A SubmissionReceipt is a persistent record that a submission
@@ -30,7 +29,7 @@ import java.util.Arrays;
  * 
  * @author David Hovemeyer
  */
-public class SubmissionReceipt implements Serializable, IContainsEvent {
+public class SubmissionReceipt implements Serializable, IContainsEvent, IModelObject<SubmissionReceipt> {
 	private static final long serialVersionUID = 1L;
 
 	private int eventId;
@@ -42,13 +41,27 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE),
-			new ModelObjectField("last_edit_event_id", Integer.class, 0),
-			new ModelObjectField("status", Integer.class, 0),
-			new ModelObjectField("num_tests_attempted", Integer.class, 0),
-			new ModelObjectField("num_tests_passed", Integer.class, 0)
-	));
+	public static final ModelObjectSchema<SubmissionReceipt> SCHEMA = new ModelObjectSchema<SubmissionReceipt>("submission_receipt")
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setEventId(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getEventId(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("last_edit_event_id", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setLastEditEventId(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getLastEditEventId(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, SubmissionStatus>("status", SubmissionStatus.class, 0) {
+			public void set(SubmissionReceipt obj, SubmissionStatus value) { obj.setStatus(value); }
+			public SubmissionStatus get(SubmissionReceipt obj) { return obj.getStatus(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("num_tests_attempted", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setNumTestsAttempted(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getNumTestsAttempted(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("num_tests_passed", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setNumTestsPassed(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getNumTestsPassed(); }
+		});
 
 	/**
 	 * Number of database fields.
@@ -60,6 +73,11 @@ public class SubmissionReceipt implements Serializable, IContainsEvent {
 
 	public SubmissionReceipt() {
 		this.event = new Event();
+	}
+	
+	@Override
+	public ModelObjectSchema<SubmissionReceipt> getSchema() {
+		return SCHEMA;
 	}
 	
 	/* (non-Javadoc)

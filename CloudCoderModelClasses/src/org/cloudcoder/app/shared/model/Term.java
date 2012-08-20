@@ -18,13 +18,12 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Model object representing an academic term (Fall, Spring, etc.)
  * @author David Hovemeyer
  */
-public class Term implements Serializable {
+public class Term implements Serializable, IModelObject<Term> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -34,11 +33,19 @@ public class Term implements Serializable {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-			new ModelObjectField("name", String.class, 20),
-			new ModelObjectField("seq", Integer.class, 0)
-	));
+	public static final ModelObjectSchema<Term> SCHEMA = new ModelObjectSchema<Term>("term")
+		.add(new ModelObjectField<Term, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(Term obj, Integer value) { obj.setId(value); }
+			public Integer get(Term obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<Term, String>("name", String.class, 20) {
+			public void set(Term obj, String value) { obj.setName(value); }
+			public String get(Term obj) { return obj.getName(); }
+		})
+		.add(new ModelObjectField<Term, Integer>("seq", Integer.class, 0) {
+			public void set(Term obj, Integer value) { obj.setSeq(value); }
+			public Integer get(Term obj) { return obj.getSeq(); }
+		});
 
 	/**
 	 * Number of database fields.
@@ -47,6 +54,11 @@ public class Term implements Serializable {
 	
 	public Term() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<Term> getSchema() {
+		return SCHEMA;
 	}
 	
 	public void setId(int id) {

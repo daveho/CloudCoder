@@ -18,12 +18,8 @@
 package org.cloudcoder.app.server.persist;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
@@ -37,8 +33,6 @@ import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemLicense;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -52,42 +46,7 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class CreateWebappDatabase {
-	private static final boolean DEBUG = false;
-	
-	private static class ConfigProperties {
-		private Properties properties;
-		
-		public ConfigProperties() throws FileNotFoundException, IOException {
-			properties = new Properties();
-
-			// See if we can load "cloudcoder.properties" as an embedded resource.
-			URL u = this.getClass().getClassLoader().getResource("cloudcoder.properties");
-			if (u != null) {
-				InputStream in = u.openStream();
-				try {
-					properties.load(in);
-				} finally {
-					in.close();
-				}
-			} else {
-				System.out.println("Warning: loading cloudcoder.properties from filesystem");
-				properties.load(new FileReader("../cloudcoder.properties"));
-			}
-		}
-		
-		public boolean hasProperty(String propName) {
-		    String value = properties.getProperty("cloudcoder.db." + propName);
-		    return value != null;
-		}
-		
-		public String get(String propName) {
-		    String value = properties.getProperty("cloudcoder.db." + propName);
-			if (value == null) {
-				throw new IllegalArgumentException("Unknown property: " + propName);
-			}
-			return value;
-		}
-	}
+	static final boolean DEBUG = false;
 	
 	public static void main(String[] args) throws Exception {
 		try {
@@ -104,168 +63,189 @@ public class CreateWebappDatabase {
 
 	private static void createWebappDatabase() throws ClassNotFoundException,
 			FileNotFoundException, IOException, SQLException {
+		
+		System.out.println("Please enter some information needed to configure the Cloudcoder");
+		System.out.println("database.  (Hit enter to accept a default value, if there is one.)");
+		
 		Scanner keyboard = new Scanner(System.in);
 		
-		System.out.print("Enter a username for your CloudCoder account: ");
-		String ccUserName = keyboard.nextLine();
-		
-		System.out.print("Enter a password for your CloudCoder account: ");
-		String ccPassword = keyboard.nextLine();
-		
-		System.out.print("What is your institution name (e.g, 'Unseen University')? ");
-		String ccInstitutionName = keyboard.nextLine();
+		String ccUserName = ask(keyboard, "Enter a username for your CloudCoder account: ");
+		String ccPassword = ask(keyboard, "Enter a password for your CloudCoder account");
+		String ccInstitutionName = ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
+		String ccRepoUrl = ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
-		ConfigProperties config = new ConfigProperties();
+		Properties config = DBUtil.getConfigProperties();
 		
-		String dbUser = config.get("user");
-		String dbPasswd = config.get("passwd");
-		String dbName = config.get("databaseName");
-		String dbHost = config.get("host");
-		String portStr="";
-		if (config.hasProperty("portStr")) {
-		    portStr=config.get("portStr");
+		Connection conn = DBUtil.connectToDatabaseServer(config, "cloudcoder.db");
+		
+		String dbName = config.getProperty("cloudcoder.db.databaseName");
+		if (dbName == null) {
+			throw new IllegalStateException("configuration properties do not define cloudcoder.db.databaseName");
 		}
 		
-		// Connect to the database server, but don't specify a database name 
-		System.out.println(dbHost +", "+dbName+", "+dbUser+", "+dbPasswd);
-		String url="jdbc:mysql://" + dbHost + portStr +"/?user=" + dbUser + "&password=" + dbPasswd;
-		System.out.println(url);
-		Connection conn = DriverManager.getConnection(url);
-		
 		System.out.println("Creating database");
-		DBUtil.execSql(
-				conn,
-				"create database " + dbName +
-				" character set 'utf8' " +
-				" collate 'utf8_general_ci' ");
+		DBUtil.createDatabase(conn, dbName);
 		
 		conn.close();
 		
 		// Reconnect to the newly-created database
-		conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + portStr + "/" + dbName + "?user=" + dbUser + "&password=" + dbPasswd);
+		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 		
 		// Create tables and indexes
-		createTable(conn, JDBCDatabase.CHANGES, Change.SCHEMA);
-		createTable(conn, JDBCDatabase.CONFIGURATION_SETTINGS, ConfigurationSetting.SCHEMA);
-		createTable(conn, JDBCDatabase.COURSES, Course.SCHEMA);
-		createTable(conn, JDBCDatabase.COURSE_REGISTRATIONS, CourseRegistration.SCHEMA);
-		createTable(conn, JDBCDatabase.EVENTS, Event.SCHEMA);
-		createTable(conn, JDBCDatabase.PROBLEMS, Problem.SCHEMA);
-		createTable(conn, JDBCDatabase.SUBMISSION_RECEIPTS, SubmissionReceipt.SCHEMA);
-		createTable(conn, JDBCDatabase.TERMS, Term.SCHEMA);
-		createTable(conn, JDBCDatabase.TEST_CASES, TestCase.SCHEMA);
-		createTable(conn, JDBCDatabase.TEST_RESULTS, TestResult.SCHEMA);
-		createTable(conn, JDBCDatabase.USERS, User.SCHEMA);
+		createTable(conn, Change.SCHEMA);
+		createTable(conn, ConfigurationSetting.SCHEMA);
+		createTable(conn, Course.SCHEMA);
+		createTable(conn, CourseRegistration.SCHEMA);
+		createTable(conn, Event.SCHEMA);
+		createTable(conn, Problem.SCHEMA);
+		createTable(conn, SubmissionReceipt.SCHEMA);
+		createTable(conn, Term.SCHEMA);
+		createTable(conn, TestCase.SCHEMA);
+		createTable(conn, TestResult.SCHEMA);
+		createTable(conn, User.SCHEMA);
 		
 		// Create initial database contents
 		
 		// Set institution name (and any other configuration settings)
 		System.out.println("Adding configuration settings...");
-		ConfigurationSetting instName = new ConfigurationSetting();
-		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
-		instName.setValue(ccInstitutionName);
-		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
+
+//		ConfigurationSetting instName = new ConfigurationSetting();
+//		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
+//		instName.setValue(ccInstitutionName);
+//		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
+
+		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_TEXT_INSTITUTION, ccInstitutionName);
+		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_REPOSITORY_URL, ccRepoUrl);
+
 		
 		// Terms
 		System.out.println("Creating terms...");
-		storeTerm(conn, "Winter", 0);
-		storeTerm(conn, "Spring", 1);
-		storeTerm(conn, "Summer", 2);
-		storeTerm(conn, "Summer 1", 3);
-		storeTerm(conn, "Summer 2", 4);
-		Term fall = storeTerm(conn, "Fall", 5);
+		CreateWebappDatabase.storeTerm(conn, "Winter", 0);
+		CreateWebappDatabase.storeTerm(conn, "Spring", 1);
+		CreateWebappDatabase.storeTerm(conn, "Summer", 2);
+		CreateWebappDatabase.storeTerm(conn, "Summer 1", 3);
+		CreateWebappDatabase.storeTerm(conn, "Summer 2", 4);
+		Term fall = CreateWebappDatabase.storeTerm(conn, "Fall", 5);
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
-		Course course = new Course();
-		course.setName("CCDemo");
-		course.setTitle("CloudCoder demo course");
-		course.setTermId(fall.getId());
-		//TODO: Get current year
-		course.setTerm(fall);
-		course.setYear(2012);
-		course.setUrl("http://cloudcoder.org/");
-		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
+//<<<<<<< HEAD
+//		Course course = new Course();
+//		course.setName("CCDemo");
+//		course.setTitle("CloudCoder demo course");
+//		course.setTermId(fall.getId());
+//		//TODO: Get current year
+//		course.setTerm(fall);
+//		course.setYear(2012);
+//		course.setUrl("http://cloudcoder.org/");
+//		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
+//		
+//		// Create an initial user
+//		System.out.println("Creating initial user...");
+//		User user = new User();
+//		user.setUsername(ccUserName);
+//		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+//		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
+//		
+//		// Register the user as an instructor in the demo course
+//		System.out.println("Registering initial user for demo course...");
+//		CourseRegistration courseReg = new CourseRegistration();
+//		courseReg.setCourseId(course.getId());
+//		courseReg.setUserId(user.getId());
+//		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
+//		courseReg.setSection(101);
+//		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
+//=======
+		int courseId = CreateSampleData.createDemoCourse(conn, fall);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		User user = new User();
-		user.setUsername(ccUserName);
-		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
+		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
-		CourseRegistration courseReg = new CourseRegistration();
-		courseReg.setCourseId(course.getId());
-		courseReg.setUserId(user.getId());
-		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
-		courseReg.setSection(101);
-		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
+		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR);
+//>>>>>>> 4296caaa5da7c71fc6a038f2b7b12d08b969d1e2
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");
 		Problem problem = new Problem();
-		problem.setCourseId(course.getId());
-		problem.setWhenAssigned(System.currentTimeMillis());
-		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
-		problem.setVisible(true);
-		problem.setProblemType(ProblemType.C_PROGRAM);
-		problem.setTestname("hello");
-		problem.setBriefDescription("Print hello, world");
-		problem.setDescription(
-				"<p>Print a line with the following text:</p>\n" +
-				"<blockquote><pre>Hello, world</pre></blockquote>\n"
-		);
-
-		problem.setSkeleton(
-				"#include <stdio.h>\n\n" +
-				"int main(void) {\n" +
-				"\t// TODO - add your code here\n\n" +
-				"\treturn 0;\n" +
-				"}\n"
-				);
-		problem.setSchemaVersion(Problem.CURRENT_SCHEMA_VERSION);
-		problem.setAuthorName("A. User");
-		problem.setAuthorEmail("auser@cs.unseen.edu");
-		problem.setAuthorWebsite("http://cs.unseen.edu/~auser");
-		problem.setTimestampUtc(System.currentTimeMillis());
-		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
-		
-		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
+//<<<<<<< HEAD
+//		problem.setCourseId(course.getId());
+//		problem.setWhenAssigned(System.currentTimeMillis());
+//		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
+//		problem.setVisible(true);
+//		problem.setProblemType(ProblemType.C_PROGRAM);
+//		problem.setTestname("hello");
+//		problem.setBriefDescription("Print hello, world");
+//		problem.setDescription(
+//				"<p>Print a line with the following text:</p>\n" +
+//				"<blockquote><pre>Hello, world</pre></blockquote>\n"
+//		);
+//
+//		problem.setSkeleton(
+//				"#include <stdio.h>\n\n" +
+//				"int main(void) {\n" +
+//				"\t// TODO - add your code here\n\n" +
+//				"\treturn 0;\n" +
+//				"}\n"
+//				);
+//		problem.setSchemaVersion(Problem.CURRENT_SCHEMA_VERSION);
+//		problem.setAuthorName("A. User");
+//		problem.setAuthorEmail("auser@cs.unseen.edu");
+//		problem.setAuthorWebsite("http://cs.unseen.edu/~auser");
+//		problem.setTimestampUtc(System.currentTimeMillis());
+//		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
+//		
+//		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
+//=======
+		CreateSampleData.populateSampleProblem(problem, courseId);
+		DBUtil.storeModelObject(conn, problem);
+		Integer problemId = problem.getProblemId();
+//>>>>>>> 4296caaa5da7c71fc6a038f2b7b12d08b969d1e2
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
 		TestCase testCase = new TestCase();
-		testCase.setProblemId(problem.getProblemId());
-		testCase.setTestCaseName("hello");
-		testCase.setInput("");
-		testCase.setOutput("^\\s*Hello\\s*,\\s*world\\s*$i");
-		testCase.setSecret(false);
-		
-		DBUtil.storeBean(conn, testCase, TestCase.SCHEMA, JDBCDatabase.TEST_CASES);
-		
+		CreateSampleData.populateSampleTestCase(testCase, problemId);
+
+		DBUtil.storeModelObject(conn, testCase);
+
 		conn.close();
 		
 		System.out.println("Success!");
 	}
 
-	private static void createTable(Connection conn, String tableName, ModelObjectSchema schema) throws SQLException {
-		System.out.println("Creating table " + tableName);
-		String sql = DBUtil.getCreateTableStatement(schema, tableName);
-		if (DEBUG) {
-			System.out.println(sql);
+	private static String ask(Scanner keyboard, String prompt) {
+		return ask(keyboard, prompt, null);
+	}
+	
+	private static String ask(Scanner keyboard, String prompt, String defval) {
+		System.out.println(prompt);
+		System.out.print("[default: " + (defval != null ? defval : "") + "] ==> ");
+		String value = keyboard.nextLine();
+		if (value.trim().equals("") && defval != null) {
+			value = defval;
 		}
-		DBUtil.execSql(conn, sql);
+		return value;
+	}
+	
+	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
+		System.out.println("Creating table " + schema.getDbTableName());
+		DBUtil.createTable(conn, schema);
 	}
 
 	private static Term storeTerm(Connection conn, String name, int seq) throws SQLException {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
+
+//		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
+
+		DBUtil.storeModelObject(conn, term);
+
 		return term;
 	}
 }

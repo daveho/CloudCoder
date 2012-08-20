@@ -17,15 +17,16 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class represents a {@link Problem} and {@link TestCase}s for the problem,
- * as assigned in a specific {@link Course}.  An instance of ProblemAndTestCaseList
- * can be converted to a {@link ProblemAndTestCaseData}, which is the
- * "exportable" form of a problem and its test cases.
+ * as assigned in a specific {@link Course}.
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndTestCaseList implements ActivityObject {
+public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCaseData<Problem, TestCase> {
 	private static final long serialVersionUID = 1L;
 	
 	private Problem problem;
@@ -49,6 +50,7 @@ public class ProblemAndTestCaseList implements ActivityObject {
 	/**
 	 * @return the Problem
 	 */
+	@Override
 	public Problem getProblem() {
 		return problem;
 	}
@@ -68,26 +70,9 @@ public class ProblemAndTestCaseList implements ActivityObject {
 		return testCaseList;
 	}
 	
-	/**
-	 * Convert to {@link ProblemAndTestCaseData}, which is the
-	 * "exportable" form of a problem and its test cases.
-	 * 
-	 * @return the ProblemAndTestCaseData
-	 */
-	public ProblemAndTestCaseData toProblemAndTestCaseData() {
-		ProblemAndTestCaseData result = new ProblemAndTestCaseData();
-
-		ProblemData problemData = new ProblemData();
-		problemData.copyFrom(problem);
-		result.setProblemData(problemData);
-
-		for (TestCase testCase : testCaseList) {
-			TestCaseData testCaseData = new TestCaseData();
-			testCaseData.copyFrom(testCase);
-			result.addTestCase(testCaseData);
-		}
-		
-		return result;
+	@Override
+	public List<TestCase> getTestCaseData() {
+		return Arrays.asList(testCaseList);
 	}
 
 	/**

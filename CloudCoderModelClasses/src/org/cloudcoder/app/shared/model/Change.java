@@ -25,7 +25,7 @@ import java.util.Arrays;
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-public class Change implements Serializable, IContainsEvent {
+public class Change implements Serializable, IContainsEvent, IModelObject<Change> {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -45,27 +45,79 @@ public class Change implements Serializable, IContainsEvent {
 	private int endColumn;
 	private String text;
 	
+	/** {@link ModelObjectField} for unique id. */
+	public static final ModelObjectField<Change, Integer> EVENT_ID =
+			new ModelObjectField<Change, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
+		public void set(Change obj, Integer value) { obj.setEventId(value); }
+		public Integer get(Change obj) { return obj.getEventId(); }
+	};
+	/** {@link ModelObjectField} for change type. */
+	public static final ModelObjectField<Change, ChangeType> TYPE =
+			new ModelObjectField<Change, ChangeType>("type", ChangeType.class, 0) {
+		public void set(Change obj, ChangeType value) { obj.setType(value); }
+		public ChangeType get(Change obj) { return obj.getType(); }
+	};
+	/** {@link ModelObjectField} for start row. */
+	public static final ModelObjectField<Change, Integer> START_ROW =
+			new ModelObjectField<Change, Integer>("start_row", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setStartRow(value); }
+		public Integer get(Change obj) { return obj.getStartRow(); }
+	};
+	/** {@link ModelObjectField} for end row. */
+	public static final ModelObjectField<Change, Integer> END_ROW =
+			new ModelObjectField<Change, Integer>("end_row", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setEndRow(value); }
+		public Integer get(Change obj) { return obj.getEndRow(); }
+	};
+	/** {@link ModelObjectField} for start column. */
+	public static final ModelObjectField<Change, Integer> START_COL =
+			new ModelObjectField<Change, Integer>("start_col", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setStartColumn(value); }
+		public Integer get(Change obj) { return obj.getStartColumn(); }
+	};
+	/** {@link ModelObjectField} for end column. */
+	public static final ModelObjectField<Change, Integer> END_COL =
+			new ModelObjectField<Change, Integer>("end_col", Integer.class, 0) {
+		public void set(Change obj, Integer value) { obj.setEndColumn(value); }
+		public Integer get(Change obj) { return obj.getStartColumn(); }
+	};
+	/** {@link ModelObjectField} for short change text. */
+	public static final ModelObjectField<Change, String> TEXT_SHORT =
+			new ModelObjectField<Change, String>("text_short", String.class, 80, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
+		public void set(Change obj, String value) { obj.setText(value); }
+		public String get(Change obj) { return obj.getText(); }
+	};
+	/** {@link ModelObjectField} for long change text. */
+	public static final ModelObjectField<Change, String> TEXT =
+			new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
+		public void set(Change obj, String value) { obj.setText(value); }
+		public String get(Change obj) { return obj.getText(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE),
-			new ModelObjectField("type", ChangeType.class, 0),
-			new ModelObjectField("start_row", Short.class, 0),
-			new ModelObjectField("end_row", Short.class, 0),
-			new ModelObjectField("start_col", Short.class, 0),
-			new ModelObjectField("end_col", Short.class, 0),
-			new ModelObjectField("text_short", String.class, 80, ModelObjectIndexType.NONE, true),         // allow null values
-			new ModelObjectField("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, true) // allow null values
-			));
+	public static final ModelObjectSchema<Change> SCHEMA = new ModelObjectSchema<Change>("change")
+		.add(EVENT_ID)
+		.add(TYPE)
+		.add(START_ROW)
+		.add(END_ROW)
+		.add(START_COL)
+		.add(END_COL)
+		.add(TEXT_SHORT)
+		.add(TEXT);
 	
 	// Transient link to the Event object associated with this Change.
 	private Event event;
 
-
 	// Zero-arg constructor - required for serialization
 	// also required for persistence
 	public Change() {
+	}
+	
+	@Override
+	public ModelObjectSchema<Change> getSchema() {
+		return SCHEMA;
 	}
 
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId) {
@@ -74,14 +126,12 @@ public class Change implements Serializable, IContainsEvent {
 		this.startColumn = sc;
 		this.endRow = er;
 		this.endColumn = ec;
-		//this.timestamp = ts;
 
 		this.event = new Event(userId, problemId, EventType.CHANGE, ts);
 	}
 
 	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId, String text) {
 		this(type, sr, sc, er, ec, ts, userId, problemId);
-		//this.text = Collections.singletonList(text);
 		this.text=text;
 	}
 
@@ -106,8 +156,6 @@ public class Change implements Serializable, IContainsEvent {
 	 * @return chunk of text inserted or removed
 	 */
 	public String getText() {
-		//assert text.length == 1;
-		//return text[0];
 		return text;
 	}
 
@@ -166,29 +214,6 @@ public class Change implements Serializable, IContainsEvent {
 		return endColumn;
 	}
 
-	//	/**
-	//	 * @return timestamp of change (milliseconds since epoch), as reported by client
-	//	 */
-	//	public long getTimestamp() {
-	//		return timestamp;
-	//	}
-
-//	/**
-//	 * @return the id
-//	 */
-//	public long getId()
-//	{
-//		return id;
-//	}
-//
-//	/**
-//	 * @param id the id to set
-//	 */
-//	public void setId(long id)
-//	{
-//		this.id = id;
-//	}
-
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEventId(int)
 	 */
@@ -204,38 +229,6 @@ public class Change implements Serializable, IContainsEvent {
 	public int getEventId() {
 		return eventId;
 	}
-
-	//    /**
-	//     * @return the userId
-	//     */
-	//    public long getUserId()
-	//    {
-	//        return userId;
-	//    }
-	//
-	//    /**
-	//     * @param userId the userId to set
-	//     */
-	//    public void setUserId(long userId)
-	//    {
-	//        this.userId = userId;
-	//    }
-	//
-	//    /**
-	//     * @return the problemId
-	//     */
-	//    public long getProblemId()
-	//    {
-	//        return problemId;
-	//    }
-	//
-	//    /**
-	//     * @param problemId the problemId to set
-	//     */
-	//    public void setProblemId(long problemId)
-	//    {
-	//        this.problemId = problemId;
-	//    }
 
 	/**
 	 * @param type the type to set (as an integer)
@@ -278,13 +271,6 @@ public class Change implements Serializable, IContainsEvent {
 	public void setEndColumn(int endColumn){
 		this.endColumn = endColumn;
 	}
-
-	//    /**
-	//     * @param timestamp the timestamp to set
-	//     */
-	//    public void setTimestamp(long timestamp){
-	//        this.timestamp = timestamp;
-	//    }
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.shared.model.IContainsEvent#setEvent(org.cloudcoder.app.shared.model.Event)

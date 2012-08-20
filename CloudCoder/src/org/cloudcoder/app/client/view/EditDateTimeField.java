@@ -19,6 +19,8 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Date;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -35,8 +37,8 @@ import com.google.gwt.user.datepicker.client.DatePicker;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditDateTimeField<ModelObjectType>
-		extends EditModelObjectField<ModelObjectType, Date> {
+public class EditDateTimeField<ModelObjectType>
+		extends EditModelObjectField<ModelObjectType, Long> {
 	
 	private static final String DATE_FORMAT_STRING = "yyyy MM dd";
 	private static final String HOUR_MINUTE_FORMAT_STRING = "HH:mm";
@@ -130,9 +132,10 @@ public abstract class EditDateTimeField<ModelObjectType>
 	 * Constructor.
 	 * 
 	 * @param desc human-readable description of field being edited
+	 * @param field the {@link ModelObjectField} being edited
 	 */
-	public EditDateTimeField(String desc) {
-		super(desc);
+	public EditDateTimeField(String desc, ModelObjectField<? super ModelObjectType, Long> field) {
+		super(desc, field);
 		this.ui = new UI();
 	}
 
@@ -149,7 +152,7 @@ public abstract class EditDateTimeField<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getDate());
+		setField(ui.getDate().getTime());
 	}
 
 	/* (non-Javadoc)
@@ -157,6 +160,6 @@ public abstract class EditDateTimeField<ModelObjectType>
 	 */
 	@Override
 	public void update() {
-		ui.setDate(getField());
+		ui.setDate(new Date(getField()));
 	}
 }

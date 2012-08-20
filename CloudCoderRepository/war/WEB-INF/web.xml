@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
+
+	<!-- Context parameters -->
+
+	<!-- Servlets -->
+	<servlet>
+		<servlet-name>Index</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Index</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Login</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Login</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Logout</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Logout</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>Exercise</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Exercise</servlet-class>
+	</servlet>
+	
+	<!-- Servlet-mapping -->
+	<servlet-mapping>
+		<servlet-name>Index</servlet-name>
+		<url-pattern>/index</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Login</servlet-name>
+		<url-pattern>/login</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Logout</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Exercise</servlet-name>
+		<url-pattern>/exercise/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- Use the /index servlet as the welcome file -->
+	<welcome-file-list>
+		<welcome-file>/index</welcome-file>
+	</welcome-file-list>
+	
+	<!-- Listeners -->
+	<listener>
+		<listener-class>org.cloudcoder.app.server.persist.RepositoryDatabaseConfigServletContextListener</listener-class>
+	</listener>
+	
+</web-app>

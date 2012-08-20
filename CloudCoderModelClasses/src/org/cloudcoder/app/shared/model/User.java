@@ -18,14 +18,13 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Model object representing a user.
  * 
  * @author David Hovemeyer
  */
-public class User implements Serializable {
+public class User implements Serializable, IModelObject<User> {
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -35,16 +34,29 @@ public class User implements Serializable {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("id", Integer.class, 0, ModelObjectIndexType.IDENTITY),
-			new ModelObjectField("username", String.class, 20, ModelObjectIndexType.UNIQUE),
-			new ModelObjectField("password_hash", String.class, 60)
-	));
+	public static final ModelObjectSchema<User> SCHEMA = new ModelObjectSchema<User>("user")
+		.add(new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(User obj, Integer value) { obj.setId(value); }
+			public Integer get(User obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<User, String>("username", String.class, 20, ModelObjectIndexType.UNIQUE) {
+			public void set(User obj, String value) { obj.setUsername(value); }
+			public String get(User obj) { return obj.getUsername(); }
+		})
+		.add(new ModelObjectField<User, String>("password_hash", String.class, 60) {
+			public void set(User obj, String value) { obj.setPasswordHash(value); }
+			public String get(User obj) { return obj.getPasswordHash(); }
+		});
 
 	/**
 	 * Constructor.
 	 */
 	public User() {
+	}
+	
+	@Override
+	public ModelObjectSchema<User> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

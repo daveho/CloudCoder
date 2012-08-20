@@ -18,7 +18,6 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Class to represent the data of a test case, independent of any
@@ -28,7 +27,7 @@ import java.util.Arrays;
  * 
  * @author David Hovemeyer
  */
-public class TestCaseData implements Serializable {
+public class TestCaseData implements Serializable, ITestCaseData {
 	private static final long serialVersionUID = 1L;
 
 	//
@@ -39,55 +38,71 @@ public class TestCaseData implements Serializable {
 	private String input;
 	private String output;
 	private boolean secret;
-	
-	/**
-	 * Description of fields.
-	 */
-	public static final ModelObjectSchema SCHEMA = new ModelObjectSchema(Arrays.asList(
-			new ModelObjectField("test_case_name", String.class, 40),
-			new ModelObjectField("input", String.class, 255),
-			new ModelObjectField("output", String.class, 255),
-			new ModelObjectField("secret", Boolean.class, 0)
-	));
 
 	public TestCaseData() {
 		super();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#setTestCaseName(java.lang.String)
+	 */
+	@Override
 	public void setTestCaseName(String testCaseName) {
 		this.testCaseName = testCaseName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#getTestCaseName()
+	 */
+	@Override
 	public String getTestCaseName() {
 		return testCaseName;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#setInput(java.lang.String)
+	 */
+	@Override
 	public void setInput(String input) {
 		this.input = input;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#getInput()
+	 */
+	@Override
 	public String getInput() {
 		return input;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#setOutput(java.lang.String)
+	 */
+	@Override
 	public void setOutput(String output) {
 		this.output = output;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#getOutput()
+	 */
+	@Override
 	public String getOutput() {
 		return output;
 	}
 
-	/**
-	 * @param secret true if the test case is secret, false otherwise
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#setSecret(boolean)
 	 */
+	@Override
 	public void setSecret(boolean secret) {
 		this.secret = secret;
 	}
 
-	/**
-	 * @return true if test case is secret, false otherwise
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCaseData#isSecret()
 	 */
+	@Override
 	public boolean isSecret() {
 		return secret;
 	}
