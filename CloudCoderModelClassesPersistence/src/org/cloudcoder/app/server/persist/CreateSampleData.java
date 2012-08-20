@@ -31,7 +31,6 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.Term;
-import org.cloudcoder.app.shared.model.User;
 
 /**
  * Create sample data.
@@ -39,23 +38,6 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public class CreateSampleData {
-
-	/**
-	 * Create an initial user.
-	 * 
-	 * @param conn        database connection
-	 * @param ccUserName  user name
-	 * @param ccPassword  password (plaintext)
-	 * @return the user id of the newly-created user
-	 * @throws SQLException
-	 */
-	public static int createInitialUser(Connection conn, String ccUserName, String ccPassword) throws SQLException {
-		User user = new User();
-		user.setUsername(ccUserName);
-		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-		DBUtil.storeModelObject(conn, user);
-		return user.getId();
-	}
 
 	/**
 	 * Create a demo course.

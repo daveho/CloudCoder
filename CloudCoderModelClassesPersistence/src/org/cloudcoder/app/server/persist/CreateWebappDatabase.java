@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -49,6 +50,7 @@ public class CreateWebappDatabase {
 	static final boolean DEBUG = false;
 	
 	public static void main(String[] args) throws Exception {
+	    System.setIn(new FileInputStream("createdb.txt"));
 		try {
 			createWebappDatabase();
 		} catch (SQLException e) {
@@ -69,10 +71,13 @@ public class CreateWebappDatabase {
 		
 		Scanner keyboard = new Scanner(System.in);
 		
-		String ccUserName = ask(keyboard, "Enter a username for your CloudCoder account: ");
-		String ccPassword = ask(keyboard, "Enter a password for your CloudCoder account");
-		String ccInstitutionName = ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
-		String ccRepoUrl = ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
+		String ccUserName = ConfigurationUtil.ask(keyboard, "Enter a username for your CloudCoder account: ");
+		String ccPassword = ConfigurationUtil.ask(keyboard, "Enter a password for your CloudCoder account");
+		String ccFirstname = ConfigurationUtil.ask(keyboard, "What is your first name?");
+		String ccLastname= ConfigurationUtil.ask(keyboard, "What is your last name?");
+		String ccEmail= ConfigurationUtil.ask(keyboard, "What is your email address?");
+		String ccInstitutionName = ConfigurationUtil.ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
+		String ccRepoUrl = ConfigurationUtil.ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
@@ -129,7 +134,12 @@ public class CreateWebappDatabase {
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
+		int userId = ConfigurationUtil.createUser(conn, 
+		        ccUserName, 
+		        ccFirstname,
+		        ccLastname,
+		        ccEmail,
+		        ccPassword);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
@@ -154,20 +164,6 @@ public class CreateWebappDatabase {
 		System.out.println("Success!");
 	}
 
-	public static String ask(Scanner keyboard, String prompt) {
-		return ask(keyboard, prompt, null);
-	}
-	
-	private static String ask(Scanner keyboard, String prompt, String defval) {
-		System.out.println(prompt);
-		System.out.print("[default: " + (defval != null ? defval : "") + "] ==> ");
-		String value = keyboard.nextLine();
-		if (value.trim().equals("") && defval != null) {
-			value = defval;
-		}
-		return value;
-	}
-	
 	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
 		System.out.println("Creating table " + schema.getDbTableName());
 		DBUtil.createTable(conn, schema);

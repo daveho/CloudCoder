@@ -18,9 +18,6 @@
 package org.cloudcoder.app.server.persist;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -50,16 +47,19 @@ public class CreateCourse {
 			}
 		});
 		
-		Term term = choose(keyboard, "What term?", terms);
-		int year = askInt(keyboard, "What year? ");
-		String name = askString(keyboard, "Course name (e.g., \"CS 101\")? ");
-		String title = askString(keyboard, "Course title (e.g., \"Introduction to Computer Science\")? ");
-		String url = askString(keyboard, "Course URL? ");
+		Term term = ConfigurationUtil.choose(keyboard, "What term?", terms);
+		int year = ConfigurationUtil.askInt(keyboard, "What year? ");
+		String name = ConfigurationUtil.askString(keyboard, "Course name (e.g., \"CS 101\")? ");
+		String title = ConfigurationUtil.askString(keyboard, "Course title (e.g., \"Introduction to Computer Science\")? ");
+		String url = ConfigurationUtil.askString(keyboard, "Course URL? ");
 		
-		String instructorUsername = askString(keyboard, "Username of course instructor? ");
-		User instructor = findUser(conn, instructorUsername);
+		String instructorUsername = ConfigurationUtil.askString(keyboard, "Username of course instructor? ");
+		User instructor = ConfigurationUtil.findUser(conn, instructorUsername);
+		if (instructor==null) {
+		    throw new IllegalArgumentException("Cannot find instructor with username "+instructorUsername);
+		}
 		
-		int section = askInt(keyboard, "What section is this instructor teaching? ");
+		int section = ConfigurationUtil.askInt(keyboard, "What section is this instructor teaching? ");
 		
 		// FIXME: need to allow multiple sections and multiple instructors
 		
@@ -81,53 +81,6 @@ public class CreateCourse {
 		DBUtil.storeModelObject(conn, reg);
 		
 		System.out.println("Success!");
-	}
-
-	static<E> E choose(Scanner keyboard, String prompt, List<E> values) {
-		System.out.println(prompt);
-		int count = 0;
-		for (E val : values) {
-			System.out.println((count++) + " - " + val);
-		}
-		System.out.print("[Enter value in range 0.." + (values.size()-1) + "] ");
-		int choice = Integer.parseInt(keyboard.nextLine().trim());
-		return values.get(choice);
-	}
-	
-	
-	private static int askInt(Scanner keyboard, String prompt) {
-		System.out.print(prompt);
-		return Integer.parseInt(keyboard.nextLine().trim());
-	}
-
-
-	private static String askString(Scanner keyboard, String prompt) {
-		System.out.print(prompt);
-		return keyboard.nextLine();
-	}
-
-
-	private static User findUser(Connection conn, String username) throws SQLException {
-		PreparedStatement stmt = null;
-		ResultSet resultSet = null;
-		
-		try {
-			stmt = conn.prepareStatement("select * from " + User.SCHEMA.getDbTableName() + " where username = ?");
-			stmt.setString(1, username);
-			
-			resultSet= stmt.executeQuery();
-			if (!resultSet.next()) {
-				throw new SQLException("No such user: " + username);
-			}
-			
-			User user = new User();
-			DBUtil.loadModelObjectFields(user, User.SCHEMA, resultSet);
-			return user;
-			
-		} finally {
-			DBUtil.closeQuietly(resultSet);
-			DBUtil.closeQuietly(stmt);
-		}
 	}
 
 }

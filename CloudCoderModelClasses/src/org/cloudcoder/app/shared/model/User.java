@@ -29,6 +29,9 @@ public class User implements Serializable, IModelObject<User> {
 
 	private int id;
 	private String userName;
+	private String firstname;
+	private String lastname;
+	private String email;
 	private String passwordHash;
 	
 	/**
@@ -43,6 +46,18 @@ public class User implements Serializable, IModelObject<User> {
 			public void set(User obj, String value) { obj.setUsername(value); }
 			public String get(User obj) { return obj.getUsername(); }
 		})
+		.add(new ModelObjectField<User, String>("firstname", String.class, 30) {
+            public void set(User obj, String value) { obj.setFirstname(value); }
+            public String get(User obj) { return obj.getFirstname(); }
+        })
+        .add(new ModelObjectField<User, String>("lastname", String.class, 30) {
+            public void set(User obj, String value) { obj.setLastname(value); }
+            public String get(User obj) { return obj.getLastname(); }
+        })
+        .add(new ModelObjectField<User, String>("email", String.class, 50, ModelObjectIndexType.UNIQUE) {
+            public void set(User obj, String value) { obj.setEmail(value); }
+            public String get(User obj) { return obj.getEmail(); }
+        })
 		.add(new ModelObjectField<User, String>("password_hash", String.class, 60) {
 			public void set(User obj, String value) { obj.setPasswordHash(value); }
 			public String get(User obj) { return obj.getPasswordHash(); }
@@ -106,4 +121,28 @@ public class User implements Serializable, IModelObject<User> {
 	public String getPasswordHash() {
 		return passwordHash;
 	}
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

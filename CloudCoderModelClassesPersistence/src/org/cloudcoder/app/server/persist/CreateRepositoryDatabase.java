@@ -47,11 +47,11 @@ public class CreateRepositoryDatabase {
 	private static void doCreateRepositoryDatabase() throws Exception {
 		Scanner keyboard = new Scanner(System.in);
 		
-		System.out.print("Enter a username for your repository server account: ");
-		String ccUserName = keyboard.nextLine();
-		
-		System.out.print("Enter a password for your repository server account: ");
-		String ccPassword = keyboard.nextLine();
+		String ccUserName = ConfigurationUtil.ask(keyboard, "Enter a username for your repository server account: ");
+        String ccPassword = ConfigurationUtil.ask(keyboard, "Enter a password for your repository server account: ");
+        String ccFirstname = ConfigurationUtil.ask(keyboard, "What is your first name?");
+        String ccLastname= ConfigurationUtil.ask(keyboard, "What is your last name?");
+        String ccEmail= ConfigurationUtil.ask(keyboard, "What is your email address?");
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
@@ -74,7 +74,7 @@ public class CreateRepositoryDatabase {
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		int userId = CreateSampleData.createInitialUser(conn, ccUserName, ccPassword);
+		int userId = ConfigurationUtil.createUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
 
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);
