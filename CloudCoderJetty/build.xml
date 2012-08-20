@@ -6,6 +6,7 @@
     </path>
 
 	<target name="javac">
+		<mkdir dir="bin"/>
 		<javac source="1.6" target="1.6" srcdir="src" destdir="bin">
 			<classpath refid="CloudCoderJetty.classpath"/>
 		</javac>
