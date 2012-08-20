@@ -25,12 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.shared.model.ReflectionFactory;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 
 /**
  * Servlet to import/export exercises (problem and its test cases) as JSON.

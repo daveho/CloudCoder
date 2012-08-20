@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 import org.junit.Before;
 import org.junit.Test;
 
