@@ -111,14 +111,8 @@ public class CreateWebappDatabase {
 		// Set institution name (and any other configuration settings)
 		System.out.println("Adding configuration settings...");
 
-//		ConfigurationSetting instName = new ConfigurationSetting();
-//		instName.setName(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
-//		instName.setValue(ccInstitutionName);
-//		DBUtil.storeBean(conn, instName, ConfigurationSetting.SCHEMA, JDBCDatabase.CONFIGURATION_SETTINGS);
-
 		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_TEXT_INSTITUTION, ccInstitutionName);
 		DBUtil.storeConfigurationSetting(conn, ConfigurationSettingName.PUB_REPOSITORY_URL, ccRepoUrl);
-
 		
 		// Terms
 		System.out.println("Creating terms...");
@@ -131,33 +125,6 @@ public class CreateWebappDatabase {
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
-//<<<<<<< HEAD
-//		Course course = new Course();
-//		course.setName("CCDemo");
-//		course.setTitle("CloudCoder demo course");
-//		course.setTermId(fall.getId());
-//		//TODO: Get current year
-//		course.setTerm(fall);
-//		course.setYear(2012);
-//		course.setUrl("http://cloudcoder.org/");
-//		DBUtil.storeBean(conn, course, Course.SCHEMA, JDBCDatabase.COURSES);
-//		
-//		// Create an initial user
-//		System.out.println("Creating initial user...");
-//		User user = new User();
-//		user.setUsername(ccUserName);
-//		user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-//		DBUtil.storeBean(conn, user, User.SCHEMA, JDBCDatabase.USERS);
-//		
-//		// Register the user as an instructor in the demo course
-//		System.out.println("Registering initial user for demo course...");
-//		CourseRegistration courseReg = new CourseRegistration();
-//		courseReg.setCourseId(course.getId());
-//		courseReg.setUserId(user.getId());
-//		courseReg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
-//		courseReg.setSection(101);
-//		DBUtil.storeBean(conn, courseReg, CourseRegistration.SCHEMA, JDBCDatabase.COURSE_REGISTRATIONS);
-//=======
 		int courseId = CreateSampleData.createDemoCourse(conn, fall);
 		
 		// Create an initial user
@@ -167,44 +134,13 @@ public class CreateWebappDatabase {
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
 		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR);
-//>>>>>>> 4296caaa5da7c71fc6a038f2b7b12d08b969d1e2
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");
 		Problem problem = new Problem();
-//<<<<<<< HEAD
-//		problem.setCourseId(course.getId());
-//		problem.setWhenAssigned(System.currentTimeMillis());
-//		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
-//		problem.setVisible(true);
-//		problem.setProblemType(ProblemType.C_PROGRAM);
-//		problem.setTestname("hello");
-//		problem.setBriefDescription("Print hello, world");
-//		problem.setDescription(
-//				"<p>Print a line with the following text:</p>\n" +
-//				"<blockquote><pre>Hello, world</pre></blockquote>\n"
-//		);
-//
-//		problem.setSkeleton(
-//				"#include <stdio.h>\n\n" +
-//				"int main(void) {\n" +
-//				"\t// TODO - add your code here\n\n" +
-//				"\treturn 0;\n" +
-//				"}\n"
-//				);
-//		problem.setSchemaVersion(Problem.CURRENT_SCHEMA_VERSION);
-//		problem.setAuthorName("A. User");
-//		problem.setAuthorEmail("auser@cs.unseen.edu");
-//		problem.setAuthorWebsite("http://cs.unseen.edu/~auser");
-//		problem.setTimestampUtc(System.currentTimeMillis());
-//		problem.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
-//		
-//		DBUtil.storeBean(conn, problem, Problem.SCHEMA, JDBCDatabase.PROBLEMS);
-//=======
 		CreateSampleData.populateSampleProblem(problem, courseId);
 		DBUtil.storeModelObject(conn, problem);
 		Integer problemId = problem.getProblemId();
-//>>>>>>> 4296caaa5da7c71fc6a038f2b7b12d08b969d1e2
 		
 		// Add a TestCase
 		System.out.println("Creating test case for hello, world problem...");
@@ -218,7 +154,7 @@ public class CreateWebappDatabase {
 		System.out.println("Success!");
 	}
 
-	private static String ask(Scanner keyboard, String prompt) {
+	public static String ask(Scanner keyboard, String prompt) {
 		return ask(keyboard, prompt, null);
 	}
 	

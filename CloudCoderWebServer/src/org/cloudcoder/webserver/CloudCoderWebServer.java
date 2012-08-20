@@ -40,6 +40,8 @@ public class CloudCoderWebServer {
 		} else if (args.length == 1 && args[0].equals("createcourse")) {
 			// If command is "createcourse", run the CreateCourse program.
 			runMain("org.cloudcoder.app.server.persist.CreateCourse");
+		} else if (args.length == 1 && args[0].equals("registerstudents")) {
+		    runMain("org.cloudcoder.app.server.persist.RegisterStudents");
 		} else {
 			// Otherwise, use the CloudCoderDaemonController to handle the command.
 			// CloudCoderDaemonController handles requests to start/control/shutdown

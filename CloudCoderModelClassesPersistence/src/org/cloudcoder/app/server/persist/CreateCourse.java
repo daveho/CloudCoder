@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -84,7 +83,7 @@ public class CreateCourse {
 		System.out.println("Success!");
 	}
 
-	private static<E> E choose(Scanner keyboard, String prompt, List<E> values) {
+	static<E> E choose(Scanner keyboard, String prompt, List<E> values) {
 		System.out.println(prompt);
 		int count = 0;
 		for (E val : values) {
