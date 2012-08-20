@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
@@ -582,5 +583,61 @@ public class DBUtil {
 		instName.setName(configPropName);
 		instName.setValue(configPropValue);
 		storeModelObject(conn, instName);
+	}
+	
+	/**
+	 * Get list of all model objects of specified type from the database.
+	 * 
+	 * @param conn    the database connection
+	 * @param schema  the type of model object to retrieve
+	 * @param factory factory to create new instances of model objects
+	 * @return list of all model objects
+	 * @throws SQLException
+	 */
+	public static<E> List<E> getAllModelObjects(Connection conn, ModelObjectSchema<E> schema, IFactory<E> factory) throws SQLException {
+		ArrayList<E> result = new ArrayList<E>();
+		
+		PreparedStatement stmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			stmt = conn.prepareStatement("select * from " + schema.getDbTableName());
+			resultSet = stmt.executeQuery();
+			
+			while (resultSet.next()) {
+				// Create new model object
+				E obj = factory.create();
+				
+				// Load model object fields
+				loadModelObjectFields(obj, schema, resultSet);
+				
+				// Add to list
+				result.add(obj);
+			}
+			
+			return result;
+		} finally {
+			closeQuietly(resultSet);
+			closeQuietly(stmt);
+		}
+	}
+
+	/**
+	 * Load a model object's fields from a {@link ResultSet}.
+	 * 
+	 * @param obj        the model object
+	 * @param schema     the model object's schema
+	 * @param resultSet  the {@link ResultSet}
+	 * @throws SQLException
+	 */
+	public static <E> void loadModelObjectFields(E obj,
+			ModelObjectSchema<E> schema, ResultSet resultSet)
+			throws SQLException {
+		int index = 1;
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			Object value = resultSet.getObject(index++);
+			value = convertValue(value, field.getType());
+			field.setUntyped(obj, value);
+		}
 	}
 }
