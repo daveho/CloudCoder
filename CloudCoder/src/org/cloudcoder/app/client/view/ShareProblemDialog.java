@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemLicense;
@@ -33,6 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -56,10 +58,12 @@ public class ShareProblemDialog extends DialogBox {
 	private Label errorLabel;
 	
 	private ProblemAndTestCaseList exercise;
-	
-	private OperationResult result;
+	private ICallback<OperationResult> resultCallback;
 	
 	public ShareProblemDialog() {
+		setTitle("Share problem");
+		setGlassEnabled(true);
+		
 		FlowPanel panel = new FlowPanel();
 		
 		panel.add(new Label("Choose a license and enter your exercise repository username and password." +
@@ -93,10 +97,12 @@ public class ShareProblemDialog extends DialogBox {
 		panel.add(new InlineLabel("Repository username:"));
 		this.repoUsernameTextBox = new TextBox();
 		panel.add(repoUsernameTextBox);
+		panel.add(new HTML("<br />"));
 		
 		panel.add(new InlineLabel("Repository password:"));
 		this.repoPasswordTextBox = new PasswordTextBox();
 		panel.add(repoPasswordTextBox);
+		panel.add(new HTML("<br />"));
 		
 		this.errorLabel = new Label("");
 		panel.add(errorLabel);
@@ -129,6 +135,16 @@ public class ShareProblemDialog extends DialogBox {
 		this.exercise = exercise;
 	}
 
+	/**
+	 * Set the result callback that will receive the {@link OperationResult}
+	 * from attempting to share the exercise to the repository.
+	 * 
+	 * @param resultCallback the result callback
+	 */
+	public void setResultCallback(ICallback<OperationResult> resultCallback) {
+		this.resultCallback = resultCallback;
+	}
+
 	protected void onLicenseChange() {
 		int selIndex = licenseListBox.getSelectedIndex();
 		ProblemLicense license = indexToLicenseMap.get(selIndex);
@@ -149,13 +165,13 @@ public class ShareProblemDialog extends DialogBox {
 		RPC.getCoursesAndProblemsService.submitExercise(exercise, repoUsername, repoPassword, new AsyncCallback<OperationResult>() {
 			@Override
 			public void onSuccess(OperationResult result_) {
-				result = result_;
+				resultCallback.call(result_);
 				hide();
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				result = new OperationResult(false, caught.getMessage());
+				resultCallback.call(new OperationResult(false, caught.getMessage()));
 				hide();
 			}
 		});

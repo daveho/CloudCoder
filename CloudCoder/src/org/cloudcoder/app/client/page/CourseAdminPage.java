@@ -25,6 +25,8 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -32,6 +34,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -140,7 +143,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			// Create a StatusMessageView
 			this.statusMessageView = new StatusMessageView();
 			centerPanel.add(statusMessageView);
-			centerPanel.setWidgetBottomHeight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+			centerPanel.setWidgetBottomHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			centerPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			dockLayoutPanel.add(centerPanel);
@@ -176,15 +179,53 @@ public class CourseAdminPage extends CloudCoderPage {
 		}
 
 		private void doShareProblem() {
-			ShareProblemDialog shareProblemDialog = new ShareProblemDialog();
-			// TODO: get exercise
+			final Problem chosen = getSession().get(Problem.class);
+
+			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
+				@Override
+				public void call(ProblemAndTestCaseList value) {
+					ShareProblemDialog shareProblemDialog = new ShareProblemDialog();
+					shareProblemDialog.setExercise(value);
+					shareProblemDialog.setResultCallback(new ICallback<OperationResult>() {
+						public void call(OperationResult value) {
+							// Add a StatusMessage with the result of the operation
+							GWT.log("share problem result: " + value.isSuccess() + ":" + value.getMessage());
+							StatusMessage.Category category = value.isSuccess() ? StatusMessage.Category.GOOD_NEWS : StatusMessage.Category.ERROR;
+							StatusMessage status = new StatusMessage(category, value.getMessage());
+							getSession().add(status);
+						}
+					});
+					
+					shareProblemDialog.center();
+				}
+			});
 		}
 
 		private void handleEditProblem() {
 			// Get the full ProblemAndTestCaseList for the chosen Problem
 			final Problem chosen = getSession().get(Problem.class);
 			
-			RPC.getCoursesAndProblemsService.getTestCasesForProblem(chosen.getProblemId(), new AsyncCallback<TestCase[]>() {
+			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
+				@Override
+				public void call(ProblemAndTestCaseList value) {
+					getSession().add(value);
+					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, value);
+				}
+			});
+		}
+
+		/**
+		 * Load a complete {@link ProblemAndTestCaseList} for given {@link Problem}.
+		 * An RPC call is made to fetch the {@link TestCase}s for the problem,
+		 * and the result is delivered asynchronously to a callback.
+		 *
+		 * @param problem    the problem
+		 * @param callback   the callback to receive the full {@link ProblemAndTestCaseList}
+		 */
+		private void loadProblemAndTestCaseList(
+				final Problem problem,
+				final ICallback<ProblemAndTestCaseList> callback) {
+			RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					getSession().add(new StatusMessage(
@@ -193,12 +234,11 @@ public class CourseAdminPage extends CloudCoderPage {
 
 				@Override
 				public void onSuccess(TestCase[] result) {
+					// Success!
 					ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
-					problemAndTestCaseList.setProblem(chosen);
+					problemAndTestCaseList.setProblem(problem);
 					problemAndTestCaseList.setTestCaseList(result);
-					
-					getSession().add(problemAndTestCaseList);
-					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, problemAndTestCaseList);
+					callback.call(problemAndTestCaseList);
 				}
 			});
 		}

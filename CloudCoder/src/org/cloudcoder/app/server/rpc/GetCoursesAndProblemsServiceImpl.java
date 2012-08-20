@@ -158,6 +158,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws NetCoderAuthenticationException  {
+		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
 		return new OperationResult(false, "Not implemented yet");
 	}
 }
