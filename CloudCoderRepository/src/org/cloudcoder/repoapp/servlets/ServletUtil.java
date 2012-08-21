@@ -79,7 +79,7 @@ public class ServletUtil {
 		}
 		
 		String authHeaderDecoded = new String(authHeaderDecodedBytes, Charset.forName("UTF-8"));
-		System.out.println("Decoded header: " + authHeaderDecoded);
+		//System.out.println("Decoded header: " + authHeaderDecoded);
 		int colon = authHeaderDecoded.indexOf(':');
 		if (colon < 0) {
 			throw new AuthenticationException("Invalid authorization string (not in username:password format)");

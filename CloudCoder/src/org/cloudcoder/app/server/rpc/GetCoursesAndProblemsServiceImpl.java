@@ -192,7 +192,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		String authHeaderValue =
 				"Basic " +
 				DatatypeConverter.printBase64Binary((repoUsername + ":" + repoPassword).getBytes(Charset.forName("UTF-8")));
-		System.out.println("Authorization: " + authHeaderValue);
+		//System.out.println("Authorization: " + authHeaderValue);
 		post.addHeader("Authorization", authHeaderValue);
 		
 		// Convert the exercise to a JSON string
