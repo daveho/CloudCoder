@@ -44,6 +44,12 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public interface IDatabase {
+	/**
+	 * Get a configuration setting.
+	 * 
+	 * @param name the {@link ConfigurationSettingName}
+	 * @return the {@link ConfigurationSetting}, or null if there is no such setting
+	 */
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	
 	/**

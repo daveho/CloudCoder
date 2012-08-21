@@ -17,10 +17,26 @@
 
 package org.cloudcoder.app.server.rpc;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistration;
@@ -32,6 +48,7 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,6 +176,60 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws NetCoderAuthenticationException  {
 		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
-		return new OperationResult(false, "Not implemented yet");
+		
+		ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
+		if (repoUrlSetting == null) {
+			return new OperationResult(false, "URL of exercise repository is not configured");
+		}
+		String repoUrl = repoUrlSetting.getValue();
+		if (repoUrl.endsWith("/")) {
+			repoUrl = repoUrl.substring(0, repoUrl.length()-1);
+		}
+		
+		HttpPost post = new HttpPost(repoUrl + "/exercise");
+		
+		// Encode an Authorization header using the provided repository username and password.
+		String authHeaderValue =
+				"Basic " +
+				DatatypeConverter.printBase64Binary((repoUsername + ":" + repoPassword).getBytes(Charset.forName("UTF-8")));
+		System.out.println("Authorization: " + authHeaderValue);
+		post.addHeader("Authorization", authHeaderValue);
+		
+		// Convert the exercise to a JSON string
+		StringEntity entity;
+		StringWriter sw = new StringWriter();
+		try {
+			JSONConversion.writeProblemAndTestCaseData(exercise, sw);
+			entity = new StringEntity(sw.toString(), ContentType.create("application/json", "UTF-8"));
+		} catch (IOException e) {
+			return new OperationResult(false, "Could not convert exercise to JSON: " + e.getMessage());
+		}
+		post.setEntity(entity);
+		
+		// POST the exercise to the repository
+		HttpClient client;
+		try {
+			client = new DefaultHttpClient();
+			HttpResponse response;
+			try {
+				response = client.execute(post);
+			} catch (ClientProtocolException e) {
+				return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
+			} catch (IOException e) {
+				return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
+			}
+		
+			StatusLine statusLine = response.getStatusLine();
+			
+			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+				return new OperationResult(true, "Exercise successfully published to the repository - thank you!");
+			} else if (statusLine.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+				return new OperationResult(false, "Authentication with repository failed - incorrect username/password?");
+			} else {
+				return new OperationResult(false, "Failed to publish exercise to repository: " + statusLine.getReasonPhrase());
+			}
+		} finally {
+			// Do we need to do something to clean up the HttpClient?
+		}
 	}
 }
