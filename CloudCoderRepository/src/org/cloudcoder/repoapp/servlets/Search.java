@@ -18,13 +18,24 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Search extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -33,6 +44,42 @@ public class Search extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("problemTypes", ProblemType.values());
 		
+		// Thank you, Sun, for using the method "ordinal()" rather than
+		// "getOrdinal()" to get the ordinal value of an enumeration constant.
+		// Saving three characters of typing far outweighs the utter violation
+		// of standard bean property accessor naming.
+		Map<ProblemType, Integer> problemTypeOrdinals = new HashMap<ProblemType, Integer>();
+		for (ProblemType problemType : ProblemType.values()) {
+			problemTypeOrdinals.put(problemType, problemType.ordinal());
+		}
+		req.setAttribute("problemTypeOrdinals", problemTypeOrdinals);
+		
 		req.getRequestDispatcher("_view/search.jsp").forward(req, resp);
+	}
+	
+	// Note: POST requests are assumed to come from the search page via AJAX.
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		
+		ProblemType problemType = null;
+		if (req.getParameter("problemType") != null) {
+			Integer problemTypeOrdinal = Integer.parseInt(req.getParameter("problemType"));
+			ProblemType[] values = ProblemType.values();
+			if (problemTypeOrdinal >= 0 && problemTypeOrdinal < values.length) {
+				problemType = values[problemTypeOrdinal];
+				System.out.println("Search for " + problemType + " exercises");
+			}
+		}
+		
+		List<RepoProblemAndTestCaseList> resultList = Database.getInstance().searchRepositoryExercises(problemType);
+		JSONArray result = new JSONArray();
+		for (RepoProblemAndTestCaseList exercise : resultList) {
+			result.add(JSONConversion.convertProblemAndTestCaseDataToJSONObject(exercise));
+		}
+		
+		resp.setContentType("application/json");
+		JSONValue.writeJSONString(result, resp.getWriter());
 	}
 }

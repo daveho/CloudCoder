@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
@@ -219,4 +220,13 @@ public interface IDatabase {
 	 * @param user     the {@link User} who is importing the problem into the database
 	 */
 	public void storeRepoProblemAndTestCaseList(RepoProblemAndTestCaseList exercise, User user);
+
+	/**
+	 * Search the repository database for exercises matching given criteria.
+	 * 
+	 * @param problemType the {@link ProblemType}
+	 * @return the exercises that matched the search criteria
+	 */
+	public List<RepoProblemAndTestCaseList> searchRepositoryExercises(
+			ProblemType problemType);
 }
