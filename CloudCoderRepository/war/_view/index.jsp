@@ -31,6 +31,19 @@
 				to share them here!
 			</p>
 			
+			<h2>What would you like to do?</h2>
+			
+			<ul class="navChoiceList">
+				<li>
+					<a href="${pageContext.servletContext.contextPath}/search">Browse or search the repository</a> &mdash;
+					find problems to use in your courses.
+				</li>
+				<li>
+					<a href="${pageContext.servletContext.contextPath}/register">Create an account</a> &mdash;
+					allows you to share your own problems, tag problems, and comment on problems.
+				</li>
+			</ul>
+			
 		</div>
 	</body>
 </html>
