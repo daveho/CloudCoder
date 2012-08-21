@@ -18,6 +18,7 @@
 package org.cloudcoder.app.server.persist;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -30,6 +31,15 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.User;
 
 public class CreateCourse {
+	public static class Instructor {
+		Instructor(User user, int section) {
+			this.user = user;
+			this.section = section;
+		}
+		User user;
+		int section;
+	}
+	
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
 		
@@ -47,21 +57,29 @@ public class CreateCourse {
 			}
 		});
 		
+		// Get course details
 		Term term = ConfigurationUtil.choose(keyboard, "What term?", terms);
 		int year = ConfigurationUtil.askInt(keyboard, "What year? ");
 		String name = ConfigurationUtil.askString(keyboard, "Course name (e.g., \"CS 101\")? ");
 		String title = ConfigurationUtil.askString(keyboard, "Course title (e.g., \"Introduction to Computer Science\")? ");
 		String url = ConfigurationUtil.askString(keyboard, "Course URL? ");
-		
-		String instructorUsername = ConfigurationUtil.askString(keyboard, "Username of course instructor? ");
-		User instructor = ConfigurationUtil.findUser(conn, instructorUsername);
-		if (instructor==null) {
-		    throw new IllegalArgumentException("Cannot find instructor with username "+instructorUsername);
-		}
-		
-		int section = ConfigurationUtil.askInt(keyboard, "What section is this instructor teaching? ");
-		
-		// FIXME: need to allow multiple sections and multiple instructors
+
+		// Get instructor details
+		List<Instructor> instructors = new ArrayList<CreateCourse.Instructor>();
+		boolean moreInstructors;
+		do {
+			String username = ConfigurationUtil.askString(keyboard, "Instructor username? ");
+			User user = ConfigurationUtil.findUser(conn, username);
+			if (user==null) {
+			    throw new IllegalArgumentException("Cannot find instructor with username "+username);
+			}
+			int section = ConfigurationUtil.askInt(keyboard, "What section is this instructor teaching? ");
+			
+			instructors.add(new Instructor(user, section));
+			
+			String more = ConfigurationUtil.askString(keyboard, "Add another instructor? (y/n)");
+			moreInstructors = more.trim().toLowerCase().startsWith("y");
+		} while (moreInstructors);
 		
 		// Create the course
 		Course course = new Course();
@@ -72,13 +90,15 @@ public class CreateCourse {
 		course.setYear(year);
 		DBUtil.storeModelObject(conn, course);
 		
-		// Register the instructor
-		CourseRegistration reg = new CourseRegistration();
-		reg.setCourseId(course.getId());
-		reg.setUserId(instructor.getId());
-		reg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
-		reg.setSection(section);
-		DBUtil.storeModelObject(conn, reg);
+		// Register the instructor(s)
+		for (Instructor instructor : instructors) {
+			CourseRegistration reg = new CourseRegistration();
+			reg.setCourseId(course.getId());
+			reg.setUserId(instructor.user.getId());
+			reg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
+			reg.setSection(instructor.section);
+			DBUtil.storeModelObject(conn, reg);
+		}
 		
 		System.out.println("Success!");
 	}
