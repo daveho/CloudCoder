@@ -53,6 +53,17 @@ public class ServletUtil {
 	}
 	
 	/**
+	 * Get a model object from the session.
+	 * 
+	 * @param session the session
+	 * @param type    the type of model object to get
+	 * @return the model object, or null if there is no such model object in the session
+	 */
+	public static<E> E getModelObject(HttpSession session, Class<E> type) {
+		return type.cast(session.getAttribute(type.getSimpleName()));
+	}
+	
+	/**
 	 * Get HTTP basic authentication credentials from an HttpServletRequest.
 	 * 
 	 * @param req the HttpServletRequest

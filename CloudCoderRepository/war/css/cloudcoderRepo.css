@@ -46,6 +46,10 @@ ul.navChoiceList li {
 	list-style: none;
 }
 
+ul.navChoiceList li:before {
+	content: "\00BB \0020";
+}
+
 #content {
 	padding: 10px 80px;
 }
@@ -69,4 +73,9 @@ ul.navChoiceList li {
 
 div.error {
 	margin: 10px 0px;
+}
+
+#submitButton {
+	font-size: 120%;
+	font-weight: bold;
 }

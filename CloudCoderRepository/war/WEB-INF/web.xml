@@ -23,6 +23,10 @@
 		<servlet-name>Exercise</servlet-name>
 		<servlet-class>org.cloudcoder.repoapp.servlets.Exercise</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>Search</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.Search</servlet-class>
+	</servlet>
 	
 	<!-- Servlet-mapping -->
 	<servlet-mapping>
@@ -40,6 +44,10 @@
 	<servlet-mapping>
 		<servlet-name>Exercise</servlet-name>
 		<url-pattern>/exercise/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>Search</servlet-name>
+		<url-pattern>/search/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Use the /index servlet as the welcome file -->
