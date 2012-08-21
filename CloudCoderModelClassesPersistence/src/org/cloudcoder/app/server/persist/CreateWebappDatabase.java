@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -50,7 +49,6 @@ public class CreateWebappDatabase {
 	static final boolean DEBUG = false;
 	
 	public static void main(String[] args) throws Exception {
-	    //System.setIn(new FileInputStream("createdb.txt"));
 		try {
 			createWebappDatabase();
 		} catch (SQLException e) {
