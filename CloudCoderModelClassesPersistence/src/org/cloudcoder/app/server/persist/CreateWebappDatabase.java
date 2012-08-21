@@ -50,7 +50,6 @@ public class CreateWebappDatabase {
 	static final boolean DEBUG = false;
 	
 	public static void main(String[] args) throws Exception {
-	    System.setIn(new FileInputStream("createdb.txt"));
 		try {
 			createWebappDatabase();
 		} catch (SQLException e) {
