@@ -12,15 +12,18 @@
   <property file="../cloudcoder.properties"/>
 
   <path id="project.class.path">
+  	<!-- libs used by the webapp -->
+    <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
+
+  	<!-- CloudCoder libs -->
+  	<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+  	<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+  	<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+  	
+  	<!-- GWT stuff -->
     <pathelement location="war/WEB-INF/classes"/>
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
-  	
-  	<pathelement location="../CloudCoderModelClasses/bin"/>
-  	<pathelement location="../CloudCoderModelClassesPersistence/bin"/>
-  	
-    <!-- Add any additional non-server libs (such as JUnit) -->
-    <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
   </path>
 
   <target name="libs" description="Copy libs to WEB-INF/lib">
@@ -30,17 +33,22 @@
     <!-- Add any additional server libs that need to be copied -->
   </target>
 
-  <!-- Ensure that CloudCoder model classes are built. -->
+  <!-- Ensure that CloudCoder model library is built. -->
   <target name="modelClasses">
-  	<ant dir="../CloudCoderModelClasses" target="build"/>
+  	<ant dir="../CloudCoderModelClasses" target="jar"/>
   </target>
 	
-  <!-- Ensure that CloudCoder model classes persistence classes are built. -->
+  <!-- Ensure that CloudCoder model classes persistence library is built. -->
   <target name="modelClassesPersist">
-  	<ant dir="../CloudCoderModelClassesPersistence" target="build"/>
+  	<ant dir="../CloudCoderModelClassesPersistence" target="jar"/>
+  </target>
+	
+  <!-- Ensure that the CloudCoder model classes JSON serialization library is built. -->
+  <target name="modelClassesJSON">
+  	<ant dir="../CloudCoderModelClassesJSON" target="jar"/>
   </target>
 
-  <target name="javac" depends="libs,modelClasses,modelClassesPersist" description="Compile java source to bytecode">
+  <target name="javac" depends="libs,modelClasses,modelClassesPersist,modelClassesJSON" description="Compile java source to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"
@@ -200,6 +208,12 @@ Test targets suppressed because -junit argument was not specified when running w
   <target name="clean" description="Cleans this project">
     <delete dir="war/WEB-INF/classes" failonerror="false" />
     <delete dir="war/cloudcoder" failonerror="false" />
+  </target>
+
+  <target name="depclean" depends="clean">
+    <ant dir="../CloudCoderModelClasses" target="clean"/>
+    <ant dir="../CloudCoderModelClassesPersistence" target="clean"/>
+    <ant dir="../CloudCoderModelClassesJSON" target="clean"/>
   </target>
 
 </project>

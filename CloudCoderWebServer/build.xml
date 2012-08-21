@@ -52,6 +52,11 @@
 		<ant dir="../CloudCoderModelClassesPersistence" target="jar" />
 	</target>
 	
+	<!-- Target to build model classes JSON serialization library. -->
+	<target name="modelClassesJSON">
+		<ant dir="../CloudCoderModelClassesJSON" target="jar"/>
+	</target>
+	
 	<!-- Target to build the CloudCoder Jetty library. -->
 	<target name="jetty">
 		<ant dir="../CloudCoderJetty" target="jar"/>
@@ -61,7 +66,7 @@
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
 	-->
-	<target name="jar" depends="build,modelClasses,modelClassesPersistence,webapp">
+	<target name="jar" depends="build,modelClasses,modelClassesPersistence,modelClassesJSON,webapp">
 		<!--
 			Build single jar containing contents of all required libraries.
 		-->
@@ -102,6 +107,16 @@
 			<zipfileset
 				file="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderModelClassesPersist.jar"/>
+			
+			<!-- Include the model classes JSON serialization jar file in the webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClassesJSON.jar"/>
+			
+			<!-- Include libraries needed for JSON serialization. -->
+			<zipfileset
+				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
+				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
 			
 			<!-- Include keystore for secure communications with builder. -->
 			<zipfileset
