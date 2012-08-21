@@ -31,7 +31,7 @@
   <context-param>
     <!-- Name of MySQL database where the CloudCoder tables are. -->
     <param-name>cloudcoder.db.databaseName</param-name>
-    <param-value>cmucloudcoder</param-value>
+    <param-value>cloudcoder</param-value>
   </context-param>
   <context-param>
     <!-- Host where MySQL server is running. -->
