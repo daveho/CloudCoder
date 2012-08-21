@@ -45,3 +45,7 @@ html, body {
 .error {
 	color: red;
 }
+
+div.error {
+	margin: 10px 0px;
+}

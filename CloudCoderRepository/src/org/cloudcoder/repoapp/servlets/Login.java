@@ -61,6 +61,7 @@ public class Login extends HttpServlet {
 			}
 			
 			// Authentication failure
+			req.setAttribute("username", username);
 			req.setAttribute("error", "Username/password not found");
 		}
 
