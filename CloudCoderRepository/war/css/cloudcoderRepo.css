@@ -33,12 +33,13 @@ html, body {
 }
 
 #content {
-	padding: 10px 40px;
+	padding: 10px 80px;
 }
 
 #content h1 {
 	font-size: 160%;
 	font-weight: bold;
+	color: #228;
 }
 
 .error {

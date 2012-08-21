@@ -16,7 +16,7 @@
 				programming exercises contributed by users of the
 				<a href="http://cloudcoder.org/">CloudCoder</a> programming
 				exercise system.  All of the exercises in the repository are
-				freely redistributable under permissive licenses
+				<em>freely redistributable</em> under permissive licenses
 				such as <a href="http://creativecommons.org/">Creative Commons</a> and
 				<a href="http://www.gnu.org/copyleft/fdl.html">GNU FDL</a>.
 				(The CloudCoder software is open source, distributed under the terms
@@ -30,6 +30,7 @@
 				And, if you have written your own CloudCoder exercises, we encourage you
 				to share them here!
 			</p>
+			
 		</div>
 	</body>
 </html>
