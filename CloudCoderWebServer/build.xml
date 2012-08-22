@@ -39,27 +39,27 @@
 	
 	<!-- Target to build the webapp. -->
 	<target name="webapp">
-		<ant dir="../CloudCoder" target="build"/>
+		<ant inheritall="false" dir="../CloudCoder" target="build"/>
 	</target>
 	
 	<!-- Target to build model classes library. -->
 	<target name="modelClasses">
-		<ant dir="../CloudCoderModelClasses" target="jar" />
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar" />
 	</target>
 	
 	<!-- Target to build model classes persistence library. -->
 	<target name="modelClassesPersistence">
-		<ant dir="../CloudCoderModelClassesPersistence" target="jar" />
+		<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="jar" />
 	</target>
 	
 	<!-- Target to build model classes JSON serialization library. -->
 	<target name="modelClassesJSON">
-		<ant dir="../CloudCoderModelClassesJSON" target="jar"/>
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
 	</target>
 	
 	<!-- Target to build the CloudCoder Jetty library. -->
 	<target name="jetty">
-		<ant dir="../CloudCoderJetty" target="jar"/>
+		<ant inheritall="false" dir="../CloudCoderJetty" target="jar"/>
 	</target>
 	
 	<!--
@@ -147,9 +147,10 @@
 	
 	<!-- Clean this target and all depended-on targets. -->
 	<target name="depclean" depends="clean">
-		<ant dir="../CloudCoder" target="clean"/>
-		<ant dir="../CloudCoderModelClasses" target="clean"/>
-		<ant dir="../CloudCoderModelClassesPersistence" target="clean"/>
-		<ant dir="../CloudCoderJetty" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoder" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderJetty" target="clean"/>
 	</target>
 </project>

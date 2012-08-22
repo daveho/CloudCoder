@@ -35,17 +35,17 @@
 
   <!-- Ensure that CloudCoder model library is built. -->
   <target name="modelClasses">
-  	<ant dir="../CloudCoderModelClasses" target="jar"/>
+  	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar"/>
   </target>
 	
   <!-- Ensure that CloudCoder model classes persistence library is built. -->
   <target name="modelClassesPersist">
-  	<ant dir="../CloudCoderModelClassesPersistence" target="jar"/>
+  	<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="jar"/>
   </target>
 	
   <!-- Ensure that the CloudCoder model classes JSON serialization library is built. -->
   <target name="modelClassesJSON">
-  	<ant dir="../CloudCoderModelClassesJSON" target="jar"/>
+  	<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
   </target>
 
   <target name="javac" depends="libs,modelClasses,modelClassesPersist,modelClassesJSON" description="Compile java source to bytecode">
@@ -211,9 +211,9 @@ Test targets suppressed because -junit argument was not specified when running w
   </target>
 
   <target name="depclean" depends="clean">
-    <ant dir="../CloudCoderModelClasses" target="clean"/>
-    <ant dir="../CloudCoderModelClassesPersistence" target="clean"/>
-    <ant dir="../CloudCoderModelClassesJSON" target="clean"/>
+    <ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+    <ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
+    <ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
   </target>
 
 </project>

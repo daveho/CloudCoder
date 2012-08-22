@@ -7,7 +7,7 @@
 	</path>
 
 	<target name="modelClasses">
-		<ant dir="../CloudCoderModelClasses" target="jar"/>
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar"/>
 	</target>
 	
 	<target name="javac" depends="modelClasses">
@@ -31,5 +31,9 @@
 		<delete includeemptydirs="true">
 			<fileset dir="bin" includes="**/*"/>
 		</delete>
+	</target>
+	
+	<target name="depclean">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>
