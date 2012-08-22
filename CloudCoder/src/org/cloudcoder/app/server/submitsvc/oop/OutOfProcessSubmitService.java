@@ -108,6 +108,9 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
         InputStream keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream(keystoreFilename);
         if (keyStoreInputStream == null) {
             logger.warn("Could not find keystore file {}, will try defaultkeystore.jks", keystoreFilename);
+            //XXX hack; these are the defaults.  Would be nice for
+            keystoreFilename="defaultkeystore.jks";
+            keystorePassword="changeit";
             keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream("defaultkeystore.jks");
             if (keyStoreInputStream == null) {
         	        throw new IOException("Could not load keystore from resource " + keystoreFilename);
