@@ -5,35 +5,9 @@
 <html>
 	<head>
 		<repo:headStuff title="Search the repository"></repo:headStuff>
-		<script type="text/javascript">
-			var onSubmit = function() {
-				var problemTypeOrdinal = $("#selectedProblemType option:selected").attr('value');
-				//alert("Problem type is " + problemType);
-				
-				var queryUri = "${pageContext.servletContext.contextPath}/search";
-				$.ajax({
-					url: queryUri,
-					dataType: "json",
-					type: "post",
-					data: {
-						problemType: problemTypeOrdinal 
-					},
-					success: function(data, textStatus, jqXHR) {
-						// Result will be an array of JSON-encoded exercises
-						alert("Search returned " + data.length + " exercises");
-						
-						// TODO: display the exercises by adding them to the DOM tree
-					},
-					error: function(jqXHR, textStatus, errorThrown) {
-						$("#errorElt").text(errorThrown);
-					}
-				});
-			};
-		
-			$(document).ready(function() {
-				$("#submitButton").click(onSubmit);
-			});
-		</script>
+		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
+		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/search.js"></script>
 	</head>
 	<body>
 		<repo:topBanner/>
@@ -52,6 +26,20 @@
 			</p>
 			
 			<button id="submitButton">Search!</button> <span id="errorElt" class="error"></span>
+			
+			<table id="searchResultsTable">
+				<thead>
+						<tr>
+							<th>Language</th>
+							<th>Name</th>
+							<th>Description</th>
+							<th>Author</th>
+							<th>Tags</th>
+						</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
 		</div>
 	</body>
 </html>
