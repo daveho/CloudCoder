@@ -8,16 +8,18 @@
 		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript">
+			var problemTypeOrdinalToLanguage = ${problemTypeOrdinalToLanguage};
+			
 			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
 			// search results DataTable.
 			var repoProblemConvertFields = [
-				function(obj) { return obj.problem_type; },
+				function(obj) { return problemTypeOrdinalToLanguage[obj.problem_type]; },
 				function(obj) { return obj.testname; },
 				function(obj) { return obj.brief_description; },
 				function(obj) { return obj.author_name; },
 				function(obj) { return 'foo bar'; } // tags: not implemented yet
 			];
-		
+			
 			// Initiate an AJAX request to retrieve search results.
 			function onSubmit() {
 				var problemTypeOrdinal = $("#selectedProblemType option:selected").attr('value');

@@ -24,14 +24,30 @@ package org.cloudcoder.app.shared.model;
  */
 public enum Language {
 	/** Java programming language. */
-	JAVA,
+	JAVA("Java"),
 	
 	/** C programming language. */
-	C,
+	C("C"),
 	
 	/** C++ programming language. */
-	CPLUSPLUS,
+	CPLUSPLUS("C++"),
 	
 	/** Python programming language. */
-	PYTHON,
+	PYTHON("Python"),
+	;
+	
+	private String name;
+	
+	private Language(String name) {
+		this.name = name;
+	}
+	
+	/**
+	 * Get a nice human-readable name for this programming language (e.g., "Java").
+	 * 
+	 * @return human-readable name
+	 */
+	public String getName() {
+		return name;
+	}
 }

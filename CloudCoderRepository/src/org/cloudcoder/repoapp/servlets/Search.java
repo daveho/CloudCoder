@@ -18,7 +18,6 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +31,27 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
-import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class Search extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+
+	// Javascript array mapping problem type ordinals to programming languages
+	private static String PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP;
+	static {
+		StringBuilder buf = new StringBuilder();
+		buf.append("[");
+		for (ProblemType problemType : ProblemType.values()) {
+			buf.append("'");
+			buf.append(problemType.getLanguage().getName());
+			buf.append("'");
+			buf.append(",");
+		}
+		buf.append("'']");
+		PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP = buf.toString();
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,6 +66,9 @@ public class Search extends HttpServlet {
 			problemTypeOrdinals.put(problemType, problemType.ordinal());
 		}
 		req.setAttribute("problemTypeOrdinals", problemTypeOrdinals);
+
+		// Javascript array mapping problem type ordinals to programming languages
+		req.setAttribute("problemTypeOrdinalToLanguage", PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP);
 		
 		req.getRequestDispatcher("_view/search.jsp").forward(req, resp);
 	}
