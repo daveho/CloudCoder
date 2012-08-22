@@ -17,6 +17,8 @@ import java.util.zip.ZipOutputStream;
 
 public class ConfigureCloudCoder
 {
+    private static final String YES = "yes";
+
     public static void main(String[] args) throws Exception {
         try {
             configureCloudCoder();
@@ -34,19 +36,28 @@ public class ConfigureCloudCoder
     {
         // re-write configuration properties
         Scanner keyboard=new Scanner(System.in);
-        String readFromFile=ConfigurationUtil.ask(keyboard, "Do you want to read new configuration properties from a file?","no");
-        if (readFromFile.equalsIgnoreCase("yes")) {
+        String readAppFromFile=ConfigurationUtil.ask(keyboard, "Do you want to read new configuration properties from a file and add them to your webapp and/or builder?","no");
+        
+        if (readAppFromFile.equalsIgnoreCase(YES)) {
             String filename=ConfigurationUtil.ask(keyboard, "What is the name of the file containing the new configuration properties?", "cloudcoder.properties");
             Properties properties = new Properties();
             properties.load(new FileInputStream(filename));
-            String jarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing all of the code for CloudCoder?", "cloudcoderApp.jar");
             
-            copyJarfileWithNewProperties(jarfileName, "cloudcoder.properties", properties);
+            String configWebapp=ConfigurationUtil.ask(keyboard, "Do you want to set these configuration properties for your CloudCoder webapp?", YES);
+            if (configWebapp.equals(YES)) {
+                String webappJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder webapp?", "cloudcoderApp.jar");
+                copyJarfileWithNewProperties(webappJarfileName, "cloudcoder.properties", properties);
+                System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+webappJarfileName);
+            }
 
-            System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+jarfileName);
+            String configBuilder=ConfigurationUtil.ask(keyboard, "Would you like to set these configuration properties for your CloudCoder builder?",YES);
+            if (configBuilder.equals(YES)) {
+                String buildJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder builder?", "cloudcoderBuilder.jar");
+                copyJarfileWithNewProperties(buildJarfileName, "cloudcoder.properties", properties);
+                System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+buildJarfileName);
+            }
         } else {
-            // read configuration properties from command line
-            System.out.println("Cannot yet read inputs from command-line.  TODO:  Read from command line");
+            System.out.println("OK, Nothing to do.  Goodbye!");
         }
     }
     
