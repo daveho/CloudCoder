@@ -51,7 +51,7 @@ ul.navChoiceList li:before {
 }
 
 #content {
-	padding: 10px 80px;
+	padding: 0px 80px;
 }
 
 #content h1 {
@@ -78,4 +78,8 @@ div.error {
 #submitButton {
 	font-size: 120%;
 	font-weight: bold;
+	margin-bottom: 16px;
+}
+
+#searchResultsTable {
 }

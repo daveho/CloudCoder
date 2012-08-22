@@ -1097,10 +1097,10 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<RepoProblemAndTestCaseList> searchRepositoryExercises(final ProblemType problemType) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemAndTestCaseList>>() {
+	public List<RepoProblem> searchRepositoryExercises(final ProblemType problemType) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblem>>() {
 			@Override
-			public List<RepoProblemAndTestCaseList> run(Connection conn) throws SQLException {
+			public List<RepoProblem> run(Connection conn) throws SQLException {
 				if (problemType == null) {
 					// no search criteria
 					return Collections.emptyList();
@@ -1122,17 +1122,19 @@ public class JDBCDatabase implements IDatabase {
 					problems.add(repoProblem);
 				}
 				
-				// For each RepoProblem, load test cases
-				List<RepoProblemAndTestCaseList> result = new ArrayList<RepoProblemAndTestCaseList>();
-				for (RepoProblem problem : problems) {
-					RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
-					exercise.setProblem(problem);
-					doFindRepoTestCases(problem, exercise, conn, this);
-					
-					result.add(exercise);
-				}
-				
-				return result;
+				return problems;
+
+//				// For each RepoProblem, load test cases
+//				List<RepoProblemAndTestCaseList> result = new ArrayList<RepoProblemAndTestCaseList>();
+//				for (RepoProblem problem : problems) {
+//					RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
+//					exercise.setProblem(problem);
+//					doFindRepoTestCases(problem, exercise, conn, this);
+//					
+//					result.add(exercise);
+//				}
+//				
+//				return result;
 			}
 			@Override
 			public String getDescription() {

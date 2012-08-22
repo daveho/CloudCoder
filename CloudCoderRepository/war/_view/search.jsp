@@ -7,7 +7,58 @@
 		<repo:headStuff title="Search the repository"></repo:headStuff>
 		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/search.js"></script>
+		<script type="text/javascript">
+			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
+			// search results DataTable.
+			var repoProblemConvertFields = [
+				function(obj) { return obj.problem_type; },
+				function(obj) { return obj.testname; },
+				function(obj) { return obj.brief_description; },
+				function(obj) { return obj.author_name; },
+				function(obj) { return 'foo bar'; } // tags: not implemented yet
+			];
+		
+			// Initiate an AJAX request to retrieve search results.
+			function onSubmit() {
+				var problemTypeOrdinal = $("#selectedProblemType option:selected").attr('value');
+				//alert("Problem type is " + problemType);
+				
+				var queryUri = "${pageContext.servletContext.contextPath}/search";
+				$.ajax({
+					url: queryUri,
+					dataType: "json",
+					type: "post",
+					data: {
+						problemType: problemTypeOrdinal 
+					},
+					success: function(data, textStatus, jqXHR) {
+						// Result will be an array of JSON-encoded exercises
+						//alert("Search returned " + data.length + " exercises");
+						
+						var data = $.map(data, function(obj, index) {
+							var tuple = [];
+							for (var i = 0; i < repoProblemConvertFields.length; i++) {
+								tuple.push(repoProblemConvertFields[i](obj));
+							}
+							return tuple;
+						});
+						
+						$("#searchResultsTable").dataTable().fnClearTable();
+						$("#searchResultsTable").dataTable().fnAddData(data);
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$("#errorElt").text(errorThrown);
+					}
+				});
+			}
+		
+			$(document).ready(function() {
+				$("#submitButton").click(onSubmit);
+				
+				// Enable DataTables on the search results table.
+				$("#searchResultsTable").dataTable();
+			});
+		</script>
 	</head>
 	<body>
 		<repo:topBanner/>

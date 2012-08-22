@@ -29,7 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
@@ -73,10 +75,10 @@ public class Search extends HttpServlet {
 			}
 		}
 		
-		List<RepoProblemAndTestCaseList> resultList = Database.getInstance().searchRepositoryExercises(problemType);
+		List<RepoProblem> resultList = Database.getInstance().searchRepositoryExercises(problemType);
 		JSONArray result = new JSONArray();
-		for (RepoProblemAndTestCaseList exercise : resultList) {
-			result.add(JSONConversion.convertProblemAndTestCaseDataToJSONObject(exercise));
+		for (RepoProblem repoProblem : resultList) {
+			result.add(JSONConversion.convertModelObjectToJSON(repoProblem, IProblemData.SCHEMA));
 		}
 		
 		resp.setContentType("application/json");
