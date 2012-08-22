@@ -107,7 +107,11 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	    String keyStoreType="JKS";
         InputStream keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream(keystoreFilename);
         if (keyStoreInputStream == null) {
-        	throw new IOException("Could not load keystore from resource " + keystoreFilename);
+            logger.warn("Could not find keystore file {}, will try defaultkeystore.jks", keystoreFilename);
+            keyStoreInputStream=this.getClass().getClassLoader().getResourceAsStream("defaultkeystore.jks");
+            if (keyStoreInputStream == null) {
+        	        throw new IOException("Could not load keystore from resource " + keystoreFilename);
+            }
         }
         
         logger.info("Using keystore {}", keystoreFilename);

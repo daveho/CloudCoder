@@ -42,7 +42,11 @@ public class CloudCoderWebServer {
 			runMain("org.cloudcoder.app.server.persist.CreateCourse");
 		} else if (args.length == 1 && args[0].equals("registerstudents")) {
 		    runMain("org.cloudcoder.app.server.persist.RegisterStudents");
-		} else {
+		} else if (args.length == 1 && args[0].equals("configure")) {
+		    runMain("org.cloudcoder.app.server.persist.ConfigureCloudCoder");
+		} else if (args.length == 1 && args[0].equals("listconfig")) {
+            runMain("org.cloudcoder.app.server.persist.ListCloudCoderProperties");
+        } else {
 			// Otherwise, use the CloudCoderDaemonController to handle the command.
 			// CloudCoderDaemonController handles requests to start/control/shutdown
 			// the webapp (and its web server).

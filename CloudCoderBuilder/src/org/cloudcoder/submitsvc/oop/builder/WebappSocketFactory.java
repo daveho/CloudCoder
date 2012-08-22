@@ -70,8 +70,15 @@ public class WebappSocketFactory {
 		this.port = port;
 		this.keystoreFilename = keystoreFilename;
 		this.keystorePassword = keystorePassword;
+		if (this.getClass().getClassLoader().getResource(keystoreFilename)==null) {
+		    //XXX this is a hack so that we can distribute jarfiles that communicate securely
+		    //TODO better documentation of generating new keystores
+		    // also should figure out how to generate keystores from Java programmatically
+		    this.keystoreFilename="defaultkeystore.jks";
+		    this.keystorePassword="changeit";
+		}
 		this.socketFactory = createSocketFactory();
-		logger.info("Builder: using keystore {}", keystoreFilename);
+		logger.info("Builder: using keystore {}", this.keystoreFilename);
 	}
 
 	private SSLSocketFactory createSocketFactory() throws IOException, GeneralSecurityException {

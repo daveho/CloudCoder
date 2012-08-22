@@ -50,8 +50,8 @@
 			<zipgroupfileset dir="lib" includes="**.jar"/>
 			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
 			<zipgroupfileset file="${model.class.jar}" />
-			<fileset dir="bin" includes="**" excludes="defaultkeystore.jks"/>
-			
+
+			<fileset dir="bin" includes="**"/>
 			<!-- Include keystore for secure communications with webapp. -->
 			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
 			

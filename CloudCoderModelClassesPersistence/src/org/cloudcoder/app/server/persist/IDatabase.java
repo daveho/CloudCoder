@@ -157,6 +157,14 @@ public interface IDatabase {
 	public SubmissionReceipt getSubmissionReceipt(int submissionReceiptId);
 
 	/**
+	 * Return a list of all users in the given course.
+	 * 
+	 * @param course The course for which we want all users.
+	 * @return A lot of all users inthe given course.
+	 */
+	public List<User> getUsersInCourse(Course course);
+	
+	/**
 	 * Get the Change with given id.
 	 * 
 	 * @param changeId the event id of the Change
