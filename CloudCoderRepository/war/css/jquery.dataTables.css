@@ -218,3 +218,10 @@ table.dataTable th:active {
 	-webkit-overflow-scrolling: touch;
 }
 
+tr.row_selected {
+	background-color: #aad !important;
+}
+
+tr.row_selected td {
+	background-color: #aad !important;
+}

@@ -35,6 +35,12 @@ import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 
+/**
+ * Servlet to allow the user to search the exercise repository
+ * for exercises matching specified criteria. 
+ * 
+ * @author David Hovemeyer
+ */
 public class Search extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -90,6 +96,7 @@ public class Search extends HttpServlet {
 		}
 		
 		List<RepoProblem> resultList = Database.getInstance().searchRepositoryExercises(problemType);
+		System.out.println("Found " + resultList.size() + " matching exercises");
 		JSONArray result = new JSONArray();
 		for (RepoProblem repoProblem : resultList) {
 			result.add(JSONConversion.convertModelObjectToJSON(repoProblem, IProblemData.SCHEMA));

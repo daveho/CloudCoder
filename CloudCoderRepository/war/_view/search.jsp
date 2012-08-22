@@ -19,6 +19,9 @@
 				function(obj) { return obj.author_name; },
 				function(obj) { return 'foo bar'; } // tags: not implemented yet
 			];
+
+			// Variable to store the DataTable object so it can be used by callbacks			
+			var dataTable;
 			
 			// Initiate an AJAX request to retrieve search results.
 			function onSubmit() {
@@ -36,17 +39,30 @@
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded exercises
 						//alert("Search returned " + data.length + " exercises");
-						
-						var data = $.map(data, function(obj, index) {
+
+						// Convert exercises to row tuples						
+						var j, i;
+						var rowData = [];
+						for (j = 0; j < data.length; j++) {
 							var tuple = [];
-							for (var i = 0; i < repoProblemConvertFields.length; i++) {
-								tuple.push(repoProblemConvertFields[i](obj));
+							for (i = 0; i < repoProblemConvertFields.length; i++) {
+								tuple.push(repoProblemConvertFields[i](data[j]));
 							}
-							return tuple;
-						});
+							rowData.push(tuple);
+						}
 						
 						$("#searchResultsTable").dataTable().fnClearTable();
-						$("#searchResultsTable").dataTable().fnAddData(data);
+						$("#searchResultsTable").dataTable().fnAddData(rowData);
+						
+						// Add a callback to all rows to handle row selection
+						$('#searchResultsTable tbody tr').click(function(e) {
+							if ($(this).hasClass('row_selected')) {
+					            $(this).removeClass('row_selected');
+					        } else {
+					            dataTable.$('tr.row_selected').removeClass('row_selected');
+					            $(this).addClass('row_selected');
+					        }
+						});
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#errorElt").text(errorThrown);
@@ -57,8 +73,8 @@
 			$(document).ready(function() {
 				$("#submitButton").click(onSubmit);
 				
-				// Enable DataTables on the search results table.
-				$("#searchResultsTable").dataTable();
+				// Enable DataTable on the search results table.
+				dataTable = $("#searchResultsTable").dataTable();
 			});
 		</script>
 	</head>
