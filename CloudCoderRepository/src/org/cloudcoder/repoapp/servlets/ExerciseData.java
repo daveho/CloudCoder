@@ -20,7 +20,6 @@ package org.cloudcoder.repoapp.servlets;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,33 +39,16 @@ import org.cloudcoder.app.shared.model.json.ReflectionFactory;
  * 
  * @author David Hovemeyer
  */
-public class ExerciseData extends HttpServlet {
+public class ExerciseData extends LoadExerciseServlet {
 	private static final String AUTH_REALM = "Exercise Repository";
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String pathInfo = req.getPathInfo();
-		if (pathInfo == null) {
-			ServletUtil.badRequest(resp, "Missing hash");
-			return;
-		}
-		
-		// get rid of leading "/" from the hash
-		String hash = pathInfo.substring(1);
-		
-		// Load the exercise
-		RepoProblemAndTestCaseList exercise = Database.getInstance().getRepoProblemAndTestCaseList(hash);
-		
-		if (exercise == null) {
-			ServletUtil.notFound(resp, "No exercise with hash " + hash);
-			return;
-		} else {
-			// Write the exercise as JSON
-			resp.setStatus(HttpServletResponse.SC_OK);
-			resp.setContentType("application/json");
-			JSONConversion.writeProblemAndTestCaseData(exercise, resp.getWriter());
-		}
+	protected void doExercise(HttpServletRequest req, HttpServletResponse resp, RepoProblemAndTestCaseList exercise) throws IOException {
+		// Write the exercise as JSON
+		resp.setStatus(HttpServletResponse.SC_OK);
+		resp.setContentType("application/json");
+		JSONConversion.writeProblemAndTestCaseData(exercise, resp.getWriter());
 	}
 	
 	@Override

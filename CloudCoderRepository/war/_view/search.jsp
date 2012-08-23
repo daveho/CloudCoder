@@ -77,7 +77,10 @@
 				dataTable = $("#searchResultsTable").dataTable({
 					aoColumnDefs: [{
 						fnRender: function(oObj, sVal) {
-							return "<a href='${pageContext.servletContext.contextPath}/exercisedata/" + oObj.aData[5].repo_problem.hash + "'>" + sVal + "</a>";
+							return "<a href='${pageContext.servletContext.contextPath}/exercise/" +
+								oObj.aData[5].repo_problem.hash +
+								"' target='_blank' >" + sVal + "</a> " +
+								"<img src='${pageContext.servletContext.contextPath}/images/newWindow.png' />";
 						},
 						aTargets: [ 2 ]
 					}]

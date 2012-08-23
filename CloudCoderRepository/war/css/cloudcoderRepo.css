@@ -82,3 +82,16 @@ div.error {
 
 #searchResultsTable {
 }
+
+.exerciseHash {
+	font-size: 120%;
+	font-family: monospace;
+	font-weight: bold;
+}
+
+.exerciseDescription {
+	background-color: #fffacd;
+	padding: 0px 10px;
+	border: 10px solid #fffacd;
+	border-radius: 20px;
+}
