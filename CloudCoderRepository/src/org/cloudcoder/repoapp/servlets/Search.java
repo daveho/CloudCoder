@@ -31,6 +31,7 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
@@ -95,7 +96,10 @@ public class Search extends HttpServlet {
 			}
 		}
 		
-		List<RepoProblem> resultList = Database.getInstance().searchRepositoryExercises(problemType);
+		RepoProblemSearchCriteria searchCriteria = new RepoProblemSearchCriteria();
+		searchCriteria.setProblemType(problemType);
+		
+		List<RepoProblem> resultList = Database.getInstance().searchRepositoryExercises(searchCriteria);
 		System.out.println("Found " + resultList.size() + " matching exercises");
 		JSONArray result = new JSONArray();
 		for (RepoProblem repoProblem : resultList) {

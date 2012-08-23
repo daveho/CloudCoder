@@ -53,6 +53,7 @@ import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -1134,11 +1135,11 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<RepoProblem> searchRepositoryExercises(final ProblemType problemType) {
+	public List<RepoProblem> searchRepositoryExercises(final RepoProblemSearchCriteria searchCriteria) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblem>>() {
 			@Override
 			public List<RepoProblem> run(Connection conn) throws SQLException {
-				if (problemType == null) {
+				if (searchCriteria.getProblemType() == null) {
 					// no search criteria
 					return Collections.emptyList();
 				}
@@ -1148,7 +1149,7 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
 						" where " + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
-				stmt.setInt(1, problemType.ordinal());
+				stmt.setInt(1, searchCriteria.getProblemType().ordinal());
 				
 				List<RepoProblem> problems = new ArrayList<RepoProblem>();
 				
