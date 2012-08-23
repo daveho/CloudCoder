@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,10 +49,10 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
+import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -1135,44 +1134,14 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<RepoProblem> searchRepositoryExercises(final RepoProblemSearchCriteria searchCriteria) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblem>>() {
+	public List<RepoProblemSearchResult> searchRepositoryExercises(final RepoProblemSearchCriteria searchCriteria) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemSearchResult>>() {
 			@Override
-			public List<RepoProblem> run(Connection conn) throws SQLException {
-				if (searchCriteria.getProblemType() == null) {
-					// no search criteria
-					return Collections.emptyList();
-				}
-				
-				// Find all RepoProblems matching the search criteria
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
-						" where " + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
-				stmt.setInt(1, searchCriteria.getProblemType().ordinal());
-				
-				List<RepoProblem> problems = new ArrayList<RepoProblem>();
-				
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					RepoProblem repoProblem = new RepoProblem();
-					DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
-					problems.add(repoProblem);
-				}
-				
-				return problems;
-
-//				// For each RepoProblem, load test cases
-//				List<RepoProblemAndTestCaseList> result = new ArrayList<RepoProblemAndTestCaseList>();
-//				for (RepoProblem problem : problems) {
-//					RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
-//					exercise.setProblem(problem);
-//					doFindRepoTestCases(problem, exercise, conn, this);
-//					
-//					result.add(exercise);
-//				}
-//				
-//				return result;
+			public List<RepoProblemSearchResult> run(Connection conn) throws SQLException {
+				RepoProblemSearch search = new RepoProblemSearch();
+				search.setSearchCriteria(searchCriteria);
+				search.execute(conn, this);
+				return search.getSearchResultList();
 			}
 			@Override
 			public String getDescription() {

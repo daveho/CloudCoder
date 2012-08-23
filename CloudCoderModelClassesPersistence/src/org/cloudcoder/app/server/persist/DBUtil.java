@@ -696,14 +696,29 @@ public class DBUtil {
 	 * @param resultSet  the {@link ResultSet}
 	 * @throws SQLException
 	 */
-	public static <E> void loadModelObjectFields(E obj,
+	public static <E> int loadModelObjectFields(E obj,
 			ModelObjectSchema<E> schema, ResultSet resultSet)
 			throws SQLException {
-		int index = 1;
+		return loadModelObjectFields(obj, schema, resultSet, 1);
+	}
+
+	/**
+	 * Load a model object's fields from a {@link ResultSet}.
+	 * 
+	 * @param obj        the model object
+	 * @param schema     the model object's schema
+	 * @param resultSet  the {@link ResultSet}
+	 * @param index      the index of the first model object field in the {@link ResultSet}
+	 * @throws SQLException
+	 */
+	public static <E> int loadModelObjectFields(E obj,
+			ModelObjectSchema<E> schema, ResultSet resultSet, int index)
+			throws SQLException {
 		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			Object value = resultSet.getObject(index++);
 			value = convertValue(value, field.getType());
 			field.setUntyped(obj, value);
 		}
+		return index;
 	}
 }

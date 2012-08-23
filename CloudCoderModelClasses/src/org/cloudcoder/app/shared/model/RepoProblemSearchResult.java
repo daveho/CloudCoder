@@ -20,33 +20,36 @@ package org.cloudcoder.app.shared.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.shared.model.RepoProblem;
+
 /**
- * Search criteria for finding {@link RepoProblem}s in the
- * exercise repository.
+ * A result from searching the exercise repository.
  * 
  * @author David Hovemeyer
  */
-public class RepoProblemSearchCriteria {
-	private ProblemType problemType;
-	private List<String> tagList;
+public class RepoProblemSearchResult {
+	public static final String MATCHED_TAG_LIST_ELEMENT_NAME = "matched_tag_list";
 	
-	public RepoProblemSearchCriteria() {
-		tagList= new ArrayList<String>();
+	private RepoProblem repoProblem;
+	private List<String> matchedTagList;
+	
+	public RepoProblemSearchResult() {
+		matchedTagList = new ArrayList<String>();
 	}
 	
-	public void setProblemType(ProblemType problemType) {
-		this.problemType = problemType;
+	public void setRepoProblem(RepoProblem repoProblem) {
+		this.repoProblem = repoProblem;
 	}
 	
-	public ProblemType getProblemType() {
-		return problemType;
+	public RepoProblem getRepoProblem() {
+		return repoProblem;
+	}
+
+	public void addMatchedTag(String matchedTag) {
+		matchedTagList.add(matchedTag);
 	}
 	
-	public void addTag(String tag) {
-		tagList.add(tag);
-	}
-	
-	public List<String> getTagList() {
-		return tagList;
+	public List<String> getMatchedTagList() {
+		return matchedTagList;
 	}
 }

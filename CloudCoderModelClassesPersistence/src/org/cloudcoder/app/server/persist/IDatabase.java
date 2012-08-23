@@ -31,10 +31,10 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
+import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -237,5 +237,5 @@ public interface IDatabase {
 	 * @param searchCriteria the search criteria
 	 * @return the problems that matched the search criteria
 	 */
-	public List<RepoProblem> searchRepositoryExercises(RepoProblemSearchCriteria searchCriteria);
+	public List<RepoProblemSearchResult> searchRepositoryExercises(RepoProblemSearchCriteria searchCriteria);
 }
