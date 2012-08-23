@@ -40,8 +40,6 @@
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
 						
-						searchResults = data;
-						
 						//alert("Search returned " + data.length + " exercises");
 
 						// Convert exercises to row tuples						
