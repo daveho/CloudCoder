@@ -40,7 +40,7 @@ import org.cloudcoder.app.shared.model.json.ReflectionFactory;
  * 
  * @author David Hovemeyer
  */
-public class Exercise extends HttpServlet {
+public class ExerciseData extends HttpServlet {
 	private static final String AUTH_REALM = "Exercise Repository";
 	private static final long serialVersionUID = 1L;
 

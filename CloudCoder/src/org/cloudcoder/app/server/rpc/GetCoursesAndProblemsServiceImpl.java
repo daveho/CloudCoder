@@ -186,7 +186,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			repoUrl = repoUrl.substring(0, repoUrl.length()-1);
 		}
 		
-		HttpPost post = new HttpPost(repoUrl + "/exercise");
+		HttpPost post = new HttpPost(repoUrl + "/exercisedata");
 		
 		// Encode an Authorization header using the provided repository username and password.
 		String authHeaderValue =

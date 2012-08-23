@@ -20,8 +20,8 @@
 		<servlet-class>org.cloudcoder.repoapp.servlets.Logout</servlet-class>
 	</servlet>
 	<servlet>
-		<servlet-name>Exercise</servlet-name>
-		<servlet-class>org.cloudcoder.repoapp.servlets.Exercise</servlet-class>
+		<servlet-name>ExerciseData</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.ExerciseData</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>Search</servlet-name>
@@ -42,8 +42,8 @@
 		<url-pattern>/logout</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>Exercise</servlet-name>
-		<url-pattern>/exercise/*</url-pattern>
+		<servlet-name>ExerciseData</servlet-name>
+		<url-pattern>/exercisedata/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>Search</servlet-name>
