@@ -74,7 +74,7 @@ public class RepoProblemSearch {
 				sql.append(" and rp." + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
 			}
 			
-			sql.append(" group by rp." + RepoProblem.ID.getName());
+			sql.append(" order by rp." + RepoProblem.ID.getName() + " asc");
 			
 			String query = sql.toString();
 			System.out.println("query: " + query);
@@ -111,6 +111,7 @@ public class RepoProblemSearch {
 				DBUtil.loadModelObjectFields(repoProblemTag, RepoProblemTag.SCHEMA, resultSet, RepoProblem.SCHEMA.getNumFields() + 1);
 				
 				curSearchResult.addMatchedTag(repoProblemTag.getName());
+				//System.out.println(curSearchResult.getRepoProblem().getTestname() + " => " + repoProblemTag.getName());
 			}
 		}
 	}

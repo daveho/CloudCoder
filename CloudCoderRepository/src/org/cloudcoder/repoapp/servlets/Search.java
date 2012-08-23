@@ -108,6 +108,7 @@ public class Search extends HttpServlet {
 				// Convert to lowercase and remove all non-alphanumeric characters
 				String normalizedTag = rawTag.toLowerCase().replaceAll("[^a-z0-9]", "");
 				searchCriteria.addTag(normalizedTag);
+				//System.out.println("Tag: " + normalizedTag);
 			}
 		}
 		
