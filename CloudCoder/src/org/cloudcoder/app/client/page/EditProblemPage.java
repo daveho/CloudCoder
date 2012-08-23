@@ -18,7 +18,6 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
@@ -74,7 +73,7 @@ public class EditProblemPage extends CloudCoderPage {
 	private enum Confirm {
 		OK, CANCEL,
 	}
-		
+	
 	private class UI extends ResizeComposite implements SessionObserver {
 		private static final double SAVE_BUTTON_HEIGHT_PX = 32.0;
 

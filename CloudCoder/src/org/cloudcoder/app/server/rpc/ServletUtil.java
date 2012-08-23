@@ -23,7 +23,7 @@ public class ServletUtil {
 		HttpSession session = request.getSession();
 		User user = (User) session.getAttribute(SessionAttributeKeys.USER_KEY);
 		if (user == null) {
-			logger.info("Authentication failure - no user in session");
+			logger.warn("Authentication failure - no user in session");
 			throw new NetCoderAuthenticationException();
 		}
 		return user;
