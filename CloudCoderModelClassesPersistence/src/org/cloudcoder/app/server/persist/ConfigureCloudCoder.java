@@ -9,16 +9,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class ConfigureCloudCoder
 {
-    private static final String YES = "yes";
-
     public static void main(String[] args) throws Exception {
         try {
             configureCloudCoder();
@@ -38,20 +38,20 @@ public class ConfigureCloudCoder
         Scanner keyboard=new Scanner(System.in);
         String readAppFromFile=ConfigurationUtil.ask(keyboard, "Do you want to read new configuration properties from a file and add them to your webapp and/or builder?","no");
         
-        if (readAppFromFile.equalsIgnoreCase(YES)) {
+        if (readAppFromFile.equalsIgnoreCase(ConfigurationUtil.YES)) {
             String filename=ConfigurationUtil.ask(keyboard, "What is the name of the file containing the new configuration properties?", "cloudcoder.properties");
             Properties properties = new Properties();
             properties.load(new FileInputStream(filename));
             
-            String configWebapp=ConfigurationUtil.ask(keyboard, "Do you want to set these configuration properties for your CloudCoder webapp?", YES);
-            if (configWebapp.equals(YES)) {
+            String configWebapp=ConfigurationUtil.ask(keyboard, "Do you want to set these configuration properties for your CloudCoder webapp?", ConfigurationUtil.YES);
+            if (configWebapp.equals(ConfigurationUtil.YES)) {
                 String webappJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder webapp?", "cloudcoderApp.jar");
                 copyJarfileWithNewProperties(webappJarfileName, "cloudcoder.properties", properties);
                 System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+webappJarfileName);
             }
 
-            String configBuilder=ConfigurationUtil.ask(keyboard, "Would you like to set these configuration properties for your CloudCoder builder?",YES);
-            if (configBuilder.equals(YES)) {
+            String configBuilder=ConfigurationUtil.ask(keyboard, "Would you like to set these configuration properties for your CloudCoder builder?",ConfigurationUtil.YES);
+            if (configBuilder.equals(ConfigurationUtil.YES)) {
                 String buildJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder builder?", "cloudcoderBuilder.jar");
                 copyJarfileWithNewProperties(buildJarfileName, "cloudcoder.properties", properties);
                 System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+buildJarfileName);
@@ -84,10 +84,21 @@ public class ConfigureCloudCoder
         ByteArrayOutputStream bytes=new ByteArrayOutputStream();
         ZipOutputStream newJarfileData = new ZipOutputStream(bytes);
 
+        // XXX Hack: zipfiles and jarfiles can apparently have multiple copies
+        // of the SAME file.  The builder has many META-INF/LICENSE files
+        // This should be fixed somehow, probably in the build.xml
+        // by giving the licenses specific names or putting them into
+        // other folders.
+        Set<String> alreadySeen=new HashSet<String>();
+        
         // first, copy contents from existing war
         Enumeration<? extends ZipEntry> entries = jarfile.entries();
         while (entries.hasMoreElements()) {
             ZipEntry e = entries.nextElement();
+            if (alreadySeen.contains(e.getName())) {
+                // skip filenames we've already added
+                continue;
+            }
             //System.out.println("copy: " + e.getName());
             
             if (e.getName().equals(propertiesFileName)) {
@@ -101,6 +112,7 @@ public class ConfigureCloudCoder
                     copy(jarfile.getInputStream(e), newJarfileData);
                 }
             }
+            alreadySeen.add(e.getName());
             newJarfileData.closeEntry();
         }
 
