@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoTestCase;
@@ -1081,19 +1083,8 @@ public class JDBCDatabase implements IDatabase {
 				RepoProblemAndTestCaseList result = new RepoProblemAndTestCaseList();
 				result.setProblem(repoProblem);
 				
-				// Query to find all RepoTestCases associated with the RepoProblem
-				PreparedStatement findRepoTestCases = prepareStatement(
-						conn,
-						"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
-						" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
-				findRepoTestCases.setInt(1, repoProblem.getId());
-				
-				ResultSet repoTestCaseRs = executeQuery(findRepoTestCases);
-				while (repoTestCaseRs.next()) {
-					RepoTestCase repoTestCase = new RepoTestCase();
-					load(repoTestCase, repoTestCaseRs, 1);
-					result.addTestCase(repoTestCase);
-				}
+				// Find all RepoTestCases associated with the RepoProblem
+				doFindRepoTestCases(repoProblem, result, conn, this);
 				
 				return result;
 			}
@@ -1104,13 +1095,12 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
 	@Override
 	public void storeRepoProblemAndTestCaseList(final RepoProblemAndTestCaseList exercise, final User user) {
 		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
-			public Boolean run(Connection conn)
-					throws SQLException {
+			public Boolean run(Connection conn) throws SQLException {
 				// Compute hash
 				exercise.computeHash();
 				
@@ -1139,6 +1129,53 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " storing exercise in repository database";
+			}
+		});
+	}
+	
+	@Override
+	public List<RepoProblem> searchRepositoryExercises(final ProblemType problemType) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblem>>() {
+			@Override
+			public List<RepoProblem> run(Connection conn) throws SQLException {
+				if (problemType == null) {
+					// no search criteria
+					return Collections.emptyList();
+				}
+				
+				// Find all RepoProblems matching the search criteria
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
+						" where " + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
+				stmt.setInt(1, problemType.ordinal());
+				
+				List<RepoProblem> problems = new ArrayList<RepoProblem>();
+				
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					RepoProblem repoProblem = new RepoProblem();
+					DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
+					problems.add(repoProblem);
+				}
+				
+				return problems;
+
+//				// For each RepoProblem, load test cases
+//				List<RepoProblemAndTestCaseList> result = new ArrayList<RepoProblemAndTestCaseList>();
+//				for (RepoProblem problem : problems) {
+//					RepoProblemAndTestCaseList exercise = new RepoProblemAndTestCaseList();
+//					exercise.setProblem(problem);
+//					doFindRepoTestCases(problem, exercise, conn, this);
+//					
+//					result.add(exercise);
+//				}
+//				
+//				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " searching for exercises in the exercise repository";
 			}
 		});
 	}
@@ -1477,6 +1514,26 @@ public class JDBCDatabase implements IDatabase {
 		deleteStmt.setInt(1, problemId);
 		
 		deleteStmt.executeUpdate();
+	}
+	
+	protected void doFindRepoTestCases(
+			RepoProblem repoProblem,
+			RepoProblemAndTestCaseList exercise,
+			Connection conn,
+			AbstractDatabaseRunnable<?> dbRunnable)
+			throws SQLException {
+		PreparedStatement findRepoTestCases = dbRunnable.prepareStatement(
+				conn,
+				"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
+				" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
+		findRepoTestCases.setInt(1, repoProblem.getId());
+		
+		ResultSet repoTestCaseRs = dbRunnable.executeQuery(findRepoTestCases);
+		while (repoTestCaseRs.next()) {
+			RepoTestCase repoTestCase = new RepoTestCase();
+			load(repoTestCase, repoTestCaseRs, 1);
+			exercise.addTestCase(repoTestCase);
+		}
 	}
 	
 	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

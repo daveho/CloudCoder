@@ -55,6 +55,20 @@ public class JSONConversion {
 			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
 			Writer writer) throws IOException {
 		
+		LinkedHashMap<String, Object> result = convertProblemAndTestCaseDataToJSONObject(obj);
+		
+		JSONValue.writeJSONString(result, writer);
+	}
+
+	/**
+	 * Convert an {@link IProblemAndTestCaseData} object to a JSON object
+	 * (suitable for being encoded as a JSON string.)
+	 * 
+	 * @param obj the {@link IProblemAndTestCaseData} object
+	 * @return the encoded JSON object
+	 */
+	public static LinkedHashMap<String, Object> convertProblemAndTestCaseDataToJSONObject(
+			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj) {
 		LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
 
 		// Add the problem
@@ -62,8 +76,7 @@ public class JSONConversion {
 
 		// Add array of test cases
 		addModelObjectList(result, obj.getTestCaseData(), ITestCaseData.SCHEMA);
-		
-		JSONValue.writeJSONString(result, writer);
+		return result;
 	}
 
 	/**
@@ -256,10 +269,18 @@ public class JSONConversion {
 		}
 	}
 
-	private static Object decodeJsonValue(Object jsonFieldValue, Class<?> type) throws IOException {
+	/**
+	 * Decode a scalar JSON value.
+	 * 
+	 * @param jsonFieldValue a scalar JSON value
+	 * @param type           the Java type to convert the JSON value to
+	 * @return the Java value
+	 * @throws IOException
+	 */
+	public static<E> E decodeJsonValue(Object jsonFieldValue, Class<E> type) throws IOException {
 		// Easy case: value is already the correct type
 		if (jsonFieldValue.getClass() == type) {
-			return jsonFieldValue;
+			return type.cast(jsonFieldValue);
 		}
 		
 		// Integer encoding of enumeration value?
@@ -272,17 +293,23 @@ public class JSONConversion {
 			if (ordinal < 0 || ordinal >= members.length) {
 				throw new IOException("Invalid ordinal " + ordinal + " for enumeration " + type.getClass().getName());
 			}
-			return members[ordinal];
+			return type.cast(members[ordinal]);
 		}
 
+		// Numeric conversion required?
 		if (jsonFieldValue instanceof Number) {
 			Number n = (Number) jsonFieldValue;
 			// Numeric conversions
 			if (type == Integer.class) {
-				return n.intValue();
+				return type.cast(n.intValue());
 			} else if (type == Long.class) {
-				return n.longValue();
+				return type.cast(n.longValue());
 			}
+		}
+		
+		// String encoding of numeric value?
+		if (type == Integer.class && jsonFieldValue.getClass() == String.class) {
+			return type.cast(Integer.parseInt((String) jsonFieldValue));
 		}
 		
 		throw new IOException("Cannot convert " + jsonFieldValue.getClass().getName() + " to " + type.getName());

@@ -53,6 +53,17 @@ public class ServletUtil {
 	}
 	
 	/**
+	 * Get a model object from the session.
+	 * 
+	 * @param session the session
+	 * @param type    the type of model object to get
+	 * @return the model object, or null if there is no such model object in the session
+	 */
+	public static<E> E getModelObject(HttpSession session, Class<E> type) {
+		return type.cast(session.getAttribute(type.getSimpleName()));
+	}
+	
+	/**
 	 * Get HTTP basic authentication credentials from an HttpServletRequest.
 	 * 
 	 * @param req the HttpServletRequest
@@ -79,7 +90,7 @@ public class ServletUtil {
 		}
 		
 		String authHeaderDecoded = new String(authHeaderDecodedBytes, Charset.forName("UTF-8"));
-		System.out.println("Decoded header: " + authHeaderDecoded);
+		//System.out.println("Decoded header: " + authHeaderDecoded);
 		int colon = authHeaderDecoded.indexOf(':');
 		if (colon < 0) {
 			throw new AuthenticationException("Invalid authorization string (not in username:password format)");

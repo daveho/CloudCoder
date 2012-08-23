@@ -31,7 +31,7 @@
 
     <!-- make sure model classes jar file is built -->
     <target name="modelClasses">
-    	<ant dir="../CloudCoderModelClasses" target="jar" />
+    	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar" />
     </target>
 
     <target depends="init,modelClasses" name="build">
@@ -73,6 +73,6 @@
 	
 	<!-- Clean everything (including projects on which this target depends -->
 	<target name="depclean" depends="clean">
-		<ant dir="../CloudCoderModelClasses" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>

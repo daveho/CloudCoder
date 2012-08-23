@@ -22,7 +22,10 @@ import java.io.UnsupportedEncodingException;
 /**
  * Compute a hash of the data in a {@link IProblemAndTestCaseData} object.
  * The hash should be "unique enough" that collisions will not arise
- * in practice.
+ * in practice.  <b>Important</b>: we only try to hash the "content"
+ * of the problem and test cases, and not the "provenence" of the problem.
+ * So, things like timestamps, parent hashes (for derived problems), etc.
+ * should not be hashed.
  * 
  * @author David Hovemeyer
  */
@@ -69,12 +72,17 @@ public class HashProblemAndTestCaseData<
 		updateString(problemData.getDescription());
 		updateString(problemData.getSkeleton());
 		updateInt(problemData.getSchemaVersion());
+
+		// Things like author info, author email, creation timestamp, etc.
+		// are part of the "provenence" of the problem, and as such
+		// should not be included in the hash.
+		/*
 		updateString(problemData.getAuthorName());
 		updateString(problemData.getAuthorEmail());
 		updateString(problemData.getAuthorWebsite());
 		updateLong(problemData.getTimestampUtc());
 		updateString(problemData.getLicense().toString());
-		// Note: parent hash is NOT digested.
+		*/
 		
 		// TODO: based on schema version, may need to digest additional fields
 	}

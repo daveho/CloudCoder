@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -142,7 +141,7 @@ public class CreateWebappDatabase {
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
-		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR);
+		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR, 101);
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");

@@ -141,6 +141,10 @@ public class ConfigurationUtil
             String lastname=tokens[2];
             String email=tokens[3];
             String password=tokens[4];
+            int section = 101; // The default section number
+            if (tokens[5] != null) {
+            	section=Integer.parseInt(tokens[5]);
+            }
             // Look up the user to see if they already exist
             int userId;
             User u=findUser(conn, username);
@@ -158,7 +162,7 @@ public class ConfigurationUtil
             // TODO check that user is not already registered
             CourseRegistration reg=findRegistration(conn, userId, courseId);
             if (reg==null) {
-                CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT);
+                CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section);
                 num++;
             } else {
                 skip++;

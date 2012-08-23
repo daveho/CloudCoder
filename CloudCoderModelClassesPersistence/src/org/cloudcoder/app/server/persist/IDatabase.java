@@ -31,6 +31,8 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
@@ -44,6 +46,12 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public interface IDatabase {
+	/**
+	 * Get a configuration setting.
+	 * 
+	 * @param name the {@link ConfigurationSettingName}
+	 * @return the {@link ConfigurationSetting}, or null if there is no such setting
+	 */
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	
 	/**
@@ -221,4 +229,13 @@ public interface IDatabase {
 	 * @param user     the {@link User} who is importing the problem into the database
 	 */
 	public void storeRepoProblemAndTestCaseList(RepoProblemAndTestCaseList exercise, User user);
+
+	/**
+	 * Search the repository database for {@link RepoProblem}s matching given criteria.
+	 * 
+	 * @param problemType the {@link ProblemType}
+	 * @return the problems that matched the search criteria
+	 */
+	public List<RepoProblem> searchRepositoryExercises(
+			ProblemType problemType);
 }

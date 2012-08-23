@@ -66,14 +66,15 @@ public class CreateSampleData {
 	 * @param userId            the user id
 	 * @param courseId          the course id
 	 * @param registrationType  the registration type
+	 * @param section           the section number
 	 * @throws SQLException
 	 */
-	public static void registerUser(Connection conn, int userId, int courseId, CourseRegistrationType registrationType) throws SQLException {
+	public static void registerUser(Connection conn, int userId, int courseId, CourseRegistrationType registrationType, int section) throws SQLException {
 		CourseRegistration courseReg = new CourseRegistration();
 		courseReg.setCourseId(courseId);
 		courseReg.setUserId(userId);
 		courseReg.setRegistrationType(registrationType);
-		courseReg.setSection(101);
+		courseReg.setSection(section);
 		DBUtil.storeModelObject(conn, courseReg);
 	}
 
