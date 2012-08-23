@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
 
@@ -46,9 +49,13 @@ public class CloudCoderWebServer {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		if (args.length == 1 && programCommands.containsKey(args[0])) {
+		if (args.length >= 1 && programCommands.containsKey(args[0])) {
+			// Collect command line arguments to send to the administrative program
+			List<String> cmdLineArgs = new LinkedList<String>(Arrays.asList(args));
+			cmdLineArgs.remove(0);
+			
 			// A command to run an administrative program.
-			runMain(programCommands.get(args[0]));
+			runMain(programCommands.get(args[0]), cmdLineArgs);
 		} else {
 			// Otherwise, use the CloudCoderDaemonController to handle the command.
 			// CloudCoderDaemonController handles requests to start/control/shutdown
@@ -58,7 +65,7 @@ public class CloudCoderWebServer {
 		}
 	}
 	
-	private static void runMain(String mainClassName) throws IOException,
+	private static void runMain(String mainClassName, List<String> cmdLineArgs) throws IOException,
 			ClassNotFoundException, NoSuchMethodException,
 			IllegalAccessException, InvocationTargetException {
 		ProtectionDomain p = CloudCoderWebServer.class.getProtectionDomain();
@@ -75,7 +82,7 @@ public class CloudCoderWebServer {
 		JarFile jarFile = new JarFile(jarPath);
 		
 		try {
-			// A NestedJarClassLoader will allow CreateWebappDatabase to run out of
+			// A NestedJarClassLoader will allow the admin program to run out of
 			// the cloudcoderModelClassesPersist.jar nested in the executable jarfile,
 			// along with its dependencies, some of which are also nested jarfiles. 
 			NestedJarClassLoader classLoader = new NestedJarClassLoader(jarFile, CloudCoderWebServer.class.getClassLoader());
@@ -83,7 +90,7 @@ public class CloudCoderWebServer {
 			// Load and run the main class's main method via reflection.
 			Class<?> createWebappDatabase = classLoader.loadClass(mainClassName);
 			Method main = createWebappDatabase.getMethod("main", new Class<?>[]{String[].class});
-			main.invoke(null, new Object[]{new String[0]});
+			main.invoke(null, new Object[]{ cmdLineArgs.toArray(new String[cmdLineArgs.size()]) });
 		} finally {
 			jarFile.close();
 		}
