@@ -13,11 +13,11 @@
 			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
 			// search results DataTable.
 			var repoProblemConvertFields = [
-				function(obj) { return problemTypeOrdinalToLanguage[obj.problem_type]; },
-				function(obj) { return obj.testname; },
-				function(obj) { return obj.brief_description; },
-				function(obj) { return obj.author_name; },
-				function(obj) { return 'foo bar'; } // tags: not implemented yet
+				function(obj) { return problemTypeOrdinalToLanguage[obj.repo_problem.problem_type]; },
+				function(obj) { return obj.repo_problem.testname; },
+				function(obj) { return obj.repo_problem.brief_description; },
+				function(obj) { return obj.repo_problem.author_name; },
+				function(obj) { return obj.matched_tag_list.join(' '); }
 			];
 
 			// Variable to store the DataTable object so it can be used by callbacks			
@@ -34,10 +34,11 @@
 					dataType: "json",
 					type: "post",
 					data: {
-						problemType: problemTypeOrdinal 
+						problemType: problemTypeOrdinal,
+						selectedTags: $("#selectedTags").val()
 					},
 					success: function(data, textStatus, jqXHR) {
-						// Result will be an array of JSON-encoded exercises
+						// Result will be an array of JSON-encoded RepoProblemSearchResults
 						//alert("Search returned " + data.length + " exercises");
 
 						// Convert exercises to row tuples						
@@ -99,11 +100,11 @@
 			<table id="searchResultsTable">
 				<thead>
 						<tr>
-							<th>Language</th>
-							<th>Name</th>
-							<th>Description</th>
-							<th>Author</th>
-							<th>Tags</th>
+							<th width="10%">Language</th>
+							<th width="15%">Name</th>
+							<th width="50%">Description</th>
+							<th width="25%">Author</th>
+							<th width="25%">Matched Tags</th>
 						</tr>
 				</thead>
 				<tbody>

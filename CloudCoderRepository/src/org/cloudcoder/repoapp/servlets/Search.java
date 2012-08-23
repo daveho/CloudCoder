@@ -28,9 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ProblemType;
-import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
+import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
@@ -95,11 +95,28 @@ public class Search extends HttpServlet {
 			}
 		}
 		
-		List<RepoProblem> resultList = Database.getInstance().searchRepositoryExercises(problemType);
+		RepoProblemSearchCriteria searchCriteria = new RepoProblemSearchCriteria();
+		searchCriteria.setProblemType(problemType);
+		
+		// See if tags were specified
+		String selectedTags = req.getParameter("selectedTags");
+		if (selectedTags != null && !selectedTags.trim().equals("")) {
+			String tags = selectedTags;
+			
+			// Split by whitespace
+			for (String rawTag : tags.split("\\s")) {
+				// Convert to lowercase and remove all non-alphanumeric characters
+				String normalizedTag = rawTag.toLowerCase().replaceAll("[^a-z0-9]", "");
+				searchCriteria.addTag(normalizedTag);
+				//System.out.println("Tag: " + normalizedTag);
+			}
+		}
+		
+		List<RepoProblemSearchResult> resultList = Database.getInstance().searchRepositoryExercises(searchCriteria);
 		System.out.println("Found " + resultList.size() + " matching exercises");
 		JSONArray result = new JSONArray();
-		for (RepoProblem repoProblem : resultList) {
-			result.add(JSONConversion.convertModelObjectToJSON(repoProblem, IProblemData.SCHEMA));
+		for (RepoProblemSearchResult searchResult : resultList) {
+			result.add(JSONConversion.convertRepoProblemSearchResultToJSON(searchResult));
 		}
 		
 		resp.setContentType("application/json");

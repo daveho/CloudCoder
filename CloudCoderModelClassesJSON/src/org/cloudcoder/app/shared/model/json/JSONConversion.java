@@ -32,6 +32,8 @@ import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
@@ -77,6 +79,27 @@ public class JSONConversion {
 		// Add array of test cases
 		addModelObjectList(result, obj.getTestCaseData(), ITestCaseData.SCHEMA);
 		return result;
+	}
+
+	/**
+	 * Convert a {@link RepoProblemSearchResult} to a JSON object.
+	 * 
+	 * @param searchResult a {@link RepoProblemSearchResult}
+	 * @return JSON object
+	 */
+	@SuppressWarnings("unchecked")
+	public static Object convertRepoProblemSearchResultToJSON(RepoProblemSearchResult searchResult) {
+		LinkedHashMap<String, Object> jsonObj = new LinkedHashMap<String, Object>();
+		
+		jsonObj.put(RepoProblem.SCHEMA.getName(), JSONConversion.convertModelObjectToJSON(searchResult.getRepoProblem(), RepoProblem.SCHEMA));
+		
+		JSONArray tagList = new JSONArray();
+		for (String tag : searchResult.getMatchedTagList()) {
+			tagList.add(tag);
+		}
+		jsonObj.put(RepoProblemSearchResult.MATCHED_TAG_LIST_ELEMENT_NAME, tagList);
+		
+		return jsonObj;
 	}
 
 	/**
