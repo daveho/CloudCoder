@@ -103,6 +103,11 @@
 			
 			<button id="submitButton">Search!</button> <span id="errorElt" class="error"></span>
 			
+			<p>
+				To see information about a specific exercise, click on the link in the
+				<b>Description</b> column.
+			</p>
+			
 			<table id="searchResultsTable">
 				<thead>
 						<tr>
