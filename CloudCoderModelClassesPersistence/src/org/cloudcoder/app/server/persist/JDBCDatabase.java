@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -188,7 +189,43 @@ public class JDBCDatabase implements IDatabase {
 		});
 	};
 	
-	/* (non-Javadoc)
+	
+	
+	@Override
+    public List<User> getUsersInCourse(final Course course)
+    {
+	    return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<User>>() {
+            @Override
+            public List<User> run(Connection conn) throws SQLException
+            {
+                PreparedStatement stmt=prepareStatement(conn, 
+                        "select u.* " +
+                                " from " + User.SCHEMA.getDbTableName() + " as u, " +
+                                CourseRegistration.SCHEMA.getDbTableName()+" as reg " +
+                                " where u.id =  reg.user_id " +
+                                "   and reg.course_id = ? ");
+                stmt.setInt(1, course.getId());
+
+                ResultSet resultSet = executeQuery(stmt);
+
+                List<User> users=new LinkedList<User>();
+                while (resultSet.next()) {
+                    User u=new User();
+                    load(u, resultSet, 1);
+                    users.add(u);
+                }
+                return users;
+            }
+
+            @Override
+            public String getDescription() {
+                return "retrieving users in "+course.getName();
+            }
+	        
+        });
+    }
+
+    /* (non-Javadoc)
 	 * @see org.cloudcoder.app.server.persist.IDatabase#getUserWithoutAuthentication(java.lang.String)
 	 */
 	@Override

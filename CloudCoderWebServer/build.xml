@@ -96,8 +96,8 @@
 			<fileset
 				dir="../CloudCoder"
 				includes="war/**"
-				excludes="**/slf4j*.jar,war/logs/**,war/WEB-INF/classes/defaultkeystore.jks" />
-			
+				excludes="**/slf4j*.jar,war/logs/**" />			
+				
 			<!-- Include the model classes jar file in webapp's WEB-INF/lib. -->
 			<zipfileset
 				file="../CloudCoderModelClasses/cloudcoderModelClasses.jar"

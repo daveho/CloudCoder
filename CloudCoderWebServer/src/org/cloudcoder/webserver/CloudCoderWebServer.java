@@ -41,6 +41,8 @@ public class CloudCoderWebServer {
 		programCommands.put("createcourse", "org.cloudcoder.app.server.persist.CreateCourse");
 		programCommands.put("registerstudents", "org.cloudcoder.app.server.persist.RegisterStudents");
 		programCommands.put("createuser", "org.cloudcoder.app.server.persist.CreateUser");
+		programCommands.put("configure", "org.cloudcoder.app.server.persist.ConfigureCloudCoder");
+		programCommands.put("listconfig", "org.cloudcoder.app.server.persist.ListCloudCoderProperties");
 	}
 	
 	public static void main(String[] args) throws Exception {

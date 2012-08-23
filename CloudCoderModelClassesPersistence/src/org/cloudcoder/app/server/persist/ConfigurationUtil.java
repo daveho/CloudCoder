@@ -16,28 +16,28 @@ public class ConfigurationUtil
 {
 
     static String ask(Scanner keyboard, String prompt) {
-    	return ConfigurationUtil.ask(keyboard, prompt, null);
+        return ConfigurationUtil.ask(keyboard, prompt, null);
     }
 
     static<E> E choose(Scanner keyboard, String prompt, List<E> values) {
-    	System.out.println(prompt);
-    	int count = 0;
-    	for (E val : values) {
-    		System.out.println((count++) + " - " + val);
-    	}
-    	System.out.print("[Enter value in range 0.." + (values.size()-1) + "] ");
-    	int choice = Integer.parseInt(keyboard.nextLine().trim());
-    	return values.get(choice);
+        System.out.println(prompt);
+        int count = 0;
+        for (E val : values) {
+            System.out.println((count++) + " - " + val);
+        }
+        System.out.print("[Enter value in range 0.." + (values.size()-1) + "] ");
+        int choice = Integer.parseInt(keyboard.nextLine().trim());
+        return values.get(choice);
     }
 
     static int askInt(Scanner keyboard, String prompt) {
-    	System.out.print(prompt);
-    	return Integer.parseInt(keyboard.nextLine().trim());
+        System.out.print(prompt);
+        return Integer.parseInt(keyboard.nextLine().trim());
     }
 
     static String askString(Scanner keyboard, String prompt) {
-    	System.out.print(prompt);
-    	return keyboard.nextLine();
+        System.out.print(prompt);
+        return keyboard.nextLine();
     }
 
     static CourseRegistration findRegistration(Connection conn, int userId, int courseId) throws SQLException
