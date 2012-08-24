@@ -196,7 +196,6 @@ public class ConfigureCloudCoder
 
         if (readFromFile.equalsIgnoreCase("yes")) {
             String filename=ConfigurationUtil.ask(keyboard, "What is the name of the file containing the new configuration properties?", "cloudcoder.properties");
-            //Properties properties = new Properties();
             config.load(new FileInputStream(filename));
         } else {
             // read configuration properties from command line
@@ -248,6 +247,14 @@ public class ConfigureCloudCoder
         String jarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing all of the code for CloudCoder?", "cloudcoderApp.jar");
         copyJarfileWithNewProperties(jarfileName, "cloudcoder.properties");
         System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+jarfileName);
+        
+        String configBuilder=ConfigurationUtil.ask(keyboard, "Would you like to set these configuration properties for your CloudCoder builder?",ConfigurationUtil.YES);
+        if (configBuilder.equals(ConfigurationUtil.YES)) {
+            String buildJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder builder?", "cloudcoderBuilder.jar");
+            copyJarfileWithNewProperties(buildJarfileName, "cloudcoder.properties");
+            System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+buildJarfileName);
+        }
+        
     }
 
     /**
