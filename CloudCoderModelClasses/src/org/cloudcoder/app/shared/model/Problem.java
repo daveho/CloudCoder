@@ -36,11 +36,18 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private boolean visible;
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA = new ModelObjectSchema<Problem>("problem")
+	public static final ModelObjectSchema<Problem> SCHEMA_V0 = new ModelObjectSchema<Problem>("problem")
 		.addAll(IProblem.SCHEMA.getFieldList())
-		.addAll(IProblemData.SCHEMA.getFieldList());
+		.addAll(IProblemData.SCHEMA_V0.getFieldList());
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<Problem> SCHEMA = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
+		.finishDelta();
 	
 	/**
 	 * Number of fields.
