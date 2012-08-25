@@ -171,4 +171,6 @@ public class ConfigurationUtil
         return num;
     }
 
+    static final String YES = "yes";
+
 }
