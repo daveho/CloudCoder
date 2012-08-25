@@ -48,9 +48,10 @@ public class SchemaUtil {
 	 *              CloudCoder webapp or repository database set as the current
 	 *              database)
 	 * @param tables the list of tables that the database contains
+	 * @return true if the cc_schema_version table was created, false otherwise
 	 * @throws SQLException
 	 */
-	public static void createSchemaVersionTableIfNeeded(Connection conn, ModelObjectSchema<?>[] tables) throws SQLException {
+	public static boolean createSchemaVersionTableIfNeeded(Connection conn, ModelObjectSchema<?>[] tables) throws SQLException {
 		PreparedStatement stmt = null;
 		ResultSet resultSet = null;
 		Statement create = null;
@@ -70,26 +71,30 @@ public class SchemaUtil {
 			}
 			
 			int count = resultSet.getInt(1);
-			if (count == 0) {
-				// schema version table doesn't exist yet, so create it
-				create = conn.createStatement();
-				create.execute(
-						"create table cc_schema_version (" +
-						"  table_name varchar(50) PRIMARY KEY, " +
-						"  schema_version MEDIUMINT " +
-						")"
-				);
-				
-				insert = conn.prepareStatement("insert into cc_schema_version values (?, ?)");
-				for (ModelObjectSchema<?> table : tables) {
-					insert.setString(1, table.getDbTableName());
-					insert.setInt(2, 0);
-					insert.addBatch();
-				}
-				
-				insert.executeBatch();
+			if (count > 0) {
+				// it exists
+				return false;
 			}
 			
+			// schema version table doesn't exist yet, so create it
+			create = conn.createStatement();
+			create.execute(
+					"create table cc_schema_version (" +
+					"  table_name varchar(50) PRIMARY KEY, " +
+					"  schema_version MEDIUMINT " +
+					")"
+			);
+			
+			insert = conn.prepareStatement("insert into cc_schema_version values (?, ?)");
+			for (ModelObjectSchema<?> table : tables) {
+				insert.setString(1, table.getDbTableName());
+				insert.setInt(2, 0);
+				insert.addBatch();
+			}
+			
+			insert.executeBatch();
+
+			return true;
 		} finally {
 			DBUtil.closeQuietly(insert);
 			DBUtil.closeQuietly(create);
@@ -204,7 +209,8 @@ public class SchemaUtil {
 				buf.append(delta.getPreviousField().getName());
 				
 				String sql = buf.toString();
-				System.out.println(sql);
+				//System.out.println(sql);
+				logger.debug("Migration: {}", sql);
 				
 				stmt.execute(sql);
 				
@@ -225,7 +231,8 @@ public class SchemaUtil {
 					
 					String sqlAddIndex = buf.toString();
 					
-					System.out.println(sqlAddIndex);
+					//System.out.println(sqlAddIndex);
+					logger.debug("Migration: {}", sqlAddIndex);
 					
 					stmt.execute(sqlAddIndex);
 				}
