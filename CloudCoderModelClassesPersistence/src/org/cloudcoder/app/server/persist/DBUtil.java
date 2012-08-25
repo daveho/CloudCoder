@@ -26,6 +26,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -50,11 +51,11 @@ public class DBUtil {
     private static final Logger logger=LoggerFactory.getLogger(DBUtil.class);
     
     /**
-     * Quietly close a {@link PreparedStatement}.
+     * Quietly close a {@link Statement}.
      * 
-     * @param stmt the PreparedStatement to close
+     * @param stmt the Statement to close
      */
-	public static void closeQuietly(PreparedStatement stmt) {
+	public static void closeQuietly(Statement stmt) {
 		try {
 			if (stmt != null) {
 				stmt.close();
