@@ -13,7 +13,7 @@ import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 
 public class MigrateWebappDatabase {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		configureLog4j();
 		
 		try {
@@ -25,11 +25,13 @@ public class MigrateWebappDatabase {
 	}
 
 	private static void doMigrateWebappDatabase() throws IOException,
-			SQLException {
-		System.out.println("Migrate the CloudCoder database to the latest schema");
+			SQLException, ClassNotFoundException {
+		System.out.println("Migrate the CloudCoder database to the latest schema.");
+		System.out.println("Important: make sure CloudCoder is not currently running!");
 		
 		Scanner keyboard = new Scanner(System.in);
 		
+		Class.forName("com.mysql.jdbc.Driver");
 		Properties config = DBUtil.getConfigProperties();
 		Connection conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 
@@ -48,8 +50,8 @@ public class MigrateWebappDatabase {
 		for (ModelObjectSchema<?> table : CreateWebappDatabase.TABLES) {
 			System.out.print("Migrating " + table.getDbTableName() + "...");
 			System.out.flush();
-			SchemaUtil.migrateTable(conn, table);
-			System.out.println("OK!");
+			boolean migrated = SchemaUtil.migrateTable(conn, table);
+			System.out.println(migrated ? ("migrated to version " + table.getVersion()) : "already at latest version");
 		}
 		
 		System.out.println("Done!");
