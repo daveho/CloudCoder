@@ -41,6 +41,7 @@ public class CloudCoderWebServer {
 	private static final Map<String, String> programCommands = new HashMap<String, String>();
 	static {
 		programCommands.put("createdb", "org.cloudcoder.app.server.persist.CreateWebappDatabase");
+		programCommands.put("migratedb", "org.cloudcoder.app.server.persist.MigrateWebappDatabase");
 		programCommands.put("createcourse", "org.cloudcoder.app.server.persist.CreateCourse");
 		programCommands.put("registerstudents", "org.cloudcoder.app.server.persist.RegisterStudents");
 		programCommands.put("createuser", "org.cloudcoder.app.server.persist.CreateUser");

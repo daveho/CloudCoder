@@ -46,11 +46,12 @@ public class ProblemData implements Serializable, IProblemData {
 	private String authorWebsite;
 	private long timestampUTC;
 	private ProblemLicense license;
+	private String parentHash;
 	
 	/**
 	 * The current ProblemData schema version.
 	 */
-	public static final int CURRENT_SCHEMA_VERSION = 0;
+	public static final int CURRENT_SCHEMA_VERSION = IProblemData.SCHEMA.getVersion();
 
 	/**
 	 * Constructor.
@@ -248,6 +249,16 @@ public class ProblemData implements Serializable, IProblemData {
 	@Override
 	public ProblemLicense getLicense() {
 		return license;
+	}
+	
+	@Override
+	public void setParentHash(String parentHash) {
+		this.parentHash = parentHash;
+	}
+	
+	@Override
+	public String getParentHash() {
+		return parentHash;
 	}
 	
 	/**

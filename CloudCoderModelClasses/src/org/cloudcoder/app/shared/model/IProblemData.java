@@ -149,7 +149,22 @@ public interface IProblemData {
 	 * @return  the license under which this problem is available
 	 */
 	public abstract ProblemLicense getLicense();
+	
+	/**
+	 * Set the SHA-1 hash of the parent problem (from which this problem was derived).
+	 * 
+	 * @param parentHash SHA-1 hash of the parent problem
+	 */
+	public void setParentHash(String parentHash);
+	
+	/**
+	 * Return the SHA-1 hash of the parent problem (from which this problem was derived).
+	 * 
+	 * @return SHA-1 hash of the parent problem, or an empty string if this is not a derived problem
+	 */
+	public String getParentHash();
 
+	// Schema version 0 fields
 	
 	/** {@link ModelObjectField} for problem type. */
 	public static final ModelObjectField<IProblemData, ProblemType> PROBLEM_TYPE =
@@ -218,10 +233,17 @@ public interface IProblemData {
 		public ProblemLicense get(IProblemData obj) { return obj.getLicense(); }
 	};
 	
+	// Schema version 1 fields
+	
+	public static final ModelObjectField<IProblemData, String> PARENT_HASH = new ModelObjectField<IProblemData, String>("parent_hash", String.class, 40, ModelObjectIndexType.NON_UNIQUE) {
+		public String get(IProblemData obj) { return obj.getParentHash(); }
+		public void set(IProblemData obj, String value) { obj.setParentHash(value); }
+	};
+	
 	/**
-	 * Description of fields.
+	 * Description of fields (version 0 schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = new ModelObjectSchema<IProblemData>("problem_data")
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V0 = new ModelObjectSchema<IProblemData>("problem_data")
 		.add(PROBLEM_TYPE)
 		.add(TESTNAME)
 		.add(BRIEF_DESCRIPTION)
@@ -233,4 +255,11 @@ public interface IProblemData {
 		.add(AUTHOR_WEBSITE)
 		.add(TIMESTAMP_UTC)
 		.add(LICENSE);
+	
+	/**
+	 * Description of fields (current schema).
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(LICENSE, PARENT_HASH)
+		.finishDelta();
 }
