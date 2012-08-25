@@ -42,9 +42,9 @@ public class ModelObjectSchema<ModelObjectType> {
 	/**
 	 * A delta describing a change to a schema to produce a derived schema.
 	 */
-	public class Delta {
+	public static class Delta<E> {
 		private DeltaType type;
-		private ModelObjectField<? super ModelObjectType, ?> previousField, field;
+		private ModelObjectField<? super E, ?> previousField, field;
 		
 		/**
 		 * Constructor.
@@ -53,7 +53,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		 * @param previousField  a field in a previous schema version
 		 * @param field          a new field to be added (or modified?)
 		 */
-		public Delta(DeltaType type, ModelObjectField<? super ModelObjectType, ?> previousField, ModelObjectField<? super ModelObjectType, ?> field) {
+		public Delta(DeltaType type, ModelObjectField<? super E, ?> previousField, ModelObjectField<? super E, ?> field) {
 			this.type = type;
 			this.previousField = previousField;
 			this.field = field;
@@ -69,24 +69,25 @@ public class ModelObjectSchema<ModelObjectType> {
 		/**
 		 * @return the field from a previous schema version
 		 */
-		public ModelObjectField<? super ModelObjectType, ?> getPreviousField() {
+		public ModelObjectField<? super E, ?> getPreviousField() {
 			return previousField;
 		}
 		
 		/**
 		 * @return the new field to add (or modify?)
 		 */
-		public ModelObjectField<? super ModelObjectType, ?> getField() {
+		public ModelObjectField<? super E, ?> getField() {
 			return field;
 		}
 	}
 	
 	private final ModelObjectSchema<ModelObjectType> previous;
+	private final int version;
 	private final String name;
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
 	private final List<ModelObjectIndex<ModelObjectType>> indexList;
-	private final List<Delta> deltaList;
+	private final List<Delta<ModelObjectType>> deltaList;
 
 	/**
 	 * Constructor.
@@ -107,11 +108,12 @@ public class ModelObjectSchema<ModelObjectType> {
 	 */
 	private ModelObjectSchema(ModelObjectSchema<ModelObjectType> previous, String name) {
 		this.previous = previous;
+		this.version = (previous == null) ? 0 : previous.version + 1;
 		this.name = name;
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
 		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
-		this.deltaList = new ArrayList<ModelObjectSchema<ModelObjectType>.Delta>();
+		this.deltaList = new ArrayList<Delta<ModelObjectType>>();
 	}
 	
 	/**
@@ -129,14 +131,28 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * @return the schema version number
 	 */
 	public int getVersion() {
-		// Count back how many derived versions there are.
-		int count = 0;
-		ModelObjectSchema<ModelObjectType> schema = this;
-		while (schema != null) {
-			count++;
-			schema = schema.getPrevious();
+		return version;
+	}
+
+	/**
+	 * Get schema with given version number, which must be less than or equal
+	 * to this schema's version number.  This method is useful for getting
+	 * a particular previous version of the schema for a model object class.
+	 * 
+	 * @param version the version to get
+	 * @return the schema with the requested version
+	 */
+	public ModelObjectSchema<ModelObjectType> getSchemaWithVersion(int version) {
+		if (version > this.version) {
+			throw new IllegalArgumentException("No schema for " + name + " with version " + version);
 		}
-		return count;
+		
+		ModelObjectSchema<ModelObjectType> schema = this;
+		while (schema.version != version) {
+			schema = schema.previous;
+		}
+		
+		return schema;
 	}
 	
 	/**
@@ -253,6 +269,15 @@ public class ModelObjectSchema<ModelObjectType> {
 	public List<ModelObjectIndex<ModelObjectType>> getIndexList() {
 		return indexList;
 	}
+	
+	/**
+	 * Get the list of {@link Delta}s relative to the previous schema version.
+	 * 
+	 * @return list of {@link Delta}s
+	 */
+	public List<Delta<ModelObjectType>> getDeltaList() {
+		return deltaList;
+	}
 
 	/**
 	 * Determine whether this schema has a unique id field.
@@ -300,7 +325,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * @param fieldToAdd    the field to add
 	 * @return reference to this object, so calls can be chained
 	 */
-	public<E> ModelObjectSchema<ModelObjectType> addAfter(
+	public ModelObjectSchema<ModelObjectType> addAfter(
 			ModelObjectField<? super ModelObjectType, ?> previousField,
 			ModelObjectField<? super ModelObjectType, ?> fieldToAdd) {
 		
@@ -308,7 +333,7 @@ public class ModelObjectSchema<ModelObjectType> {
 			throw new IllegalStateException("This method is only for derived schemas");
 		}
 		
-		deltaList.add(new Delta(DeltaType.ADD_FIELD_AFTER, previousField, fieldToAdd));
+		deltaList.add(new Delta<ModelObjectType>(DeltaType.ADD_FIELD_AFTER, previousField, fieldToAdd));
 		
 		return this;
 	}
@@ -326,7 +351,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		}
 		
 		// Apply all deltas
-		for (Delta delta : deltaList) {
+		for (Delta<ModelObjectType> delta : deltaList) {
 			if (delta.getType() == DeltaType.ADD_FIELD_AFTER) {
 				int index = fieldList.indexOf(delta.getPreviousField());
 				fieldList.add(index + 1, delta.getField());

@@ -268,7 +268,13 @@ public class DBUtil {
 		}
 	}
 
-	private static Object getSQLDatatype(ModelObjectField<?,?> field) {
+	/**
+	 * Get the SQL datatype for a {@link ModelObjectField}.
+	 * 
+	 * @param field the {@link ModelObjectField}
+	 * @return the SQL datatype
+	 */
+	public static Object getSQLDatatype(ModelObjectField<?,?> field) {
 		if (field.getType() == String.class) {
 			// If the field length is Integer.MAX_VALUE, make it a text field.
 			// Otherwise, make it VARCHAR.
