@@ -20,8 +20,8 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
-import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
+import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
@@ -173,10 +173,13 @@ public class CourseAdminPage extends CloudCoderPage {
 				doShareProblem();
 				break;
 				
+			case IMPORT:
+				doImportProblem();
+				break;
+				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
 			case QUIZ:
-			case IMPORT:
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
@@ -212,6 +215,23 @@ public class CourseAdminPage extends CloudCoderPage {
 					shareProblemDialog.center();
 				}
 			});
+		}
+
+		private void doImportProblem() {
+			ImportProblemDialog dialog = new ImportProblemDialog();
+			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
+				@Override
+				public void call(ProblemAndTestCaseList value) {
+					if (value != null) {
+						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
+						// TODO: reload problem list
+					} else {
+						getSession().add(StatusMessage.error("Exercise was not found"));
+					}
+				}
+			});
+			
+			dialog.center();
 		}
 
 		private void handleEditProblem() {

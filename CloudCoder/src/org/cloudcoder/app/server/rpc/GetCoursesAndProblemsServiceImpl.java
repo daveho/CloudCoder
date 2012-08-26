@@ -232,4 +232,13 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			// Do we need to do something to clean up the HttpClient?
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#importExercise(java.lang.String)
+	 */
+	@Override
+	public ProblemAndTestCaseList importExercise(String exerciseHash) {
+		// TODO: implement
+		return null;
+	}
 }

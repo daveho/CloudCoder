@@ -112,4 +112,12 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws NetCoderAuthenticationException;
+	
+	/**
+	 * Import an exercise (problem and testcases) from the exercise repository.
+	 * 
+	 * @param exerciseHash the hash of the execise to import
+	 * @return the exercise, or null if no such exercise could be found in the repository
+	 */
+	public ProblemAndTestCaseList importExercise(String exerciseHash);
 }
