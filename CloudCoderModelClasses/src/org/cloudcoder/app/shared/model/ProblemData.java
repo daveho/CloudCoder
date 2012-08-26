@@ -32,7 +32,7 @@ public class ProblemData implements Serializable, IProblemData {
 
 	//
 	// IMPORTANT: if you add any fields, make sure that you
-	// update the copyProblemData() method so that they are copied
+	// update the copyFrom() method so that they are copied
 	// into the destination object.
 	//
 	private ProblemType problemType;
@@ -278,6 +278,7 @@ public class ProblemData implements Serializable, IProblemData {
 		this.authorWebsite = other.authorWebsite;
 		this.timestampUTC = other.timestampUTC;
 		this.license = other.license;
+		this.parentHash = other.parentHash;
 	}
 	
 	@Override
