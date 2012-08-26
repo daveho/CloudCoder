@@ -244,7 +244,8 @@ public class CourseAdminPage extends CloudCoderPage {
 		}
 		
 		private void handleNewProblem() {
-			Problem problem = Problem.createEmpty();
+			Problem problem = new Problem();
+			Problem.initEmpty(problem);
 			
 			// Set default when assigned and when due dates/times
 			// (assigned now, due in 48 hours)

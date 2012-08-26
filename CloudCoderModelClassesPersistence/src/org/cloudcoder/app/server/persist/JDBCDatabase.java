@@ -1028,7 +1028,8 @@ public class JDBCDatabase implements IDatabase {
 				
 				// If the problem id is not set, then insert the problem.
 				// Otherwise, update the existing problem.
-				if (problemAndTestCaseList.getProblem().getProblemId() == null) {
+				if (problemAndTestCaseList.getProblem().getProblemId() == null
+						|| problemAndTestCaseList.getProblem().getProblemId() < 0) {
 					// Insert problem and test cases
 					doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
 					doInsertTestCases(

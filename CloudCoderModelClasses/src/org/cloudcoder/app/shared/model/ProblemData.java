@@ -298,4 +298,25 @@ public class ProblemData implements Serializable, IProblemData {
 				&& this.timestampUTC == other.timestampUTC
 				&& ModelObjectUtil.equals(this.license, other.license);
 	}
+
+	/*
+	 * Initialize given {@link IProblemData} so that it is in an "empty"
+	 * state, appropriate for editing as a new problem.
+	 * 
+	 * @param empty the {@link IProblemData} to initialize to an empty state
+	 */
+	public static void initEmpty(IProblemData empty) {
+		empty.setProblemType(ProblemType.JAVA_METHOD);
+		empty.setTestname("");
+		empty.setBriefDescription("");
+		empty.setDescription("");
+		empty.setSkeleton("");
+		empty.setSchemaVersion(ProblemData.CURRENT_SCHEMA_VERSION);
+		empty.setAuthorName("");
+		empty.setAuthorEmail("");
+		empty.setAuthorWebsite("");
+		empty.setTimestampUtc(System.currentTimeMillis());
+		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
+		empty.setParentHash("");
+	}
 }
