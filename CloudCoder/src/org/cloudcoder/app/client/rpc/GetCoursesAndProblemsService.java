@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -115,9 +116,11 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	
 	/**
 	 * Import an exercise (problem and testcases) from the exercise repository.
+	 * The currently-authenticated user must be an instructor in the course.
 	 * 
+	 * @param course the {@link Course} to import the exercise into
 	 * @param exerciseHash the hash of the execise to import
 	 * @return the exercise, or null if no such exercise could be found in the repository
 	 */
-	public ProblemAndTestCaseList importExercise(String exerciseHash);
+	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException;
 }

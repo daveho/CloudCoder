@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 
@@ -42,6 +43,7 @@ public class ImportProblemDialog extends DialogBox {
 	private TextBox exerciseHashTextBox;
 	private ICallback<ProblemAndTestCaseList> resultCallback;
 	private Button importButton;
+	private Course course;
 	
 	/**
 	 * Constructor.
@@ -93,9 +95,18 @@ public class ImportProblemDialog extends DialogBox {
 	public void setResultCallback(ICallback<ProblemAndTestCaseList> resultCallback) {
 		this.resultCallback = resultCallback;
 	}
+	
+	/**
+	 * Set the course to import the exercise into.
+	 * 
+	 * @param course the course to import the exercise into
+	 */
+	public void setCourse(Course course) {
+		this.course = course;
+	}
 
 	protected void handleImportProblem() {
-		RPC.getCoursesAndProblemsService.importExercise(exerciseHashTextBox.getText(), new AsyncCallback<ProblemAndTestCaseList>() {
+		RPC.getCoursesAndProblemsService.importExercise(course, exerciseHashTextBox.getText(), new AsyncCallback<ProblemAndTestCaseList>() {
 			@Override
 			public void onSuccess(ProblemAndTestCaseList result) {
 				hide();

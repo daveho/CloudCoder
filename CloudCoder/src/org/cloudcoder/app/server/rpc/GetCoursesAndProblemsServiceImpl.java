@@ -233,11 +233,8 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#importExercise(java.lang.String)
-	 */
 	@Override
-	public ProblemAndTestCaseList importExercise(String exerciseHash) {
+	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException {
 		// TODO: implement
 		return null;
 	}
