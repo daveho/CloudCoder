@@ -20,7 +20,9 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
+import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -182,6 +184,15 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doShareProblem() {
 			final Problem chosen = getSession().get(Problem.class);
+			
+			if (!chosen.getLicense().isPermissive()) {
+				OkDialogBox licenseDialog = new OkDialogBox(
+						"Sharing requires a permissive license",
+						"Sharing a problem requires a permissive license. Please edit the problem " +
+						"and choose a permissive license such as Creative Commons or GNU FDL.");
+				licenseDialog.center();
+				return;
+			}
 
 			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
 				@Override
