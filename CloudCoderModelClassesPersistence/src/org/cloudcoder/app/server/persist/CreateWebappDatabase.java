@@ -66,6 +66,8 @@ public class CreateWebappDatabase {
 	};
 	
 	public static void main(String[] args) throws Exception {
+		ConfigurationUtil.configureLog4j();
+		
 		try {
 			createWebappDatabase();
 		} catch (SQLException e) {
@@ -112,6 +114,10 @@ public class CreateWebappDatabase {
 		
 		// Reconnect to the newly-created database
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
+		
+		// Create schema version table
+		System.out.println("Creating schema version table...");
+		SchemaUtil.createSchemaVersionTableIfNeeded(conn, TABLES);
 		
 		// Create tables and indexes
 		for (ModelObjectSchema<?> schema : TABLES) {

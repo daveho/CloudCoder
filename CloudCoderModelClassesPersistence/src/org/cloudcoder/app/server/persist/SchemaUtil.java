@@ -88,7 +88,7 @@ public class SchemaUtil {
 			insert = conn.prepareStatement("insert into cc_schema_version values (?, ?)");
 			for (ModelObjectSchema<?> table : tables) {
 				insert.setString(1, table.getDbTableName());
-				insert.setInt(2, 0);
+				insert.setInt(2, table.getVersion());
 				insert.addBatch();
 			}
 			
