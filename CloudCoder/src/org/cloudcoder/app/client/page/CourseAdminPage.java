@@ -57,6 +57,7 @@ public class CourseAdminPage extends CloudCoderPage {
 	private enum ButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
+		IMPORT("Import problem"),
 		MAKE_VISIBLE("Make visible"),
 		MAKE_INVISIBLE("Make invisible"),
 		QUIZ("Quiz"),
@@ -76,7 +77,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		}
 		
 		public boolean isEnabledByDefault() {
-			return this == NEW;
+			return this == NEW || this == IMPORT;
 		}
 	}
 	
@@ -173,6 +174,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
 			case QUIZ:
+			case IMPORT:
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
