@@ -286,6 +286,11 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			return null;
 		}
 		
+		// Set "when assigned" and "when due" to reasonable default values
+		long now = System.currentTimeMillis();
+		exercise.getProblem().setWhenAssigned(now);
+		exercise.getProblem().setWhenDue(now + 48L*60L*60L*1000L);
+		
 		// Store the exercise in the database
 		exercise = Database.getInstance().storeProblemAndTestCaseList(exercise, course, user);
 		
