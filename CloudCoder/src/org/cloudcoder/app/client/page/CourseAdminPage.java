@@ -219,6 +219,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doImportProblem() {
 			ImportProblemDialog dialog = new ImportProblemDialog();
+			dialog.setCourse(getSession().get(Course.class));
 			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
 				@Override
 				public void call(ProblemAndTestCaseList value) {

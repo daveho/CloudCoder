@@ -238,4 +238,13 @@ public interface IDatabase {
 	 * @return the problems that matched the search criteria
 	 */
 	public List<RepoProblemSearchResult> searchRepositoryExercises(RepoProblemSearchCriteria searchCriteria);
+
+	/**
+	 * Find {@link CourseRegistration} for given user in given course.
+	 * 
+	 * @param user    the user
+	 * @param course  the course
+	 * @return the {@link CourseRegistration}, or null if the user is not registered in the course
+	 */
+	public CourseRegistration findCourseRegistration(User user, Course course);
 }

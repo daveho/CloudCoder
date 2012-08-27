@@ -34,30 +34,46 @@ public class CourseRegistration implements Serializable, IModelObject<CourseRegi
 	private CourseRegistrationType registrationType;
 	private int section;
 	
+	/** {@link ModelObjectField for unique id. */
+	public static final ModelObjectField<CourseRegistration, Integer> ID =
+			new ModelObjectField<CourseRegistration, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(CourseRegistration obj, Integer value) { obj.setId(value); }
+		public Integer get(CourseRegistration obj) { return obj.getId(); }
+	};
+	/** {@link ModelObjectField for course id. */
+	public static final ModelObjectField<CourseRegistration, Integer> COURSE_ID =
+			new ModelObjectField<CourseRegistration, Integer>("course_id", Integer.class, 0) {
+		public void set(CourseRegistration obj, Integer value) { obj.setCourseId(value); }
+		public Integer get(CourseRegistration obj) { return obj.getCourseId(); }
+	};
+	/** {@link ModelObjectField for user id. */
+	public static final ModelObjectField<CourseRegistration, Integer> USER_ID =
+			new ModelObjectField<CourseRegistration, Integer>("user_id", Integer.class, 0) {
+		public void set(CourseRegistration obj, Integer value) { obj.setUserId(value); }
+		public Integer get(CourseRegistration obj) { return obj.getUserId(); }
+	};
+	/** {@link ModelObjectField for registration type. */
+	public static final ModelObjectField<CourseRegistration, CourseRegistrationType> REGISTRATION_TYPE =
+			new ModelObjectField<CourseRegistration, CourseRegistrationType>("registration_type", CourseRegistrationType.class, 0) {
+		public void set(CourseRegistration obj, CourseRegistrationType value) { obj.setRegistrationType(value); }
+		public CourseRegistrationType get(CourseRegistration obj) { return obj.getRegistrationType(); }
+	};
+	/** {@link ModelObjectField for section. */
+	public static final ModelObjectField<CourseRegistration, Integer> SECTION =
+			new ModelObjectField<CourseRegistration, Integer>("section", Integer.class, 0) {
+		public void set(CourseRegistration obj, Integer value) { obj.setSection(value); }
+		public Integer get(CourseRegistration obj) { return obj.getSection(); }
+	};
+	
 	/**
 	 * Description of fields.
 	 */
 	public static final ModelObjectSchema<CourseRegistration> SCHEMA = new ModelObjectSchema<CourseRegistration>("course_registration")
-		.add(new ModelObjectField<CourseRegistration, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(CourseRegistration obj, Integer value) { obj.setId(value); }
-			public Integer get(CourseRegistration obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<CourseRegistration, Integer>("course_id", Integer.class, 0) {
-			public void set(CourseRegistration obj, Integer value) { obj.setCourseId(value); }
-			public Integer get(CourseRegistration obj) { return obj.getCourseId(); }
-		})
-		.add(new ModelObjectField<CourseRegistration, Integer>("user_id", Integer.class, 0) {
-			public void set(CourseRegistration obj, Integer value) { obj.setUserId(value); }
-			public Integer get(CourseRegistration obj) { return obj.getUserId(); }
-		})
-		.add(new ModelObjectField<CourseRegistration, CourseRegistrationType>("registration_type", CourseRegistrationType.class, 0) {
-			public void set(CourseRegistration obj, CourseRegistrationType value) { obj.setRegistrationType(value); }
-			public CourseRegistrationType get(CourseRegistration obj) { return obj.getRegistrationType(); }
-		})
-		.add(new ModelObjectField<CourseRegistration, Integer>("section", Integer.class, 0) {
-			public void set(CourseRegistration obj, Integer value) { obj.setSection(value); }
-			public Integer get(CourseRegistration obj) { return obj.getSection(); }
-		});
+		.add(ID)
+		.add(COURSE_ID)
+		.add(USER_ID)
+		.add(REGISTRATION_TYPE)
+		.add(SECTION);
 	
 	/**
 	 * Constructor.

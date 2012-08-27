@@ -1034,7 +1034,7 @@ public class JDBCDatabase implements IDatabase {
 					doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
 					doInsertTestCases(
 							problemAndTestCaseList.getProblem(),
-							Arrays.asList(problemAndTestCaseList.getTestCaseList()),
+							problemAndTestCaseList.getTestCaseData(),
 							conn,
 							this);
 				} else {
@@ -1045,7 +1045,7 @@ public class JDBCDatabase implements IDatabase {
 					doDeleteTestCases(problemAndTestCaseList.getProblem().getProblemId(), conn, this);
 					doInsertTestCases(
 							problemAndTestCaseList.getProblem(),
-							Arrays.asList(problemAndTestCaseList.getTestCaseList()),
+							problemAndTestCaseList.getTestCaseData(),
 							conn,
 							this);
 				}
@@ -1147,6 +1147,37 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " searching for exercises in the exercise repository";
+			}
+		});
+	}
+	
+	@Override
+	public CourseRegistration findCourseRegistration(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistration>() {
+			@Override
+			public CourseRegistration run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select cr.* from " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
+						" where cr." + CourseRegistration.USER_ID.getName() + " = ? " +
+						"   and cr." + CourseRegistration.COURSE_ID.getName() + " = ?"
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, course.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				if (!resultSet.next()) {
+					return null;
+				}
+				
+				CourseRegistration reg = new CourseRegistration();
+				DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
+				return reg;
+			}
+			@Override
+			public String getDescription() {
+				return " finding course registration for user/course";
 			}
 		});
 	}
