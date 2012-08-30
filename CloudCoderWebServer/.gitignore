@@ -5,3 +5,4 @@
 /instance-*.fifo
 /logs
 /cloudcoderApp.jar
+/cloudCoder.pid
