@@ -63,7 +63,6 @@ public class CreateWebappDatabase {
 
 	private static void createWebappDatabase() throws ClassNotFoundException,
 			FileNotFoundException, IOException, SQLException {
-		
 		System.out.println("Please enter some information needed to configure the Cloudcoder");
 		System.out.println("database.  (Hit enter to accept a default value, if there is one.)");
 		
@@ -171,8 +170,6 @@ public class CreateWebappDatabase {
 		Term term = new Term();
 		term.setName(name);
 		term.setSeq(seq);
-
-//		DBUtil.storeBean(conn, term, Term.SCHEMA, JDBCDatabase.TERMS);
 
 		DBUtil.storeModelObject(conn, term);
 
