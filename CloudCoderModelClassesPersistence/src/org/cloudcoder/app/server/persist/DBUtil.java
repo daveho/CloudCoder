@@ -20,7 +20,9 @@ package org.cloudcoder.app.server.persist;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -120,6 +122,8 @@ public class DBUtil {
 		
 		return buf.toString();
 	}
+	
+	
 	
 	/**
 	 * Get placeholders for an update statement where all fields
@@ -414,9 +418,13 @@ public class DBUtil {
 		if (config.getProperty(prefix + ".portStr") != null) {
 			portStr = config.getProperty(prefix + ".portStr");
 		}
-
-		String url="jdbc:mysql://" + dbHost + portStr+ "/" + databaseName + "?user=" + dbUser + "&password=" + dbPasswd;
-		return DriverManager.getConnection(url);
+		try {
+		    String url="jdbc:mysql://" + dbHost + portStr+ "/" + databaseName + "?user=" + dbUser + "&password=" + URLEncoder.encode(dbPasswd, "UTF-8");
+		    return DriverManager.getConnection(url);
+		} catch (UnsupportedEncodingException e) {
+		    // should never happen
+		    throw new RuntimeException(e);
+		}
 	}
 	
 	private static String getProp(Properties properties, String propName) {
@@ -475,6 +483,36 @@ public class DBUtil {
 		}
 	}
 
+//	public static<E extends IModelObject<E>> void updateModelObject(Connection conn, E bean) throws SQLException {
+//        ModelObjectSchema<E> schema = bean.getSchema();
+//        
+//        String updateSql = createUpdateStatement(schema);
+//        
+//        PreparedStatement stmt = null;
+//        ResultSet genKeys = null;
+//        
+//        try {
+//            stmt = conn.prepareStatement(updateSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+//            
+//            // Bind model object field values
+//            bindModelObjectValuesForInsert(bean, schema, stmt);
+//            
+//            // Execute the insert
+//            stmt.executeUpdate();
+//            
+//            // Store back the unique id to the model object
+//            if (schema.hasUniqueId()) {
+//                genKeys = stmt.getGeneratedKeys();
+//                List<E> beans = new ArrayList<E>();
+//                beans.add(bean);
+//                getModelObjectUniqueIds(beans, schema, genKeys);
+//            }
+//        } finally {
+//            closeQuietly(genKeys);
+//            closeQuietly(stmt);
+//        }
+//    }
+	
 	/**
 	 * Get the generated unique id(s) resulting from an insert statement,
 	 * storing them in one or more model objects.
@@ -529,6 +567,36 @@ public class DBUtil {
 			stmt.setObject(index++, value);
 		}
 	}
+	
+	/**
+     * Bind all of the field values in given model object to the given
+     * {@link PreparedStatement}, which should be an update statement prepared
+     * from the SQL returned by {@link #createUpdateStatement(ModelObjectSchema)}.
+     * 
+     * @param bean    the model object
+     * @param schema  the model object's schema
+     * @param stmt    the {@link PreparedStatement}
+     * @return the index of the next open spot in the preparedStatement
+     * @throws SQLException
+     */
+    public static <E> int bindModelObjectValuesForUpdate(E bean, ModelObjectSchema<E> schema, PreparedStatement stmt)
+            throws SQLException {
+        // Now for the magic: iterate through the schema fields
+        // and bind the query parameters based on the bean properties.
+        int index = 1;
+        for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+            if (field.isUniqueId()) {
+                continue;
+            }
+            Object value = field.get(bean);
+            if (value instanceof Enum) {
+                // Enum values are converted to integers
+                value = Integer.valueOf(((Enum<?>)value).ordinal());
+            }
+            stmt.setObject(index++, value);
+        }
+        return index;
+    }
 
 	/**
 	 * Create an SQL statement for inserting a model object.
@@ -548,6 +616,24 @@ public class DBUtil {
 		String insertSql = buf.toString();
 		return insertSql;
 	}
+	
+	/**
+     * Create an SQL statement for updating a model object.
+     * The SQL statement will have placeholders for every model object
+     * field except for the unique id (if any).
+     *  
+     * @param schema the model object schema
+     * @return the SQL update statement
+     */
+    public static <E> String createUpdateStatement(ModelObjectSchema<E> schema) {
+        StringBuilder buf = new StringBuilder();
+        
+        buf.append("update " + schema.getDbTableName());
+        buf.append(" set ");
+        
+        buf.append(getUpdatePlaceholders(schema));
+        return buf.toString();
+    }
 
 	/**
 	 * Attempt to load the CloudCoder configuration properties;

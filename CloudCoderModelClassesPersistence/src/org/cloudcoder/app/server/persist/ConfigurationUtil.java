@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
 
 public class ConfigurationUtil
@@ -109,14 +110,44 @@ public class ConfigurationUtil
             String ccPassword) 
     throws SQLException
     {
-        User user = new User();
-        user.setUsername(ccUserName);
-        user.setFirstname(firstname);
-        user.setLastname(lastname);
-        user.setEmail(email);
-        user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
-        DBUtil.storeModelObject(conn, user);
-        return user.getId();
+        User user=findUser(conn, ccUserName);
+        if (user!=null) {
+            user.setFirstname(firstname);
+            user.setLastname(lastname);
+            user.setEmail(email);
+            user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+            // update all the fields other than id and username
+            updateUser(conn, user);
+            return user.getId();
+        } else {
+            user = new User();
+            user.setUsername(ccUserName);
+            user.setFirstname(firstname);
+            user.setLastname(lastname);
+            user.setEmail(email);
+            user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+            DBUtil.storeModelObject(conn, user);
+            return user.getId();
+        }
+    }
+    
+    static void updateUser(Connection conn, User user) throws SQLException
+    {
+        String update="update " + User.SCHEMA.getDbTableName() +
+        " set " + DBUtil.getUpdatePlaceholdersNoId(User.SCHEMA) +
+        " where username = ? ";
+                
+        PreparedStatement stmt=null;
+        try {
+            stmt=conn.prepareStatement(update);
+            int index=DBUtil.bindModelObjectValuesForUpdate(user, user.getSchema(), stmt);
+            stmt.setString(index, user.getUsername());
+            
+            stmt.executeUpdate();
+            
+        } finally {
+            DBUtil.closeQuietly(stmt);
+        }
     }
 
     static String ask(Scanner keyboard, String prompt, String defval) {
