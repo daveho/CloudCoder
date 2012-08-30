@@ -56,7 +56,15 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
      * UI class for CoursesAndProblemsPage2.
      */
     private class UI extends Composite implements SessionObserver, Subscriber {
-        private static final double COURSE_ADMIN_BUTTON_HEIGHT = 27.0;
+        /**
+		 * Width of the course and user admin buttons.
+		 */
+		public static final double COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX = 120.0;
+
+		/**
+		 * Height of the course and user admin buttons.
+		 */
+		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = 27.0;
 
         private LayoutPanel eastLayoutPanel;
 
@@ -177,7 +185,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
                 eastLayoutPanel.setWidgetTopBottom(
                         termAndCourseTreeView,
-                        PageNavPanel.HEIGHT + (isInstructor ? COURSE_ADMIN_BUTTON_HEIGHT + 12.0 : 0),
+                        PageNavPanel.HEIGHT + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 12.0 : 0),
                         PageNavPanel.HEIGHT_UNIT,
                         0.0,
                         Unit.PX);
@@ -186,8 +194,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 if (isInstructor) {
                     courseAdminButton = new Button("Course admin");
                     eastLayoutPanel.add(courseAdminButton);
-                    eastLayoutPanel.setWidgetRightWidth(courseAdminButton, 0.0, Unit.PX, 100.0, Unit.PX);
-                    eastLayoutPanel.setWidgetTopHeight(courseAdminButton, PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_ADMIN_BUTTON_HEIGHT, Unit.PX);
+                    eastLayoutPanel.setWidgetRightWidth(courseAdminButton, 0.0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+                    eastLayoutPanel.setWidgetTopHeight(courseAdminButton, PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
                     courseAdminButton.addClickHandler(new ClickHandler(){
                         /* (non-Javadoc)
                          * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
@@ -200,8 +208,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
                     userAdminButton = new Button("User admin");
                     eastLayoutPanel.add(userAdminButton);
-                    eastLayoutPanel.setWidgetRightWidth(userAdminButton, 0.0, Unit.PX, 100.0, Unit.PX);
-                    eastLayoutPanel.setWidgetTopHeight(userAdminButton, 2 * PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_ADMIN_BUTTON_HEIGHT, Unit.PX);
+                    eastLayoutPanel.setWidgetRightWidth(userAdminButton, 0.0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+                    eastLayoutPanel.setWidgetTopHeight(userAdminButton, 2 * PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
                     userAdminButton.addClickHandler(new ClickHandler(){
                         /* (non-Javadoc)
                          * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)

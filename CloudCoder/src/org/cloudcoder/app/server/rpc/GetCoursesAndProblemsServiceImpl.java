@@ -18,17 +18,21 @@
 package org.cloudcoder.app.server.rpc;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -40,6 +44,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -49,6 +54,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +192,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			repoUrl = repoUrl.substring(0, repoUrl.length()-1);
 		}
 		
-		HttpPost post = new HttpPost(repoUrl + "/exercise");
+		HttpPost post = new HttpPost(repoUrl + "/exercisedata");
 		
 		// Encode an Authorization header using the provided repository username and password.
 		String authHeaderValue =
@@ -231,5 +237,63 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		} finally {
 			// Do we need to do something to clean up the HttpClient?
 		}
+	}
+	
+	@Override
+	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException {
+		if (course == null || exerciseHash == null) {
+			throw new IllegalArgumentException();
+		}
+		
+		// Make sure a user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		// Find user's registration in the course: if user is not instructor,
+		// import is not allowed
+		CourseRegistration reg = Database.getInstance().findCourseRegistration(user, course);
+		if (reg.getRegistrationType().ordinal() < CourseRegistrationType.INSTRUCTOR.ordinal()) {
+			throw new NetCoderAuthenticationException("Only an instructor can import a problem in a course");
+		}
+		
+		// Attempt to load the problem from the exercise repository.
+		ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
+		if (repoUrlSetting == null) {
+			logger.error("Repository URL configuration setting is not set");
+			return null;
+		}
+		
+		HttpGet get = new HttpGet(repoUrlSetting.getValue() + "/exercisedata/" + exerciseHash);
+		ProblemAndTestCaseList exercise = null;
+		
+		HttpClient client = new DefaultHttpClient();
+		try {
+			HttpResponse response = client.execute(get);
+			
+			HttpEntity entity = response.getEntity();
+			
+			ContentType contentType = ContentType.getOrDefault(entity);
+			Reader reader = new InputStreamReader(entity.getContent(), contentType.getCharset());
+			
+			exercise = new ProblemAndTestCaseList();
+			exercise.setTestCaseList(new TestCase[0]);
+			JSONConversion.readProblemAndTestCaseData(exercise,
+					ReflectionFactory.forClass(Problem.class),
+					ReflectionFactory.forClass(TestCase.class),
+					reader);
+			exercise.getProblem().setCourseId(course.getId());
+		} catch (IOException e) {
+			logger.error("Error importing exercise from repository", e);
+			return null;
+		}
+		
+		// Set "when assigned" and "when due" to reasonable default values
+		long now = System.currentTimeMillis();
+		exercise.getProblem().setWhenAssigned(now);
+		exercise.getProblem().setWhenDue(now + 48L*60L*60L*1000L);
+		
+		// Store the exercise in the database
+		exercise = Database.getInstance().storeProblemAndTestCaseList(exercise, course, user);
+		
+		return exercise;
 	}
 }

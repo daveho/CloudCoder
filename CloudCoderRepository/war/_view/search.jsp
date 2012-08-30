@@ -39,31 +39,28 @@
 					},
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
+						
 						//alert("Search returned " + data.length + " exercises");
 
 						// Convert exercises to row tuples						
 						var j, i;
 						var rowData = [];
 						for (j = 0; j < data.length; j++) {
+							var searchResult = data[j];
+						
 							var tuple = [];
 							for (i = 0; i < repoProblemConvertFields.length; i++) {
-								tuple.push(repoProblemConvertFields[i](data[j]));
+								tuple.push(repoProblemConvertFields[i](searchResult));
 							}
+							
+							// Store the search result object as the (non-displayed) last column value
+							tuple.push(searchResult);
+							
 							rowData.push(tuple);
 						}
 						
 						$("#searchResultsTable").dataTable().fnClearTable();
 						$("#searchResultsTable").dataTable().fnAddData(rowData);
-						
-						// Add a callback to all rows to handle row selection
-						$('#searchResultsTable tbody tr').click(function(e) {
-							if ($(this).hasClass('row_selected')) {
-					            $(this).removeClass('row_selected');
-					        } else {
-					            dataTable.$('tr.row_selected').removeClass('row_selected');
-					            $(this).addClass('row_selected');
-					        }
-						});
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#errorElt").text(errorThrown);
@@ -75,7 +72,17 @@
 				$("#submitButton").click(onSubmit);
 				
 				// Enable DataTable on the search results table.
-				dataTable = $("#searchResultsTable").dataTable();
+				dataTable = $("#searchResultsTable").dataTable({
+					aoColumnDefs: [{
+						fnRender: function(oObj, sVal) {
+							return "<a href='${pageContext.servletContext.contextPath}/exercise/" +
+								oObj.aData[5].repo_problem.hash +
+								"' target='_blank' >" + sVal + "</a> " +
+								"<img src='${pageContext.servletContext.contextPath}/images/newWindow.png' />";
+						},
+						aTargets: [ 2 ]
+					}]
+				});
 			});
 		</script>
 	</head>
@@ -97,14 +104,19 @@
 			
 			<button id="submitButton">Search!</button> <span id="errorElt" class="error"></span>
 			
+			<p>
+				To see information about a specific exercise, click on the link in the
+				<b>Description</b> column.
+			</p>
+			
 			<table id="searchResultsTable">
 				<thead>
 						<tr>
-							<th width="10%">Language</th>
-							<th width="15%">Name</th>
-							<th width="50%">Description</th>
-							<th width="25%">Author</th>
-							<th width="25%">Matched Tags</th>
+							<th width="40px">Language</th>
+							<th width="80px">Name</th>
+							<th width="300px">Description</th>
+							<th width="100px">Author</th>
+							<th width="100px">Matched Tags</th>
 						</tr>
 				</thead>
 				<tbody>

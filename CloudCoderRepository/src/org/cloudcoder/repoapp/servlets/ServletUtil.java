@@ -51,6 +51,16 @@ public class ServletUtil {
 	public static void addModelObject(HttpSession session, Object obj) {
 		session.setAttribute(obj.getClass().getSimpleName(), obj);
 	}
+
+	/**
+	 * Add a model object to the request.
+	 * 
+	 * @param req   the request
+	 * @param obj   the model object to add to the session
+	 */
+	public static void addModelObject(HttpServletRequest req, Object obj) {
+		req.setAttribute(obj.getClass().getSimpleName(), obj);
+	}
 	
 	/**
 	 * Get a model object from the session.

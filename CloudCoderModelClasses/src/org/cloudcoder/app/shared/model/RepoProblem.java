@@ -51,13 +51,20 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	};
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA = new ModelObjectSchema<RepoProblem>("repo_problem")
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V0 = new ModelObjectSchema<RepoProblem>("repo_problem")
 		.add(ID)
 		.add(USER_ID)
 		.add(HASH)
-		.addAll(ProblemData.SCHEMA.getFieldList());
+		.addAll(ProblemData.SCHEMA_V0.getFieldList());
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<RepoProblem> SCHEMA = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
+		.finishDelta();
 	
 	/** Number of fields. */
 	public static final int NUM_FIELDS = SCHEMA.getNumFields();

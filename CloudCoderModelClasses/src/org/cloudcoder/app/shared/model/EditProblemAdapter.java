@@ -153,6 +153,17 @@ public abstract class EditProblemAdapter implements IProblem {
 	public ProblemLicense getLicense() {
 		return delegate.getLicense();
 	}
+	
+	@Override
+	public void setParentHash(String parentHash) {
+		delegate.setParentHash(parentHash);
+		onChange();
+	}
+	
+	@Override
+	public String getParentHash() {
+		return delegate.getParentHash();
+	}
 
 	@Override
 	public Integer getProblemId() {

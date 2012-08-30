@@ -58,4 +58,24 @@ public class StatusMessage {
 	public String getMessage() {
 		return message;
 	}
+
+	/**
+	 * Factory method to create a "good news" status message.
+	 * 
+	 * @param message the message text
+	 * @return the good news status message
+	 */
+	public static Object goodNews(String message) {
+		return new StatusMessage(Category.GOOD_NEWS, message);
+	}
+
+	/**
+	 * Factory method to create an error status message.
+	 * 
+	 * @param message the message text
+	 * @return the error status message
+	 */
+	public static Object error(String message) {
+		return new StatusMessage(Category.ERROR, message);
+	}
 }

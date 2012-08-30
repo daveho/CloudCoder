@@ -15,30 +15,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.repoapp.servlets;
+package org.cloudcoder.app.client.view;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 
 /**
- * Servlet to display an exercise in human-readable form.
+ * A very simple dialog where the only choice is "OK",
+ * which dismisses the dialog.
  * 
  * @author David Hovemeyer
  */
-public class Exercise extends LoadExerciseServlet {
-	private static final long serialVersionUID = 1L;
-	
-	@Override
-	protected void doExercise(HttpServletRequest req, HttpServletResponse resp, RepoProblemAndTestCaseList exercise)
-			throws ServletException, IOException {
+public class OkDialogBox extends DialogBox {
+	public OkDialogBox(String title, String message) {
+		setTitle(title);
+		setGlassEnabled(true);
+
+		FlowPanel panel = new FlowPanel();
+		panel.add(new HTML(new SafeHtmlBuilder().appendEscaped(message).toSafeHtml()));
+		Button ok = new Button("OK");
+		ok.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				hide();
+			}
+		});
+		panel.add(ok);
 		
-		ServletUtil.addModelObject(req, exercise.getProblem());
-		
-		req.getRequestDispatcher("/_view/exercise.jsp").forward(req, resp);
+		add(panel);
 	}
 }

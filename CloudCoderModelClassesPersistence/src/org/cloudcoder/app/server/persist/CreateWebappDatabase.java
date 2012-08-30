@@ -48,7 +48,26 @@ import org.cloudcoder.app.shared.model.User;
 public class CreateWebappDatabase {
 	static final boolean DEBUG = false;
 	
+	/**
+	 * Array with all of the tables needed to run the webapp.
+	 */
+	public static final ModelObjectSchema<?>[] TABLES = {
+		Change.SCHEMA,
+		ConfigurationSetting.SCHEMA,
+		Course.SCHEMA,
+		CourseRegistration.SCHEMA,
+		Event.SCHEMA,
+		Problem.SCHEMA,
+		SubmissionReceipt.SCHEMA,
+		Term.SCHEMA,
+		TestCase.SCHEMA,
+		TestResult.SCHEMA,
+		User.SCHEMA,
+	};
+	
 	public static void main(String[] args) throws Exception {
+		ConfigurationUtil.configureLog4j();
+		
 		try {
 			createWebappDatabase();
 		} catch (SQLException e) {
@@ -95,18 +114,14 @@ public class CreateWebappDatabase {
 		// Reconnect to the newly-created database
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.db");
 		
+		// Create schema version table
+		System.out.println("Creating schema version table...");
+		SchemaUtil.createSchemaVersionTableIfNeeded(conn, TABLES);
+		
 		// Create tables and indexes
-		createTable(conn, Change.SCHEMA);
-		createTable(conn, ConfigurationSetting.SCHEMA);
-		createTable(conn, Course.SCHEMA);
-		createTable(conn, CourseRegistration.SCHEMA);
-		createTable(conn, Event.SCHEMA);
-		createTable(conn, Problem.SCHEMA);
-		createTable(conn, SubmissionReceipt.SCHEMA);
-		createTable(conn, Term.SCHEMA);
-		createTable(conn, TestCase.SCHEMA);
-		createTable(conn, TestResult.SCHEMA);
-		createTable(conn, User.SCHEMA);
+		for (ModelObjectSchema<?> schema : TABLES) {
+			createTable(conn, schema);
+		}
 		
 		// Create initial database contents
 		

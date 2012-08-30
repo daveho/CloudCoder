@@ -21,6 +21,8 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
+import org.cloudcoder.app.client.view.ImportProblemDialog;
+import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -57,6 +59,7 @@ public class CourseAdminPage extends CloudCoderPage {
 	private enum ButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
+		IMPORT("Import problem"),
 		MAKE_VISIBLE("Make visible"),
 		MAKE_INVISIBLE("Make invisible"),
 		QUIZ("Quiz"),
@@ -76,7 +79,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		}
 		
 		public boolean isEnabledByDefault() {
-			return this == NEW;
+			return this == NEW || this == IMPORT;
 		}
 	}
 	
@@ -170,6 +173,10 @@ public class CourseAdminPage extends CloudCoderPage {
 				doShareProblem();
 				break;
 				
+			case IMPORT:
+				doImportProblem();
+				break;
+				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
 			case QUIZ:
@@ -180,6 +187,15 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doShareProblem() {
 			final Problem chosen = getSession().get(Problem.class);
+			
+			if (!chosen.getLicense().isPermissive()) {
+				OkDialogBox licenseDialog = new OkDialogBox(
+						"Sharing requires a permissive license",
+						"Sharing a problem requires a permissive license. Please edit the problem " +
+						"and choose a permissive license such as Creative Commons or GNU FDL.");
+				licenseDialog.center();
+				return;
+			}
 
 			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
 				@Override
@@ -199,6 +215,24 @@ public class CourseAdminPage extends CloudCoderPage {
 					shareProblemDialog.center();
 				}
 			});
+		}
+
+		private void doImportProblem() {
+			ImportProblemDialog dialog = new ImportProblemDialog();
+			dialog.setCourse(getSession().get(Course.class));
+			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
+				@Override
+				public void call(ProblemAndTestCaseList value) {
+					if (value != null) {
+						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
+						// TODO: reload problem list
+					} else {
+						getSession().add(StatusMessage.error("Exercise was not found"));
+					}
+				}
+			});
+			
+			dialog.center();
 		}
 
 		private void handleEditProblem() {
@@ -244,7 +278,8 @@ public class CourseAdminPage extends CloudCoderPage {
 		}
 		
 		private void handleNewProblem() {
-			Problem problem = Problem.createEmpty();
+			Problem problem = new Problem();
+			Problem.initEmpty(problem);
 			
 			// Set default when assigned and when due dates/times
 			// (assigned now, due in 48 hours)

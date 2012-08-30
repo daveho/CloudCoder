@@ -49,4 +49,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void submitExercise(ProblemAndTestCaseList exercise, String repoUsername,
 			String repoPassword, AsyncCallback<OperationResult> callback);
 
+	void importExercise(Course course, String exerciseHash,
+			AsyncCallback<ProblemAndTestCaseList> callback);
+
 }

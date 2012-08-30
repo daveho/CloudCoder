@@ -120,6 +120,7 @@ public class CreateSampleData {
 		problemData.setAuthorWebsite("http://cs.unseen.edu/~auser");
 		problemData.setTimestampUtc(System.currentTimeMillis());
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
+		problemData.setParentHash("");
 	}
 
 }
