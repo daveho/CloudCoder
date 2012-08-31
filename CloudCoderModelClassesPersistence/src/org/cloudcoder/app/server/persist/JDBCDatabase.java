@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +59,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.eclipse.jetty.http.security.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
 public class JDBCDatabase implements IDatabase {
 	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 
-    private static final String USERS = "cc_users";
+    //private static final String USERS = "cc_users";
 
 	private String jdbcUrl;
 	
@@ -192,7 +192,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	
 	@Override
-    public List<User> getUsersInCourse(final Course course)
+    public List<User> getUsersInCourse(final int courseId)
     {
 	    return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<User>>() {
             @Override
@@ -204,7 +204,7 @@ public class JDBCDatabase implements IDatabase {
                                 CourseRegistration.SCHEMA.getDbTableName()+" as reg " +
                                 " where u.id =  reg.user_id " +
                                 "   and reg.course_id = ? ");
-                stmt.setInt(1, course.getId());
+                stmt.setInt(1, courseId);
 
                 ResultSet resultSet = executeQuery(stmt);
 
@@ -219,7 +219,7 @@ public class JDBCDatabase implements IDatabase {
 
             @Override
             public String getDescription() {
-                return "retrieving users in "+course.getName();
+                return "retrieving users in courseId "+courseId;
             }
 	        
         });
@@ -708,7 +708,7 @@ public class JDBCDatabase implements IDatabase {
         //TODO: CreateWebApp should prompt for firstname/lastname/email as well
 	    //TODO: Add first/last/email to the User record
 	    Scanner scan=new Scanner(in);
-	    PreparedStatement stmt=conn.prepareStatement("insert into " +USERS+
+	    PreparedStatement stmt=conn.prepareStatement("insert into " +User.SCHEMA.getDbTableName()+
                 " (username, password_hash) values (?, ?)");
 	    
 	    while (scan.hasNextLine()) {
@@ -772,6 +772,67 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
+    public void editUser(final int userId, final String username, final String firstname, 
+        final String lastname, final String email, final String passwd)
+    {
+	    databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+            /* (non-Javadoc)
+             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+             */
+            @Override
+            public Boolean run(Connection conn) throws SQLException {
+                logger.info("Editing user "+userId);
+                ConfigurationUtil.updateUser(conn, userId, username,
+                        firstname, lastname, email, passwd);
+                return true;
+            }
+            
+            /* (non-Javadoc)
+             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+             */
+            @Override
+            public String getDescription() {
+                return "Updating user record";
+            }
+        });    
+    }
+
+    @Override
+    public void editRegistrationType(int userId, int courseId,
+        CourseRegistrationType type)
+    {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Implement this method");
+    }
+
+    @Override
+    public void addUserToCourse(final User user, final int courseId, final CourseRegistrationType registrationType, final int section) {
+	    databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+	        /* (non-Javadoc)
+             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+             */
+            @Override
+            public Boolean run(Connection conn) throws SQLException {
+                logger.info("inserting user "+user.getUsername()+" to course "+courseId);
+                int userId=doInsertOrUpdateUser(user, conn, this);
+                user.setId(userId);
+                ConfigurationUtil.registerUser(conn, user.getId(), courseId, registrationType, section);
+                return true;
+            }
+            
+            /* (non-Javadoc)
+             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+             */
+            @Override
+            public String getDescription() {
+                return "Registering student";
+            }
+        });
+    }
+
+    
+
+    @Override
 	public void addProblem(final Problem problem) {
 		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			/* (non-Javadoc)
@@ -1397,6 +1458,18 @@ public class JDBCDatabase implements IDatabase {
 		return 0;
 	}
 
+	private int doInsertOrUpdateUser(User user, 
+	    Connection conn,
+	    AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException
+	{
+	    return ConfigurationUtil.createOrUpdateUser(conn, 
+	            user.getUsername(), 
+	            user.getFirstname(), 
+	            user.getLastname(), 
+	            user.getEmail(), 
+	            user.getPasswordHash());
+    }
+	
 	private List<? extends Object[]> doGetCoursesForUser(
 			final User user,
 			Connection conn,

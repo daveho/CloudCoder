@@ -20,7 +20,7 @@ public class CreateUser {
 		String ccLastname= ConfigurationUtil.ask(keyboard, "Last name? ");
 		String ccEmail= ConfigurationUtil.ask(keyboard, "Email address? ");
 		
-		ConfigurationUtil.createUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
+		ConfigurationUtil.createOrUpdateUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
 
 		System.out.println("Success!");
 	}

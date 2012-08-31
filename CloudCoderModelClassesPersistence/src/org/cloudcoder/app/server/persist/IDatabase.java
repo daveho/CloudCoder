@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -171,7 +172,7 @@ public interface IDatabase {
 	 * @param course The course for which we want all users.
 	 * @return A lot of all users inthe given course.
 	 */
-	public List<User> getUsersInCourse(Course course);
+	public List<User> getUsersInCourse(int courseId);
 	
 	/**
 	 * Get the Change with given id.
@@ -247,4 +248,41 @@ public interface IDatabase {
 	 * @return the {@link CourseRegistration}, or null if the user is not registered in the course
 	 */
 	public CourseRegistration findCourseRegistration(User user, Course course);
+
+    /**
+     * Add a new user record to the database, and register that person
+     * for the course indicated by the given courseId.  The registration
+     * will have the given course registration type and will be for the
+     * section indicated.
+     * 
+     * @param user
+     * @param courseId
+     * @param type
+     * @param section
+     */
+    public void addUserToCourse(User user, int courseId, CourseRegistrationType type, int section);
+
+    /**
+     * Edit a user record in the database.  Any blank fields will
+     * remain unchanged.
+     * 
+     * @param username
+     * @param firstname
+     * @param lastname
+     * @param email
+     * @param passwd
+     */
+    public void editUser(int id, String username, String firstname, String lastname,
+        String email, String passwd);
+
+    /**
+     * Edit the registration type for the user record indicated by the
+     * userId and the course indicated by the given courseId.
+     * 
+     * @param userId
+     * @param courseId
+     * @param type
+     */
+    public void editRegistrationType(int userId, int courseId,
+        CourseRegistrationType type);
 }

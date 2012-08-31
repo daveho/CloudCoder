@@ -110,8 +110,7 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
         if (userList != null) {
             displayUsers(userList);
         } else {
-            Course course = session.get(Course.class);
-            loadUsers(session, course);
+            loadUsers(session);
         }
         
     }
@@ -122,16 +121,15 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
     @Override
     public void eventOccurred(Object key, Publisher publisher, Object hint) {
         if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
-            // Course selected, load its problems.
-            // Note that this isn't really needed by CourseAdminPage (because there
-            // is only one Course which is pre-selected), but if this view is
-            // reused in another page at some point, this might be useful.
-            loadUsers(session, (Course)hint);
+            // load all the useres for the current course
+            loadUsers(session);
         }
     }
     
-    private void loadUsers(final Session session, Course course) {
-        RPC.usersService.getUsers(course, new AsyncCallback<User[]>() {
+    public void loadUsers(final Session session) {
+        Course course=session.get(Course.class);
+        int courseId=course.getId();
+        RPC.usersService.getUsers(courseId, new AsyncCallback<User[]>() {
             @Override
             public void onSuccess(User[] result) {
                 displayUsers(result);

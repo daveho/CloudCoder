@@ -22,6 +22,7 @@ import java.util.List;
 import org.cloudcoder.app.client.rpc.UserService;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
@@ -43,18 +44,47 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
      * @see org.cloudcoder.app.client.rpc.UserService#getUsers(org.cloudcoder.app.shared.model.Course)
      */
     @Override
-    public User[] getUsers(Course course)
+    public User[] getUsers(int courseId)
     throws NetCoderAuthenticationException
     {
-        logger.warn("Getting all users in course "+course.getName());
-        GWT.log("Getting all users in course "+course.getName());
+        //logger.warn("Getting all users in course "+course.getName());
+        GWT.log("Getting all users in courseId "+courseId);
         User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
         logger.debug(user.getUsername() + " listing all users");
         // TODO: how to authenticate that this is an instructor?
-        List<User> resultList = Database.getInstance().getUsersInCourse(course);
+        List<User> resultList = Database.getInstance().getUsersInCourse(courseId);
         
         User[] userArr=new User[resultList.size()];
         return resultList.toArray(userArr);
     }
+    
+    public Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section)
+    throws NetCoderAuthenticationException
+    {
+        logger.warn("Adding "+user.getUsername()+" to courseId "+courseId);
+        GWT.log("Adding "+user.getUsername()+" to course "+courseId);
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        Database.getInstance().addUserToCourse(user, courseId, type, section);
+        return true;
+    }
+    
+    public Boolean editUser(int id, String username, String firstname, String lastname,
+        String email, String passwd)
+    throws NetCoderAuthenticationException
+    {
+        logger.warn("Editing userid "+id+", username "+username);
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        Database.getInstance().editUser(id, username, firstname, lastname, email, passwd);
+        return true;
+    }
+    
+    public void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type)
+    throws NetCoderAuthenticationException
+    {
+        logger.warn("Editing registration type of "+userId+" in course "+courseId);
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        Database.getInstance().editRegistrationType(userId, courseId, type);
+    }
+
     
 }

@@ -146,7 +146,7 @@ public class CreateWebappDatabase {
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		int userId = ConfigurationUtil.createUser(conn, 
+		int userId = ConfigurationUtil.createOrUpdateUser(conn, 
 		        ccUserName, 
 		        ccFirstname,
 		        ccLastname,
@@ -155,7 +155,7 @@ public class CreateWebappDatabase {
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");
-		CreateSampleData.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR, 101);
+		ConfigurationUtil.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR, 101);
 		
 		// Create a Problem
 		System.out.println("Creating hello, world problem in demo course...");

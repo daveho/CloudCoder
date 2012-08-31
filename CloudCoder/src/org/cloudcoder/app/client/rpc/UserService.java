@@ -17,8 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.User;
 
@@ -42,5 +41,27 @@ public interface UserService extends RemoteService
      * @return An array of all of the Users registered for the given course.
      * @throws NetCoderAuthenticationException if the client is not authenticated
      */
-    User[] getUsers(Course course) throws NetCoderAuthenticationException;
+    User[] getUsers(int courseId) throws NetCoderAuthenticationException;
+    
+    Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section) throws NetCoderAuthenticationException;
+    
+    /**
+     * Edit the fields of the {@link User} record indicated by the
+     * given id.
+     * 
+     * @param id
+     * @param username
+     * @param firstname
+     * @param lastname
+     * @param email
+     * @param passwd
+     * @param type
+     * @param section
+     * @return
+     */
+    Boolean editUser(int id, String username, String firstname, String lastname,
+        String email, String passwd)
+    throws NetCoderAuthenticationException;
+    
+    void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type) throws NetCoderAuthenticationException;
 }

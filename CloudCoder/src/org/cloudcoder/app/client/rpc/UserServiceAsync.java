@@ -17,7 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -28,6 +28,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface UserServiceAsync
 {
-    void getUsers(Course course, AsyncCallback<User[]> callback);
-
+    void getUsers(int courseId, AsyncCallback<User[]> callback);
+    void addUserToCourse(User user, int courseId, CourseRegistrationType type, 
+        int section, AsyncCallback<Boolean> callback);
+    void editUser(int id, String username, String firstname, String lastname,
+        String email, String passwd,AsyncCallback<Boolean> asyncCallback);
+    void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type,
+        AsyncCallback<Void> callback); 
+        
+        
 }

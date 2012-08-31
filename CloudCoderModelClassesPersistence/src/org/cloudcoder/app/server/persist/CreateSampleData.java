@@ -21,8 +21,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.CourseRegistration;
-import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCase;
@@ -57,25 +55,6 @@ public class CreateSampleData {
 		course.setUrl("http://cloudcoder.org/");
 		DBUtil.storeModelObject(conn, course);
 		return course.getId();
-	}
-
-	/**
-	 * Register a user for a course.
-	 * 
-	 * @param conn              the database connection
-	 * @param userId            the user id
-	 * @param courseId          the course id
-	 * @param registrationType  the registration type
-	 * @param section           the section number
-	 * @throws SQLException
-	 */
-	public static void registerUser(Connection conn, int userId, int courseId, CourseRegistrationType registrationType, int section) throws SQLException {
-		CourseRegistration courseReg = new CourseRegistration();
-		courseReg.setCourseId(courseId);
-		courseReg.setUserId(userId);
-		courseReg.setRegistrationType(registrationType);
-		courseReg.setSection(section);
-		DBUtil.storeModelObject(conn, courseReg);
 	}
 
 	static void populateSampleTestCase(ITestCase testCase, Integer problemId) {

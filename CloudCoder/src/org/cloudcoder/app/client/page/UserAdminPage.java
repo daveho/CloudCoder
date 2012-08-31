@@ -18,10 +18,12 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -32,17 +34,18 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -57,7 +60,6 @@ import com.google.gwt.user.client.ui.Widget;
 public class UserAdminPage extends CloudCoderPage
 {
     private static final long serialVersionUID = 1L;
-    //private static final Logger logger=LoggerFactory.getLogger(UserAdminPage.class);
     
     private enum ButtonPanelAction {
         NEW("Add new user"),
@@ -86,7 +88,9 @@ public class UserAdminPage extends CloudCoderPage
         private static final double USERS_BUTTON_BAR_HEIGHT_PX = 28.0;
 
         private PageNavPanel pageNavPanel;
+        private String rawCourseTitle;
         private Label courseLabel;
+        private int courseId;
         private Button[] userManagementButtons;
         private UserAdminUsersListView userAdminUsersListView;
         private StatusMessageView statusMessageView;
@@ -132,7 +136,7 @@ public class UserAdminPage extends CloudCoderPage
                             break;
 
                         case EDIT:
-                            handleEditUser();
+                            handleEditUser(event);
                             break;
                             
                         case REGISTER_USERS:
@@ -171,24 +175,19 @@ public class UserAdminPage extends CloudCoderPage
         
         private class AddUserPopupPanel extends PopupPanel{
 
-            Button connect = new Button("Connect");
-            Button delete = new Button("Delete");
-            Button detail = new Button("Detail");
-
-            public AddUserPopupPanel(final Widget widget){
+            public AddUserPopupPanel(final Widget widget, final int courseId){
                super(true);
-               VerticalPanel vp = new VerticalPanel();
-               //vp.add(connect);
-               //vp.add(delete);
-               //vp.add(detail);
-
-               setWidget(vp);
                
-               // TODO: Going to skip actually performing the submit
-               // will instead call an async piece of code
+               VerticalPanel vp = new VerticalPanel();
+               setWidget(vp);
                final FormPanel form = new FormPanel();
-               form.setEncoding(FormPanel.ENCODING_MULTIPART);
-               form.setMethod(FormPanel.METHOD_POST);
+               // copy of the current instance (this)
+               // to be used by inner classes
+               final PopupPanel panelCopy=this;
+               
+               // We actually perform the submit asynchrnonously
+               //form.setEncoding(FormPanel.ENCODING_MULTIPART);
+               //form.setMethod(FormPanel.METHOD_POST);
               
                // TODO are these style file hooks?
                form.addStyleName("table-center");
@@ -232,37 +231,243 @@ public class UserAdminPage extends CloudCoderPage
                passwd2.setName("passwd2");
                holder.add(passwd2);
                
-               // TODO: Login mechanism?
-               // should that be stored per user or per server?
-
-               holder.add(new Button("Submit", new ClickHandler() {
+               // radio button for the account type
+               holder.add(new Label("Account type"));
+               final RadioButton studentAccountButton = new RadioButton("student","student");
+               studentAccountButton.setValue(true);
+               final RadioButton instructorAccountButton = new RadioButton("instructor","instructor");
+               holder.add(studentAccountButton);
+               holder.add(instructorAccountButton);
+               
+               holder.add(new Button("Add user", new ClickHandler() {
                    @Override
                    public void onClick(ClickEvent event) {
-                       //logger.info("Clicked submit button, trigger ClickHandler");
-                       GWT.log("Clicked submit button, trigger ClickHandler, username is: "+username.getText());
-                       // TODO don't submit; use asynchronous handler
-                       // added into userService
-                       //form.submit();
-                       // then close the window
+                       //This is more like a fake form
+                       //we're not submitting it to a server-side servlet
+                       GWT.log("Add user button clicked");
+                       final User user=new User();
+                       if (username.getValue().equals("")) {
+                           Window.alert("Username cannot be empty");
+                           return;
+                       }
+                       user.setUsername(username.getValue());
+                       if (firstname.getValue().equals("")) {
+                           Window.alert("Firstname cannot be empty");
+                           return;
+                       }
+                       user.setFirstname(firstname.getValue());
+                       if (lastname.getValue().equals("")) {
+                           Window.alert("Lastname cannot be empty");
+                           return;
+                       }
+                       user.setLastname(lastname.getValue());
+                       if (email.getValue().equals("")) {
+                           Window.alert("Email cannot be empty");
+                           return;
+                       }
+                       user.setEmail(email.getValue());
+                       if (passwd.getValue().equals("")) {
+                           Window.alert("Password cannot be empty");
+                           return;
+                       }
+                       if (!passwd.getValue().equals(passwd2.getValue())) {
+                           Window.alert("Passwords do no match");
+                           return;
+                       }
+                       user.setPasswordHash(passwd.getValue());
+                       
+                       CourseRegistrationType type=CourseRegistrationType.STUDENT;
+                       if (instructorAccountButton.getValue()) {
+                           type=CourseRegistrationType.INSTRUCTOR;
+                       }
+                       //TODO add support for sections
+                       int section=101;
+                       
+                       GWT.log("courseId is " +courseId);
+                       RPC.usersService.addUserToCourse(user, courseId, type, section, new AsyncCallback<Boolean>() {
+                        
+                           @Override
+                           public void onSuccess(Boolean result) {
+                               GWT.log("Added "+user.getUsername()+" to course "+rawCourseTitle);
+                               panelCopy.hide(true);
+                               reloadUsers();
+                               Window.alert("Added "+user.getUsername()+" to course "+rawCourseTitle);
+                           }
+
+                           @Override
+                           public void onFailure(Throwable caught) {
+                               GWT.log("Failed to add student");
+                               Window.alert("Unable to add "+user.getUsername()+" to course");
+                           }
+                       });
                    }
                }));
                form.add(holder);
 
+               // will need a URL for the file upload?
                // form.setAction("url");
 
-               form.addSubmitHandler(new FormPanel.SubmitHandler() {
-                   @Override
-                   public void onSubmit(SubmitEvent event) {
-                       //logger.info("triggered SubmitHandler");
-                       GWT.log("triggered submitHandler, username is "+username.getText());
-                       
-                   }
-               });
+//               form.addSubmitHandler(new FormPanel.SubmitHandler() {
+//                   @Override
+//                   public void onSubmit(SubmitEvent event) {
+//                       GWT.log("onSubmit, username is "+username.getText());
+//                       // TODO don't submit; use asynchronous handler
+//                       
+//                   }
+//               });
+               
+
+//               form.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
+//                   public void onSubmitComplete(SubmitCompleteEvent event) {
+//                       GWT.log("onSubmitComplete complete");
+//                       // now we can hide the panel
+//                       panelCopy.hide();
+//                       Window.alert(event.getResults());
+//                   }
+//                 });
 
                vp.add(form);
             }
         }
   
+        private class EditUserPopupPanel extends PopupPanel{
+
+            public EditUserPopupPanel(final Widget widget, final User user, 
+                    final Course course, final CourseRegistrationType originalType)
+            {
+               super(true);
+               
+               VerticalPanel vp = new VerticalPanel();
+
+               setWidget(vp);
+               
+               final FormPanel form = new FormPanel();
+               // We won't actually submit the form to a servlet
+               // instead we intercept the form fields
+               // and make an async call
+               //form.setEncoding(FormPanel.ENCODING_MULTIPART);
+               //form.setMethod(FormPanel.METHOD_POST);
+              
+               // TODO are these style file hooks?
+               form.addStyleName("table-center");
+               form.addStyleName("demo-FormPanel");
+
+               VerticalPanel holder = new VerticalPanel();
+
+               holder.add(new Label("Change the fields you want to edit.\nAny fields left blank will be unchanged\nLeave password fields blank to leave password unchanged."));
+               
+               // username
+               holder.add(new Label("Username"));
+               final TextBox username = new TextBox();
+               username.setName("username");
+               username.setValue(user.getUsername());
+               holder.add(username);
+               
+               // firstname
+               holder.add(new Label("Firstname"));
+               final TextBox firstname = new TextBox();
+               firstname.setName("firstname");
+               firstname.setValue(user.getFirstname());
+               holder.add(firstname);
+               
+               // lastname
+               holder.add(new Label("Lastname"));
+               final TextBox lastname = new TextBox();
+               lastname.setName("lastname");
+               lastname.setValue(user.getLastname());
+               holder.add(lastname);
+               
+               // email
+               holder.add(new Label("Email"));
+               final TextBox email = new TextBox();
+               email.setName("email");
+               email.setValue(user.getEmail());
+               holder.add(email);
+
+               // password
+               holder.add(new Label("Password"));
+               final PasswordTextBox passwd = new PasswordTextBox();
+               passwd.setName("passwd");
+               holder.add(passwd);
+               
+               // re-enter password
+               holder.add(new Label("re-enter Password"));
+               final PasswordTextBox passwd2 = new PasswordTextBox();
+               passwd2.setName("passwd2");
+               holder.add(passwd2);
+               
+               // radio button for the account type
+               holder.add(new Label("Account type"));
+               final RadioButton studentAccountButton = new RadioButton("student","student");
+               studentAccountButton.setValue(true);
+               final RadioButton instructorAccountButton = new RadioButton("instructor","instructor");
+               holder.add(studentAccountButton);
+               holder.add(instructorAccountButton);
+               
+               final PopupPanel panelCopy=this;
+               
+               holder.add(new Button("Edit user", new ClickHandler() {
+                   @Override
+                   public void onClick(ClickEvent event) {
+                       //This is more like a fake form
+                       //we're not submitting it to a server-side servlet
+                       GWT.log("edit user submit clicked");
+                       final User user=getSession().get(User.class);
+                       
+                       //TODO add suppor for editing registration type
+                       CourseRegistrationType type=CourseRegistrationType.STUDENT;
+                       if (instructorAccountButton.getValue()) {
+                           type=CourseRegistrationType.INSTRUCTOR;
+                       }
+                       //TODO add support for sections
+                       int section=101;
+                       
+                       if (!user.getUsername().equals(username.getValue()) ||
+                               user.getFirstname().equals(username.getValue()) ||
+                               user.getLastname().equals(lastname.getValue()) ||
+                               user.getEmail().equals(email.getValue()) ||
+                               passwd.getValue().length()>0)
+                       {
+                           if (!passwd.getValue().equals(passwd2.getValue())) {
+                               Window.alert("Passwords do no match");
+                               return;
+                           }
+                           // at least one field was edited
+                           GWT.log("user id is "+user.getId());
+                           GWT.log("username from the session is "+user.getUsername());
+                           RPC.usersService.editUser(user.getId(), 
+                                   username.getValue(), 
+                                   firstname.getValue(), 
+                                   lastname.getValue(), 
+                                   email.getValue(), 
+                                   passwd.getValue(),
+                                   new AsyncCallback<Boolean>()
+                           { 
+                               @Override
+                               public void onSuccess(Boolean result) {
+                                   GWT.log("Edited "+user.getUsername()+" in course "+rawCourseTitle);
+                               }
+
+                               @Override
+                               public void onFailure(Throwable caught) {
+                                   GWT.log("Failed to edit student");
+                                   Window.alert("Unable to edit "+user.getUsername()+" in course "+rawCourseTitle);
+                               }
+                           });
+                       } else {
+                           panelCopy.hide();
+                           Window.alert("Nothing was changed");
+                       }
+                       
+                       panelCopy.hide();
+                       reloadUsers();
+                       Window.alert("Successfully edited user record");
+                   }
+               }));
+               form.add(holder);
+               vp.add(form);
+            }
+        }
         
         /* (non-Javadoc)
          * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
@@ -277,8 +482,11 @@ public class UserAdminPage extends CloudCoderPage
             statusMessageView.activate(session, subscriptionRegistrar);
             
             // The session should contain a course
+            // XXX js: why?
             Course course = session.get(Course.class);
-            courseLabel.setText(course.getName() + " - " + course.getTitle());
+            rawCourseTitle=course.getName()+" - "+course.getTitle();
+            courseLabel.setText(rawCourseTitle);
+            courseId=course.getId();
             session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
         }
         
@@ -286,8 +494,13 @@ public class UserAdminPage extends CloudCoderPage
         public void eventOccurred(Object key, Publisher publisher, Object hint) {
             if (key == Session.Event.ADDED_OBJECT && (hint instanceof User)) {
                 onSelectUser((User) hint);
+            } else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
+                
             }
-            
+        }
+        
+        private void reloadUsers() {
+            userAdminUsersListView.loadUsers(getSession());
         }
         
         private void onSelectUser(User user) {
@@ -298,19 +511,21 @@ public class UserAdminPage extends CloudCoderPage
             userManagementButtons[ButtonPanelAction.REGISTER_USERS.ordinal()].setEnabled(true);
         }
         
-        private void handleEditUser() {
-            GWT.log("handle new user");
+        private void handleEditUser(ClickEvent event) {
+            GWT.log("handle edit user");
             final User chosen = getSession().get(User.class);
-            Window.alert("Not implemented yet, sorry.");
-            /*
-            loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
-                @Override
-                public void call(ProblemAndTestCaseList value) {
-                    getSession().add(value);
-                    getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, value);
-                }
-            });
-            */
+            final Course course = getSession().get(Course.class);
+            //TODO get the course type?
+            //TODO wtf is the in the user record and how does it get there?
+            CourseRegistrationType type=null;
+            Widget w = (Widget)event.getSource();
+            EditUserPopupPanel pop = new EditUserPopupPanel(w, 
+                    chosen, 
+                    course,
+                    type);
+            pop.center();
+            pop.setGlassEnabled(true);
+            pop.show();
         }
         
         private void handleDeleteUser() {
@@ -320,15 +535,13 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleNewUser(ClickEvent event) {
             GWT.log("handle new user");
-            Window.alert("Not implemented yet, sorry.  You should use the command-line configuration features");
-            /*
+            
             Widget w = (Widget)event.getSource();
-            AddUserPopupPanel pop = new AddUserPopupPanel(w);
-            pop.setGlassEnabled(true);
+            AddUserPopupPanel pop = new AddUserPopupPanel(w, courseId);
             pop.center();
-            pop.setPopupPosition(w.getAbsoluteLeft() - 150, w.getAbsoluteTop());
+            pop.setGlassEnabled(true);
             pop.show();
-            */
+
         }
         
         private void handleRegisterNewUsers() {

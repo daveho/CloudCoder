@@ -74,7 +74,7 @@ public class CreateRepositoryDatabase {
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		int userId = ConfigurationUtil.createUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
+		int userId = ConfigurationUtil.createOrUpdateUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
 
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);
