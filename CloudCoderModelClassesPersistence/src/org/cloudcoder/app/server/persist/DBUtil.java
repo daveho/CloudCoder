@@ -52,6 +52,20 @@ import org.slf4j.LoggerFactory;
 public class DBUtil {
     private static final Logger logger=LoggerFactory.getLogger(DBUtil.class);
     
+    static {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static Connection getConnection() throws IOException, SQLException 
+    {
+        Properties config = getConfigProperties();
+        return DBUtil.connectToDatabase(config, "cloudcoder.db");
+    }
+    
     /**
      * Quietly close a {@link Statement}.
      * 
@@ -65,6 +79,16 @@ public class DBUtil {
 		} catch (SQLException e) {
 		    logger.error("Unable to close prepared statement",e);
 		}
+	}
+	
+	public static void closeQuietly(Connection conn) {
+	    try {
+	        if (conn!=null) {
+	            conn.close();
+	        }
+	    } catch (SQLException e) {
+	        logger.error("Unable to close database connection",e);
+	    }
 	}
 
 	/**
@@ -420,6 +444,7 @@ public class DBUtil {
 		}
 		try {
 		    String url="jdbc:mysql://" + dbHost + portStr+ "/" + databaseName + "?user=" + dbUser + "&password=" + URLEncoder.encode(dbPasswd, "UTF-8");
+		    logger.info(url);
 		    return DriverManager.getConnection(url);
 		} catch (UnsupportedEncodingException e) {
 		    // should never happen
@@ -660,7 +685,6 @@ public class DBUtil {
 			System.out.println("Warning: loading cloudcoder.properties from filesystem");
 			properties.load(new FileReader("../cloudcoder.properties"));
 		}
-		
 		return properties;
 	}
 

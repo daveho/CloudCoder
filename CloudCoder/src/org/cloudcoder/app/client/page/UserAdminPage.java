@@ -33,13 +33,18 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -140,7 +145,7 @@ public class UserAdminPage extends CloudCoderPage
                             break;
                             
                         case REGISTER_USERS:
-                            handleRegisterNewUsers();
+                            handleRegisterNewUsers(event);
                             break;
                             
                         case DELETE:
@@ -304,28 +309,6 @@ public class UserAdminPage extends CloudCoderPage
                }));
                form.add(holder);
 
-               // will need a URL for the file upload?
-               // form.setAction("url");
-
-//               form.addSubmitHandler(new FormPanel.SubmitHandler() {
-//                   @Override
-//                   public void onSubmit(SubmitEvent event) {
-//                       GWT.log("onSubmit, username is "+username.getText());
-//                       // TODO don't submit; use asynchronous handler
-//                       
-//                   }
-//               });
-               
-
-//               form.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
-//                   public void onSubmitComplete(SubmitCompleteEvent event) {
-//                       GWT.log("onSubmitComplete complete");
-//                       // now we can hide the panel
-//                       panelCopy.hide();
-//                       Window.alert(event.getResults());
-//                   }
-//                 });
-
                vp.add(form);
             }
         }
@@ -345,16 +328,16 @@ public class UserAdminPage extends CloudCoderPage
                // We won't actually submit the form to a servlet
                // instead we intercept the form fields
                // and make an async call
-               //form.setEncoding(FormPanel.ENCODING_MULTIPART);
-               //form.setMethod(FormPanel.METHOD_POST);
-              
+
                // TODO are these style file hooks?
                form.addStyleName("table-center");
                form.addStyleName("demo-FormPanel");
 
                VerticalPanel holder = new VerticalPanel();
 
-               holder.add(new Label("Change the fields you want to edit.\nAny fields left blank will be unchanged\nLeave password fields blank to leave password unchanged."));
+               holder.add(new HTML(new SafeHtmlBuilder().appendEscapedLines("Change the fields you want to edit.\n" +
+               		"Any fields left blank will be unchanged\n" +
+               		"Leave password fields blank to leave password unchanged.").toSafeHtml()));
                
                // username
                holder.add(new Label("Username"));
@@ -404,6 +387,9 @@ public class UserAdminPage extends CloudCoderPage
                holder.add(studentAccountButton);
                holder.add(instructorAccountButton);
                
+               form.add(holder);
+               vp.add(form);
+               
                final PopupPanel panelCopy=this;
                
                holder.add(new Button("Edit user", new ClickHandler() {
@@ -414,7 +400,7 @@ public class UserAdminPage extends CloudCoderPage
                        GWT.log("edit user submit clicked");
                        final User user=getSession().get(User.class);
                        
-                       //TODO add suppor for editing registration type
+                       //TODO add support for editing registration type
                        CourseRegistrationType type=CourseRegistrationType.STUDENT;
                        if (instructorAccountButton.getValue()) {
                            type=CourseRegistrationType.INSTRUCTOR;
@@ -446,6 +432,9 @@ public class UserAdminPage extends CloudCoderPage
                                @Override
                                public void onSuccess(Boolean result) {
                                    GWT.log("Edited "+user.getUsername()+" in course "+rawCourseTitle);
+                                   panelCopy.hide();
+                                   Window.alert("Successfully edited user record");
+                                   reloadUsers();
                                }
 
                                @Override
@@ -458,14 +447,58 @@ public class UserAdminPage extends CloudCoderPage
                            panelCopy.hide();
                            Window.alert("Nothing was changed");
                        }
-                       
-                       panelCopy.hide();
-                       reloadUsers();
-                       Window.alert("Successfully edited user record");
                    }
                }));
+               
+            }
+        }
+        
+        private class RegisterUsersPopupPanel extends PopupPanel{
+            public RegisterUsersPopupPanel(final Widget widget, final int courseId) 
+            {
+               super(true);
+               
+               VerticalPanel vp = new VerticalPanel();
+               final PopupPanel panelCopy=this;
+               setWidget(vp);
+               
+               final FormPanel form = new FormPanel();
+               form.setEncoding(FormPanel.ENCODING_MULTIPART);
+               form.setMethod(FormPanel.METHOD_POST);
+              
+               // TODO are these style file hooks?
+               form.addStyleName("table-center");
+               form.addStyleName("demo-FormPanel");
+
+               VerticalPanel holder = new VerticalPanel();
+               holder.add(new Hidden("courseId", Integer.toString(courseId)));
+               holder.add(new Label("Choose a file"));
+               holder.add(new HTML(new SafeHtmlBuilder().
+                       appendEscapedLines("File should be tab-delimited in format:\n" +
+                       		"username firstname lastname email password").toSafeHtml()));
+               FileUpload fup=new FileUpload();
+               fup.setName("fileupload");
+               holder.add(fup);
+               holder.add(new Button("Register students", new ClickHandler() {
+                   @Override
+                   public void onClick(ClickEvent event) {
+                       form.submit();
+                   }
+               }));
+               form.setAction(GWT.getModuleBaseURL()+"registerStudents");
+               GWT.log("URL: "+GWT.getModuleBaseURL()+"registerStudents");
                form.add(holder);
                vp.add(form);
+               
+               form.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
+                   public void onSubmitComplete(SubmitCompleteEvent event) {
+                       GWT.log("onSubmitComplete complete");
+                       // now we can hide the panel
+                       panelCopy.hide();
+                       Window.alert(event.getResults());
+                       reloadUsers();
+                   }
+               });
             }
         }
         
@@ -482,7 +515,6 @@ public class UserAdminPage extends CloudCoderPage
             statusMessageView.activate(session, subscriptionRegistrar);
             
             // The session should contain a course
-            // XXX js: why?
             Course course = session.get(Course.class);
             rawCourseTitle=course.getName()+" - "+course.getTitle();
             courseLabel.setText(rawCourseTitle);
@@ -544,9 +576,13 @@ public class UserAdminPage extends CloudCoderPage
 
         }
         
-        private void handleRegisterNewUsers() {
-            Window.alert("Not implemented yet, sorry.  You should use the command-line configuration features");
+        private void handleRegisterNewUsers(ClickEvent event) {
             GWT.log("handle Register new users");
+            Widget w = (Widget)event.getSource();
+            RegisterUsersPopupPanel pop = new RegisterUsersPopupPanel(w, courseId);
+            pop.center();
+            pop.setGlassEnabled(true);
+            pop.show();
         }
     }
     

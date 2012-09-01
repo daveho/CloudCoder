@@ -32,6 +32,7 @@ import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO: Move the database code here into JDBCDatabase?
@@ -41,6 +42,9 @@ import org.cloudcoder.app.shared.model.User;
  */
 public class ConfigurationUtil
 {
+    private static final long serialVersionUID = 1L;
+    private static final org.slf4j.Logger logger=LoggerFactory.getLogger(ConfigurationUtil.class);
+
 
     static String ask(Scanner keyboard, String prompt) {
         return ConfigurationUtil.ask(keyboard, prompt, null);
@@ -285,12 +289,12 @@ public class ConfigurationUtil
     {
         Scanner scan=new Scanner(in);
         int num=0;
-        int skip=0;
         while (scan.hasNextLine()) {
             String line=scan.nextLine().replaceAll("#.*","").trim();
             if (line.equals("")) {
                 continue;
             }
+            
             String[] tokens=line.split("\t");
             String username=tokens[0];
             String firstname=tokens[1];
@@ -299,8 +303,9 @@ public class ConfigurationUtil
             String password=tokens[4];
             int section = 101; // The default section number
             if (tokens.length > 5 && tokens[5] != null) {
-            	section=Integer.parseInt(tokens[5]);
+                section=Integer.parseInt(tokens[5]);
             }
+            logger.info("Registering "+username+" for courseId "+courseId);
             // Look up the user to see if they already exist
             int userId;
             User u=findUser(conn, username);
@@ -315,13 +320,8 @@ public class ConfigurationUtil
                         email,
                         password);
             }
-            // TODO check that user is not already registered
-            CourseRegistration reg=findRegistration(conn, userId, courseId);
-            if (reg==null) {
-                ConfigurationUtil.registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section);
+            if (registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section)) {
                 num++;
-            } else {
-                skip++;
             }
         }
         return num;
@@ -352,14 +352,18 @@ public class ConfigurationUtil
      * @param section           the section number
      * @throws SQLException
      */
-    public static void registerUser(Connection conn, int userId, int courseId, CourseRegistrationType registrationType, int section) throws SQLException {
-        // TODO: Make sure they are not already registered for the course!
+    public static boolean registerUser(Connection conn, int userId, int courseId, CourseRegistrationType registrationType, int section) throws SQLException {
+        if (findRegistration(conn, userId, courseId)!=null) {
+            // already registered!
+            return false;
+        }
         CourseRegistration courseReg = new CourseRegistration();
         courseReg.setCourseId(courseId);
         courseReg.setUserId(userId);
         courseReg.setRegistrationType(registrationType);
         courseReg.setSection(section);
         DBUtil.storeModelObject(conn, courseReg);
+        return true;
     }
 
 }

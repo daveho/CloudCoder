@@ -119,6 +119,18 @@
     <servlet-name>User</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.UserServiceImpl</servlet-class>
   </servlet>
+  
+  
+  <servlet>
+    <servlet-name>RegisterStudents</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.servlet.RegisterStudents</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RegisterStudents</servlet-name>
+    <url-pattern>/cloudcoder/registerStudents</url-pattern>
+  </servlet-mapping>
+
+  
   <servlet-mapping>
     <servlet-name>ConfigurationSetting</servlet-name>
     <url-pattern>/cloudcoder/configurationSetting</url-pattern>
