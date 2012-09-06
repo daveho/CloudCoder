@@ -25,6 +25,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 
 /**
  * Dialog box asking the user to choose between choices.
@@ -67,6 +69,7 @@ public class ChoiceDialogBox<ChoiceType> extends DialogBox {
 	
 	private ChoiceHandler<ChoiceType> handler;
 	private List<Choice> choiceList;
+	private String bodyText;
 	private boolean uiCreated;
 	
 	/**
@@ -78,8 +81,8 @@ public class ChoiceDialogBox<ChoiceType> extends DialogBox {
 	public ChoiceDialogBox(String title, String text, ChoiceHandler<ChoiceType> handler) {
 		this.handler = handler;
 		this.choiceList = new ArrayList<Choice>();
-		setTitle(title);
-		setText(text);
+		setText(title);
+		this.bodyText = text;
 		setGlassEnabled(true);
 	}
 	
@@ -114,6 +117,15 @@ public class ChoiceDialogBox<ChoiceType> extends DialogBox {
 	private void createUI() {
 		if (!uiCreated) {
 			FlowPanel buttonPanel = new FlowPanel();
+			
+			FlowPanel div = new FlowPanel();
+			div.add(new HTML("<br />"));
+			div.add(new Label(bodyText));
+			div.add(new HTML("<br />"));
+			buttonPanel.add(div);
+			
+			FlowPanel buttonDiv = new FlowPanel();
+			
 			for (final Choice choice : choiceList) {
 				Button button = new Button(choice.getButtonText());
 				button.setStyleName("cc-choiceDialogButton", true);
@@ -125,8 +137,11 @@ public class ChoiceDialogBox<ChoiceType> extends DialogBox {
 						handler.handleChoice(choice.getChoice());
 					}
 				});
-				buttonPanel.add(button);
+				buttonDiv.add(button);
 			}
+			
+			buttonPanel.add(buttonDiv);
+			
 			add(buttonPanel);
 			
 			uiCreated = true;
