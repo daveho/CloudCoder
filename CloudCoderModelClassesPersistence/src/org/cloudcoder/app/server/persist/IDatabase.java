@@ -249,12 +249,12 @@ public interface IDatabase {
 	 */
 	public CourseRegistration findCourseRegistration(User user, Course course);
 	
-//	/**
-//	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
-//	 * 
-//	 * @param course   the {@link Course}
-//	 * @param problem  the {@link Problem}
-//	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
-//	 */
-//	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, Problem problem);
+	/**
+	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+	 * 
+	 * @param course   the {@link Course}
+	 * @param problemId  the problem id
+	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+	 */
+	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
 }

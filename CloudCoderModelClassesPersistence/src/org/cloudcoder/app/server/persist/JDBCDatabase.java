@@ -56,6 +56,7 @@ import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -1188,21 +1189,53 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
-//	@Override
-//	public List<Pair<User, SubmissionReceipt>> getBestSubmissionReceipts(
-//			Course course, Problem problem) {
-//		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Pair<User, SubmissionReceipt>>>() {
-//			@Override
-//			public List<Pair<User, SubmissionReceipt>> run(Connection conn)
-//					throws SQLException {
-//				return null;
-//			}
-//			@Override
-//			public String getDescription() {
-//				return " getting best submission receipts for problem/course";
-//			}
-//		});
-//	}
+	@Override
+	public List<Pair<User, SubmissionReceipt>> getBestSubmissionReceipts(
+			final Course course, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Pair<User, SubmissionReceipt>>>() {
+			@Override
+			public List<Pair<User, SubmissionReceipt>> run(Connection conn)
+					throws SQLException {
+
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"SELECT u.* , e.* , sr.* , MAX( sr.num_tests_passed ) " +
+						"  FROM cc_users AS u, cc_events AS e, cc_submission_receipts AS sr " +
+						" WHERE u.id = e.user_id " +
+						"   AND e.id = sr.event_id " +
+						"   AND e.problem_id = ? " +
+						"  GROUP BY u.id ");
+				stmt.setInt(1, problemId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<Pair<User, SubmissionReceipt>> result = new ArrayList<Pair<User,SubmissionReceipt>>();
+				
+				while (resultSet.next()) {
+					int index = 1;
+					User user = new User();
+					index = loadGeneric(user, resultSet, index, User.SCHEMA);
+					Event event = new Event();
+					index = loadGeneric(event, resultSet, index, Event.SCHEMA);
+					SubmissionReceipt receipt = new SubmissionReceipt();
+					loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+					
+					receipt.setEvent(event);
+					
+					Pair<User, SubmissionReceipt> pair = new Pair<User, SubmissionReceipt>();
+					pair.setLeft(user);
+					pair.setRight(receipt);
+					
+					result.add(pair);
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " getting best submission receipts for problem/course";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

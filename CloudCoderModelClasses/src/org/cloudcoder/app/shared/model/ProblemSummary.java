@@ -18,7 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 /**
- * Object summarizing student work on a {@link Problem}.
+ * Object summarizing (aggregate) student work on a {@link Problem}.
  * 
  * @author David Hovemeyer
  */
