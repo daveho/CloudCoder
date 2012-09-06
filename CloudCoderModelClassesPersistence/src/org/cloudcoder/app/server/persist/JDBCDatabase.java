@@ -1386,15 +1386,32 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	/**
-	 * @param problem
-	 * @param conn
-	 * @param abstractDatabaseRunnable
-	 * @return
+	 * Count students in course for given {@link Problem}.
+	 * 
+	 * @param problem  the {@link Problem}
+	 * @param conn     the database connection
+	 * @param abstractDatabaseRunnable the {@link AbstractDatabaseRunnable}
+	 * @return number of students in the course
+	 * @throws SQLException 
 	 */
 	protected int doCountStudentsInCourse(Problem problem, Connection conn,
-			AbstractDatabaseRunnableNoAuthException<ProblemSummary> abstractDatabaseRunnable) {
-		// TODO Auto-generated method stub
-		return 0;
+			AbstractDatabaseRunnableNoAuthException<ProblemSummary> abstractDatabaseRunnable) throws SQLException {
+		PreparedStatement stmt = abstractDatabaseRunnable.prepareStatement(
+				conn,
+				"select count(*) from " +
+				Course.SCHEMA.getDbTableName() + " as c, " +
+				CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
+				" where c.id = ? " +
+				"   and cr.course_id = c.id "
+				);
+		stmt.setInt(1, problem.getCourseId());
+		
+		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
+		if (!resultSet.next()) {
+			return -1;
+		}
+		
+		return resultSet.getInt(1);
 	}
 
 	private List<? extends Object[]> doGetCoursesForUser(
