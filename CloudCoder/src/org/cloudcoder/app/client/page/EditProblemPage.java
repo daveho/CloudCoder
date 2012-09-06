@@ -143,13 +143,16 @@ public class EditProblemPage extends CloudCoderPage {
 			// Commit the contents of all editors
 			commitAll();
 			
+			// Create a pending operation message
+			getSession().add(StatusMessage.pending("Sending problem data to server..."));
+			
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getSession().get(Course.class);
 			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
-					getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "Problem saved successfully"));
+					getSession().add(StatusMessage.goodNews("Problem saved successfully"));
 					
 					// Make the returned ProblemAndTestCaseList current
 					problemAndTestCaseListOrig.copyFrom(result);
@@ -166,7 +169,7 @@ public class EditProblemPage extends CloudCoderPage {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save problem: " + caught.getMessage()));
+					getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
 				}
 			});
 		}

@@ -65,7 +65,7 @@ public class StatusMessage {
 	 * @param message the message text
 	 * @return the good news status message
 	 */
-	public static Object goodNews(String message) {
+	public static StatusMessage goodNews(String message) {
 		return new StatusMessage(Category.GOOD_NEWS, message);
 	}
 
@@ -75,7 +75,17 @@ public class StatusMessage {
 	 * @param message the message text
 	 * @return the error status message
 	 */
-	public static Object error(String message) {
+	public static StatusMessage error(String message) {
 		return new StatusMessage(Category.ERROR, message);
+	}
+
+	/**
+	 * Factory method to create a pending operation status message.
+	 * 
+	 * @param message
+	 * @return
+	 */
+	public static StatusMessage pending(String message) {
+		return new StatusMessage(Category.PENDING, message);
 	}
 }
