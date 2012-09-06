@@ -44,6 +44,7 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
@@ -173,6 +174,11 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public User run(Connection conn) throws SQLException {
 				User user=getUser(conn, userName);
+				
+				if (user == null) {
+					// No such user
+					return null;
+				}
 				
 				if (BCrypt.checkpw(password, user.getPasswordHash())) {
 					// Plaintext password matches hash: authentication succeeded
@@ -1181,6 +1187,22 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+//	@Override
+//	public List<Pair<User, SubmissionReceipt>> getBestSubmissionReceipts(
+//			Course course, Problem problem) {
+//		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Pair<User, SubmissionReceipt>>>() {
+//			@Override
+//			public List<Pair<User, SubmissionReceipt>> run(Connection conn)
+//					throws SQLException {
+//				return null;
+//			}
+//			@Override
+//			public String getDescription() {
+//				return " getting best submission receipts for problem/course";
+//			}
+//		});
+//	}
 
 	/**
 	 * Run a database transaction and return the result.

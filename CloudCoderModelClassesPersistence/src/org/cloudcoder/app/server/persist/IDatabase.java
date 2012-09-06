@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
@@ -247,4 +248,13 @@ public interface IDatabase {
 	 * @return the {@link CourseRegistration}, or null if the user is not registered in the course
 	 */
 	public CourseRegistration findCourseRegistration(User user, Course course);
+	
+//	/**
+//	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+//	 * 
+//	 * @param course   the {@link Course}
+//	 * @param problem  the {@link Problem}
+//	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+//	 */
+//	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, Problem problem);
 }
