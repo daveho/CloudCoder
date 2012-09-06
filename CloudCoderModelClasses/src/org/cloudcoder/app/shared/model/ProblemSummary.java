@@ -40,6 +40,14 @@ public class ProblemSummary {
 		this.testName = problem.getTestname();
 		this.briefDescription = problem.getBriefDescription();
 	}
+
+	public int getProblemId() {
+		return problemId;
+	}
+	
+	public String getTestName() {
+		return testName;
+	}
 	
 	/**
 	 * @param numStudents the numStudents to set
