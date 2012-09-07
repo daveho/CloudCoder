@@ -52,6 +52,7 @@ public class CreateRepositoryDatabase {
         String ccFirstname = ConfigurationUtil.ask(keyboard, "What is your first name?");
         String ccLastname= ConfigurationUtil.ask(keyboard, "What is your last name?");
         String ccEmail= ConfigurationUtil.ask(keyboard, "What is your email address?");
+        String ccWebsite= ConfigurationUtil.ask(keyboard, "What is your website URL?");
 		
 		Class.forName("com.mysql.jdbc.Driver");
 
@@ -74,7 +75,7 @@ public class CreateRepositoryDatabase {
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
-		int userId = ConfigurationUtil.createUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
+		int userId = ConfigurationUtil.createUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword, ccWebsite);
 
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);

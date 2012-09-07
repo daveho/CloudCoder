@@ -33,35 +33,62 @@ public class User implements Serializable, IModelObject<User> {
 	private String lastname;
 	private String email;
 	private String passwordHash;
+	private String website;
+
+	public static final ModelObjectField<? super User, Integer> ID = new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(User obj, Integer value) { obj.setId(value); }
+		public Integer get(User obj) { return obj.getId(); }
+	};
+
+	public static final ModelObjectField<? super User, String> USERNAME = new ModelObjectField<User, String>("username", String.class, 20, ModelObjectIndexType.UNIQUE) {
+		public void set(User obj, String value) { obj.setUsername(value); }
+		public String get(User obj) { return obj.getUsername(); }
+	};
+
+	public static final ModelObjectField<? super User, String> FIRSTNAME = new ModelObjectField<User, String>("firstname", String.class, 30) {
+        public void set(User obj, String value) { obj.setFirstname(value); }
+        public String get(User obj) { return obj.getFirstname(); }
+    };
+
+	public static final ModelObjectField<? super User, String> LASTNAME = new ModelObjectField<User, String>("lastname", String.class, 30) {
+        public void set(User obj, String value) { obj.setLastname(value); }
+        public String get(User obj) { return obj.getLastname(); }
+    };
+
+	public static final ModelObjectField<? super User, String> EMAIL = new ModelObjectField<User, String>("email", String.class, 50, ModelObjectIndexType.UNIQUE) {
+        public void set(User obj, String value) { obj.setEmail(value); }
+        public String get(User obj) { return obj.getEmail(); }
+    };
+
+	public static final ModelObjectField<? super User, String> PASSWORD_HASH =new ModelObjectField<User, String>("password_hash", String.class, 60) {
+		public void set(User obj, String value) { obj.setPasswordHash(value); }
+		public String get(User obj) { return obj.getPasswordHash(); }
+	}; 
+	
+	public static final ModelObjectField<? super User, String> WEBSITE = new ModelObjectField<User, String>("website", String.class, 100) {
+		public void set(User obj, String value) { obj.setWebsite(value); }
+		public String get(User obj) { return obj.getWebsite(); }
+	};
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<User> SCHEMA = new ModelObjectSchema<User>("user")
-		.add(new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(User obj, Integer value) { obj.setId(value); }
-			public Integer get(User obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<User, String>("username", String.class, 20, ModelObjectIndexType.UNIQUE) {
-			public void set(User obj, String value) { obj.setUsername(value); }
-			public String get(User obj) { return obj.getUsername(); }
-		})
-		.add(new ModelObjectField<User, String>("firstname", String.class, 30) {
-            public void set(User obj, String value) { obj.setFirstname(value); }
-            public String get(User obj) { return obj.getFirstname(); }
-        })
-        .add(new ModelObjectField<User, String>("lastname", String.class, 30) {
-            public void set(User obj, String value) { obj.setLastname(value); }
-            public String get(User obj) { return obj.getLastname(); }
-        })
-        .add(new ModelObjectField<User, String>("email", String.class, 50, ModelObjectIndexType.UNIQUE) {
-            public void set(User obj, String value) { obj.setEmail(value); }
-            public String get(User obj) { return obj.getEmail(); }
-        })
-		.add(new ModelObjectField<User, String>("password_hash", String.class, 60) {
-			public void set(User obj, String value) { obj.setPasswordHash(value); }
-			public String get(User obj) { return obj.getPasswordHash(); }
-		});
+	public static final ModelObjectSchema<User> SCHEMA_V0 = new ModelObjectSchema<User>("user")
+		.add(ID)
+		.add(USERNAME)
+		.add(FIRSTNAME)
+        .add(LASTNAME)
+        .add(EMAIL)
+		.add(PASSWORD_HASH);
+	
+	public static final ModelObjectSchema<User> SCHEMA_V1 = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(EMAIL, WEBSITE)
+		.finishDelta();
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<User> SCHEMA = SCHEMA_V1;
 
 	/**
 	 * Constructor.
@@ -145,4 +172,22 @@ public class User implements Serializable, IModelObject<User> {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    /**
+     * Get the user's website URL.
+     * 
+     * @return the user's website URL
+     */
+    public String getWebsite() {
+		return website;
+	}
+    
+    /**
+     * Set the user's website URL.
+     * 
+     * @param website the user's website URL
+     */
+    public void setWebsite(String website) {
+		this.website = website;
+	}
 }
