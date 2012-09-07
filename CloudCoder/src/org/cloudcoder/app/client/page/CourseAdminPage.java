@@ -287,10 +287,11 @@ public class CourseAdminPage extends CloudCoderPage {
 			problem.setWhenAssigned(System.currentTimeMillis());
 			problem.setWhenDue(problem.getWhenAssigned() + (48L*60L*60L*1000L));
 			
-			// Set author name and email based on user name/email
+			// Set author name, email, and website based on User information
 			User user = getSession().get(User.class);
 			problem.setAuthorName(user.getFirstname() + " " + user.getLastname());
 			problem.setAuthorEmail(user.getEmail());
+			problem.setAuthorWebsite(user.getWebsite());
 			
 			// Set course id
 			problem.setCourseId(getSession().get(Course.class).getId());
