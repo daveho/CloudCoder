@@ -18,7 +18,7 @@
 package org.cloudcoder.app.shared.model;
 
 /**
- * Object summarizing student work on a {@link Problem}.
+ * Object summarizing (aggregate) student work on a {@link Problem}.
  * 
  * @author David Hovemeyer
  */
@@ -39,6 +39,14 @@ public class ProblemSummary {
 		this.problemId = problem.getProblemId();
 		this.testName = problem.getTestname();
 		this.briefDescription = problem.getBriefDescription();
+	}
+
+	public int getProblemId() {
+		return problemId;
+	}
+	
+	public String getTestName() {
+		return testName;
 	}
 	
 	/**

@@ -238,9 +238,9 @@ public class UserAdminPage extends CloudCoderPage
                
                // radio button for the account type
                holder.add(new Label("Account type"));
-               final RadioButton studentAccountButton = new RadioButton("student","student");
+               final RadioButton studentAccountButton = new RadioButton("account-type","student");
                studentAccountButton.setValue(true);
-               final RadioButton instructorAccountButton = new RadioButton("instructor","instructor");
+               final RadioButton instructorAccountButton = new RadioButton("account-type","instructor");
                holder.add(studentAccountButton);
                holder.add(instructorAccountButton);
                

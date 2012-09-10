@@ -25,6 +25,7 @@ import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
@@ -82,22 +83,28 @@ public class DevelopmentPage extends CloudCoderPage {
 		EDITING,
 		
 		/**
-		 * A submit has been requested, but it must wait until
-		 * the change list is clean.
-		 * Editing disallowed until server response is received.
+		 * A onclean callback (such as a submission) has been requested,
+		 * but the changelist is dirty.  Editing disallowed until
+		 * (1) the changelist is clean, and
+		 * (2) the callback has had a chance to run.
 		 */
-		SUBMIT_PENDING_CLEAN_CHANGE_LIST,
+		ONCLEAN_CALLBACK_PENDING_CLEAN_CHANGE_LIST,
 		
 		/**
-		 * A submit has been initiated.
-		 * Editing disallowed until server response is received.
+		 * An onclean callback is in progress.  Editing will be allowed
+		 * when it completes. 
 		 */
-		SUBMIT_IN_PROGRESS,
+		ONCLEAN_CALLBACK_IN_PROGRESS,
 		
 		/**
 		 * Logging out.
 		 */
 		LOGOUT,
+	}
+	
+	private enum ResetChoice {
+		CANCEL,
+		CONFIRM,
 	}
 
 	/**
@@ -129,6 +136,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private Timer flushPendingChangeEventsTimer;
 		private Mode mode;
 		private Timer checkPendingSubmissionTimer;
+		private Runnable onCleanCallback;
 
 		public UI() {
 			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
@@ -230,20 +238,40 @@ public class DevelopmentPage extends CloudCoderPage {
 			devActionsPanel.setSubmitHandler(new Runnable() {
 				@Override
 				public void run() {
-					ChangeList changeList = session.get(ChangeList.class);
+					runWhenClean(new Runnable() {
+						@Override
+						public void run() {
+							doSubmit();
+						}
+					});
+				}
+			});
+			
+			// Add reset handler
+			devActionsPanel.setResetHandler(new Runnable() {
+				@Override
+				public void run() {
+					// Require user to confirm the reset with a dialog.
+					ChoiceDialogBox<ResetChoice> confirmResetDialog = new ChoiceDialogBox<ResetChoice>(
+							"Really reset the problem?",
+							"Do you really want to reset the problem, abandoning your work?",
+							new ChoiceDialogBox.ChoiceHandler<ResetChoice>() {
+								public void handleChoice(ResetChoice choice) {
+									if (choice == ResetChoice.CONFIRM) {
+										runWhenClean(new Runnable() {
+											@Override
+											public void run() {
+												doResetProblem();
+											}
+										});
+									}
+								}
+							});
 					
-					 if (changeList.getState() == ChangeList.State.CLEAN) {
-						mode = Mode.SUBMIT_IN_PROGRESS;
-						doSubmit();
-					 } else {
-						 // As soon as the change list is clean, we'll be able
-						 // to submit
-						 addSessionObject(new StatusMessage(StatusMessage.Category.PENDING, "Saving your code..."));
-						 mode = Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST;
-					 }
-					 
-					// No editing is allowed until a response is received from the server
-					aceEditor.setReadOnly(true);
+					confirmResetDialog.addChoice("Cancel", ResetChoice.CANCEL);
+					confirmResetDialog.addChoice("Reset the problem", ResetChoice.CONFIRM);
+					
+					confirmResetDialog.center();
 				}
 			});
 			
@@ -253,12 +281,63 @@ public class DevelopmentPage extends CloudCoderPage {
 		
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			if (key == ChangeList.State.CLEAN && mode == Mode.SUBMIT_PENDING_CLEAN_CHANGE_LIST) {
-				// The change list just became clean, and an attempt to
-				// submit is pending. Initiate the submit.
-				mode = Mode.SUBMIT_IN_PROGRESS;
-				doSubmit();
+			if (key == ChangeList.State.CLEAN && mode == Mode.ONCLEAN_CALLBACK_PENDING_CLEAN_CHANGE_LIST) {
+				// The change list just became clean, and an on-clean callback is pending.
+				// Run the callback.
+				mode = Mode.ONCLEAN_CALLBACK_IN_PROGRESS;
+				onCleanCallback.run();
 			}
+		}
+		
+		/**
+		 * Run a callback when the editor is clean (no changes pending
+		 * to be sent to the server.)  The callback must
+		 * result in a call to {@link #doneWithOnCleanCallback()}
+		 * at some point in the future.
+		 *  
+		 * Note: if a callback is already waiting
+		 * for the editor to be clean, then we do nothing.
+		 * (For example, the user might have clicked the Submit!
+		 * button twice, and we should ignore the second click.)
+		 * 
+		 * @param callback the callback to run when the editor is clean
+		 */
+		private void runWhenClean(Runnable callback) {
+			if (onCleanCallback != null) {
+				// Do nothing: a callback is already installed
+				return;
+			}
+			
+			onCleanCallback = callback;
+			
+			// No editing is allowed until the callback has a chance to complete
+			aceEditor.setReadOnly(true);
+			
+			// See if the ChangeList is clean
+			ChangeList changeList = getSession().get(ChangeList.class);
+			if (changeList.getState() == ChangeList.State.CLEAN) {
+				// We can run the callback immediately
+				mode = Mode.ONCLEAN_CALLBACK_IN_PROGRESS;
+				onCleanCallback.run();
+			} else {
+				// Must wait until editor is clean
+				addSessionObject(StatusMessage.pending("Saving your code..."));
+				mode = Mode.ONCLEAN_CALLBACK_PENDING_CLEAN_CHANGE_LIST;
+			}
+		}
+		
+		/**
+		 * This method should be called when an on-clean callback has
+		 * finished, and we can make the editor read/write again.
+		 */
+		private void doneWithOnCleanCallback() {
+			if (onCleanCallback == null) {
+				GWT.log("doneWithOnCleanCallback() called, but there is no onCleanCallback");
+			}
+			mode = Mode.EDITING;
+			aceEditor.setReadOnly(false);
+			onCleanCallback = null;
+			GWT.log("Done with onClean callback");
 		}
 
 		private void doSubmit() {
@@ -285,6 +364,39 @@ public class DevelopmentPage extends CloudCoderPage {
 					checkPendingSubmissionTimer.scheduleRepeating(POLL_SUBMISSION_RESULT_INTERVAL_MS);
 				}
 			});
+		}
+		
+		private void doResetProblem() {
+			GWT.log("Resetting problem");
+			
+			// The Problem object should contain the skelton code
+			Problem problem = getSession().get(Problem.class);
+
+			// Temporarily block the editor's onChange handler from
+			// adding changes to the ChangeList.
+			mode = Mode.LOADING;
+			
+			// Reset the editor contents.
+			aceEditor.setReadOnly(false);
+			String skeleton = problem.getSkeleton() != null ? problem.getSkeleton() : "";
+			aceEditor.setText(skeleton);
+			aceEditor.setReadOnly(true);
+			
+			// Create a full-text change,
+			// and add it to the ChangeList.
+			Change fullTextChange = new Change(
+					ChangeType.FULL_TEXT,
+					0, 0, 0, 0,
+					System.currentTimeMillis(),
+					getSession().get(User.class).getId(),
+					problem.getProblemId(),
+					skeleton);
+			getSession().get(ChangeList.class).addChange(fullTextChange);
+			
+			// At this point we can finish the on-clean callback,
+			// which will restore the mode to EDITING and make the editor
+			// read/write again.
+			doneWithOnCleanCallback();
 		}
 
 		private void createEditor(Language language) {
@@ -535,8 +647,11 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 				
 				// Can resume editing now
+				/*
 				mode = Mode.EDITING;
 				aceEditor.setReadOnly(false);
+				*/
+				doneWithOnCleanCallback();
 			}
 
 		}

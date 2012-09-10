@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -286,8 +287,18 @@ public class CourseAdminPage extends CloudCoderPage {
 			problem.setWhenAssigned(System.currentTimeMillis());
 			problem.setWhenDue(problem.getWhenAssigned() + (48L*60L*60L*1000L));
 			
+			// Set author name and email based on user name/email
+			User user = getSession().get(User.class);
+			problem.setAuthorName(user.getFirstname() + " " + user.getLastname());
+			problem.setAuthorEmail(user.getEmail());
+			
+			// Set course id
 			problem.setCourseId(getSession().get(Course.class).getId());
+			
+			// Initially there are no test cases
 			TestCase[] testCaseList= new TestCase[0];
+			
+			// Edit it!
 			ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
 			problemAndTestCaseList.setProblem(problem);
 			problemAndTestCaseList.setTestCaseList(testCaseList);

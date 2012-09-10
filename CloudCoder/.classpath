@@ -8,11 +8,6 @@
 			<attribute name="javadoc_location" value="http://commons.apache.org/io/api-release"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/xstream-1.4.2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://xstream.codehaus.org/javadoc/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/imap.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/httpclient-4.2.1.jar">
@@ -23,6 +18,11 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/httpcore-4.2.1.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/opencsv-2.3.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://opencsv.sourceforge.net/apidocs"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>

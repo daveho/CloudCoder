@@ -18,7 +18,8 @@
 package org.cloudcoder.app.server.admin;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,19 +28,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemSummaryList;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.XStreamer;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * Servlet to retrieve information about problem submissions.
@@ -57,10 +56,6 @@ public class Problems extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-//		resp.setContentType("text/plain");
-//		resp.getWriter().println("Hey there");
-//		resp.setStatus(HttpServletResponse.SC_OK);
-		
 		ProblemURLInfo problemURLInfo = ProblemURLInfo.fromRequest(req);
 		if (problemURLInfo == null) {
 			// Should not happen
@@ -79,11 +74,16 @@ public class Problems extends HttpServlet {
 			summarizeStudentWorkOnProblem(user, course, problemId, resp);
 		}
 	}
+	
+	private static final String[] PROBLEMS_HEADER = {
+		"problemId", "testName", "numStudents", "numStarted", "passedAtLeastOneTest", "numCompleted",
+	};
 
 	private void summarizeProblems(User user, Course course, HttpServletResponse resp) throws IOException {
 		// Just summarize problems available in this course
 		
-		resp.setContentType("text/xml");
+		resp.setContentType("text/csv");
+		resp.addHeader("Content-disposition", "attachment;filename=problemsInCourse" + course.getId() + ".csv");
 		
 		ProblemList problemList = Database.getInstance().getProblemsInCourse(user, course);
 		
@@ -92,28 +92,52 @@ public class Problems extends HttpServlet {
 			ProblemSummary problemSummary = Database.getInstance().createProblemSummary(problem);
 			problemSummaryList.add(problemSummary);
 		}
+
+		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
-		XStream xstream = new XStream(new StaxDriver(){
-			/* (non-Javadoc)
-			 * @see com.thoughtworks.xstream.io.xml.StaxDriver#createWriter(java.io.Writer)
-			 */
-			@Override
-			public HierarchicalStreamWriter createWriter(Writer out) {
-				return new PrettyPrintWriter(out);
-			}
-		});
-		xstream.processAnnotations(ProblemSummaryList.class);
-		xstream.toXML(problemSummaryList, resp.getWriter());
+		writer.writeNext(PROBLEMS_HEADER);
+		
+		for (ProblemSummary summary : problemSummaryList.getList()) {
+			List<String> entry = new ArrayList<String>();
+			entry.add(String.valueOf(summary.getProblemId()));
+			entry.add(summary.getTestName());
+			entry.add(String.valueOf(summary.getNumStudents()));
+			entry.add(String.valueOf(summary.getNumStarted()));
+			entry.add(String.valueOf(summary.getNumPassedAtLeastOneTest()));
+			entry.add(String.valueOf(summary.getNumCompleted()));
+			
+			writer.writeNext(entry.toArray(new String[entry.size()]));
+		}
 	}
+	
+	private static final String[] BEST_SUBMISSION_HEADER = new String[]{
+		"username", "numPassed"
+	};
 
 	/**
-	 * @param user
-	 * @param course
-	 * @param problemId
-	 * @param resp
+	 * Summarize student work on a particular problem in a particular course.
+	 * 
+	 * @param user        authenticated user
+	 * @param course      the course
+	 * @param problemId   the problem id
+	 * @param resp        the HttpServletResponse to write to
 	 * @throws ServletException 
+	 * @throws IOException 
 	 */
-	private void summarizeStudentWorkOnProblem(User user, Course course, int problemId, HttpServletResponse resp) throws ServletException {
-		throw new ServletException("Not supported yet");
+	private void summarizeStudentWorkOnProblem(User user, Course course, int problemId, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setContentType("text/csv");
+		resp.addHeader("Content-disposition", "attachment;filename=course" + course.getId() + "Problem" + problemId + ".csv");
+
+		List<Pair<User, SubmissionReceipt>> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problemId);
+		
+		CSVWriter writer = new CSVWriter(resp.getWriter());
+		writer.writeNext(BEST_SUBMISSION_HEADER);
+		
+		for (Pair<User, SubmissionReceipt> pair : bestSubmissions) {
+			List<String> entry = new ArrayList<String>();
+			entry.add(pair.getLeft().getUsername());
+			entry.add(String.valueOf(pair.getRight().getNumTestsPassed()));
+			writer.writeNext(entry.toArray(new String[entry.size()]));
+		}
 	}
 }

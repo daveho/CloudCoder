@@ -108,11 +108,16 @@ public interface ITestCaseData {
 		};
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<ITestCaseData> SCHEMA = new ModelObjectSchema<ITestCaseData>("test_case_data")
+	public static final ModelObjectSchema<ITestCaseData> SCHEMA_V0 = new ModelObjectSchema<ITestCaseData>("test_case_data")
 		.add(TEST_CASE_NAME)
 		.add(INPUT)
 		.add(OUTPUT)
 		.add(SECRET);
+	
+	/**
+	 * Description of fields (latest schema version).
+	 */
+	public static final ModelObjectSchema<ITestCaseData> SCHEMA = SCHEMA_V0;
 }

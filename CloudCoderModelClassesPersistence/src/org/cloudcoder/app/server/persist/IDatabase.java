@@ -27,6 +27,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
@@ -285,4 +286,13 @@ public interface IDatabase {
      */
     public void editRegistrationType(int userId, int courseId,
         CourseRegistrationType type);
+	
+	/**
+	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+	 * 
+	 * @param course   the {@link Course}
+	 * @param problemId  the problem id
+	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+	 */
+	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
 }

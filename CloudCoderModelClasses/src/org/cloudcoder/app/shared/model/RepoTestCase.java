@@ -47,10 +47,12 @@ public class RepoTestCase extends TestCaseData implements IModelObject<RepoTestC
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<RepoTestCase> SCHEMA = new ModelObjectSchema<RepoTestCase>("repo_test_case")
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA_V0 = new ModelObjectSchema<RepoTestCase>("repo_test_case")
 		.add(ID)
 		.add(REPO_PROBLEM_ID)
-		.addAll(TestCaseData.SCHEMA.getFieldList());
+		.addAll(ITestCaseData.SCHEMA_V0.getFieldList());
+	
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA = SCHEMA_V0;
 	
 	/**
 	 * Constructor.

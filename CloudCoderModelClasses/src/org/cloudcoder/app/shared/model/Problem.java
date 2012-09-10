@@ -39,15 +39,20 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	 * Description of fields (schema version 0).
 	 */
 	public static final ModelObjectSchema<Problem> SCHEMA_V0 = new ModelObjectSchema<Problem>("problem")
-		.addAll(IProblem.SCHEMA.getFieldList())
+		.addAll(IProblem.SCHEMA_V0.getFieldList())
 		.addAll(IProblemData.SCHEMA_V0.getFieldList());
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<Problem> SCHEMA_V1 = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
+		.finishDelta();
 	
 	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA = ModelObjectSchema.deltaFrom(SCHEMA_V0)
-		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
-		.finishDelta();
+	public static final ModelObjectSchema<Problem> SCHEMA  = SCHEMA_V1;
 	
 	/**
 	 * Number of fields.
