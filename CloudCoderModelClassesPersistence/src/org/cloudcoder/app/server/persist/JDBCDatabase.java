@@ -1563,7 +1563,8 @@ public class JDBCDatabase implements IDatabase {
 	            user.getFirstname(), 
 	            user.getLastname(), 
 	            user.getEmail(), 
-	            user.getPasswordHash());
+	            user.getPasswordHash(),
+	            user.getWebsite());
     }
 	
 	private List<? extends Object[]> doGetCoursesForUser(

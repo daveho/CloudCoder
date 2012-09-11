@@ -198,6 +198,7 @@ public class ConfigurationUtil
      * @param conn        database connection
      * @param ccUserName  user name
      * @param ccPassword  password (plaintext)
+     * @param ccWebsite   user's website URL
      * @return the user id of the newly-created user
      * @throws SQLException
      */
@@ -206,7 +207,8 @@ public class ConfigurationUtil
             String firstname, 
             String lastname, 
             String email, 
-            String ccPassword) 
+            String ccPassword,
+            String ccWebsite) 
     throws SQLException
     {
         User user=findUser(conn, ccUserName);
@@ -232,6 +234,7 @@ public class ConfigurationUtil
             user.setLastname(lastname);
             user.setEmail(email);
             user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+            user.setWebsite(ccWebsite);
             DBUtil.storeModelObject(conn, user);
             return user.getId();
         }
@@ -301,6 +304,7 @@ public class ConfigurationUtil
             String lastname=tokens[2];
             String email=tokens[3];
             String password=tokens[4];
+            String website = ""; // We don't attempt to set a website URL for students
             int section = 101; // The default section number
             if (tokens.length > 5 && tokens[5] != null) {
                 section=Integer.parseInt(tokens[5]);
@@ -318,7 +322,8 @@ public class ConfigurationUtil
                         firstname,
                         lastname,
                         email,
-                        password);
+                        password,
+                        website);
             }
             if (registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section)) {
                 num++;

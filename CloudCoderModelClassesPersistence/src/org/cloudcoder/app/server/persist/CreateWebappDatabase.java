@@ -92,6 +92,7 @@ public class CreateWebappDatabase {
 		String ccFirstname = ConfigurationUtil.ask(keyboard, "What is your first name?");
 		String ccLastname= ConfigurationUtil.ask(keyboard, "What is your last name?");
 		String ccEmail= ConfigurationUtil.ask(keyboard, "What is your email address?");
+		String ccWebsite = ConfigurationUtil.ask(keyboard, "What is your website URL?");
 		String ccInstitutionName = ConfigurationUtil.ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
 		String ccRepoUrl = ConfigurationUtil.ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
 		
@@ -151,7 +152,8 @@ public class CreateWebappDatabase {
 		        ccFirstname,
 		        ccLastname,
 		        ccEmail,
-		        ccPassword);
+		        ccPassword,
+		        ccWebsite);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");

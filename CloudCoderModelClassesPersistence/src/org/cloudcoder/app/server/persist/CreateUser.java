@@ -19,8 +19,9 @@ public class CreateUser {
 		String ccFirstname = ConfigurationUtil.ask(keyboard, "First name? " );
 		String ccLastname= ConfigurationUtil.ask(keyboard, "Last name? ");
 		String ccEmail= ConfigurationUtil.ask(keyboard, "Email address? ");
+		String ccWebsite= ConfigurationUtil.ask(keyboard, "Website URL? ");
 		
-		ConfigurationUtil.createOrUpdateUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword);
+		ConfigurationUtil.createOrUpdateUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword, ccWebsite);
 
 		System.out.println("Success!");
 	}
