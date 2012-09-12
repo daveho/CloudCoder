@@ -88,5 +88,17 @@ public interface IProblem extends IProblemData {
 	 * @return true if this Problem is visible to students, false otherwise
 	 */
 	public abstract boolean isVisible();
+	
+	/**
+	 * Set the {@link ProblemAuthorship} for this problem.
+	 * 
+	 * @param problemAuthorship the {@link ProblemAuthorship} to set
+	 */
+	public void setProblemAuthorship(ProblemAuthorship problemAuthorship);
+	
+	/**
+	 * @return the {@link ProblemAuthorship} for this problem
+	 */
+	public ProblemAuthorship getProblemAuthorship();
 
 }

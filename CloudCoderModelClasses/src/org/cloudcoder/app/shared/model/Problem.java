@@ -34,6 +34,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private long whenAssigned;
 	private long whenDue;
 	private boolean visible;
+	private ProblemAuthorship problemAuthorship;
 	
 	/** {@link ModelObjectField} for problem id. */
 	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
@@ -66,6 +67,13 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		public Boolean get(IProblem obj) { return obj.isVisible(); }
 	};
 	
+	/** {@link ModelObjectField} for problem authorship. */ 
+	public static final ModelObjectField<IProblem, ProblemAuthorship> PROBLEM_AUTHORSHIP =
+			new ModelObjectField<IProblem, ProblemAuthorship>("problem_authorship", ProblemAuthorship.class, 0) {
+		public void set(IProblem obj, ProblemAuthorship value) { obj.setProblemAuthorship(value); }
+		public ProblemAuthorship get(IProblem obj) { return obj.getProblemAuthorship(); }
+	};
+	
 	/**
 	 * Description of fields (schema version 0).
 	 */
@@ -87,7 +95,18 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 			.addDeltasFrom(ProblemData.SCHEMA_V1)
 			.finishDelta();
 	
-	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V1;
+	/**
+	 * Description of fields (schema version 2).
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V2 =
+			ModelObjectSchema.basedOn(SCHEMA_V1)
+			.addAfter(VISIBLE, PROBLEM_AUTHORSHIP)
+			.finishDelta();
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V2;
 	
 	/**
 	 * Number of fields.
@@ -200,6 +219,16 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	public boolean isVisible() {
 		return visible;
 	}
+	
+	@Override
+	public ProblemAuthorship getProblemAuthorship() {
+		return problemAuthorship;
+	}
+	
+	@Override
+	public void setProblemAuthorship(ProblemAuthorship problemAuthorship) {
+		this.problemAuthorship = problemAuthorship;
+	}
 
 	@Override
 	public String toString() {
@@ -231,7 +260,8 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 				&& ModelObjectUtil.equals(this.courseId, other.courseId)
 				&& this.whenAssigned == other.whenAssigned
 				&& this.whenDue == other.whenDue
-				&& this.visible == other.visible;
+				&& this.visible == other.visible
+				&& this.problemAuthorship == other.problemAuthorship;
 	}
 
 	/*
@@ -246,6 +276,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		empty.setWhenAssigned(0L);
 		empty.setWhenDue(0L);
 		empty.setVisible(false);
+		empty.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
 		ProblemData.initEmpty(empty);
 	}
 }

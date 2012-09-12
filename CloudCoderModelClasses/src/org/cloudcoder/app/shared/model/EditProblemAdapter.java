@@ -229,5 +229,16 @@ public abstract class EditProblemAdapter implements IProblem {
 	public boolean isVisible() {
 		return delegate.isVisible();
 	}
+	
+	@Override
+	public void setProblemAuthorship(ProblemAuthorship problemAuthorship) {
+		delegate.setProblemAuthorship(problemAuthorship);
+		onChange();
+	}
+	
+	@Override
+	public ProblemAuthorship getProblemAuthorship() {
+		return delegate.getProblemAuthorship();
+	}
 
 }
