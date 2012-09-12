@@ -479,7 +479,7 @@ public class DBUtil {
 	 * @param bean      the bean (model object) to store in the database
 	 */
 	public static<E extends IModelObject<E>> void storeModelObject(Connection conn, E bean) throws SQLException {
-		ModelObjectSchema<E> schema = bean.getSchema();
+		ModelObjectSchema<? super E> schema = bean.getSchema();
 		
 		String insertSql = createInsertStatement(schema);
 		
@@ -547,7 +547,7 @@ public class DBUtil {
 	 * @param genKeys the {@link ResultSet} with the generated unique ids
 	 * @throws SQLException
 	 */
-	public static <E> void getModelObjectUniqueIds(List<E> beans, ModelObjectSchema<E> schema, ResultSet genKeys)
+	public static <E> void getModelObjectUniqueIds(List<E> beans, ModelObjectSchema<? super E> schema, ResultSet genKeys)
 			throws SQLException {
 		for (E bean : beans) {
 			if (!genKeys.next()) {

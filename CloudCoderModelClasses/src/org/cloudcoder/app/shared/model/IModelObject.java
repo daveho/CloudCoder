@@ -14,5 +14,5 @@ public interface IModelObject<E extends IModelObject<E>> {
 	 * 
 	 * @return the object's {@link ModelObjectSchema}
 	 */
-	public ModelObjectSchema<E> getSchema();
+	public ModelObjectSchema<? super E> getSchema();
 }

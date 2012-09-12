@@ -28,12 +28,12 @@ import java.util.Map;
 
 import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
-import org.cloudcoder.app.shared.model.IProblemData;
-import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
+import org.cloudcoder.app.shared.model.TestCaseData;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
@@ -54,7 +54,7 @@ public class JSONConversion {
 	 * @throws IOException
 	 */
 	public static void writeProblemAndTestCaseData(
-			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj,
+			IProblemAndTestCaseData<? extends ProblemData, ? extends TestCaseData> obj,
 			Writer writer) throws IOException {
 		
 		LinkedHashMap<String, Object> result = convertProblemAndTestCaseDataToJSONObject(obj);
@@ -70,14 +70,14 @@ public class JSONConversion {
 	 * @return the encoded JSON object
 	 */
 	public static LinkedHashMap<String, Object> convertProblemAndTestCaseDataToJSONObject(
-			IProblemAndTestCaseData<? extends IProblemData, ? extends ITestCaseData> obj) {
+			IProblemAndTestCaseData<? extends ProblemData, ? extends TestCaseData> obj) {
 		LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
 
 		// Add the problem
-		result.put(IProblemData.SCHEMA.getName(), convertModelObjectToJSON(obj.getProblem(), IProblemData.SCHEMA));
+		result.put(ProblemData.SCHEMA.getName(), convertModelObjectToJSON(obj.getProblem(), ProblemData.SCHEMA));
 
 		// Add array of test cases
-		addModelObjectList(result, obj.getTestCaseData(), ITestCaseData.SCHEMA);
+		addModelObjectList(result, obj.getTestCaseData(), TestCaseData.SCHEMA);
 		return result;
 	}
 
@@ -163,12 +163,12 @@ public class JSONConversion {
 	 * Read JSON-encoded data into a {@link IProblemAndTestCaseData} object.
 	 * 
 	 * @param obj              the {@link IProblemAndTestCaseData} object
-	 * @param problemFactory   factory to create {@link IProblemData} objects
-	 * @param testCaseFactory  factory to create {@link ITestCaseData} objects
+	 * @param problemFactory   factory to create {@link ProblemData} objects
+	 * @param testCaseFactory  factory to create {@link TestCaseData} objects
 	 * @param reader           the Reader to read fromXMLConversionTest
 	 * @throws IOException
 	 */
-	public static<ProblemDataType extends IProblemData, TestCaseDataType extends ITestCaseData> void readProblemAndTestCaseData(
+	public static<ProblemDataType extends ProblemData, TestCaseDataType extends TestCaseData> void readProblemAndTestCaseData(
 			IProblemAndTestCaseData<ProblemDataType, TestCaseDataType> obj,
 			IFactory<ProblemDataType> problemFactory,
 			IFactory<TestCaseDataType> testCaseFactory,
@@ -181,14 +181,14 @@ public class JSONConversion {
 
 			// Convert the problem
 			ProblemDataType problem = problemFactory.create();
-			if (!convertJSONFieldToModelObject(parsed, problem, IProblemData.SCHEMA)) {
+			if (!convertJSONFieldToModelObject(parsed, problem, ProblemData.SCHEMA)) {
 				throw new IOException("No problem data!");
 			}
 			obj.setProblem(problem);
 			
 			// Convert the test cases
 			List<TestCaseDataType> testCaseList = new ArrayList<TestCaseDataType>();
-			if (!convertJSONFieldToModelObjectList(parsed, testCaseList, testCaseFactory, ITestCaseData.SCHEMA)) {
+			if (!convertJSONFieldToModelObjectList(parsed, testCaseList, testCaseFactory, TestCaseData.SCHEMA)) {
 				throw new IOException("No test case list!");
 			}
 			for (TestCaseDataType testCase : testCaseList) {

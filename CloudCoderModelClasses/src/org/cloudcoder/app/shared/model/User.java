@@ -81,7 +81,10 @@ public class User implements Serializable, IModelObject<User> {
         .add(EMAIL)
 		.add(PASSWORD_HASH);
 	
-	public static final ModelObjectSchema<User> SCHEMA_V1 = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<User> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
 		.addAfter(EMAIL, WEBSITE)
 		.finishDelta();
 	

@@ -35,24 +35,59 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private long whenDue;
 	private boolean visible;
 	
+	/** {@link ModelObjectField} for problem id. */
+	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
+			new ModelObjectField<IProblem, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(IProblem obj, Integer value) { obj.setProblemId(value); }
+		public Integer get(IProblem obj) { return obj.getProblemId(); }
+	};
+	/** {@link ModelObjectField} for course id. */
+	public static final ModelObjectField<IProblem, Integer> COURSE_ID =
+			new ModelObjectField<IProblem, Integer>("course_id", Integer.class, 0) {
+		public void set(IProblem obj, Integer value) { obj.setCourseId(value); }
+		public Integer get(IProblem obj) { return obj.getCourseId(); }
+	};
+	/** {@link ModelObjectField} for assigned date/time. */
+	public static final ModelObjectField<IProblem, Long> WHEN_ASSIGNED =
+			new ModelObjectField<IProblem, Long>("when_assigned", Long.class, 0) {
+		public void set(IProblem obj, Long value) { obj.setWhenAssigned(value); }
+		public Long get(IProblem obj) { return obj.getWhenAssigned(); }
+	};
+	/** {@link ModelObjectField} for due date/time. */
+	public static final ModelObjectField<IProblem, Long> WHEN_DUE =
+			new ModelObjectField<IProblem, Long>("when_due", Long.class, 0) {
+		public void set(IProblem obj, Long value) { obj.setWhenDue(value); }
+		public Long get(IProblem obj) { return obj.getWhenDue(); }
+	};
+	/** {@link ModelObjectField} for visibility to students. */
+	public static final ModelObjectField<IProblem, Boolean> VISIBLE =
+			new ModelObjectField<IProblem, Boolean>("visible", Boolean.class, 0) {
+		public void set(IProblem obj, Boolean value) { obj.setVisible(value); }
+		public Boolean get(IProblem obj) { return obj.isVisible(); }
+	};
+	
 	/**
 	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA_V0 = new ModelObjectSchema<Problem>("problem")
-		.addAll(IProblem.SCHEMA_V0.getFieldList())
-		.addAll(IProblemData.SCHEMA_V0.getFieldList());
+	public static final ModelObjectSchema<IProblem> SCHEMA_V0 = new ModelObjectSchema<IProblem>("problem")
+			.add(PROBLEM_ID)
+			.add(COURSE_ID)
+			.add(WHEN_ASSIGNED)
+			.add(WHEN_DUE)
+			.add(VISIBLE)
+			.addAll(ProblemData.SCHEMA_V0.getFieldList());
 	
 	/**
 	 * Description of fields (schema version 1).
 	 */
-	public static final ModelObjectSchema<Problem> SCHEMA_V1 = ModelObjectSchema.deltaFrom(SCHEMA_V0)
-		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
-		.finishDelta();
+	public static final ModelObjectSchema<IProblem> SCHEMA_V1 =
+			// Based on Problem schema version 0...
+			ModelObjectSchema.basedOn(SCHEMA_V0)
+			// With the v1 deltas from ProblemData
+			.addDeltasFrom(ProblemData.SCHEMA_V1)
+			.finishDelta();
 	
-	/**
-	 * Description of fields (current schema version).
-	 */
-	public static final ModelObjectSchema<Problem> SCHEMA  = SCHEMA_V1;
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V1;
 	
 	/**
 	 * Number of fields.
@@ -67,19 +102,19 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	@Override
-	public ModelObjectSchema<Problem> getSchema() {
+	public ModelObjectSchema<IProblem> getSchema() {
 		return SCHEMA;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getProblemId()
+	 * @see org.cloudcoder.app.shared.model.Problem#getProblemId()
 	 */
 	@Override
 	public Integer getProblemId(){
 		return problemId;
 	}
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#setProblemId(java.lang.Integer)
+	 * @see org.cloudcoder.app.shared.model.Problem#setProblemId(java.lang.Integer)
 	 */
 	@Override
 	public void setProblemId(Integer id){
@@ -87,7 +122,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getCourseId()
+	 * @see org.cloudcoder.app.shared.model.Problem#getCourseId()
 	 */
 	@Override
 	public Integer getCourseId() {
@@ -95,7 +130,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#setCourseId(java.lang.Integer)
+	 * @see org.cloudcoder.app.shared.model.Problem#setCourseId(java.lang.Integer)
 	 */
 	@Override
 	public void setCourseId(Integer courseId) {
@@ -103,7 +138,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenAssigned()
+	 * @see org.cloudcoder.app.shared.model.Problem#getWhenAssigned()
 	 */
 	@Override
 	public long getWhenAssigned() {
@@ -111,7 +146,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenAssignedAsDate()
+	 * @see org.cloudcoder.app.shared.model.Problem#getWhenAssignedAsDate()
 	 */
 	@Override
 	public Date getWhenAssignedAsDate() {
@@ -119,7 +154,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#setWhenAssigned(long)
+	 * @see org.cloudcoder.app.shared.model.Problem#setWhenAssigned(long)
 	 */
 	@Override
 	public void setWhenAssigned(long whenAssigned) {
@@ -127,7 +162,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenDue()
+	 * @see org.cloudcoder.app.shared.model.Problem#getWhenDue()
 	 */
 	@Override
 	public long getWhenDue() {
@@ -135,7 +170,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#getWhenDueAsDate()
+	 * @see org.cloudcoder.app.shared.model.Problem#getWhenDueAsDate()
 	 */
 	@Override
 	public Date getWhenDueAsDate() {
@@ -143,7 +178,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#setWhenDue(long)
+	 * @see org.cloudcoder.app.shared.model.Problem#setWhenDue(long)
 	 */
 	@Override
 	public void setWhenDue(long whenDue) {
@@ -151,7 +186,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#setVisible(boolean)
+	 * @see org.cloudcoder.app.shared.model.Problem#setVisible(boolean)
 	 */
 	@Override
 	public void setVisible(boolean visible) {
@@ -159,7 +194,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblem#isVisible()
+	 * @see org.cloudcoder.app.shared.model.Problem#isVisible()
 	 */
 	@Override
 	public boolean isVisible() {
@@ -200,12 +235,12 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	}
 
 	/*
-	 * Initialize given {@link IProblem} so that it is in an "empty"
+	 * Initialize given {@link Problem} so that it is in an "empty"
 	 * state, appropriate for editing as a new problem.
 	 * 
-	 * @param empty the {@link IProblem} to initialize to an empty state
+	 * @param empty the {@link Problem} to initialize to an empty state
 	 */
-	public static void initEmpty(IProblem empty) {
+	public static void initEmpty(Problem empty) {
 		empty.setProblemId(-1);
 		empty.setCourseId(-1);
 		empty.setWhenAssigned(0L);

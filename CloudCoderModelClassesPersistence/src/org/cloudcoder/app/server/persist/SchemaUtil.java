@@ -162,7 +162,7 @@ public class SchemaUtil {
 			// database schema version
 			for (int version = dbSchemaVersion + 1; version <= table.getVersion(); version++) {
 				ModelObjectSchema<E> prevSchema = table.getSchemaWithVersion(version);
-				for (Delta<E> delta : prevSchema.getDeltaList()) {
+				for (Delta<? super E> delta : prevSchema.getDeltaList()) {
 					applyDelta(conn, table.getDbTableName(), delta, version);
 				}
 			}

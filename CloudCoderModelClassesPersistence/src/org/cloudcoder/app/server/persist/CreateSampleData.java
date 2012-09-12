@@ -93,7 +93,7 @@ public class CreateSampleData {
 				"\treturn 0;\n" +
 				"}\n"
 				);
-		problemData.setSchemaVersion(Problem.CURRENT_SCHEMA_VERSION);
+		problemData.setSchemaVersion(Problem.SCHEMA.getVersion());
 		problemData.setAuthorName("A. User");
 		problemData.setAuthorEmail("auser@cs.unseen.edu");
 		problemData.setAuthorWebsite("http://cs.unseen.edu/~auser");

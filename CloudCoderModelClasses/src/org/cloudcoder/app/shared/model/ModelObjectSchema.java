@@ -87,7 +87,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
 	private final List<ModelObjectIndex<ModelObjectType>> indexList;
-	private final List<Delta<ModelObjectType>> deltaList;
+	private final List<Delta<? super ModelObjectType>> deltaList;
 
 	/**
 	 * Constructor.
@@ -113,7 +113,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
 		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
-		this.deltaList = new ArrayList<Delta<ModelObjectType>>();
+		this.deltaList = new ArrayList<Delta<? super ModelObjectType>>();
 	}
 	
 	/**
@@ -275,7 +275,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * 
 	 * @return list of {@link Delta}s
 	 */
-	public List<Delta<ModelObjectType>> getDeltaList() {
+	public List<Delta<? super ModelObjectType>> getDeltaList() {
 		return deltaList;
 	}
 
@@ -313,7 +313,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * @param previous the previous schema
 	 * @return the new derived schema
 	 */
-	public static<E> ModelObjectSchema<E> deltaFrom(ModelObjectSchema<E> previous) {
+	public static<E> ModelObjectSchema<E> basedOn(ModelObjectSchema<E> previous) {
 		return new ModelObjectSchema<E>(previous, previous.getName());
 	}
 
@@ -339,6 +339,19 @@ public class ModelObjectSchema<ModelObjectType> {
 	}
 
 	/**
+	 * Apply all deltas in given schema to this schema.
+	 * This is useful when creating a new version of a subclass schema
+	 * based on a new version of a superclass schema.
+	 *  
+	 * @param schema the schema containing the deltas to apply
+	 * @return this object
+	 */
+	public ModelObjectSchema<ModelObjectType> addDeltasFrom(ModelObjectSchema<? super ModelObjectType> schema) {
+		deltaList.addAll(schema.getDeltaList());
+		return this;
+	}
+
+	/**
 	 * This method must be called after all deltas (e.g., {@link #addAfter(ModelObjectField, ModelObjectField)})
 	 * are applied to a derived schema.
 	 * 
@@ -351,7 +364,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		}
 		
 		// Apply all deltas
-		for (Delta<ModelObjectType> delta : deltaList) {
+		for (Delta<? super ModelObjectType> delta : deltaList) {
 			if (delta.getType() == DeltaType.ADD_FIELD_AFTER) {
 				int index = fieldList.indexOf(delta.getPreviousField());
 				fieldList.add(index + 1, delta.getField());

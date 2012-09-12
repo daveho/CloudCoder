@@ -48,10 +48,110 @@ public class ProblemData implements Serializable, IProblemData {
 	private ProblemLicense license;
 	private String parentHash;
 	
+
+	// Schema version 0 fields
+	
+	/** {@link ModelObjectField} for problem type. */
+	public static final ModelObjectField<IProblemData, ProblemType> PROBLEM_TYPE =
+			new ModelObjectField<IProblemData, ProblemType>("problem_type", ProblemType.class, 0) {
+		public void set(IProblemData obj, ProblemType value) { obj.setProblemType(value); }
+		public ProblemType get(IProblemData obj) { return obj.getProblemType(); }
+	};
+	/** {@link ModelObjectField} for test name. */
+	public static final ModelObjectField<IProblemData, String> TESTNAME =
+			new ModelObjectField<IProblemData, String>("testname", String.class, 255) {
+		public void set(IProblemData obj, String value) { obj.setTestname(value); }
+		public String get(IProblemData obj) { return obj.getTestname(); }
+	};
+	/** {@link ModelObjectField} for brief description. */
+	public static final ModelObjectField<IProblemData, String> BRIEF_DESCRIPTION =
+			new ModelObjectField<IProblemData, String>("brief_description", String.class, 60) {
+		public void set(IProblemData obj, String value) { obj.setBriefDescription(value); }
+		public String get(IProblemData obj) { return obj.getBriefDescription(); }
+	};
+	/** {@link ModelObjectField} for description. */
+	public static final ModelObjectField<IProblemData, String> DESCRIPTION =
+			new ModelObjectField<IProblemData, String>("description", String.class, 8192, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
+		public void set(IProblemData obj, String value) { obj.setDescription(value); }
+		public String get(IProblemData obj) { return obj.getDescription(); }
+	};
+	/** {@link ModelObjectField} for skeleton. */
+	public static final ModelObjectField<IProblemData, String> SKELETON =
+			new ModelObjectField<IProblemData, String>("skeleton", String.class, 400, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
+		public void set(IProblemData obj, String value) { obj.setSkeleton(value); }
+		public String get(IProblemData obj) { return obj.getSkeleton(); }
+	};
+	/** {@link ModelObjectField} for schema version. */
+	public static final ModelObjectField<IProblemData, Integer> SCHEMA_VERSION =
+			new ModelObjectField<IProblemData, Integer>("schema_version", Integer.class, 0) {
+		public void set(IProblemData obj, Integer value) { obj.setSchemaVersion(value); }
+		public Integer get(IProblemData obj) { return obj.getSchemaVersion(); }
+	};
+	/** {@link ModelObjectField} for author name. */
+	public static final ModelObjectField<IProblemData, String> AUTHOR_NAME =
+			new ModelObjectField<IProblemData, String>("author_name", String.class, 80, ModelObjectIndexType.NON_UNIQUE) {
+		public void set(IProblemData obj, String value) { obj.setAuthorName(value); }
+		public String get(IProblemData obj) { return obj.getAuthorName(); }
+	};
+	/** {@link ModelObjectField} for author email. */
+	public static final ModelObjectField<IProblemData, String> AUTHOR_EMAIL =
+			new ModelObjectField<IProblemData, String>("author_email", String.class, 80) {
+		public void set(IProblemData obj, String value) { obj.setAuthorEmail(value); }
+		public String get(IProblemData obj) { return obj.getAuthorEmail(); }
+	};
+	/** {@link ModelObjectField} for author website. */
+	public static final ModelObjectField<IProblemData, String> AUTHOR_WEBSITE =
+			new ModelObjectField<IProblemData, String>("author_website", String.class, 100) {
+		public void set(IProblemData obj, String value) { obj.setAuthorWebsite(value); }
+		public String get(IProblemData obj) { return obj.getAuthorWebsite(); }
+	};
+	/** {@link ModelObjectField} for creation timestamp. */
+	public static final ModelObjectField<IProblemData, Long> TIMESTAMP_UTC =
+			new ModelObjectField<IProblemData, Long>("timestamp_utc", Long.class, 0) {
+		public void set(IProblemData obj, Long value) { obj.setTimestampUtc(value); }
+		public Long get(IProblemData obj) { return obj.getTimestampUtc(); }
+	};
+	/** {@link ModelObjectField} for problem license. */
+	public static final ModelObjectField<IProblemData, ProblemLicense> LICENSE =
+			new ModelObjectField<IProblemData, ProblemLicense>("license", ProblemLicense.class, 0) {
+		public void set(IProblemData obj, ProblemLicense value) { obj.setLicense(value); }
+		public ProblemLicense get(IProblemData obj) { return obj.getLicense(); }
+	};
+	
+	// Schema version 1 fields
+	
+	public static final ModelObjectField<IProblemData, String> PARENT_HASH = new ModelObjectField<IProblemData, String>("parent_hash", String.class, 40, ModelObjectIndexType.NON_UNIQUE) {
+		public String get(IProblemData obj) { return obj.getParentHash(); }
+		public void set(IProblemData obj, String value) { obj.setParentHash(value); }
+	};
+	
 	/**
-	 * The current ProblemData schema version.
+	 * Description of fields (version 0 schema).
 	 */
-	public static final int CURRENT_SCHEMA_VERSION = IProblemData.SCHEMA.getVersion();
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V0 = new ModelObjectSchema<IProblemData>("problem_data")
+		.add(PROBLEM_TYPE)
+		.add(TESTNAME)
+		.add(BRIEF_DESCRIPTION)
+		.add(DESCRIPTION)
+		.add(SKELETON)
+		.add(SCHEMA_VERSION)
+		.add(AUTHOR_NAME)
+		.add(AUTHOR_EMAIL)
+		.add(AUTHOR_WEBSITE)
+		.add(TIMESTAMP_UTC)
+		.add(LICENSE);
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+		.addAfter(LICENSE, PARENT_HASH)
+		.finishDelta();
+
+	/**
+	 * Description of fields (current schema).
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V1;
 
 	/**
 	 * Constructor.
@@ -61,7 +161,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setProblemType(org.cloudcoder.app.shared.model.ProblemType)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setProblemType(org.cloudcoder.app.shared.model.ProblemType)
 	 */
 	@Override
 	public void setProblemType(ProblemType problemType) {
@@ -69,7 +169,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setProblemType(int)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setProblemType(int)
 	 */
 	@Override
 	public void setProblemType(int problemType) {
@@ -77,7 +177,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getProblemType()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getProblemType()
 	 */
 	@Override
 	public ProblemType getProblemType() {
@@ -85,7 +185,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getTestName()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getTestName()
 	 */
 	@Override
 	public String getTestname() {
@@ -93,7 +193,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setTestName(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setTestName(java.lang.String)
 	 */
 	@Override
 	public void setTestname(String testName) {
@@ -101,7 +201,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setBriefDescription(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setBriefDescription(java.lang.String)
 	 */
 	@Override
 	public void setBriefDescription(String briefDescription) {
@@ -109,7 +209,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getBriefDescription()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getBriefDescription()
 	 */
 	@Override
 	public String getBriefDescription() {
@@ -117,7 +217,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getDescription()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getDescription()
 	 */
 	@Override
 	public String getDescription() {
@@ -125,7 +225,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setDescription(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setDescription(java.lang.String)
 	 */
 	@Override
 	public void setDescription(String description) {
@@ -133,7 +233,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setSkeleton(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setSkeleton(java.lang.String)
 	 */
 	@Override
 	public void setSkeleton(String skeleton) {
@@ -141,7 +241,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getSkeleton()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getSkeleton()
 	 */
 	@Override
 	public String getSkeleton() {
@@ -156,7 +256,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setSchemaVersion(int)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setSchemaVersion(int)
 	 */
 	@Override
 	public void setSchemaVersion(int schemaVersion) {
@@ -164,7 +264,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getSchemaVersion()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getSchemaVersion()
 	 */
 	@Override
 	public int getSchemaVersion() {
@@ -172,7 +272,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorName(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setAuthorName(java.lang.String)
 	 */
 	@Override
 	public void setAuthorName(String authorName) {
@@ -180,7 +280,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorName()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getAuthorName()
 	 */
 	@Override
 	public String getAuthorName() {
@@ -188,7 +288,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorEmail(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setAuthorEmail(java.lang.String)
 	 */
 	@Override
 	public void setAuthorEmail(String authorEmail) {
@@ -196,7 +296,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorEmail()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getAuthorEmail()
 	 */
 	@Override
 	public String getAuthorEmail() {
@@ -204,7 +304,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setAuthorWebsite(java.lang.String)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setAuthorWebsite(java.lang.String)
 	 */
 	@Override
 	public void setAuthorWebsite(String authorWebsite) {
@@ -212,7 +312,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getAuthorWebsite()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getAuthorWebsite()
 	 */
 	@Override
 	public String getAuthorWebsite() {
@@ -220,7 +320,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setTimestampUTC(long)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setTimestampUTC(long)
 	 */
 	@Override
 	public void setTimestampUtc(long timestampUTC) {
@@ -228,7 +328,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getTimestampUTC()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getTimestampUTC()
 	 */
 	@Override
 	public long getTimestampUtc() {
@@ -236,7 +336,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#setLicense(org.cloudcoder.app.shared.model.ProblemLicense)
+	 * @see org.cloudcoder.app.shared.model.ProblemData#setLicense(org.cloudcoder.app.shared.model.ProblemLicense)
 	 */
 	@Override
 	public void setLicense(ProblemLicense license) {
@@ -244,7 +344,7 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.shared.model.IProblemData#getLicense()
+	 * @see org.cloudcoder.app.shared.model.ProblemData#getLicense()
 	 */
 	@Override
 	public ProblemLicense getLicense() {
@@ -301,18 +401,18 @@ public class ProblemData implements Serializable, IProblemData {
 	}
 
 	/*
-	 * Initialize given {@link IProblemData} so that it is in an "empty"
+	 * Initialize given {@link ProblemData} so that it is in an "empty"
 	 * state, appropriate for editing as a new problem.
 	 * 
-	 * @param empty the {@link IProblemData} to initialize to an empty state
+	 * @param empty the {@link ProblemData} to initialize to an empty state
 	 */
-	public static void initEmpty(IProblemData empty) {
+	public static void initEmpty(ProblemData empty) {
 		empty.setProblemType(ProblemType.JAVA_METHOD);
 		empty.setTestname("");
 		empty.setBriefDescription("");
 		empty.setDescription("");
 		empty.setSkeleton("");
-		empty.setSchemaVersion(ProblemData.CURRENT_SCHEMA_VERSION);
+		empty.setSchemaVersion(ProblemData.SCHEMA.getVersion());
 		empty.setAuthorName("");
 		empty.setAuthorEmail("");
 		empty.setAuthorWebsite("");
