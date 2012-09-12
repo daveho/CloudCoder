@@ -164,7 +164,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not load problems for course"));
+				session.add(StatusMessage.error("Could not load problems for course: " + caught.getMessage()));
 			}
 		});
 	}

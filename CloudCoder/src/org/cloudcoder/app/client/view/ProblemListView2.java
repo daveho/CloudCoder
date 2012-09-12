@@ -154,7 +154,7 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 			@Override
 			public void onFailure(Throwable caught) {
 				GWT.log("Error loading problems for course", caught);
-				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problems for course: " + caught.getMessage()));
+				session.add(StatusMessage.error("Error loading problems for course: " + caught.getMessage()));
 			}
 
 			@Override

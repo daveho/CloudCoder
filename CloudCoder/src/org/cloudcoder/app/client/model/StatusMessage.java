@@ -21,6 +21,10 @@ package org.cloudcoder.app.client.model;
  * A status message describing the outcome of an operation
  * or other interesting piece of information the user should
  * know about.
+ * 
+ * Use the factory methods {@link #goodNews(String)}.
+ * {@link #error(String)}, {@link #pending(String)}, and
+ * {@link #information(String)} to create StatusMessage objects.
  */
 public class StatusMessage {
 	/**
@@ -38,7 +42,7 @@ public class StatusMessage {
 		
 		/**
 		 * A status message describing a potentially long-running operation
-		 * (like testing a submission(.
+		 * (like testing a submission).
 		 */
 		PENDING,
 	}
@@ -46,15 +50,21 @@ public class StatusMessage {
 	private Category category;
 	private String message;
 	
-	public StatusMessage(Category category, String message) {
+	private StatusMessage(Category category, String message) {
 		this.category = category;
 		this.message = message;
 	}
 	
+	/**
+	 * @return the status message category
+	 */
 	public Category getCategory() {
 		return category;
 	}
 	
+	/**
+	 * @return the status message text
+	 */
 	public String getMessage() {
 		return message;
 	}
@@ -83,9 +93,19 @@ public class StatusMessage {
 	 * Factory method to create a pending operation status message.
 	 * 
 	 * @param message
-	 * @return
+	 * @return the pending operation status message
 	 */
 	public static StatusMessage pending(String message) {
 		return new StatusMessage(Category.PENDING, message);
+	}
+	
+	/**
+	 * Factory method to create an information status message.
+	 * 
+	 * @param message the message text
+	 * @return the information status message
+	 */
+	public static StatusMessage information(String message) {
+		return new StatusMessage(Category.INFORMATION, message);
 	}
 }

@@ -154,7 +154,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 @Override
                 public void onFailure(Throwable caught) {
                     GWT.log("Error loading courses", caught);
-                    session.add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading courses: " + caught.getMessage()));
+                    session.add(StatusMessage.error("Error loading courses: " + caught.getMessage()));
                 }
             });
         }
@@ -242,7 +242,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                     @Override
                     public void onFailure(Throwable caught) {
                         GWT.log("Error loading problems", caught);
-                        getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problems: " + caught.getMessage()));
+                        getSession().add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
                     }
 
                     @Override

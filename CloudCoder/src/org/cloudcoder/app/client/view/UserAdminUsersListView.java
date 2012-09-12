@@ -137,7 +137,7 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
             
             @Override
             public void onFailure(Throwable caught) {
-                session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not load users for course"));
+            	session.add(StatusMessage.error("Could not load users for course"));
             }
         });
     }

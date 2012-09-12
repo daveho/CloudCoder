@@ -345,7 +345,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// and because the editor is read-only, we know that the
 			// local text is in-sync.  So, submit the code!
 			
-			addSessionObject(new StatusMessage(StatusMessage.Category.PENDING, "Testing your code, please wait..."));
+			addSessionObject(StatusMessage.pending("Testing your code, please wait..."));
 			
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();
@@ -355,7 +355,7 @@ public class DevelopmentPage extends CloudCoderPage {
 				public void onFailure(Throwable caught) {
 				    //TODO: Is this where a better message should come if we can't
 				    // find a C/C++ compiler?
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error: " + caught.getMessage()));
+					addSessionObject(StatusMessage.error("Error: " + caught.getMessage()));
 				}
 
 				@Override
@@ -410,9 +410,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// choose an editor mode
 			AceEditorMode editorMode = ViewUtil.getModeForLanguage(language);
 			if (editorMode == null) {
-				addSessionObject(new StatusMessage(
-						StatusMessage.Category.ERROR,
-						"Warning: unknown programming language " + language));
+				addSessionObject(StatusMessage.error("Warning: unknown programming language " + language));
 				editorMode = AceEditorMode.JAVA;
 			}
 			aceEditor.setMode(editorMode);
@@ -450,7 +448,7 @@ public class DevelopmentPage extends CloudCoderPage {
 				@Override
 				public void onFailure(Throwable caught) {
 					GWT.log("Could not set problem", caught);
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error loading problem on server: " + caught.getMessage()));
+					addSessionObject(StatusMessage.error("Error loading problem on server: " + caught.getMessage()));
 				}
 				
 				@Override
@@ -514,7 +512,7 @@ public class DevelopmentPage extends CloudCoderPage {
 				@Override
 				public void onFailure(Throwable caught) {
 					GWT.log("Couldn't get current text for problem", caught);
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Could not get problem text: " + caught.getMessage()));
+					addSessionObject(StatusMessage.error("Could not get problem text: " + caught.getMessage()));
 				}
 			});
 		}
@@ -539,7 +537,7 @@ public class DevelopmentPage extends CloudCoderPage {
 							public void onFailure(Throwable caught) {
 								changeList.endTransmit(false);
 								GWT.log("Failed to send change batch to server");
-								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
+								addSessionObject(StatusMessage.error("Could not save code to server!"));
 							}
 
 							@Override
@@ -572,7 +570,7 @@ public class DevelopmentPage extends CloudCoderPage {
 							@Override
 							public void onFailure(Throwable caught) {
 								checking = false;
-								addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error: " + caught.getMessage()));
+								addSessionObject(StatusMessage.error("Error: " + caught.getMessage()));
 								checkPendingSubmissionTimer.cancel();
 							}
 							
@@ -596,7 +594,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		
 		private void onReceiveSubmissionResult(SubmissionResult result) {
 			if (result==null){
-				addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Results from Builder are empty"));
+				addSessionObject(StatusMessage.error("Results from Builder are empty"));
 				addSessionObject(new TestResult[0]);
 				addSessionObject(new CompilerDiagnostic[0]);
 
@@ -617,11 +615,11 @@ public class DevelopmentPage extends CloudCoderPage {
 						result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
 				{
 					// ?
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error testing submission"));
+					addSessionObject(StatusMessage.error("Error testing submission"));
 					addSessionObject(new TestResult[0]);
 				} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
 					// Code did not compile
-					addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "Error compiling submission"));
+					addSessionObject(StatusMessage.error("Error compiling submission"));
 					addSessionObject(new TestResult[0]);
 				} else {
 					// Code compiled, and test results were sent back.
@@ -632,9 +630,9 @@ public class DevelopmentPage extends CloudCoderPage {
 
 					// Add a status message about the results
 					if (result.isAllTestsPassed()) {
-						addSessionObject(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "All tests passed! You rock."));
+						addSessionObject(StatusMessage.goodNews("All tests passed! You rock."));
 					} else {
-						addSessionObject(new StatusMessage(StatusMessage.Category.ERROR, "At least one test failed: check test results"));
+						addSessionObject(StatusMessage.error("At least one test failed: check test results"));
 					}
 				}
 				
@@ -647,10 +645,6 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 				
 				// Can resume editing now
-				/*
-				mode = Mode.EDITING;
-				aceEditor.setReadOnly(false);
-				*/
 				doneWithOnCleanCallback();
 			}
 

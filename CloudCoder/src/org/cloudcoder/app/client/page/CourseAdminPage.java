@@ -207,9 +207,12 @@ public class CourseAdminPage extends CloudCoderPage {
 						public void call(OperationResult value) {
 							// Add a StatusMessage with the result of the operation
 							GWT.log("share problem result: " + value.isSuccess() + ":" + value.getMessage());
-							StatusMessage.Category category = value.isSuccess() ? StatusMessage.Category.GOOD_NEWS : StatusMessage.Category.ERROR;
-							StatusMessage status = new StatusMessage(category, value.getMessage());
-							getSession().add(status);
+
+							if (value.isSuccess()) {
+								getSession().add(StatusMessage.goodNews(value.getMessage()));
+							} else {
+								getSession().add(StatusMessage.error(value.getMessage()));
+							}
 						}
 					});
 					
@@ -263,8 +266,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(new StatusMessage(
-							StatusMessage.Category.ERROR, "Could not load test cases for problem: " + caught.getMessage()));
+					getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
 				}
 
 				@Override

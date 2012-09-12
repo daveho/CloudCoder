@@ -83,7 +83,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		RPC.loginService.getUser(new AsyncCallback<User>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not check for current login status: " + caught.getMessage()));
+				session.add(StatusMessage.error("Could not check for current login status: " + caught.getMessage()));
 				changePage(new LoginPage());
 			}
 
@@ -97,7 +97,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 					RPC.loginService.getActivity(new AsyncCallback<Activity>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							session.add(new StatusMessage(StatusMessage.Category.ERROR, "Could not check for current login status: " + caught.getMessage()));
+							session.add(StatusMessage.error("Could not check for current login status: " + caught.getMessage()));
 							changePage(new LoginPage());
 						}
 
