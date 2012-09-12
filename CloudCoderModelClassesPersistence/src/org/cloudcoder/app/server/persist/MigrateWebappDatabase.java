@@ -42,14 +42,23 @@ public class MigrateWebappDatabase {
 				return;
 			}
 		}
-		
+
+		int numMigrated = 0;
 		for (ModelObjectSchema<?> table : CreateWebappDatabase.TABLES) {
-			System.out.print("Migrating " + table.getDbTableName() + "...");
-			System.out.flush();
-			boolean migrated = SchemaUtil.migrateTable(conn, table);
-			System.out.println(migrated ? ("migrated to version " + table.getVersion()) : "already at latest version");
+			int dbSchemaVersion = SchemaUtil.getDbSchemaVersion(conn, table);
+			if (dbSchemaVersion != table.getVersion()) {
+				System.out.print("Migrating " + table.getDbTableName() + " to version " + table.getVersion() + "...");
+				System.out.flush();
+				SchemaUtil.migrateTable(conn, table);
+				System.out.println("done");
+				numMigrated++;
+			}
 		}
 		
-		System.out.println("Done!");
+		if (numMigrated == 0) {
+			System.out.println("Your database is already up to date");
+		} else {
+			System.out.println("Successfully migrated " + numMigrated + " table(s)");
+		}
 	}
 }
