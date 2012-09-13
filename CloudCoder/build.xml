@@ -9,42 +9,46 @@
   -->
 
   <!-- Read CloudCoder global configuration properties. -->
-  <property file="../local.properties"/>
+  <property file="../cloudcoder.properties"/>
 
   <path id="project.class.path">
+  	<!-- libs used by the webapp -->
+    <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
+
+  	<!-- CloudCoder libs -->
+  	<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+  	<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+  	<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+  	
+  	<!-- GWT stuff -->
     <pathelement location="war/WEB-INF/classes"/>
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
-    <!-- Add any additional non-server libs (such as JUnit) -->
-    <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
   </path>
 
-  <!--
-    Compile the model classes jarfile, include it in
-    war/WEB-INF/lib.
-  -->
-  <target name="modelClasses">
-    <ant dir="../CloudCoderModelClasses" target="jar"/>
-    <copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" todir="war/WEB-INF/lib"/>
-  </target>
-
-  <!--
-    Copy the model classes persistence jarfile, include it in
-    war/WEB-INF/lib.
-  -->
-  <target name="modelClassesPersist">
-    <ant dir="../CloudCoderModelClassesPersistence" target="jar"/>
-  	<copy file="../CloudCoderModelClassesPersistence/cloudCoderModelClassesPersist.jar" todir="war/WEB-INF/lib"/>
-  </target>
-
-  <target name="libs" depends="modelClasses,modelClassesPersist" description="Copy libs to WEB-INF/lib">
+  <target name="libs" description="Copy libs to WEB-INF/lib">
     <mkdir dir="war/WEB-INF/lib" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet-deps.jar" />
     <!-- Add any additional server libs that need to be copied -->
   </target>
 
-  <target name="javac" depends="libs" description="Compile java source to bytecode">
+  <!-- Ensure that CloudCoder model library is built. -->
+  <target name="modelClasses">
+  	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar"/>
+  </target>
+	
+  <!-- Ensure that CloudCoder model classes persistence library is built. -->
+  <target name="modelClassesPersist">
+  	<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="jar"/>
+  </target>
+	
+  <!-- Ensure that the CloudCoder model classes JSON serialization library is built. -->
+  <target name="modelClassesJSON">
+  	<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
+  </target>
+
+  <target name="javac" depends="libs,modelClasses,modelClassesPersist,modelClassesJSON" description="Compile java source to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"
@@ -87,9 +91,7 @@
       </classpath>
       <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
       <jvmarg value="-Xmx256M"/>
-    <!--
       <arg value="-strict"/>
-    -->
       <arg line="-war"/>
       <arg value="war"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
@@ -197,7 +199,7 @@ Test targets suppressed because -junit argument was not specified when running w
 
   <target name="hosted" depends="devmode" description="Run development mode (NOTE: the 'hosted' target is deprecated)" />
 
-  <target name="build" depends="gwtc,modelClasses" description="Build this project" />
+  <target name="build" depends="gwtc" description="Build this project" />
 
   <target name="war" depends="build" description="Create a war file">
     <zip destfile="CloudCoder.war" basedir="war"/>
@@ -206,6 +208,12 @@ Test targets suppressed because -junit argument was not specified when running w
   <target name="clean" description="Cleans this project">
     <delete dir="war/WEB-INF/classes" failonerror="false" />
     <delete dir="war/cloudcoder" failonerror="false" />
+  </target>
+
+  <target name="depclean" depends="clean">
+    <ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+    <ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
+    <ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
   </target>
 
 </project>

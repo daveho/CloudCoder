@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ModelObjectField;
+
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -29,7 +31,7 @@ import com.google.gwt.user.client.ui.Label;
  * 
  * @author David Hovemeyer
  */
-public abstract class EditBooleanField<ModelObjectType>
+public class EditBooleanField<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, Boolean> {
 	
 	private class UI extends Composite {
@@ -65,9 +67,10 @@ public abstract class EditBooleanField<ModelObjectType>
 	 * 
 	 * @param desc the human-readable description of the field
 	 * @param checkboxLabel label to display next to checkbox
+	 * @param field the {@link ModelObjectField} being edited
 	 */
-	public EditBooleanField(String desc, String checkboxLabel) {
-		super(desc);
+	public EditBooleanField(String desc, String checkboxLabel, ModelObjectField<? super ModelObjectType, Boolean> field) {
+		super(desc, field);
 		ui = new UI(checkboxLabel);
 	}
 	

@@ -1,17 +1,25 @@
 <project name="CloudCoderModelClassesPersistence" default="jar">
-	<property name="jarfile" value="cloudCoderModelClassesPersist.jar"/>
+	<property name="jarfile" value="cloudcoderModelClassesPersist.jar"/>
 	
 	<path id="CloudCoderModelClassesPersistence.classpath">
 		<pathelement location="../CloudCoderModelClasses/bin"/>
 		<fileset dir="lib" includes="**.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
 	</path>
 
-	<target name="javac">
+	<target name="modelClasses">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="build"/>
+	</target>
+
+	<target name="javac" depends="modelClasses">
 		<mkdir dir="bin"/>
 		<javac source="1.6" target="1.6" srcdir="src" destdir="bin">
 			<classpath refid="CloudCoderModelClassesPersistence.classpath"/>
 		</javac>
 	</target>
+
+	<target name="build" depends="javac"/>
 	
 	<target name="jar" depends="javac">
 		<jar destfile="${jarfile}">
@@ -21,6 +29,12 @@
 	
 	<target name="clean">
 		<delete file="${jarfile}"/>
-		<delete dir="bin"/>
+		<delete includeemptydirs="true">
+			<fileset dir="bin" includes="**/*"/>
+		</delete>
+	</target>
+	
+	<target name="depclean" depends="clean">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>

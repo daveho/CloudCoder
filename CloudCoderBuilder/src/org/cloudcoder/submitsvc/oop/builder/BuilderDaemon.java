@@ -52,6 +52,8 @@ public class BuilderDaemon implements IDaemon {
 		public Options(Properties config) {
 			this.config = config;
 		}
+		
+		// The default property values are appropriate for running interactively for development.
 
 		public String getAppHost() {
 			return config.getProperty("cloudcoder.submitsvc.oop.host", "localhost");
@@ -64,6 +66,14 @@ public class BuilderDaemon implements IDaemon {
 		public int getNumThreads() {
 			return Integer.parseInt(config.getProperty("cloudcoder.submitsvc.oop.numThreads", "2"));
 		}
+		
+		public String getKeystoreFilename() {
+			return config.getProperty("cloudcoder.submitsvc.ssl.keystore", "defaultkeystore.jks");
+		}
+		
+		public String getKeystorePassword() {
+			return config.getProperty("cloudcoder.submitsvc.ssl.keystore.password", "changeit");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -74,15 +84,29 @@ public class BuilderDaemon implements IDaemon {
 		// If embedded configuration properties exist, read them
 		Properties config;
 		try {
-			String configPropPath = this.getClass().getPackage().getName().replace('.', '/') + "/local.properties";
+			String configPropPath = "cloudcoder.properties";
 			ClassLoader clsLoader = this.getClass().getClassLoader();
 			config = Util.loadPropertiesFromResource(clsLoader, configPropPath);
 		} catch (IllegalStateException e) {
-			logger.warn("Could not load local.properties, using default config properties");
+			logger.warn("Could not load cloudcoder.properties, using default config properties");
 			config = new Properties();
 		}
 		
 		Options options = new Options(config);
+		
+		// Create the WebappSocketFactory which the builder tasks can use to create
+		// connections to the webapp.
+		WebappSocketFactory webappSocketFactory;
+		try {
+			webappSocketFactory = new WebappSocketFactory(
+					options.getAppHost(),
+					options.getAppPort(),
+					options.getKeystoreFilename(),
+					options.getKeystorePassword());
+		} catch (Exception e) {
+			logger.error("Could not create WebappSocketFactory", e);
+			throw new IllegalStateException("Could not create WebappSocketFactory", e);
+		}
 		
 		logger.info("Builder starting");
 		logger.info("appHost={}", options.getAppHost());
@@ -92,7 +116,7 @@ public class BuilderDaemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder builder_ = new Builder(options.getAppHost(), options.getAppPort());
+			Builder builder_ = new Builder(webappSocketFactory);
 			Thread thread_ = new Thread(builder_);
 	
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);

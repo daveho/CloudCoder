@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Change;
@@ -24,12 +25,18 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
+import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -42,6 +49,12 @@ import org.cloudcoder.app.shared.model.User;
  * @author David Hovemeyer
  */
 public interface IDatabase {
+	/**
+	 * Get a configuration setting.
+	 * 
+	 * @param name the {@link ConfigurationSettingName}
+	 * @return the {@link ConfigurationSetting}, or null if there is no such setting
+	 */
 	public ConfigurationSetting getConfigurationSetting(ConfigurationSettingName name);
 	
 	/**
@@ -134,6 +147,8 @@ public interface IDatabase {
 	public void addProblem(Problem problem);
 	public void addTestCases(Problem problem, List<TestCase> testCaseList);
 
+	public void insertUsersFromInputStream(InputStream in, Course course);
+	
 	/**
 	 * Create a {@link ProblemSummary} describing the submissions for
 	 * the given {@link Problem}.
@@ -152,6 +167,14 @@ public interface IDatabase {
 	 */
 	public SubmissionReceipt getSubmissionReceipt(int submissionReceiptId);
 
+	/**
+	 * Return a list of all users in the given course.
+	 * 
+	 * @param course The course for which we want all users.
+	 * @return A lot of all users inthe given course.
+	 */
+	public List<User> getUsersInCourse(int courseId);
+	
 	/**
 	 * Get the Change with given id.
 	 * 
@@ -193,4 +216,83 @@ public interface IDatabase {
 	 */
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
 		throws NetCoderAuthenticationException;
+
+	/**
+	 * Get a {@link RepoProblemAndTestCaseList} from the database.
+	 * 
+	 * @param hash the hash of the problem and its associated test cases
+	 * @return the {@link RepoProblemAndTestCaseList}, or null if no such object exists in the database
+	 */
+	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(String hash);
+
+	/**
+	 * Store a {@link RepoProblemAndTestCaseList} in the database.
+	 * 
+	 * @param exercise the {@link RepoProblemAndTestCaseList} to store
+	 * @param user     the {@link User} who is importing the problem into the database
+	 */
+	public void storeRepoProblemAndTestCaseList(RepoProblemAndTestCaseList exercise, User user);
+
+	/**
+	 * Search the repository database for {@link RepoProblem}s matching given criteria.
+	 * 
+	 * @param searchCriteria the search criteria
+	 * @return the problems that matched the search criteria
+	 */
+	public List<RepoProblemSearchResult> searchRepositoryExercises(RepoProblemSearchCriteria searchCriteria);
+
+	/**
+	 * Find {@link CourseRegistration} for given user in given course.
+	 * 
+	 * @param user    the user
+	 * @param course  the course
+	 * @return the {@link CourseRegistration}, or null if the user is not registered in the course
+	 */
+	public CourseRegistration findCourseRegistration(User user, Course course);
+
+    /**
+     * Add a new user record to the database, and register that person
+     * for the course indicated by the given courseId.  The registration
+     * will have the given course registration type and will be for the
+     * section indicated.
+     * 
+     * @param user
+     * @param courseId
+     * @param type
+     * @param section
+     */
+    public void addUserToCourse(User user, int courseId, CourseRegistrationType type, int section);
+
+    /**
+     * Edit a user record in the database.  Any blank fields will
+     * remain unchanged.
+     * 
+     * @param username
+     * @param firstname
+     * @param lastname
+     * @param email
+     * @param passwd
+     */
+    public void editUser(int id, String username, String firstname, String lastname,
+        String email, String passwd);
+
+    /**
+     * Edit the registration type for the user record indicated by the
+     * userId and the course indicated by the given courseId.
+     * 
+     * @param userId
+     * @param courseId
+     * @param type
+     */
+    public void editRegistrationType(int userId, int courseId,
+        CourseRegistrationType type);
+	
+	/**
+	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+	 * 
+	 * @param course   the {@link Course}
+	 * @param problemId  the problem id
+	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+	 */
+	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
 }

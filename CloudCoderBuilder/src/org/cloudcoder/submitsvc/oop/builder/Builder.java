@@ -18,21 +18,16 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Reader;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -58,8 +53,7 @@ public class Builder implements Runnable {
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
 	private NoConnectTimer noConnectTimer;
-	private String host;
-	private int port;
+	private WebappSocketFactory webappSocketFactory;
 	private Map<Integer, Problem> problemIdToProblemMap;
 	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
 	private Socket socket;
@@ -67,14 +61,14 @@ public class Builder implements Runnable {
 	private ObjectOutputStream out;
 	private Map<ProblemType, ITester> testerMap;
 
-	public Builder(String host, int port) {
+	public Builder(WebappSocketFactory webappSocketFactory) {
 		this.shutdownRequested = false;
 		this.noConnectTimer = new NoConnectTimer();
-		this.host = host;
-		this.port = port;
+		this.webappSocketFactory = webappSocketFactory;
 		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 		this.testerMap=new HashMap<ProblemType, ITester>();
+		
 	}
 	
 	// Map of tester classes for known problem types
@@ -188,9 +182,19 @@ public class Builder implements Runnable {
 		return result;
 	}
 
+	private Socket createSecureSocket()
+			throws IOException, GeneralSecurityException
+	{
+		return webappSocketFactory.connectToWebapp();
+	}
+	
 	public void attemptToConnectToServer() {
 		try {
-			this.socket = new Socket(host, port);
+		    try {
+		        this.socket=createSecureSocket();
+		    } catch (GeneralSecurityException e) {
+		        throw new RuntimeException(e);
+		    }
 			this.in = new ObjectInputStream(socket.getInputStream());
 			logger.info("Connected!");
 			noConnectTimer.connected();

@@ -58,47 +58,13 @@ public class TestCaseEditor {
 			panel.add(deleteButtonPanel);
 			
 			// Create editors
-			fieldEditorList.add(new EditStringField<TestCase>("Test case name") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setTestCaseName(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getTestCaseName();
-				}
-			});
-			fieldEditorList.add(new EditStringField<TestCase>("Test input") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setInput(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getInput();
-				}
-				
-			});
-			fieldEditorList.add(new EditStringField<TestCase>("Test output") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setOutput(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getOutput();
-				}
-			});
-			fieldEditorList.add(new EditBooleanField<TestCase>("Secret", "If checked, the test is secret (not revealed to students)") {
-				@Override
-				protected void setField(Boolean value) {
-					getModelObject().setSecret(value);
-				}
-				@Override
-				protected Boolean getField() {
-					return getModelObject().isSecret();
-				}
-			});
+			fieldEditorList.add(new EditStringField<TestCase>("Test case name", TestCase.TEST_CASE_NAME));
+			fieldEditorList.add(new EditStringField<TestCase>("Test input", TestCase.INPUT));
+			fieldEditorList.add(new EditStringField<TestCase>("Test output", TestCase.OUTPUT));
+			fieldEditorList.add(new EditBooleanField<TestCase>(
+					"Secret",
+					"If checked, the test is secret (not revealed to students)",
+					TestCase.SECRET));
 			
 			// Add editors to panel
 			for (EditModelObjectField<TestCase, ?> editor: fieldEditorList) {

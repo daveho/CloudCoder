@@ -18,7 +18,6 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
@@ -39,7 +38,10 @@ import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -71,7 +73,7 @@ public class EditProblemPage extends CloudCoderPage {
 	private enum Confirm {
 		OK, CANCEL,
 	}
-		
+	
 	private class UI extends ResizeComposite implements SessionObserver {
 		private static final double SAVE_BUTTON_HEIGHT_PX = 32.0;
 
@@ -138,12 +140,19 @@ public class EditProblemPage extends CloudCoderPage {
 		}
 
 		protected void handleSaveProblem() {
+			// Commit the contents of all editors
+			commitAll();
+			
+			// Create a pending operation message
+			getSession().add(StatusMessage.pending("Sending problem data to server..."));
+			
+			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getSession().get(Course.class);
 			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
-					getSession().add(new StatusMessage(StatusMessage.Category.GOOD_NEWS, "Problem saved successfully"));
+					getSession().add(StatusMessage.goodNews("Problem saved successfully"));
 					
 					// Make the returned ProblemAndTestCaseList current
 					problemAndTestCaseListOrig.copyFrom(result);
@@ -160,60 +169,18 @@ public class EditProblemPage extends CloudCoderPage {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save problem: " + caught.getMessage()));
+					getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
 				}
 			});
 		}
 
 		private void createProblemFieldEditors() {
-			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemType>("Problem type", ProblemType.class) {
-				@Override
-				protected void setField(ProblemType value) {
-					getModelObject().setProblemType(value);
-				}
-
-				@Override
-				protected ProblemType getField() {
-					return getModelObject().getProblemType();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Problem name") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setTestName(value);
-				}
-				
-				@Override
-				protected String getField() {
-					return getModelObject().getTestName();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Brief description") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setBriefDescription(value);
-				}
-				
-				@Override
-				protected String getField() {
-					return getModelObject().getBriefDescription();
-				}
-				
-			});
+			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemType>("Problem type", ProblemType.class, ProblemData.PROBLEM_TYPE));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Problem name", ProblemData.TESTNAME));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Brief description", ProblemData.BRIEF_DESCRIPTION));
 			
 			EditStringFieldWithAceEditor<IProblem> descriptionEditor =
-					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)") {
-						@Override
-						protected void setField(String value) {
-							getModelObject().setDescription(value);
-						}
-						@Override
-						protected String getField() {
-							return getModelObject().getDescription();
-						}
-					};
+					new EditStringFieldWithAceEditor<IProblem>("Full description (HTML)", ProblemData.DESCRIPTION);
 			descriptionEditor.setEditorMode(AceEditorMode.HTML);
 			descriptionEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			problemFieldEditorList.add(descriptionEditor);
@@ -222,7 +189,7 @@ public class EditProblemPage extends CloudCoderPage {
 			// with the problem type.  (I.e., for a Java problem we want Java
 			// mode, for Python we want Python mode, etc.)
 			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
-					new EditStringFieldWithAceEditor<IProblem>("Skeleton code") {
+					new EditStringFieldWithAceEditor<IProblem>("Skeleton code", ProblemData.SKELETON) {
 						@Override
 						public void update() {
 							setLanguage();
@@ -236,14 +203,6 @@ public class EditProblemPage extends CloudCoderPage {
 							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
 							setEditorMode(editorMode);
 						}
-						@Override
-						protected void setField(String value) {
-							getModelObject().setSkeleton(value);
-						}
-						@Override
-						protected String getField() {
-							return getModelObject().getSkeleton();
-						}
 					};
 			skeletonEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
 			problemFieldEditorList.add(skeletonEditor);
@@ -251,96 +210,17 @@ public class EditProblemPage extends CloudCoderPage {
 			// We don't need an editor for schema version - problems/testcases are
 			// automatically converted to the latest version when they are imported.
 			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author name") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorName(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorName();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author email") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorEmail(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorEmail();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditStringField<IProblem>("Author website") {
-				@Override
-				protected void setField(String value) {
-					getModelObject().setAuthorWebsite(value);
-				}
-				@Override
-				protected String getField() {
-					return getModelObject().getAuthorWebsite();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setTimestampUTC(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return new Date(getModelObject().getTimestampUTC());
-				}
-			});
-			
-			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class) {
-				@Override
-				protected void setField(ProblemLicense value) {
-					getModelObject().setLicense(value);
-				}
-
-				@Override
-				protected ProblemLicense getField() {
-					return getModelObject().getLicense();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setWhenAssigned(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return getModelObject().getWhenAssignedAsDate();
-				}
-			});
-			
-			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due") {
-				@Override
-				protected void setField(Date value) {
-					getModelObject().setWhenDue(value.getTime());
-				}
-				@Override
-				protected Date getField() {
-					return getModelObject().getWhenDueAsDate();
-				}
-			});
-			
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author name", ProblemData.AUTHOR_NAME));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author email", ProblemData.AUTHOR_EMAIL));
+			problemFieldEditorList.add(new EditStringField<IProblem>("Author website", ProblemData.AUTHOR_WEBSITE));
+			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date", ProblemData.TIMESTAMP_UTC));
+			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
+			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(
 					"Problem visible to students",
-					"Check to make problem visible to students") {
-						@Override
-						protected void setField(Boolean value) {
-							getModelObject().setVisible(value);
-						}
-						@Override
-						protected Boolean getField() {
-							return getModelObject().isVisible();
-						}
-			});
+					"Check to make problem visible to students",
+					Problem.VISIBLE));
 		}
 
 		/* (non-Javadoc)
@@ -372,6 +252,11 @@ public class EditProblemPage extends CloudCoderPage {
 				public void run() {
 					leavePage(new Runnable() {
 						public void run() {
+							// Purge the list of ProblemAndSubmissionReceipts, in case a
+							// problem was edited by this page.  That will force CourseAdminPage to
+							// reload the problem list for the Course.
+							getSession().remove(ProblemAndSubmissionReceipt[].class);
+							
 							session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
 						}
 					});

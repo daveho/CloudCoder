@@ -73,7 +73,7 @@ public abstract class CourseAdminAuthorizationFilter extends AdminAuthorizationF
 		
 		if (!isInstructorInCourse) {
 			// User is not an instructor in this course
-			logger.info("Admin auth: user " + user.getUserName() + " not an instructor in course " + courseId);
+			logger.info("Admin auth: user " + user.getUsername() + " not an instructor in course " + courseId);
 			AdminServletUtil.unauthorized(resp);
 			return;
 		}

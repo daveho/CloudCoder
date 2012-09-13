@@ -17,6 +17,7 @@ package org.cloudcoder.app.server.persist; // DHH - added this
 import java.io.UnsupportedEncodingException;
 
 import java.security.SecureRandom;
+import java.util.Scanner;
 
 /**
  * BCrypt implements OpenBSD-style Blowfish password hashing using
@@ -748,5 +749,14 @@ public class BCrypt {
 	 */
 	public static boolean checkpw(String plaintext, String hashed) {
 		return (hashed.compareTo(hashpw(plaintext, hashed)) == 0);
+	}
+
+	// Run this if you want to generate a password hash.
+	public static void main(String[] args) {
+		Scanner keyboard = new Scanner(System.in);
+		System.out.print("Enter a plaintext password: ");
+		String plaintext = keyboard.nextLine();
+		String hash = hashpw(plaintext, gensalt(12));
+		System.out.println(hash);
 	}
 }

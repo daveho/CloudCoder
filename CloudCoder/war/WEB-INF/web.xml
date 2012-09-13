@@ -10,7 +10,7 @@
     <!--
       Note: when the CloudCoder web application is deployed as an executable
       jar file using CloudCoderWebServer, these context parameters are
-      ignored in favor of the configuration properties (local.properties)
+      ignored in favor of the configuration properties (cloudcoder.properties)
       defined by the user as a result of running the configure.pl script.
       
       So, the context parameters defined here are only meaningful when executing
@@ -20,7 +20,8 @@
     -->
 
     <!-- MySQL username. -->
-    <param-name>cloudcoder.db.user</param-name><param-value>root</param-value>
+    <param-name>cloudcoder.db.user</param-name>
+    <param-value>root</param-value>
   </context-param>
   <context-param>
     <!-- MySQL password. -->
@@ -70,6 +71,20 @@
 	<param-name>cloudcoder.login.service</param-name>
 	<param-value>imap</param-value>
   </context-param>
+  <!--
+  	Name of keystore containing keys to be used for TLS communication
+  	between builder and webapp.  Note: defaultkeystore.jks should
+  	ONLY be used for development, never for deployment!
+  -->
+  <context-param>
+    <param-name>cloudcoder.submitsvc.ssl.keystore</param-name>
+    <param-value>defaultkeystore.jks</param-value>
+  </context-param>
+  <!-- Keystore password. -->
+  <context-param>
+    <param-name>cloudcoder.submitsvc.ssl.keystore.password</param-name>
+    <param-value>changeit</param-value>
+  </context-param>
   
   <!-- host to authenticate against, if using imap authentication
   	against a mail server. 
@@ -100,6 +115,22 @@
     <servlet-name>Submit</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.SubmitServiceImpl</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>User</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.rpc.UserServiceImpl</servlet-class>
+  </servlet>
+  
+  
+  <servlet>
+    <servlet-name>RegisterStudents</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.servlet.RegisterStudents</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RegisterStudents</servlet-name>
+    <url-pattern>/cloudcoder/registerStudents</url-pattern>
+  </servlet-mapping>
+
+  
   <servlet-mapping>
     <servlet-name>ConfigurationSetting</servlet-name>
     <url-pattern>/cloudcoder/configurationSetting</url-pattern>
@@ -119,6 +150,10 @@
   <servlet-mapping>
     <servlet-name>Submit</servlet-name>
     <url-pattern>/cloudcoder/submit</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>User</servlet-name>
+    <url-pattern>/cloudcoder/user</url-pattern>
   </servlet-mapping>
   
   <!-- Admin servlets. -->
@@ -151,7 +186,7 @@
     <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
   </listener>
   <listener>
-    <listener-class>org.cloudcoder.app.server.persist.JDBCDatabaseConfigServletContextListener</listener-class>
+    <listener-class>org.cloudcoder.app.server.persist.WebappDatabaseConfigServletContextListener</listener-class>
   </listener>
 
 </web-app>

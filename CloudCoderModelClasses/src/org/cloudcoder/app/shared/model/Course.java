@@ -39,14 +39,8 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class Course implements ActivityObject {
+public class Course implements ActivityObject, IModelObject<Course> {
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Make sure this is kept up to date with the courses table in
-	 * the database.
-	 */
-	public static final int NUM_FIELDS = 6;
 
 	private int id;
 	private String name;
@@ -54,6 +48,40 @@ public class Course implements ActivityObject {
 	private String url;
 	private int termId;
 	private int year;
+	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>("course")
+		.add(new ModelObjectField<Course, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(Course obj, Integer value) { obj.setId(value); }
+			public Integer get(Course obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<Course, String>("name", String.class, 20) {
+			public void set(Course obj, String value) { obj.setName(value); }
+			public String get(Course obj) { return obj.getName(); }
+		})
+		.add(new ModelObjectField<Course, String>("title", String.class, 100) {
+			public void set(Course obj, String value) { obj.setTitle(value); }
+			public String get(Course obj) { return obj.getTitle(); }
+		})
+		.add(new ModelObjectField<Course, String>("url", String.class, 120) {
+			public void set(Course obj, String value) { obj.setUrl(value); }
+			public String get(Course obj) { return obj.getUrl(); }
+		})
+		.add(new ModelObjectField<Course, Integer>("term_id", Integer.class, 0) {
+			public void set(Course obj, Integer value) { obj.setTermId(value); }
+			public Integer get(Course obj) { return obj.getTermId(); }
+		})
+		.add(new ModelObjectField<Course, Integer>("year", Integer.class, 0) {
+			public void set(Course obj, Integer value) { obj.setYear(value); }
+			public Integer get(Course obj) { return obj.getYear(); }
+		});
+
+	/**
+	 * Number of fields in the database.
+	 */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	// Note: this field is not stored in the database directly,
 	// but is set by GetCoursesAndProblemsServiceImpl when a user's courses
@@ -65,6 +93,11 @@ public class Course implements ActivityObject {
 	 */
 	public Course() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<Course> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

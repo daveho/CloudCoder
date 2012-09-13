@@ -4,17 +4,19 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <property name="model.class.jar" value="lib/cloudcoderModelClasses.jar"/>
+    <property name="model.class.jar" value="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+
+	<!-- Read CloudCoder global configuration properties. -->
+	<property file="../cloudcoder.properties"/>
 	
 	<!-- Name of the single executable jarfile used for deployment. -->
 	<property name="jarname" value="cloudcoderBuilder.jar"/>
 
-    <path id="CloudCoderOutOfProcessBuildService.classpath">
-        <pathelement location="${model.class.jar}"/>
-        <pathelement location="bin"/>
-          <fileset dir="lib">
-            <include name="**/*.jar"/>
-          </fileset>
+    <path id="CloudCoderBuilder.classpath">
+		<pathelement location="${model.class.jar}"/>
+		<pathelement location="bin"/>
+		<fileset dir="lib" includes="**/*.jar"/>
+    	<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
     </path>
 
     <target name="init">
@@ -27,24 +29,16 @@
         </copy>
     </target>
 
-    <target name="clean">
-        <delete dir="bin"/>
-        <delete file="${model.class.jar}"/>
-    	<delete file="${jarname}"/>
-    </target>
-
-    <!-- compile shared model classes, copy jar to this project -->
+    <!-- make sure model classes jar file is built -->
     <target name="modelClasses">
-		<delete file="${model.class.jar}"/>
-		<ant dir="../CloudCoderModelClasses" target="jar"/>
-		<copy file="../CloudCoderModelClasses/cloudcoderModelClasses.jar" tofile="${model.class.jar}"/>
+    	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar" />
     </target>
 
     <target depends="init,modelClasses" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="CloudCoderOutOfProcessBuildService.classpath"/>
+            <classpath refid="CloudCoderBuilder.classpath"/>
         </javac>
     </target>
 	
@@ -52,15 +46,33 @@
 		Build a single executable jarfile.
 	-->
 	<target name="jar" depends="build">
-		<!-- copy local.properties into bin (so it will be included in the executable jarfile) -->
-		<copy file="../local.properties" tofile="bin/org/cloudcoder/submitsvc/oop/builder/local.properties"/>
-		
 		<jar destfile="${jarname}">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
+			<zipgroupfileset file="${model.class.jar}" />
+
 			<fileset dir="bin" includes="**"/>
+			<!-- Include keystore for secure communications with webapp. -->
+			<zipfileset file="../${cloudcoder.submitsvc.ssl.keystore}" fullpath="${cloudcoder.submitsvc.ssl.keystore}" />
+			
+			<!-- Inlcude cloudcoder configuration properties (cloudcoder.properties) -->
+			<zipfileset file="../cloudcoder.properties" fullpath="cloudcoder.properties"/>
+			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.submitsvc.oop.builder.BuilderDaemonController"/>
 			</manifest>
 		</jar>
+	</target>
+
+    <target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="${jarname}"/>
+    </target>
+	
+	<!-- Clean everything (including projects on which this target depends -->
+	<target name="depclean" depends="clean">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
 	</target>
 </project>

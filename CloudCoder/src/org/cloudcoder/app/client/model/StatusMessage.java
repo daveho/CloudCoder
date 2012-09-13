@@ -58,4 +58,34 @@ public class StatusMessage {
 	public String getMessage() {
 		return message;
 	}
+
+	/**
+	 * Factory method to create a "good news" status message.
+	 * 
+	 * @param message the message text
+	 * @return the good news status message
+	 */
+	public static StatusMessage goodNews(String message) {
+		return new StatusMessage(Category.GOOD_NEWS, message);
+	}
+
+	/**
+	 * Factory method to create an error status message.
+	 * 
+	 * @param message the message text
+	 * @return the error status message
+	 */
+	public static StatusMessage error(String message) {
+		return new StatusMessage(Category.ERROR, message);
+	}
+
+	/**
+	 * Factory method to create a pending operation status message.
+	 * 
+	 * @param message
+	 * @return
+	 */
+	public static StatusMessage pending(String message) {
+		return new StatusMessage(Category.PENDING, message);
+	}
 }

@@ -1,2 +1,4 @@
-/local.properties
+/cloudcoder.properties
+/keystore.jks
 *~
+*.swp

@@ -32,8 +32,8 @@ public class ProblemData implements Serializable, IProblemData {
 
 	//
 	// IMPORTANT: if you add any fields, make sure that you
-	// update the duplicateProblemData() method so that they are copied
-	// into the returned object.
+	// update the copyFrom() method so that they are copied
+	// into the destination object.
 	//
 	private ProblemType problemType;
 	private String testName;
@@ -46,16 +46,12 @@ public class ProblemData implements Serializable, IProblemData {
 	private String authorWebsite;
 	private long timestampUTC;
 	private ProblemLicense license;
-	
-	/**
-	 * Number of fields.
-	 */
-	public static final int NUM_FIELDS = 11;
+	private String parentHash;
 	
 	/**
 	 * The current ProblemData schema version.
 	 */
-	public static final int CURRENT_SCHEMA_VERSION = 0;
+	public static final int CURRENT_SCHEMA_VERSION = IProblemData.SCHEMA.getVersion();
 
 	/**
 	 * Constructor.
@@ -92,7 +88,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#getTestName()
 	 */
 	@Override
-	public String getTestName() {
+	public String getTestname() {
 		return testName;
 	}
 
@@ -100,7 +96,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#setTestName(java.lang.String)
 	 */
 	@Override
-	public void setTestName(String testName) {
+	public void setTestname(String testName) {
 		this.testName = testName;
 	}
 
@@ -227,7 +223,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#setTimestampUTC(long)
 	 */
 	@Override
-	public void setTimestampUTC(long timestampUTC) {
+	public void setTimestampUtc(long timestampUTC) {
 		this.timestampUTC = timestampUTC;
 	}
 	
@@ -235,7 +231,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * @see org.cloudcoder.app.shared.model.IProblemData#getTimestampUTC()
 	 */
 	@Override
-	public long getTimestampUTC() {
+	public long getTimestampUtc() {
 		return timestampUTC;
 	}
 	
@@ -255,6 +251,16 @@ public class ProblemData implements Serializable, IProblemData {
 		return license;
 	}
 	
+	@Override
+	public void setParentHash(String parentHash) {
+		this.parentHash = parentHash;
+	}
+	
+	@Override
+	public String getParentHash() {
+		return parentHash;
+	}
+	
 	/**
 	 * Copy all data in the given ProblemData object into this one.
 	 * 
@@ -272,6 +278,7 @@ public class ProblemData implements Serializable, IProblemData {
 		this.authorWebsite = other.authorWebsite;
 		this.timestampUTC = other.timestampUTC;
 		this.license = other.license;
+		this.parentHash = other.parentHash;
 	}
 	
 	@Override
@@ -291,5 +298,26 @@ public class ProblemData implements Serializable, IProblemData {
 				&& ModelObjectUtil.equals(this.authorWebsite, other.authorWebsite)
 				&& this.timestampUTC == other.timestampUTC
 				&& ModelObjectUtil.equals(this.license, other.license);
+	}
+
+	/*
+	 * Initialize given {@link IProblemData} so that it is in an "empty"
+	 * state, appropriate for editing as a new problem.
+	 * 
+	 * @param empty the {@link IProblemData} to initialize to an empty state
+	 */
+	public static void initEmpty(IProblemData empty) {
+		empty.setProblemType(ProblemType.JAVA_METHOD);
+		empty.setTestname("");
+		empty.setBriefDescription("");
+		empty.setDescription("");
+		empty.setSkeleton("");
+		empty.setSchemaVersion(ProblemData.CURRENT_SCHEMA_VERSION);
+		empty.setAuthorName("");
+		empty.setAuthorEmail("");
+		empty.setAuthorWebsite("");
+		empty.setTimestampUtc(System.currentTimeMillis());
+		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
+		empty.setParentHash("");
 	}
 }

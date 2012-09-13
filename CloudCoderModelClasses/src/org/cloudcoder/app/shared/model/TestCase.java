@@ -26,27 +26,76 @@ import java.io.Serializable;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class TestCase extends TestCaseData implements Serializable {
+public class TestCase extends TestCaseData implements Serializable, ITestCase, IModelObject<TestCase> {
 	private static final long serialVersionUID = 1L;
 
-	private int id;
+	private int testCaseId;
 	private int problemId;
+	
+	/** {@link ModelObjectField} for test case id. */
+	public static final ModelObjectField<TestCase, Integer> TEST_CASE_ID =
+			new ModelObjectField<TestCase, Integer>("test_case_id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+		public void set(TestCase obj, Integer value) { obj.setTestCaseId(value); }
+		public Integer get(TestCase obj) { return obj.getTestCaseId(); }
+	};
+	/** {@link ModelObjectField} for problem id. */
+	public static final ModelObjectField<TestCase, Integer> PROBLEM_ID =
+			new ModelObjectField<TestCase, Integer>("problem_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+		public void set(TestCase obj, Integer value) { obj.setProblemId(value); }
+		public Integer get(TestCase obj) { return obj.getProblemId(); }
+	};
+	
+	/**
+	 * Description of fields (schema version 0).
+	 */
+	public static final ModelObjectSchema<TestCase> SCHEMA_V0 = new ModelObjectSchema<TestCase>("test_case")
+		.add(TEST_CASE_ID)
+		.add(PROBLEM_ID)
+		.addAll(ITestCaseData.SCHEMA_V0.getFieldList());
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<TestCase> SCHEMA = SCHEMA_V0;
+	
+	
 	public TestCase() {
 		
 	}
 	
-	public void setId(int id) {
-		this.id = id;
+	@Override
+	public ModelObjectSchema<TestCase> getSchema() {
+		return SCHEMA;
 	}
 	
-	public int getId() {
-		return id;
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setTestCaseId(int)
+	 */
+	@Override
+	public void setTestCaseId(int id) {
+		this.testCaseId = id;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getTestCaseId()
+	 */
+	@Override
+	public int getTestCaseId() {
+		return testCaseId;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#setProblemId(int)
+	 */
+	@Override
 	public void setProblemId(int problemId) {
 		this.problemId = problemId;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.shared.model.ITestCase#getProblemId()
+	 */
+	@Override
 	public int getProblemId() {
 		return problemId;
 	}
@@ -60,7 +109,7 @@ public class TestCase extends TestCaseData implements Serializable {
 	 */
 	public static TestCase createEmpty() {
 		TestCase empty = new TestCase();
-		empty.setId(-1);
+		empty.setTestCaseId(-1);
 		empty.setProblemId(-1);
 		empty.setTestCaseName("");
 		empty.setInput("");
@@ -76,7 +125,7 @@ public class TestCase extends TestCaseData implements Serializable {
 	 */
 	public void copyFrom(TestCase other) {
 		super.copyFrom(other);
-		this.id = other.id;
+		this.testCaseId = other.testCaseId;
 		this.problemId = other.problemId;
 	}
 	
@@ -87,7 +136,7 @@ public class TestCase extends TestCaseData implements Serializable {
 		}
 		TestCase other = (TestCase) obj;
 		return super.equals(other)
-				&& this.id == other.id
+				&& this.testCaseId == other.testCaseId
 				&& this.problemId == other.problemId;
 	}
 }

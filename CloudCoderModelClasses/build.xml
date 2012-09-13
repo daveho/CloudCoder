@@ -22,4 +22,11 @@
 			<fileset dir="bin" includes="**"/>
 		</jar>
 	</target>
+
+	<target name="clean">
+		<delete file="${jarfile}"/>
+		<delete includeemptydirs="true">
+			<fileset dir="bin" includes="**/*"/>
+		</delete>
+	</target>
 </project>

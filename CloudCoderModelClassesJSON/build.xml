@@ -1,0 +1,39 @@
+<project name="CloudCoderModelClassesJSON" default="jar">
+	<property name="jarfile" value="cloudcoderModelClassesJSON.jar"/>
+	
+	<path id="CloudCoderModelClassesJSON.classpath">
+		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<fileset dir="lib" includes="**.jar"/>
+	</path>
+
+	<target name="modelClasses">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar"/>
+	</target>
+	
+	<target name="javac" depends="modelClasses">
+		<mkdir dir="bin"/>
+		<javac
+			srcdir="src"
+			destdir="bin"
+			source="1.6"
+			target="1.6"
+			classpathref="CloudCoderModelClassesJSON.classpath"/>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarfile}">
+			<fileset dir="bin" includes="**/*.class"/>
+		</jar>
+	</target>
+	
+	<target name="clean">
+		<delete file="${jarfile}"/>
+		<delete includeemptydirs="true">
+			<fileset dir="bin" includes="**/*"/>
+		</delete>
+	</target>
+	
+	<target name="depclean">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+	</target>
+</project>

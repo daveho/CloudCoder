@@ -25,7 +25,7 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem extends ProblemData implements IProblem, ActivityObject
+public class Problem extends ProblemData implements IProblem, ActivityObject, IModelObject<Problem>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -36,15 +36,39 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 	private boolean visible;
 	
 	/**
+	 * Description of fields (schema version 0).
+	 */
+	public static final ModelObjectSchema<Problem> SCHEMA_V0 = new ModelObjectSchema<Problem>("problem")
+		.addAll(IProblem.SCHEMA_V0.getFieldList())
+		.addAll(IProblemData.SCHEMA_V0.getFieldList());
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<Problem> SCHEMA_V1 = ModelObjectSchema.deltaFrom(SCHEMA_V0)
+		.addAfter(IProblemData.LICENSE, IProblemData.PARENT_HASH)
+		.finishDelta();
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<Problem> SCHEMA  = SCHEMA_V1;
+	
+	/**
 	 * Number of fields.
 	 */
-	public static final int NUM_FIELDS = ProblemData.NUM_FIELDS + 5;
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
 	
 	/**
 	 * Constructor.
 	 */
 	public Problem() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<Problem> getSchema() {
+		return SCHEMA;
 	}
 
 	/* (non-Javadoc)
@@ -144,7 +168,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 
 	@Override
 	public String toString() {
-		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
+		return getProblemId()+" testName: "+getTestname()+" "+getDescription();
 	}
 
 	/**
@@ -175,29 +199,18 @@ public class Problem extends ProblemData implements IProblem, ActivityObject
 				&& this.visible == other.visible;
 	}
 
-	public static Problem createEmpty() {
-		Problem empty = new Problem();
-
-		// Problem fields
-		empty.problemId = null;
-		empty.courseId = null;
-		empty.whenAssigned = 0L;
-		empty.whenDue = 0L;
-		empty.visible = false;
-		
-		// ProblemData fields
-		empty.setProblemType(ProblemType.JAVA_METHOD);
-		empty.setTestName("");
-		empty.setBriefDescription("");
-		empty.setDescription("");
-		empty.setSkeleton("");
-		empty.setSchemaVersion(ProblemData.CURRENT_SCHEMA_VERSION);
-		empty.setAuthorName("");
-		empty.setAuthorEmail("");
-		empty.setAuthorWebsite("");
-		empty.setTimestampUTC(System.currentTimeMillis());
-		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
-		
-		return empty;
+	/*
+	 * Initialize given {@link IProblem} so that it is in an "empty"
+	 * state, appropriate for editing as a new problem.
+	 * 
+	 * @param empty the {@link IProblem} to initialize to an empty state
+	 */
+	public static void initEmpty(IProblem empty) {
+		empty.setProblemId(-1);
+		empty.setCourseId(-1);
+		empty.setWhenAssigned(0L);
+		empty.setWhenDue(0L);
+		empty.setVisible(false);
+		ProblemData.initEmpty(empty);
 	}
 }

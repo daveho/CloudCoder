@@ -91,7 +91,7 @@ public class CTester implements ITester
         for (TestCase t : testCaseList) {
             test.append("  if (strncmp(argv[1], \"" +t.getTestCaseName()+"\", "+
                     t.getTestCaseName().length()+")==0) {\n");
-            test.append("    return eq("+problem.getTestName()+
+            test.append("    return eq("+problem.getTestname()+
                     "("+t.getInput()+"), ("+t.getOutput()+")) ? rcIfEqual : rcIfNotEqual;\n");
             test.append("  }\n");
         }

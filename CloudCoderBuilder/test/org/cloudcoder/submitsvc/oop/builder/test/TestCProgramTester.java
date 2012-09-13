@@ -54,7 +54,7 @@ public class TestCProgramTester {
 		problem.setCourseId(1);
 		problem.setProblemId(1);
 		problem.setProblemType(ProblemType.C_PROGRAM);
-		problem.setTestName(testName);
+		problem.setTestname(testName);
 		long now = System.currentTimeMillis();
 		problem.setWhenAssigned(now);
 		problem.setWhenDue(now+1L);
@@ -63,7 +63,7 @@ public class TestCProgramTester {
 
 	private TestCase createTestCase(String input, String output, String testCaseName) {
 		TestCase testCase = new TestCase();
-		testCase.setId(1);
+		testCase.setTestCaseId(1);
 		testCase.setInput(input);
 		testCase.setOutput(output);
 		testCase.setProblemId(1);

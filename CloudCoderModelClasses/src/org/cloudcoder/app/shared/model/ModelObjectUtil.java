@@ -1,5 +1,8 @@
 package org.cloudcoder.app.shared.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Utility methods for model objects.
  * 
@@ -47,5 +50,21 @@ public class ModelObjectUtil {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Combine lists.
+	 * 
+	 * @param a the first list
+	 * @param b the second list
+	 * @return the result of combining both lists
+	 */
+	public static<E> List<E> combineLists(List<E> a, List<E> b) {
+		ArrayList<E> result = new ArrayList<E>();
+
+		result.addAll(a);
+		result.addAll(b);
+		
+		return result;
 	}
 }

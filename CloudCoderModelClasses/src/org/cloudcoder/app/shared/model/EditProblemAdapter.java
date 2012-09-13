@@ -45,13 +45,13 @@ public abstract class EditProblemAdapter implements IProblem {
 	}
 
 	@Override
-	public String getTestName() {
-		return delegate.getTestName();
+	public String getTestname() {
+		return delegate.getTestname();
 	}
 
 	@Override
-	public void setTestName(String testName) {
-		delegate.setTestName(testName);
+	public void setTestname(String testName) {
+		delegate.setTestname(testName);
 		onChange();
 	}
 
@@ -133,14 +133,14 @@ public abstract class EditProblemAdapter implements IProblem {
 	}
 
 	@Override
-	public void setTimestampUTC(long timestampUTC) {
-		delegate.setTimestampUTC(timestampUTC);
+	public void setTimestampUtc(long timestampUTC) {
+		delegate.setTimestampUtc(timestampUTC);
 		onChange();
 	}
 
 	@Override
-	public long getTimestampUTC() {
-		return delegate.getTimestampUTC();
+	public long getTimestampUtc() {
+		return delegate.getTimestampUtc();
 	}
 
 	@Override
@@ -152,6 +152,17 @@ public abstract class EditProblemAdapter implements IProblem {
 	@Override
 	public ProblemLicense getLicense() {
 		return delegate.getLicense();
+	}
+	
+	@Override
+	public void setParentHash(String parentHash) {
+		delegate.setParentHash(parentHash);
+		onChange();
+	}
+	
+	@Override
+	public String getParentHash() {
+		return delegate.getParentHash();
 	}
 
 	@Override

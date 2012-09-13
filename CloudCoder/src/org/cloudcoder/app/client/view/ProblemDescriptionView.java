@@ -78,7 +78,7 @@ public class ProblemDescriptionView extends ResizeComposite implements SessionOb
 	}
 
 	public void displayProblemDescription(Problem problem) {
-		problemNameLabel.setText(problem.getTestName() + " - " + problem.getBriefDescription());
+		problemNameLabel.setText(problem.getTestname() + " - " + problem.getBriefDescription());
 		
 		// Note: if the problem description contains HTML markup, it will
 		// be rendered.  This is intentional, since it allows a greater degree

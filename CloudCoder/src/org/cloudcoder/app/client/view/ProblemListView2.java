@@ -69,7 +69,7 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 	private static class TestNameColumn extends TextColumn<ProblemAndSubmissionReceipt> {
 		@Override
 		public String getValue(ProblemAndSubmissionReceipt object) {
-			return object.getProblem().getTestName();
+			return object.getProblem().getTestname();
 		}
 	}
 

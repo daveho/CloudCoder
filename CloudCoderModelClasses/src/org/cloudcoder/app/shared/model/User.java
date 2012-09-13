@@ -17,13 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
-
 import java.io.Serializable;
 
 /**
@@ -31,57 +24,125 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-//@Entity
-//@Table(name="users")
-public class User implements Serializable {
+public class User implements Serializable, IModelObject<User> {
 	private static final long serialVersionUID = 1L;
 
-//	@Id
-//	@GeneratedValue(strategy=GenerationType.AUTO)
-//	@Column(name="id")
 	private int id;
-	
-//	@Column(name="username")
 	private String userName;
+	private String firstname;
+	private String lastname;
+	private String email;
+	private String passwordHash;
 	
-//	@Column(name="password_md5")
-	private String passwordMD5;
-	
-//	@Column(name="salt")
-	private String salt;
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema<User> SCHEMA = new ModelObjectSchema<User>("user")
+		.add(new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+			public void set(User obj, Integer value) { obj.setId(value); }
+			public Integer get(User obj) { return obj.getId(); }
+		})
+		.add(new ModelObjectField<User, String>("username", String.class, 20, ModelObjectIndexType.UNIQUE) {
+			public void set(User obj, String value) { obj.setUsername(value); }
+			public String get(User obj) { return obj.getUsername(); }
+		})
+		.add(new ModelObjectField<User, String>("firstname", String.class, 30) {
+            public void set(User obj, String value) { obj.setFirstname(value); }
+            public String get(User obj) { return obj.getFirstname(); }
+        })
+        .add(new ModelObjectField<User, String>("lastname", String.class, 30) {
+            public void set(User obj, String value) { obj.setLastname(value); }
+            public String get(User obj) { return obj.getLastname(); }
+        })
+        .add(new ModelObjectField<User, String>("email", String.class, 50, ModelObjectIndexType.UNIQUE) {
+            public void set(User obj, String value) { obj.setEmail(value); }
+            public String get(User obj) { return obj.getEmail(); }
+        })
+		.add(new ModelObjectField<User, String>("password_hash", String.class, 60) {
+			public void set(User obj, String value) { obj.setPasswordHash(value); }
+			public String get(User obj) { return obj.getPasswordHash(); }
+		});
 
+	/**
+	 * Constructor.
+	 */
 	public User() {
 	}
 	
+	@Override
+	public ModelObjectSchema<User> getSchema() {
+		return SCHEMA;
+	}
+	
+	/**
+	 * Set the user's unique id.
+	 * @param id the user's unique id
+	 */
 	public void setId(int id) {
 		this.id = id;
 	}
 	
+	/**
+	 * Get the user's unique id.
+	 * @return the user's unique id
+	 */
 	public int getId() {
 		return id;
 	}
 	
-	public void setUserName(String userName) {
+	/**
+	 * Set the user's username.
+	 * @param userName the user's username
+	 */
+	public void setUsername(String userName) {
 		this.userName = userName;
 	}
 	
-	public String getUserName() {
+	/**
+	 * Get the user's username.
+	 * @return the user's username
+	 */
+	public String getUsername() {
 		return userName;
 	}
 	
-	public void setPasswordMD5(String passwordMD5) {
-		this.passwordMD5 = passwordMD5;
+	/**
+	 * Set the user's bcrypt password hash. 
+	 * @param passwordHash the user's bcrypt password hash
+	 */
+	public void setPasswordHash(String passwordHash) {
+		this.passwordHash = passwordHash;
 	}
 	
-	public String getPasswordMD5() {
-		return passwordMD5;
+	/**
+	 * Get the user's bcrypt password hash.
+	 * @return the user's brcypt password hash
+	 */
+	public String getPasswordHash() {
+		return passwordHash;
 	}
-	
-	public void setSalt(String salt) {
-		this.salt = salt;
-	}
-	
-	public String getSalt() {
-		return salt;
-	}
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

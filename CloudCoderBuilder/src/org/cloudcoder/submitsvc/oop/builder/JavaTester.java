@@ -143,7 +143,7 @@ public class JavaTester implements ITester
             tester.append(tc.getTestCaseName());
             tester.append("() {\n");
             tester.append("\t\tTest t = new Test();\n");
-            tester.append("\t\treturn eq(t." + problem.getTestName() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
+            tester.append("\t\treturn eq(t." + problem.getTestname() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
             tester.append("\t\t}\n");
         }
         tester.append("}");

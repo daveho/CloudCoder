@@ -31,8 +31,20 @@ import com.google.gwt.user.client.ui.ResizeComposite;
  * @author David Hovemeyer
  */
 public class DevActionsPanel extends ResizeComposite {
+	/**
+	 * 
+	 */
+	private static final double BUTTON_HEIGHT_PX = 32.0;
+	/**
+	 * 
+	 */
+	private static final double BUTTON_WIDTH_PX = 120.0;
 	private Runnable submitHandler;
+	private Runnable resetHandler;
 	
+	/**
+	 * Constructor.
+	 */
 	public DevActionsPanel() {
 		LayoutPanel layoutPanel = new LayoutPanel();
 		
@@ -47,13 +59,40 @@ public class DevActionsPanel extends ResizeComposite {
 			}
 		});
 		layoutPanel.add(submitButton);
-		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, 100.0, Unit.PX);
-		layoutPanel.setWidgetBottomHeight(submitButton, 10.0, Unit.PX, 32.0, Unit.PX);
+		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, BUTTON_WIDTH_PX, Unit.PX);
+		layoutPanel.setWidgetBottomHeight(submitButton, 10.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
+		
+		Button resetButton = new Button("Reset");
+		resetButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (resetHandler != null) {
+					resetHandler.run();
+				}
+			}
+		});
+		layoutPanel.add(resetButton);
+		layoutPanel.setWidgetRightWidth(resetButton, 0.0, Unit.PX, BUTTON_WIDTH_PX, Unit.PX);
+		layoutPanel.setWidgetBottomHeight(resetButton, 10.0 + BUTTON_HEIGHT_PX + 10.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
 
 		initWidget(layoutPanel);
 	}
 	
+	/**
+	 * Set the handler to run when the Submit! button is clicked.
+	 * 
+	 * @param submitHandler handler to run when the Submit! button is clicked
+	 */
 	public void setSubmitHandler(Runnable submitHandler) {
 		this.submitHandler = submitHandler;
+	}
+	
+	/**
+	 * Set the handler to run when the Reset button is clicked.
+	 * 
+	 * @param resetHandler handler to run when the Reset button is clicked
+	 */
+	public void setResetHandler(Runnable resetHandler) {
+		this.resetHandler = resetHandler;
 	}
 }

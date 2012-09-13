@@ -1,0 +1,25 @@
+<project name="CloudCoderJetty" default="jar">
+	<path id="CloudCoderJetty.classpath">
+        <pathelement location="bin"/>
+		<fileset dir="lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
+    </path>
+
+	<target name="javac">
+		<mkdir dir="bin"/>
+		<javac source="1.6" target="1.6" srcdir="src" destdir="bin">
+			<classpath refid="CloudCoderJetty.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="cloudcoderJetty.jar" basedir="bin" includes="**/*.class"/>
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="cloudcoderJetty.jar"/>
+	</target>
+</project>

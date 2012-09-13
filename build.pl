@@ -2,10 +2,6 @@
 
 use strict;
 
-print "==> Building CloudCoder webapp...\n";
-system("cd CloudCoder && ant clean && ant build")/256 == 0
-	|| die "Couldn't build webapp\n";
-
 print "==> Building CloudCoderWebServer...\n";
 system("cd CloudCoderWebServer && ant clean && ant jar")/256 == 0
 	|| die "Couldn't build CloudCoderWebServer\n";

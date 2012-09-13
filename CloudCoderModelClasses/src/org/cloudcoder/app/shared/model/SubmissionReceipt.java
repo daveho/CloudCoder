@@ -29,24 +29,55 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class SubmissionReceipt implements Serializable, IContainsEvent {
+public class SubmissionReceipt implements Serializable, IContainsEvent, IModelObject<SubmissionReceipt> {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Number of database fields.
-	 */
-	public static final int NUM_FIELDS = 5;
-
-	private Event event;
-//	private int id;
 	private int eventId;
 	private int lastEditEventId;
 	private int status;
 	private int numTestsAttempted;
 	private int numTestsPassed;
 	
+	/**
+	 * Description of fields.
+	 */
+	public static final ModelObjectSchema<SubmissionReceipt> SCHEMA = new ModelObjectSchema<SubmissionReceipt>("submission_receipt")
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("event_id", Integer.class, 0, ModelObjectIndexType.UNIQUE) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setEventId(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getEventId(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("last_edit_event_id", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setLastEditEventId(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getLastEditEventId(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, SubmissionStatus>("status", SubmissionStatus.class, 0) {
+			public void set(SubmissionReceipt obj, SubmissionStatus value) { obj.setStatus(value); }
+			public SubmissionStatus get(SubmissionReceipt obj) { return obj.getStatus(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("num_tests_attempted", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setNumTestsAttempted(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getNumTestsAttempted(); }
+		})
+		.add(new ModelObjectField<SubmissionReceipt, Integer>("num_tests_passed", Integer.class, 0) {
+			public void set(SubmissionReceipt obj, Integer value) { obj.setNumTestsPassed(value); }
+			public Integer get(SubmissionReceipt obj) { return obj.getNumTestsPassed(); }
+		});
+
+	/**
+	 * Number of database fields.
+	 */
+	public static final int NUM_FIELDS = SCHEMA.getNumFields();
+
+	// Transient cache field for the event object associated with this submission receipt.
+	private Event event;
+
 	public SubmissionReceipt() {
 		this.event = new Event();
+	}
+	
+	@Override
+	public ModelObjectSchema<SubmissionReceipt> getSchema() {
+		return SCHEMA;
 	}
 	
 	/* (non-Javadoc)
