@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.IProblemData;
 import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.Term;
@@ -74,6 +75,7 @@ public class CreateSampleData {
 		problem.setWhenAssigned(System.currentTimeMillis());
 		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
 		problem.setVisible(true);
+		problem.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
 		CreateSampleData.populateSampleProblemData(problem);
 	}
 
