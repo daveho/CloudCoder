@@ -181,10 +181,46 @@ public class CourseAdminPage extends CloudCoderPage {
 				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
+				doChangeVisibility(action == ButtonPanelAction.MAKE_VISIBLE);
+				break;
+				
 			case QUIZ:
 				Window.alert("Not implemented yet, sorry");
 				break;
 			}
+		}
+
+		private void doChangeVisibility(final boolean visible) {
+			Problem chosen = getSession().get(Problem.class);
+			final Course course = getSession().get(Course.class);
+			
+			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
+				/* (non-Javadoc)
+				 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
+				 */
+				@Override
+				public void call(ProblemAndTestCaseList value) {
+					value.getProblem().setVisible(visible);
+					
+					RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(value, course, new AsyncCallback<ProblemAndTestCaseList>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							getSession().add(StatusMessage.error("Could not update problem visibility: " + caught.getMessage()));
+						}
+						
+						/* (non-Javadoc)
+						 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
+						 */
+						@Override
+						public void onSuccess(ProblemAndTestCaseList result) {
+							getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
+							
+							// Reload problems
+							SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+						}
+					});
+				}
+			});
 		}
 
 		private void doShareProblem() {
