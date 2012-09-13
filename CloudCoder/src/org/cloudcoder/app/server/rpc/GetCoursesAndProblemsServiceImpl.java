@@ -50,6 +50,7 @@ import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -167,12 +168,11 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
+		// Store in database
 		Database.getInstance().storeProblemAndTestCaseList(problemAndTestCaseList, course, user);
 
-		// TODO: implement
-		ProblemAndTestCaseList copy = new ProblemAndTestCaseList();
-		copy.copyFrom(problemAndTestCaseList);
-		return copy;
+		// Return updated object
+		return problemAndTestCaseList;
 	}
 	
 	/* (non-Javadoc)
@@ -213,17 +213,9 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		post.setEntity(entity);
 		
 		// POST the exercise to the repository
-		HttpClient client;
+		HttpClient client = new DefaultHttpClient();
 		try {
-			client = new DefaultHttpClient();
-			HttpResponse response;
-			try {
-				response = client.execute(post);
-			} catch (ClientProtocolException e) {
-				return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
-			} catch (IOException e) {
-				return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
-			}
+			HttpResponse response = client.execute(post);
 		
 			StatusLine statusLine = response.getStatusLine();
 			
@@ -234,8 +226,12 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			} else {
 				return new OperationResult(false, "Failed to publish exercise to repository: " + statusLine.getReasonPhrase());
 			}
+		} catch (ClientProtocolException e) {
+			return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
+		} catch (IOException e) {
+			return new OperationResult(false, "Error sending exercise to repository: " + e.getMessage());
 		} finally {
-			// Do we need to do something to clean up the HttpClient?
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
@@ -262,6 +258,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			return null;
 		}
 		
+		// GET the exercise from the repository
 		HttpGet get = new HttpGet(repoUrlSetting.getValue() + "/exercisedata/" + exerciseHash);
 		ProblemAndTestCaseList exercise = null;
 		
@@ -280,16 +277,29 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 					ReflectionFactory.forClass(Problem.class),
 					ReflectionFactory.forClass(TestCase.class),
 					reader);
+			
+			// Set the course id
 			exercise.getProblem().setCourseId(course.getId());
 		} catch (IOException e) {
 			logger.error("Error importing exercise from repository", e);
 			return null;
+		} finally {
+			client.getConnectionManager().shutdown();
 		}
 		
 		// Set "when assigned" and "when due" to reasonable default values
 		long now = System.currentTimeMillis();
 		exercise.getProblem().setWhenAssigned(now);
 		exercise.getProblem().setWhenDue(now + 48L*60L*60L*1000L);
+		
+		// Set problem authorship as IMPORTED
+		exercise.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED);
+		
+		// For IMPORTED problems, parent_hash is actually the hash of the problem
+		// itself.  If the problem is modified (and the authorship changed
+		// to IMPORTED_AND_MODIFIED), then the (unchanged) parent_hash value
+		// really does reflect the "parent" problem.
+		exercise.getProblem().setParentHash(exerciseHash);
 		
 		// Store the exercise in the database
 		exercise = Database.getInstance().storeProblemAndTestCaseList(exercise, course, user);

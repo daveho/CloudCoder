@@ -24,6 +24,13 @@
 			</blockquote>
 			
 			<p><b>License:</b> <a href="${RepoProblem.license.url}">${RepoProblem.license.name}</a>
+			
+			<c:if test="${! empty RepoProblem.parentHash}">
+			<p>
+				<b>Provenance:</b> This exercise is based on exercise
+				<a href="${pageContext.servletContext.contextPath}/exercise/${RepoProblem.parentHash}">${RepoProblem.parentHash}</a>
+			</p>
+			</c:if>
 		</div>
 	</body>
 </html>

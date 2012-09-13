@@ -80,6 +80,10 @@ public class CreateRepositoryDatabase {
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);
 		CreateSampleData.populateSampleProblemData(repoProblem);
+		
+		// Change the testname to ensure it gets a different hash code than
+		// the sample problem in the webapp database.
+		repoProblem.setTestname("helloRepository");
 
 		RepoTestCase repoTestCase = new RepoTestCase();
 		CreateSampleData.populateSampleTestCaseData(repoTestCase);

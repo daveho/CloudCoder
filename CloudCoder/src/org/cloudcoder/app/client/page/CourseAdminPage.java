@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -195,6 +196,15 @@ public class CourseAdminPage extends CloudCoderPage {
 						"Sharing a problem requires a permissive license. Please edit the problem " +
 						"and choose a permissive license such as Creative Commons or GNU FDL.");
 				licenseDialog.center();
+				return;
+			}
+			
+			if (chosen.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
+				OkDialogBox problemAuthorshipDialog = new OkDialogBox(
+						"Sharing not allowed for unmodified problems",
+						"This problem was imported from the exercise repository, but not modified. " +
+						"You can share it if you make some changes first.");
+				problemAuthorshipDialog.center();
 				return;
 			}
 

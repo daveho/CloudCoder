@@ -247,6 +247,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		this.whenAssigned = other.whenAssigned;
 		this.whenDue = other.whenDue;
 		this.visible = other.visible;
+		this.problemAuthorship = other.problemAuthorship;
 	}
 	
 	@Override

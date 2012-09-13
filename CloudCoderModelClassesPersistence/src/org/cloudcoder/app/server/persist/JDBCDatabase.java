@@ -47,6 +47,7 @@ import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.RepoProblem;
@@ -60,7 +61,6 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
-import org.eclipse.jetty.http.security.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1109,6 +1109,7 @@ public class JDBCDatabase implements IDatabase {
 					doUpdateProblem(problemAndTestCaseList.getProblem(), conn, this);
 					
 					// We can achieve the effect of updating the test cases by deleting
+					// and then reinserting
 					doDeleteTestCases(problemAndTestCaseList.getProblem().getProblemId(), conn, this);
 					doInsertTestCases(
 							problemAndTestCaseList.getProblem(),
@@ -1658,6 +1659,32 @@ public class JDBCDatabase implements IDatabase {
 			final Problem problem,
 			Connection conn,
 			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		
+		// Special case: if the authorship status of the original version was
+		// IMPORTED, then we need to change it to IMPORTED_AND_MODIFIED and
+		// set the parent hash field.  (In theory, loading the current
+		// version of the problem from the database isn't necessary,
+		// but it doesn't hurt to be paranoid, and authorship status is
+		// important to track precisely.)
+		Problem orig = new Problem();
+		PreparedStatement fetchOrig = databaseRunnable.prepareStatement(
+				conn,
+				"select * from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
+		fetchOrig.setInt(1, problem.getProblemId());
+		ResultSet origRS = databaseRunnable.executeQuery(fetchOrig);
+		if (!origRS.next()) {
+			throw new SQLException("Can't update problem " + problem.getProblemId() + " because it doesn't exist");
+		}
+		loadGeneric(orig, origRS, 1, Problem.SCHEMA);
+		
+		if (orig.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
+			// FIXME: get the hash of the imported problem from the database
+			// Probably, could just use parent_hash: for IMPORTED problems,
+			// it's the actual hash, but for IMPORTED_AND_MODIFIED problems,
+			// it's the parent hash.  Actually, that would be nice because
+			// then we don't have to do anything with the hash.
+			problem.setProblemAuthorship(ProblemAuthorship.IMPORTED_AND_MODIFIED);
+		}
 		
 		PreparedStatement update = databaseRunnable.prepareStatement(
 				conn,
