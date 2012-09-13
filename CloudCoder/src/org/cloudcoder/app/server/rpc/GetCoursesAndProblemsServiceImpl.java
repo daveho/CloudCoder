@@ -306,4 +306,12 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		
 		return exercise;
 	}
+	
+	@Override
+	public OperationResult deleteProblem(Course course, Problem problem) throws NetCoderAuthenticationException {
+		// Make sure a user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		boolean result = Database.getInstance().deleteProblem(user, course, problem);
+		return new OperationResult(result, result ? "Problem deleted successfully" : "Could not delete problem");
+	}
 }

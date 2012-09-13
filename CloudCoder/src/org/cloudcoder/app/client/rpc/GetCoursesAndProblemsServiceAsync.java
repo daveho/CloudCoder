@@ -52,4 +52,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void importExercise(Course course, String exerciseHash,
 			AsyncCallback<ProblemAndTestCaseList> callback);
 
+	void deleteProblem(Course course, Problem problem,
+			AsyncCallback<OperationResult> callback);
+
 }

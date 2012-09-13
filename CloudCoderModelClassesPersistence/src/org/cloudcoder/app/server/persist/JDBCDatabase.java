@@ -1224,24 +1224,9 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistration>() {
 			@Override
 			public CourseRegistration run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select cr.* from " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
-						" where cr." + CourseRegistration.USER_ID.getName() + " = ? " +
-						"   and cr." + CourseRegistration.COURSE_ID.getName() + " = ?"
-				);
-				stmt.setInt(1, user.getId());
-				stmt.setInt(2, course.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				if (!resultSet.next()) {
-					return null;
-				}
-				
-				CourseRegistration reg = new CourseRegistration();
-				DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
-				return reg;
+				int userId = user.getId();
+				int courseId = course.getId();
+				return doGetCourseRegistration(conn, courseId, userId, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1319,6 +1304,41 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " getting best submission receipts for problem/course";
+			}
+		});
+	}
+	
+	@Override
+	public boolean deleteProblem(final User user, final Course course, final Problem problem)
+			throws NetCoderAuthenticationException {
+		return databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException, NetCoderAuthenticationException {
+				// verify that the user is an instructor in the course
+				CourseRegistration courseReg = doGetCourseRegistration(conn, course.getId(), user.getId(), this);
+				if (courseReg == null || courseReg.getRegistrationType() != CourseRegistrationType.INSTRUCTOR) {
+					throw new NetCoderAuthenticationException("Only instructor can delete a problem");
+				}
+				
+				// delete the problem
+				PreparedStatement delProbStmt = prepareStatement(
+						conn,
+						"delete from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
+				delProbStmt.setInt(1, problem.getProblemId());
+				delProbStmt.executeUpdate();
+				
+				// delete the problem's test cases
+				PreparedStatement delTestCasesStmt = prepareStatement(
+						conn,
+						"delete from " + TestCase.SCHEMA.getDbTableName() + " where " + TestCase.PROBLEM_ID.getName() + " = ?");
+				delTestCasesStmt.setInt(1, problem.getProblemId());
+				delTestCasesStmt.executeUpdate();
+				
+				return true;
+			}
+			@Override
+			public String getDescription() {
+				return " deleting problem";
 			}
 		});
 	}
@@ -1733,6 +1753,31 @@ public class JDBCDatabase implements IDatabase {
 			load(repoTestCase, repoTestCaseRs, 1);
 			exercise.addTestCase(repoTestCase);
 		}
+	}
+
+	protected CourseRegistration doGetCourseRegistration(
+			Connection conn,
+			int courseId,
+			int userId,
+			AbstractDatabaseRunnable<?> abstractDatabaseRunnable) throws SQLException {
+		PreparedStatement stmt = abstractDatabaseRunnable.prepareStatement(
+				conn,
+				"select cr.* from " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
+				" where cr." + CourseRegistration.USER_ID.getName() + " = ? " +
+				"   and cr." + CourseRegistration.COURSE_ID.getName() + " = ?"
+		);
+		stmt.setInt(1, userId);
+		stmt.setInt(2, courseId);
+		
+		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
+		
+		if (!resultSet.next()) {
+			return null;
+		}
+		
+		CourseRegistration reg = new CourseRegistration();
+		DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
+		return reg;
 	}
 	
 	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

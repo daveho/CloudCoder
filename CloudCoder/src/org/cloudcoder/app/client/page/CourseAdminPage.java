@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
@@ -61,6 +62,7 @@ public class CourseAdminPage extends CloudCoderPage {
 	private enum ButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
+		DELETE("Delete problem"),
 		IMPORT("Import problem"),
 		MAKE_VISIBLE("Make visible"),
 		MAKE_INVISIBLE("Make invisible"),
@@ -83,6 +85,11 @@ public class CourseAdminPage extends CloudCoderPage {
 		public boolean isEnabledByDefault() {
 			return this == NEW || this == IMPORT;
 		}
+	}
+	
+	private enum DeleteChoice {
+		CANCEL,
+		DELETE,
 	}
 	
 	private class UI extends Composite implements SessionObserver, Subscriber {
@@ -171,6 +178,10 @@ public class CourseAdminPage extends CloudCoderPage {
 				handleEditProblem();
 				break;
 				
+			case DELETE:
+				handleDeleteProblem();
+				break;
+				
 			case SHARE:
 				doShareProblem();
 				break;
@@ -193,6 +204,8 @@ public class CourseAdminPage extends CloudCoderPage {
 		private void doChangeVisibility(final boolean visible) {
 			Problem chosen = getSession().get(Problem.class);
 			final Course course = getSession().get(Course.class);
+			
+			getSession().add(StatusMessage.pending("Changing visibility of problem..."));
 			
 			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
 				/* (non-Javadoc)
@@ -300,6 +313,56 @@ public class CourseAdminPage extends CloudCoderPage {
 				}
 			});
 		}
+		
+		private void handleDeleteProblem() {
+			final Problem chosen = getSession().get(Problem.class);
+			final Course course = getSession().get(Course.class);
+			
+			// Only invisible problems may be deleted
+			if (chosen.isVisible()) {
+				OkDialogBox visibleDialog = new OkDialogBox(
+						"Problem is visible",
+						"You can't delete a problem which is visible to students. Make it invisible first.");
+				visibleDialog.center();
+				return;
+			}
+			
+			// Confirm using a dialog
+			ChoiceDialogBox<DeleteChoice> confirmDeleteDialog = new ChoiceDialogBox<DeleteChoice>(
+					"Really delete problem?",
+					"Do you really want to delete the selected problem (" + chosen.getTestname() + ")? " +
+					"If you click 'Delete problem' there will be no way to undo the deletion.",
+					new ChoiceDialogBox.ChoiceHandler<DeleteChoice>() {
+						@Override
+						public void handleChoice(DeleteChoice choice) {
+							if (choice == DeleteChoice.DELETE) {
+								getSession().add(StatusMessage.pending("Deleting problem..."));
+								
+								RPC.getCoursesAndProblemsService.deleteProblem(course, chosen, new AsyncCallback<OperationResult>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										getSession().add(StatusMessage.error("Error deleting problem: " + caught.getMessage()));
+									}
+									@Override
+									public void onSuccess(OperationResult result) {
+										if (result.isSuccess()) {
+											getSession().add(StatusMessage.goodNews(result.getMessage()));
+											
+											// Reload problems
+											SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+										} else {
+											getSession().add(StatusMessage.error(result.getMessage()));
+										}
+									}
+								});
+							}
+						}
+					}
+			);
+			confirmDeleteDialog.addChoice("Cancel", DeleteChoice.CANCEL);
+			confirmDeleteDialog.addChoice("Delete problem", DeleteChoice.DELETE);
+			confirmDeleteDialog.center();
+		}
 
 		/**
 		 * Load a complete {@link ProblemAndTestCaseList} for given {@link Problem}.
@@ -389,6 +452,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem.isVisible());
 			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.SHARE.ordinal()].setEnabled(true);
+			problemButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
 		}
 	}
 

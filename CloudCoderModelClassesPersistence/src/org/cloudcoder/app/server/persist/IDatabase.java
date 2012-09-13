@@ -295,4 +295,15 @@ public interface IDatabase {
 	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
 	 */
 	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
+
+	/**
+	 * Delete a problem (and its test cases).
+	 * The user must be an instructor in the course the problem belongs to.
+	 * 
+	 * @param user       the authenticated {@link User}
+	 * @param course     the course
+	 * @param problem    the problem
+	 * @return true if the problem was deleted successfully, false otherwise
+	 */
+	public boolean deleteProblem(User user, Course course, Problem problem) throws NetCoderAuthenticationException;
 }
