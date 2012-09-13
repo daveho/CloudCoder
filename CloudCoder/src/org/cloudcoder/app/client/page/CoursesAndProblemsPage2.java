@@ -238,20 +238,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 Course course = (Course) hint;
 
                 // Load problems
-                RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        GWT.log("Error loading problems", caught);
-                        getSession().add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
-                    }
-
-                    @Override
-                    public void onSuccess(ProblemAndSubmissionReceipt[] result) {
-                        // Add ProblemAndSubmissionReceipt list to session so that
-                        // ProblemListView2 will know about it
-                        getSession().add(result);
-                    }
-                });
+                SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
 
                 if (courseAdminButton != null || userAdminButton != null) {
                     // Find the CourseRegistration for this Course

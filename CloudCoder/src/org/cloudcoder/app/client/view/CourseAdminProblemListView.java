@@ -180,6 +180,9 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			// is only one Course which is pre-selected), but if this view is
 			// reused in another page at some point, this might be useful.
 			loadProblems(session, (Course)hint);
+		} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof ProblemAndSubmissionReceipt[])) {
+			// This can happen when these is an explicit reload of problems
+			displayProblems((ProblemAndSubmissionReceipt[]) hint);
 		}
 	}
 

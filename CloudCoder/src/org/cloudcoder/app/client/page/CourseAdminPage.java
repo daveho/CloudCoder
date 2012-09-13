@@ -233,13 +233,16 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doImportProblem() {
 			ImportProblemDialog dialog = new ImportProblemDialog();
-			dialog.setCourse(getSession().get(Course.class));
+			final Course course = getSession().get(Course.class);
+			dialog.setCourse(course);
 			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
 				@Override
 				public void call(ProblemAndTestCaseList value) {
 					if (value != null) {
 						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
-						// TODO: reload problem list
+						
+						// Reload the problem list
+						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
 					} else {
 						getSession().add(StatusMessage.error("Exercise was not found"));
 					}
@@ -341,7 +344,6 @@ public class CourseAdminPage extends CloudCoderPage {
 			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
 				onSelectProblem((Problem) hint);
 			}
-			
 		}
 
 		private void onSelectProblem(Problem problem) {
