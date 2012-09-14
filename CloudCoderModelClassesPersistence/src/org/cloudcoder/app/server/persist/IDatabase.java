@@ -306,4 +306,23 @@ public interface IDatabase {
 	 * @return true if the problem was deleted successfully, false otherwise
 	 */
 	public boolean deleteProblem(User user, Course course, Problem problem) throws NetCoderAuthenticationException;
+	
+	/**
+	 * Run a database transaction.
+	 * 
+	 * @param databaseRunnable the database transaction to run
+	 * @return the result of the database transaction
+	 * @throws PersistenceException if an error occurs
+	 */
+	public<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable);
+	
+	/**
+	 * Run a database transaction that can throw an authorization exception.
+	 * 
+	 * @param databaseRunnable the database transaction to run
+	 * @return the result of the database transaction
+	 * @throws PersistenceException if an error occurs
+	 * @throws NetCoderAuthenticationException if an authorization exception occurs
+	 */
+	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException;
 }

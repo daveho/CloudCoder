@@ -1351,7 +1351,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
 	 */
-	private<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable) {
+	public<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable) {
 		try {
 			return doDatabaseRun(databaseRunnable);
 		} catch (NetCoderAuthenticationException e) {
@@ -1370,7 +1370,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
 	 */
-	private<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
 		return doDatabaseRun(databaseRunnable);
 	}
 
