@@ -29,6 +29,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ServletContextListener to check that the schema versions of
@@ -39,6 +41,7 @@ import org.cloudcoder.app.shared.model.ModelObjectSchema;
  * @author David Hovemeyer
  */
 public abstract class CheckSchemaVersionsServletContextListener implements ServletContextListener {
+	private static Logger logger = LoggerFactory.getLogger(CheckSchemaVersionsServletContextListener.class);
 
 	private List<ModelObjectSchema<?>> tableList;
 	
@@ -74,9 +77,8 @@ public abstract class CheckSchemaVersionsServletContextListener implements Servl
 				}
 			});
 		} catch (PersistenceException e) {
-			InitErrorList.instance().addError(
-					"Error checking schema versions: " +
-							e.getMessage() +
+			report("Error checking schema versions: " +
+					e.getMessage() +
 					": check database configuration");
 			return;
 		}
@@ -85,16 +87,19 @@ public abstract class CheckSchemaVersionsServletContextListener implements Servl
 		for (ModelObjectSchema<?> schema : tableList) {
 			Integer dbSchemaVersion = schemaVersions.get(schema.getDbTableName());
 			if (dbSchemaVersion == null) {
-				InitErrorList.instance().addError(
-						"No schema version found for table " + schema.getDbTableName() +
+				report("No schema version found for table " + schema.getDbTableName() +
 						": cc_schema_version table is incomplete");
 			} else if (dbSchemaVersion.intValue() != schema.getVersion()) {
-				InitErrorList.instance().addError(
-						"Database table " +
+				report("Database table " +
 						schema.getDbTableName() +
 						" is out of date: run java -jar cloudcoderApp.jar migratedb");
 			}
 		}
+	}
+
+	private void report(String error) {
+		InitErrorList.instance().addError(error);
+		logger.error(error);
 	}
 
 	@Override
