@@ -24,11 +24,13 @@ import org.cloudcoder.app.client.page.CourseAdminPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
+import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
 import org.cloudcoder.app.client.page.UserAdminPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.ActivityObject;
+import org.cloudcoder.app.shared.model.InitErrorException;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -83,8 +85,16 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		RPC.loginService.getUser(new AsyncCallback<User>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				session.add(StatusMessage.error("Could not check for current login status: " + caught.getMessage()));
-				changePage(new LoginPage());
+				// Special case: if this RPC call (which is the first one)
+				// throws an InitErrorException, switch to the InitErrorPage
+				// so that the cloudcoder admin can diagnose and resolve
+				// the issue.
+				if (caught instanceof InitErrorException) {
+					changePage(new InitErrorPage());
+				} else {
+					session.add(StatusMessage.error("Could not check for current login status: " + caught.getMessage()));
+					changePage(new LoginPage());
+				}
 			}
 
 			@Override

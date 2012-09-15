@@ -15,25 +15,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.shared.model;
 
-import org.cloudcoder.app.shared.model.Activity;
-import org.cloudcoder.app.shared.model.User;
+/**
+ * Exception indicating that the webapp experienced a fatal init error
+ * and could not start normally.  If the webapp's first RPC call
+ * fails with this exception, it should retrieve an init error
+ * list and display diagnostics (so that the cloudcoder admin
+ * can resolve the issue.)
+ * 
+ * @author David Hovemeyer
+ */
+public class InitErrorException extends Exception {
+	private static final long serialVersionUID = 1L;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-public interface LoginServiceAsync {
-
-	void login(String userName, String password, AsyncCallback<User> callback);
-
-	void logout(AsyncCallback<Void> callback);
-
-	void getUser(AsyncCallback<User> callback);
-
-	void getActivity(AsyncCallback<Activity> callback);
-
-	void setActivity(Activity activity, AsyncCallback<Void> callback);
-
-	void getInitErrorList(AsyncCallback<String[]> callback);
-
+	/**
+	 * Constructor.
+	 */
+	public InitErrorException() {
+	}
 }

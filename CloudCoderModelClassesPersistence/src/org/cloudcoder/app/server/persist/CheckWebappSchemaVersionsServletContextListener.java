@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011,2012 Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011,2012 David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -15,25 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.server.persist;
 
-import org.cloudcoder.app.shared.model.Activity;
-import org.cloudcoder.app.shared.model.User;
+import java.util.Arrays;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-public interface LoginServiceAsync {
-
-	void login(String userName, String password, AsyncCallback<User> callback);
-
-	void logout(AsyncCallback<Void> callback);
-
-	void getUser(AsyncCallback<User> callback);
-
-	void getActivity(AsyncCallback<Activity> callback);
-
-	void setActivity(Activity activity, AsyncCallback<Void> callback);
-
-	void getInitErrorList(AsyncCallback<String[]> callback);
-
+/**
+ * ServletContextListener to check database table schema versions
+ * for the webapp database.
+ * 
+ * @author David Hovemeyer
+ */
+public class CheckWebappSchemaVersionsServletContextListener extends CheckSchemaVersionsServletContextListener {
+	public CheckWebappSchemaVersionsServletContextListener() {
+		super(Arrays.asList(CreateWebappDatabase.TABLES));
+	}
 }

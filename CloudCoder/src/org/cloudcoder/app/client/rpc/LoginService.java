@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.InitErrorException;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -43,8 +44,9 @@ public interface LoginService extends RemoteService {
 	/**
 	 * Get the currently logged-in User.
 	 * @return the currently logged-in User, or null if no User is logged in
+	 * @throws InitErrorException 
 	 */
-	public User getUser();
+	public User getUser() throws InitErrorException;
 	
 	/**
 	 * Get the {@link Activity} most recently set by a call
@@ -59,4 +61,11 @@ public interface LoginService extends RemoteService {
 	 * @param activity the user's current Activity
 	 */
 	public void setActivity(Activity activity);
+	
+	/**
+	 * Get list of (server-side) webapp init errors.
+	 * 
+	 * @return list of (server-side) webapp init errors
+	 */
+	public String[] getInitErrorList();
 }

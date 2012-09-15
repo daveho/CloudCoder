@@ -22,10 +22,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 
 /**
  * A ServletContextListener to check that the schema versions of
@@ -35,36 +38,67 @@ import javax.servlet.ServletContextListener;
  * 
  * @author David Hovemeyer
  */
-public class CheckSchemaVersionsServletContextListener implements ServletContextListener {
+public abstract class CheckSchemaVersionsServletContextListener implements ServletContextListener {
 
+	private List<ModelObjectSchema<?>> tableList;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param tableList the list of {@link ModelObjectSchema} objects whose
+	 *                  database schema versions should be checked
+	 */
+	public CheckSchemaVersionsServletContextListener(List<ModelObjectSchema<?>> tableList) {
+		this.tableList = tableList;
+	}
+	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		final Map<String, Integer> schemaVersions = new HashMap<String, Integer>();
-		Database.getInstance().databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(conn, "select * from cc_schema_version");
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					String tableName = resultSet.getString(1);
-					int schemaVersion = resultSet.getInt(2);
-					schemaVersions.put(tableName, schemaVersion);
+		try {
+			Database.getInstance().databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+				@Override
+				public Boolean run(Connection conn) throws SQLException {
+					PreparedStatement stmt = prepareStatement(conn, "select * from cc_schema_version");
+					ResultSet resultSet = executeQuery(stmt);
+					while (resultSet.next()) {
+						String tableName = resultSet.getString(1);
+						int schemaVersion = resultSet.getInt(2);
+						schemaVersions.put(tableName, schemaVersion);
+					}
+					return true;
 				}
-				return true;
+				@Override
+				public String getDescription() {
+					return " check database table schema versions";
+				}
+			});
+		} catch (PersistenceException e) {
+			InitErrorList.instance().addError(
+					"Error checking schema versions: " +
+							e.getMessage() +
+					": check database configuration");
+			return;
+		}
+
+		// Check schema versions
+		for (ModelObjectSchema<?> schema : tableList) {
+			Integer dbSchemaVersion = schemaVersions.get(schema.getDbTableName());
+			if (dbSchemaVersion == null) {
+				InitErrorList.instance().addError(
+						"No schema version found for table " + schema.getDbTableName() +
+						": cc_schema_version table is incomplete");
+			} else if (dbSchemaVersion.intValue() != schema.getVersion()) {
+				InitErrorList.instance().addError(
+						"Database table " +
+						schema.getDbTableName() +
+						" is out of date: run java -jar cloudcoderApp.jar migratedb");
 			}
-			@Override
-			public String getDescription() {
-				return " check database table schema versions";
-			}
-		});
-		
-		// TODO: check schema versions
+		}
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

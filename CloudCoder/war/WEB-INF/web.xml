@@ -188,5 +188,9 @@
   <listener>
     <listener-class>org.cloudcoder.app.server.persist.WebappDatabaseConfigServletContextListener</listener-class>
   </listener>
+  <listener>
+    <!-- Check database table schema versions - this must be the last listener. -->
+    <listener-class>org.cloudcoder.app.server.persist.CheckWebappSchemaVersionsServletContextListener</listener-class>
+  </listener>
 
 </web-app>

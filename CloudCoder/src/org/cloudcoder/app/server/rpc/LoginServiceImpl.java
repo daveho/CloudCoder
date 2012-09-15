@@ -18,13 +18,16 @@
 package org.cloudcoder.app.server.rpc;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
 
 import org.cloudcoder.app.client.rpc.LoginService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.server.persist.InitErrorList;
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.InitErrorException;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +150,16 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	 * @see org.cloudcoder.app.client.rpc.LoginService#getUser()
 	 */
 	@Override
-	public User getUser() {
+	public User getUser() throws InitErrorException {
+		// Special case: this is the first RPC call that is made by the
+		// client.  If a fatal init error occurred here in the server side
+		// of the webapp, throw an InitErrorException to let the client
+		// know to display a diagnostic page (that the cloudcoder admin
+		// can use to resolve the issue.)
+		if (InitErrorList.instance().hasErrors()) {
+			throw new InitErrorException();
+		}
+		
 		return (User) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.USER_KEY);
 	}
 
@@ -165,5 +177,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	@Override
 	public void setActivity(Activity activity) {
 		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.ACTIVITY_KEY, activity);
+	}
+	
+	@Override
+	public String[] getInitErrorList() {
+		List<String> initErrorList = InitErrorList.instance().getErrorList();
+		return initErrorList.toArray(new String[initErrorList.size()]);
 	}
 }

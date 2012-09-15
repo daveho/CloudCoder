@@ -72,4 +72,16 @@ public class InitErrorList {
 			return copy;
 		}
 	}
+
+	/**
+	 * Determine whether there are any init errors.
+	 * 
+	 * @return true if there is at least one init error, false if
+	 *         there are no init errors
+	 */
+	public boolean hasErrors() {
+		synchronized (lock) {
+			return !errorList.isEmpty();
+		}
+	}
 }
