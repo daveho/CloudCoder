@@ -191,7 +191,7 @@ public class KillableTaskManager<T>
 
     /**
      * Worker thread takes a given Task, calls its execute() method
-     * to produce a result of type T, and puts the result into the 
+     * to produce a result of type E, and puts the result into the 
      * given outcome container.
      * 
      * This thread is set up so that, assuming that the Task doesn't
@@ -200,12 +200,12 @@ public class KillableTaskManager<T>
      * 
      * @author jspacco
      *
-     * @param <T>
+     * @param <E>
      */
-    private class WorkerThread<T> extends Thread
+    private class WorkerThread<E> extends Thread
     {
-        private IsolatedTask<T> task;
-        private Outcome<T> out;
+        private IsolatedTask<E> task;
+        private Outcome<E> out;
 
         /**
          * Create a thread that executes the given task and puts
@@ -214,7 +214,7 @@ public class KillableTaskManager<T>
          * @param task The task to execute
          * @param out The container in which to put the result of the task
          */
-        public WorkerThread(IsolatedTask<T> task, Outcome<T> out)
+        public WorkerThread(IsolatedTask<E> task, Outcome<E> out)
         {
             super(WORKER_THREAD_GROUP, "Thread"+(numThreads++));
             this.task=task;
@@ -231,10 +231,13 @@ public class KillableTaskManager<T>
          * @see java.lang.Thread#run()
          */
         public void run() {
+            E o;
             try {
-                T o=task.execute();
+                o=task.execute();
                 out.result=o;
                 out.finished=true;
+            } catch (NoClassDefFoundError e) {
+                logger.error("Thread killed in go!", e);
             } catch (Throwable e) {
                 // Make sure that the thread dies very quietly
                 // "Attaching an exception-catching silencer to my thread-killing gun"

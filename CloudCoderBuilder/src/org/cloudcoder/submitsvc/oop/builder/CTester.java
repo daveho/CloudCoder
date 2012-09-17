@@ -18,6 +18,7 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -42,9 +43,10 @@ import org.slf4j.LoggerFactory;
  */
 public class CTester implements ITester
 {
+    private static final boolean KEEP_TEMP_FILES = Boolean.getBoolean("cTester.keepTempFiles");
     private static final Logger logger=LoggerFactory.getLogger(CTester.class);
     public static final long TIMEOUT_LIMIT=2000;
- 
+
     // A random number generator to generate exit codes for test processes.
     // This makes it hard (but not impossible) for a tested function
     // to game the system by simply exiting with the exit code that
@@ -54,9 +56,9 @@ public class CTester implements ITester
     private int programTextLength;
     private int prologueLength;
     private int epilogueLength;
-    
+
     private String makeCTestFile(Problem problem,
-            List<TestCase> testCaseList, String programText)
+        List<TestCase> testCaseList, String programText)
     {
         prologueLength=3;
         programTextLength=programText.length();
@@ -65,16 +67,16 @@ public class CTester implements ITester
         test.append("#include <string.h>\n");  // 3 lines of prologue
         test.append("#include <stdlib.h>\n");
         test.append("#include <stdio.h>\n");
-        
+
         // The program text is the user's function
         test.append(programText);
         test.append("\n");
-        
+
         // The eq macro will test the function's return value against
         // the expected return value.
         test.append("#undef eq\n");
         test.append("#define eq(a,b) ((a) == (b))\n");
-        
+
         // Generate a main() function which can run all of the test cases.
         // argv[1] specifies the test case to execute by name.
         // argv[2] and argv[3] specify the exit values to use to indicate
@@ -86,7 +88,7 @@ public class CTester implements ITester
         // Make it a bit harder to steal the exit codes
         test.append("  argv[2] = 0;\n");
         test.append("  argv[3] = 0;\n");
-        
+
         // Generate calls to execute test cases.
         for (TestCase t : testCaseList) {
             test.append("  if (strncmp(argv[1], \"" +t.getTestCaseName()+"\", "+
@@ -95,19 +97,19 @@ public class CTester implements ITester
                     "("+t.getInput()+"), ("+t.getOutput()+")) ? rcIfEqual : rcIfNotEqual;\n");
             test.append("  }\n");
         }
-        
+
         // We return 99 if an invalid test case was provided: shouldn't
         // happen in practice.
         test.append("  return 99;\n");
         test.append("}");
         String result=test.toString();
         System.out.println(result);
-        
+
         epilogueLength=TesterUtils.countLines(result)-programTextLength-prologueLength;
-        
+
         return result;
     }
-    
+
     private void wait(ProcessRunner[] pool) {
         int numPauses=7;
         for (int i=1; i<=numPauses; i++) {
@@ -117,7 +119,7 @@ public class CTester implements ITester
             }
         }
     }
-    
+
     private boolean pauseAndPoll(long time, ProcessRunner[] pool) {
         try {
             Thread.sleep(time);
@@ -134,116 +136,87 @@ public class CTester implements ITester
         // no threads are alive, so we can stop waiting
         return false;
     }
-    
+
     @Override
     public SubmissionResult testSubmission(Submission submission)
     {
         File workDir = CUtil.makeTempDir("/tmp");
         //logger.debug("Creating temp dir " + workDir);
         try {
-        	return doTestSubmission(submission, workDir);
+            return doTestSubmission(submission, workDir);
         } finally {
-        	// Clean up
-        	new DeleteDirectoryRecursively(workDir).delete();
+            // Clean up
+            logger.debug("Keep temp files? "+KEEP_TEMP_FILES);
+            if (!KEEP_TEMP_FILES) {
+                new DeleteDirectoryRecursively(workDir).delete();
+            }
         }
     }
 
-	private SubmissionResult doTestSubmission(Submission submission,
-			File workDir) {
-		Problem problem=submission.getProblem();
+    private SubmissionResult doTestSubmission(Submission submission,File workDir)
+    {
+        Problem problem=submission.getProblem();
         String programText=submission.getProgramText();
         List<TestCase> testCaseList=submission.getTestCaseList();
         String testerCode=makeCTestFile(problem, testCaseList, programText);
 
-        String programName="program";
-        
+        String programName=CTestCaseExecutor.PROGRAM_NAME;
+
         Compiler compiler=new Compiler(testerCode, workDir, programName);
 
         if (!compiler.compile()) {
             logger.warn("Compilation failed");
-        	return CUtil.createSubmissionResultFromFailedCompile(compiler, prologueLength, epilogueLength);
+            return CUtil.createSubmissionResultFromFailedCompile(compiler, prologueLength, epilogueLength);
         }
-        
+
         logger.info("Compilation successful");
         CompilationResult compilationRes = new CompilationResult(CompilationOutcome.SUCCESS);
         compilationRes.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
         compilationRes.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
-        
-        List<TestResult> results=new LinkedList<TestResult>();
-        
-        ProcessRunner[] tests=new ProcessRunner[testCaseList.size()];
-        
-        // Create arrays of exit codes to use for
-        //   - the tested function returned the expected result (passed test)
-        //   - the tested function did not return the expected result (failed assertion)
-        int[] rcIfEqual = new int[testCaseList.size()];
-        int[] rcIfNotEqual = new int[testCaseList.size()];
-        for (int i = 0; i < testCaseList.size(); i++) {
-        	int rc = rng.nextInt(256);
-			rcIfEqual[i] = rc;
-        	rcIfNotEqual[i] = rc + 1;
+
+        // TODO:  More clever system
+        int passRetVal=77;
+        int failRetVal=78;
+        List<CTestCaseExecutor> testCaseExecutors = new ArrayList<CTestCaseExecutor>();
+        for (TestCase testCase : submission.getTestCaseList()) {
+            CTestCaseExecutor executor = createTestExecutor(workDir, testCase, passRetVal, failRetVal);
+            executor.start();
+            testCaseExecutors.add(executor);
         }
-        
-        // Kick of execution of tests
-        for (int i=0; i<tests.length; i++) {
-            tests[i]=new LimitedProcessRunner();
-            //TODO: Use chroot jail
-            //Full path to executable is necessary
-            tests[i].runAsynchronous(
-            		workDir,
-            		getTestCommand(
-            				workDir.getAbsolutePath()+File.separatorChar+programName,
-            				testCaseList.get(i),
-            		rcIfEqual[i],
-            		rcIfNotEqual[i]
-            		)
-            );
+
+        // Wait for all TestCaseExecutors to finish,
+        // collect TestResults
+        List<TestResult> testResultList = new ArrayList<TestResult>();
+        for (CTestCaseExecutor executor : testCaseExecutors) {
+            executor.join();
+            testResultList.add(executor.getTestResult());
         }
+
+        // OK, we have all of our TestResults.
+        // Package them up in a SubmissionResult (along with the CompilationResult)
+        // and we're done.
+        SubmissionResult submissionResult = new SubmissionResult();
+        submissionResult.setCompilationResult(new CompilationResult(CompilationOutcome.SUCCESS));
+        submissionResult.setTestResults(testResultList.toArray(new TestResult[testResultList.size()]));
+
+        return submissionResult;
+
+    }
+
+    /**
+     * @param workDir
+     * @param testCase
+     * @return
+     */
+    private CTestCaseExecutor createTestExecutor(File tempDir, TestCase testCase, int passRetVal, int failRetVal)
+    {
+        CTestCaseExecutor executor=new CFunctionTestCaseExecutor(tempDir, testCase,passRetVal,failRetVal);
+        executor.addArgument(testCase.getTestCaseName());
+        executor.addArgument(Integer.toString(passRetVal));
+        executor.addArgument(Integer.toString(failRetVal));
+        return executor;
         
-        // wait for the timeout limit
-        wait(tests);
-        
-        // determine test outcomes
-        for (int i = 0; i < tests.length; i++) {
-        	ProcessRunner p = tests[i];
-        	System.out.println(p.getStdout());
-        	TestCase testCase = testCaseList.get(i);
-
-        	TestResult testResult;
-
-        	if (p.isRunning()) {
-        		p.killProcess();
-        		testResult = TestResultUtil.createTestResultForTimeout(p, testCase);
-        	} else {
-        		if (p.isCoreDump()) {
-        			// Exit code is the signal which killed the process.
-        			if (p.getExitCode() == 9 || p.getExitCode() == 24) {
-        				// Special case: signals 9 (KILL) and 24 (XCPU) indicate that the
-        				// process exceeded its CPU limit, so treat them as a timeout.
-        				testResult = TestResultUtil.createTestResultForTimeout(p, testCase);
-
-        				// The process stderr does not seem to be particularly
-        				// useful in this case.
-        				testResult.setStderr("");
-        			} else {
-        				// Most likely, process was killed by a segmentation fault.
-        				testResult = TestResultUtil.createTestResultForCoreDump(p, testCase);
-        			}
-        		} else if (p.getExitCode()==rcIfEqual[i]) {
-        			testResult = TestResultUtil.createTestResultForPassedTest(p, testCase);
-        		} else {
-        			testResult = TestResultUtil.createTestResultForFailedAssertion(p, testCase);
-        		}
-
-        		results.add(testResult);
-        	}
-        }
-        
-        SubmissionResult result=new SubmissionResult(
-                new CompilationResult(CompilationOutcome.SUCCESS));
-        result.setTestResults(results.toArray(new TestResult[results.size()]));
-        return result;
-	}
+    }
 
     /**
      * Get the command to execute a specific TestCase.
@@ -254,7 +227,7 @@ public class CTester implements ITester
      * @param rcIfNotEqual the exit code to indicate that the test failed
      * @return the command
      */
-	public String[] getTestCommand(String programName, TestCase testCase, int rcIfEqual, int rcIfNotEqual) {
+    public String[] getTestCommand(String programName, TestCase testCase, int rcIfEqual, int rcIfNotEqual) {
         return new String[] {programName, testCase.getTestCaseName(), String.valueOf(rcIfEqual), String.valueOf(rcIfNotEqual)};
     }
 }

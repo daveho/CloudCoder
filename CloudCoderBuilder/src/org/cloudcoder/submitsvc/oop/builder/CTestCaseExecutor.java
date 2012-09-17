@@ -18,6 +18,8 @@
 package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
@@ -42,8 +44,14 @@ public abstract class CTestCaseExecutor implements Runnable {
 	private TestCase testCase;
 	private TestResult testResult;
 	private Thread thread;
+	
+	protected List<String> arguments=new LinkedList<String>();
 
 	public static final String PROGRAM_NAME = "prog";
+	
+	public void addArgument(String arg) {
+	    arguments.add(arg);
+	}
 
 	/**
 	 * Number of milliseconds between polls to see if a test case
@@ -67,6 +75,7 @@ public abstract class CTestCaseExecutor implements Runnable {
 	 * @param testCase   the {@link TestCase} to use as test input/expected output
 	 */
 	public CTestCaseExecutor(File tempDir, TestCase testCase) {
+	    arguments.add("./"+PROGRAM_NAME);
 		this.tempDir = tempDir;
 		this.testCase = testCase;
 	}
@@ -93,7 +102,9 @@ public abstract class CTestCaseExecutor implements Runnable {
 		// FIXME this is #!@!$! dangerous for many, many reasons
 		// - should chroot
 		// - should deny access to network
-		processRunner.runAsynchronous(tempDir, new String[]{"./" + CTestCaseExecutor.PROGRAM_NAME});
+		String[] cmd=arguments.toArray(new String[arguments.size()]);
+		processRunner.runAsynchronous(tempDir, cmd);
+        //processRunner.runAsynchronous(tempDir, new String[]{"./" + CTestCaseExecutor.PROGRAM_NAME});            
 		
 		int elapsed = 0;
 		while (processRunner.isRunning() && elapsed < CTestCaseExecutor.MAX_TIME_IN_SECONDS * 1000) {
