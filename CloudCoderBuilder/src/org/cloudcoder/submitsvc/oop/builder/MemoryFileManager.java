@@ -79,6 +79,15 @@ public final class MemoryFileManager extends ForwardingJavaFileManager<JavaFileM
 	public int getNumClassesCreated() {
 		return classes.size();
 	}
+	
+	/**
+	 * Get map of class names to compiled bytecode.
+	 * 
+	 * @return map of class names to compiled bytecode
+	 */
+	public Map<String, byte[]> getClasses() {
+		return classes;
+	}
 
 	/**
 	 * Get a class loader which first search the classes stored

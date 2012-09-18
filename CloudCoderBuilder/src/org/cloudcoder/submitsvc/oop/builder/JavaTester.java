@@ -43,8 +43,11 @@ public class JavaTester implements ITester
         // the correct classloader because it was first referenced inside the
         // the body of the inner class for IsolatedTask
         try {
-            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestResult");
-            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestOutcome");
+        	// Force TestResult, TestOutcome, and any nested classes referenced
+        	// by their static initializers to load
+        	TestResult tr = new TestResult();
+        	tr.setOutcome(TestOutcome.PASSED);
+        	logger.info("test outcome hack: {}", tr.getOutcome().toString());
         } catch (Exception e) {
             System.out.println(e);
         }

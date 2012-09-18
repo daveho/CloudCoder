@@ -69,38 +69,67 @@ public class InMemoryJavaCompiler
     }
     
     /**
-     * @param testCode
-     * @param testerCode
-     * @return
+     * Compile all of the classes added with {@link #addClassFile(String, String)}
+     * and load them into memory.
+     * 
+     * @return true if the compilation succeeded, false if the code could
+     *         not be compiled or the compiled classes could not be loaded
      */
     public boolean compile()
     {
-        // Compile
-        DiagnosticCollector<JavaFileObject> collector=
-                new DiagnosticCollector<JavaFileObject>();
-        
-        CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
-        if (!task.call()) {
-            compileResult=new CompilationResult(CompilationOutcome.FAILURE);
-            List<CompilerDiagnostic> diagnosticList=new LinkedList<CompilerDiagnostic>();
-            for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
-                // convert Java-specific diagnostics to the language-independent diagnostics
-                // we could also 
-                diagnosticList.add(InMemoryJavaCompiler.convertJavaxDiagnostic(d));
-            }
-            compileResult.setCompilerDiagnosticList(diagnosticList.toArray(new CompilerDiagnostic[diagnosticList.size()]));
-            logger.warn("Unable to compile: "+compileResult);
-            return false;
+        // Compile, but don't load the classes yet
+        if (!compileWithoutLoadingClasses()) {
+        	// Code does not compile
+        	return false;
         }
-        
+
+        // Load the classes
         classLoader = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
-        
         if (!loadClasses()) {
+        	// Classes could not be loaded
             return false;
         }
         
-        compileResult=new CompilationResult(CompilationOutcome.SUCCESS);
         return true;
+    }
+
+    /**
+     * Compile all of the classes added with {@link #addClassFile(String, String)},
+     * but do not load them into memory.
+     * 
+     * @return true if the compilation succeeded, false otherwise
+     */
+    public boolean compileWithoutLoadingClasses() {
+    	DiagnosticCollector<JavaFileObject> collector= new DiagnosticCollector<JavaFileObject>();
+
+    	CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
+    	if (!task.call()) {
+    		// Compiler error
+    		compileResult=new CompilationResult(CompilationOutcome.FAILURE);
+    		List<CompilerDiagnostic> diagnosticList=new LinkedList<CompilerDiagnostic>();
+    		for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
+    			// convert Java-specific diagnostics to the language-independent diagnostics
+    			// we could also 
+    			diagnosticList.add(InMemoryJavaCompiler.convertJavaxDiagnostic(d));
+    		}
+    		compileResult.setCompilerDiagnosticList(diagnosticList.toArray(new CompilerDiagnostic[diagnosticList.size()]));
+    		logger.warn("Unable to compile: "+compileResult);
+    		return false;
+    	} else {
+    		// Successful compilation
+    		compileResult=new CompilationResult(CompilationOutcome.SUCCESS);
+    		return true;
+    	}
+    }
+    
+    /**
+     * Get the {@link MemoryFileManager} that is keeping track of sources
+     * and compiled classes.
+     * 
+     * @return the {@link MemoryFileManager}
+     */
+    public MemoryFileManager getFileManager() {
+    	return fm;
     }
     
     private boolean loadClasses() {

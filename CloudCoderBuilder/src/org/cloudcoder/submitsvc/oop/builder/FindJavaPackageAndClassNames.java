@@ -117,9 +117,24 @@ public class FindJavaPackageAndClassNames {
 	}
 	
 	/**
-	 * @return the class name
+	 * @return the bare top-level class name
 	 */
 	public String getClassName() {
 		return className;
+	}
+
+	/**
+	 * @return the fully-qualified top-level class name
+	 */
+	public String getFullyQualifiedClassName() {
+		StringBuilder buf = new StringBuilder();
+		
+		if (!packageName.equals("")) {
+			buf.append(packageName);
+			buf.append(".");
+		}
+		buf.append(className);
+		
+		return buf.toString();
 	}
 }
