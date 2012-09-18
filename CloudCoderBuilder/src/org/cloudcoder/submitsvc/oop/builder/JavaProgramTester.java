@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.tools.JavaFileObject;
@@ -29,6 +31,8 @@ import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
 
 /**
  * Tester to compile and run complete Java programs
@@ -92,11 +96,29 @@ public class JavaProgramTester implements ITester {
 				IOUtils.closeQuietly(os);
 			}
 		}
+
+		// Execute the test cases
+		List<JavaRegexTestCaseExecutor> executorList = new ArrayList<JavaRegexTestCaseExecutor>();
+		for (TestCase testCase : submission.getTestCaseList()) {
+			JavaRegexTestCaseExecutor executor =
+					new JavaRegexTestCaseExecutor(workDir, testCase, packageAndClassNames.getFullyQualifiedClassName());
+			executorList.add(executor);
+			
+			executor.start();
+		}
 		
-//		// Run the main method of the top-level class
-//		LimitedProcessRunner runner = new LimitedProcessRunner();
-//		runner.
+		// Wait for test case executors to complete and accumulate TestResults
+		List<TestResult> testResultList = new ArrayList<TestResult>();
+		for (JavaRegexTestCaseExecutor executor : executorList) {
+			executor.join();
+			testResultList.add(executor.getTestResult());
+		}
 		
-		return null; // FIXME
+		// Create SubmissionResult
+		SubmissionResult submissionResult = new SubmissionResult();
+		submissionResult.setCompilationResult(compiler.getCompileResult());
+		submissionResult.setTestResults(testResultList.toArray(new TestResult[testResultList.size()]));
+		
+		return submissionResult;
 	}
 }

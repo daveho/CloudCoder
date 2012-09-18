@@ -79,6 +79,7 @@ public class Builder implements Runnable {
 		testerClassMap.put(ProblemType.C_FUNCTION, CTester.class);
 		testerClassMap.put(ProblemType.C_PROGRAM, CProgramTester.class);
 		testerClassMap.put(ProblemType.PYTHON_FUNCTION, PythonTester.class);
+//		testerClassMap.put(ProblemType.JAVA_PROGRAM, JavaProgramTester.class);
 	}
 	
 	private ITester getTester(ProblemType problemType) {
