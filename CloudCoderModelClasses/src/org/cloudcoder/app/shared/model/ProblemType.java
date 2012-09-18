@@ -44,8 +44,22 @@ public enum ProblemType {
 	/**
 	 * Problem involving writing a complete C program,
 	 * complete with #includes, a main function, etc.
+	 * Input is read from stdin, output is written to stdout.
+	 * Correctness is judged by testing each line of output against
+	 * a regular expression.  If the regexp matches one line,
+	 * then the output is judged to be correct.
 	 */
-	C_PROGRAM;
+	C_PROGRAM,
+	
+//	/**
+//	 * Problem involving writing a complete Java program: a top level
+//	 * class with a main method.  Judging works the same way
+//	 * as {@link #C_PROGRAM} (read from stdin, write to stdout,
+//	 * judge correctness by testing output lines against a regexp.)
+//	 */
+//	JAVA_PROGRAM,
+	
+	;
 	
 	/**
 	 * Get the Language associated with this ProblemType.
@@ -55,6 +69,7 @@ public enum ProblemType {
 	public Language getLanguage() {
 		switch (this) {
 		case JAVA_METHOD:
+//		case JAVA_PROGRAM:
 			return Language.JAVA;
 		case PYTHON_FUNCTION:
 			return Language.PYTHON;
