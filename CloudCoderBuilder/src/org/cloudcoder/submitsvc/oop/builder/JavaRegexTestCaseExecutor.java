@@ -66,7 +66,12 @@ public class JavaRegexTestCaseExecutor extends CRegexTestCaseExecutor {
 	 */
 	@Override
 	protected ProcessRunner createProcessRunner() {
-		// FIXME: no sandboxing or resource limits!
-		return new ProcessRunner();
+		LimitedProcessRunner processRunner = new LimitedProcessRunner();
+		
+		// Just set a CPU time limit
+		processRunner.clearLimits();
+		processRunner.setLimit(LimitedProcessRunner.LimitType.CPU_TIME_SEC, 15);
+		
+		return processRunner;
 	}
 }
