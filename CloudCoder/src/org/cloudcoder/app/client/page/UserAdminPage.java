@@ -280,6 +280,7 @@ public class UserAdminPage extends CloudCoderPage
                            return;
                        }
                        user.setPasswordHash(passwd.getValue());
+                       user.setWebsite("");
                        
                        CourseRegistrationType type=CourseRegistrationType.STUDENT;
                        if (instructorAccountButton.getValue()) {
