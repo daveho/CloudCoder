@@ -131,13 +131,13 @@ public class CUtil {
 	 * Limits amount of output read to a reasonable level.
 	 * Also, sets OS-level resource limits.
 	 * 
-	 * @return a ProcessRunner
+	 * @return a @{link LimitedProcessRunner}
 	 */
-	public static ProcessRunner createProcessRunner() {
+	public static LimitedProcessRunner createProcessRunner() {
 		// Create a LimitedProcessRunner so that some resource limits
 		// are enforced by the OS.  (E.g., amount of memory used,
 		// don't allow subprocesses to be created, etc.)
-		ProcessRunner processRunner = new LimitedProcessRunner() {
+		LimitedProcessRunner processRunner = new LimitedProcessRunner() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.submitsvc.oop.builder.ProcessRunner#createOutputCollector(java.io.InputStream)
 			 */

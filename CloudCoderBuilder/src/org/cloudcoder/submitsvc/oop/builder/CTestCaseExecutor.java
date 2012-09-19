@@ -95,7 +95,7 @@ public abstract class CTestCaseExecutor implements Runnable {
 		// Create a process runner that will read only a limited amount of
 		// output.  (We don't want the tested process to generate huge amounts
 		// output that could overwhelm the Builder and/or database.)
-		ProcessRunner processRunner = CUtil.createProcessRunner();
+		ProcessRunner processRunner = createProcessRunner();
 		
 		processRunner.setStdin(testCase.getInput());
 		
@@ -140,6 +140,16 @@ public abstract class CTestCaseExecutor implements Runnable {
 			// Process completed.
 			this.testResult = createTestResult(processRunner);
 		}
+	}
+
+	/**
+	 * Create a {@link ProcessRunner} for executing the test program.
+	 * Subclasses may override this to customize the ProcessRunner.
+	 * 
+	 * @return a {@link ProcessRunner} to use to execute the test program
+	 */
+	protected ProcessRunner createProcessRunner() {
+		return CUtil.createProcessRunner();
 	}
 
 	/**

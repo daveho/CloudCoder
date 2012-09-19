@@ -28,7 +28,27 @@ import java.util.List;
  * @author David Hovemeyer
  */
 public class LimitedProcessRunner extends ProcessRunner {
+	private int virtualMemoryKB;
+
+	/**
+	 * Constructor.
+	 */
 	public LimitedProcessRunner() {
+		//
+		// Amazingly, -v16384 (allocating 16MB of virtual memory) is
+		// not sufficient to allow a g++-compiled executable to run on Ubuntu 12.04.
+		// 32MB ought to be plenty.  (Of course, that's what I thought about 16MB.)
+		//
+		virtualMemoryKB = 32768;
+	}
+	
+	/**
+	 * Set virtual memory allowed to process in kilobytes.
+	 * 
+	 * @param virtualMemoryKB virtual memory allowed to process in kilobytes
+	 */
+	public void setVirtualMemoryKB(int virtualMemoryKB) {
+		this.virtualMemoryKB = virtualMemoryKB;
 	}
 	
 	/* (non-Javadoc)
@@ -46,12 +66,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append("CC_PROCESS_RESOURCE_LIMITS=");
-		//
-		// Amazingly, -v16384 (allocating 16MB of virtual memory) is
-		// not sufficient to allow a g++-compiled executable to run on Ubuntu 12.04.
-		// 32MB ought to be plenty.  (Of course, that's what I thought about 16MB.)
-		//
-		buf.append("-f0 -s256 -t5 -u0 -v32768"); // FIXME: make this configurable
+		buf.append("-f0 -s256 -t5 -u0 -v" + virtualMemoryKB); // FIXME: make this configurable
 		
 		allEnvVars.add(buf.toString());
 		

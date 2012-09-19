@@ -51,13 +51,13 @@ public enum ProblemType {
 	 */
 	C_PROGRAM,
 	
-//	/**
-//	 * Problem involving writing a complete Java program: a top level
-//	 * class with a main method.  Judging works the same way
-//	 * as {@link #C_PROGRAM} (read from stdin, write to stdout,
-//	 * judge correctness by testing output lines against a regexp.)
-//	 */
-//	JAVA_PROGRAM,
+	/**
+	 * Problem involving writing a complete Java program: a top level
+	 * class with a main method.  Judging works the same way
+	 * as {@link #C_PROGRAM} (read from stdin, write to stdout,
+	 * judge correctness by testing output lines against a regexp.)
+	 */
+	JAVA_PROGRAM,
 	
 	;
 	
@@ -69,7 +69,7 @@ public enum ProblemType {
 	public Language getLanguage() {
 		switch (this) {
 		case JAVA_METHOD:
-//		case JAVA_PROGRAM:
+		case JAVA_PROGRAM:
 			return Language.JAVA;
 		case PYTHON_FUNCTION:
 			return Language.PYTHON;

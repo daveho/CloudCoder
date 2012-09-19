@@ -60,4 +60,13 @@ public class JavaRegexTestCaseExecutor extends CRegexTestCaseExecutor {
 		arguments.add(".");
 		arguments.add(mainClass);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.submitsvc.oop.builder.CTestCaseExecutor#createProcessRunner()
+	 */
+	@Override
+	protected ProcessRunner createProcessRunner() {
+		// FIXME: no sandboxing or resource limits!
+		return new ProcessRunner();
+	}
 }

@@ -25,10 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.tools.JavaFileObject;
-
 import org.apache.commons.io.IOUtils;
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -48,6 +45,7 @@ public class JavaProgramTester implements ITester {
 	public SubmissionResult testSubmission(Submission submission) {
 		// Create a temp directory where we can write the class files
 		File tempDir = CUtil.makeTempDir();
+		System.out.println("workDir is " + tempDir.getPath());
 
 		try {
 			// Attempt to compile and test the submission
@@ -58,7 +56,7 @@ public class JavaProgramTester implements ITester {
 	}
 
 	protected SubmissionResult doTestSubmission(Submission submission, File workDir) {
-		Problem problem = submission.getProblem();
+		//Problem problem = submission.getProblem();
 		
 		String programText = submission.getProgramText();
 
@@ -82,9 +80,9 @@ public class JavaProgramTester implements ITester {
 			String clsName = entry.getKey();
 			byte[] bytes = entry.getValue();
 			
-			String fileName = clsName.replace('.', '/');
+			String fileName = clsName.replace('.', '/') + ".class";
 			File out = new File(workDir, fileName);
-			out.mkdirs();
+			out.getParentFile().mkdirs();
 			
 			FileOutputStream os = null;
 			try {
