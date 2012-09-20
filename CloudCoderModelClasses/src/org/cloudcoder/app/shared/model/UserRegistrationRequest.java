@@ -36,7 +36,7 @@ public class UserRegistrationRequest extends User {
 		public void set(UserRegistrationRequest obj, Long value) { obj.setTimestamp(value); }
 	};
 	
-	public static final ModelObjectField<UserRegistrationRequest, String> SECRET = new ModelObjectField<UserRegistrationRequest, String>("secret", String.class, SECRET_LENGTH) {
+	public static final ModelObjectField<UserRegistrationRequest, String> SECRET = new ModelObjectField<UserRegistrationRequest, String>("secret", String.class, SECRET_LENGTH, ModelObjectIndexType.NON_UNIQUE) {
 		public String get(UserRegistrationRequest obj) { return obj.getSecret(); }
 		public void set(UserRegistrationRequest obj, String value) { obj.setSecret(value); }
 	};
