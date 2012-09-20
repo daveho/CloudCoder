@@ -41,7 +41,6 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
