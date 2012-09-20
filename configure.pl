@@ -120,7 +120,7 @@ if ($configRepoWebapp) {
 		"Just hit enter if MySQL is running on the standard port.",
 		"cloudcoder.repoapp.db.portStr", undef);
 
-	section("Webserver configuration (repository webapp");
+	section("Webserver configuration (repository webapp)");
 
 	askprop("What port will the exercise repository web server listen on?",
 		"cloudcoder.repoapp.webserver.port", "8082");
@@ -129,6 +129,12 @@ if ($configRepoWebapp) {
 	askprop("Should the exercise repository web server accempt connections only from localhost?\n" .
 		"(Set this to 'true' if using a reverse proxy, which is recommended)",
 		"cloudcoder.repoapp.webserver.localhostonly", "true");
+	askprop("What SMTP server should the repo webapp use to send mail?",
+		"cloudcoder.repoapp.smtp.host", "smtp.1and1.com");
+	askprop("What SMTP username should the repo webapp use?",
+		"cloudcoder.repoapp.smtp.user", undef);
+	askprop("What SMTP password should the repo webapp use?",
+		"cloudcoder.repoapp.smtp.passwd", undef);
 }
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");

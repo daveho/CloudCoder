@@ -19,10 +19,10 @@ package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -50,6 +50,17 @@ public class Register extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final SecureRandom random = new SecureRandom();
+	
+	private String smtpHost;
+	private String smtpUsername;
+	private String smtpPassword;
+	
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		smtpHost = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.host");
+		smtpUsername = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.user");
+		smtpPassword = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.passwd");
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -107,12 +118,16 @@ public class Register extends HttpServlet {
 		// If request was successfully added to database, then send an email
 		if (result.isSuccess()) {
 			// TODO: send email
-			
+			sendConfirmationEmail(request);
 			result.setMessage("Please check your email to complete the registration.");
 		}
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType("application/json");
 		JSONValue.writeJSONString(JSONConversion.convertOperationResultToJSON(result), resp.getWriter());
+	}
+
+	private void sendConfirmationEmail(UserRegistrationRequest request) {
+		// TODO: send email
 	}
 }
