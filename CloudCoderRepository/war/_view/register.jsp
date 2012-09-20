@@ -21,6 +21,12 @@
 								alert("Error!");
 							}
 						});
+					},
+					rules: {
+						u_passwordConfirm: {
+							required: true,
+							equalTo: "#u_password"
+						}
 					}
 				});
 			});
@@ -35,27 +41,27 @@
 			<table>
 				<tr>
 					<td class="label">First name:</td>
-					<td><input name="u_firstname" class="required" type="text" size="20"></input></td>
+					<td><input id="u_firstname" name="u_firstname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
 					<td class="label">Last name:</td>
-					<td><input name="u_lastname" class="required" type="text" size="20"></input></td>
+					<td><input id="u_lastname" name="u_lastname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
 					<td class="label">Email address:</td>
-					<td><input name="u_username" class="required email" type="text" size="30"></input></td>
+					<td><input id="u_username" name="u_username" class="required email" type="text" size="30"></input></td>
 				</tr>
 				<tr>
 					<td class="label">Website URL:</td>
-					<td><input name="u_website" type="text" size="50"></input></td>
+					<td><input id="u_website" name="u_website" type="text" size="50"></input></td>
 				</tr>
 				<tr>
 					<td class="label">Password:</td>
-					<td><input name="u_password" class="required" type="password" size="12"></input></td>
+					<td><input id="u_password" name="u_password" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
 					<td class="label">Password (confirm):</td>
-					<td><input name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
+					<td><input id="u_passwordConfirm" name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
 				</tr>
 				
 				<tr>
