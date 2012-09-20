@@ -18,11 +18,28 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.cloudcoder.app.server.persist.BCrypt;
+import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.ConvertBytesToHex;
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectUtil;
+import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.SHA1;
+import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.json.simple.JSONValue;
 
 /**
  * Servlet allowing a new user to register.
@@ -31,6 +48,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class Register extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private static final SecureRandom random = new SecureRandom();
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -38,10 +57,62 @@ public class Register extends HttpServlet {
 		req.getRequestDispatcher("_view/register.jsp").forward(req, resp);
 	}
 	
+	private static final Set<ModelObjectField<? super UserRegistrationRequest, ?>> REQUIRED_ATTRIBUTES = new LinkedHashSet<ModelObjectField<? super UserRegistrationRequest, ?>>();
+	static {
+		REQUIRED_ATTRIBUTES.add(User.USERNAME);
+		REQUIRED_ATTRIBUTES.add(User.FIRSTNAME);
+		REQUIRED_ATTRIBUTES.add(User.LASTNAME);
+		REQUIRED_ATTRIBUTES.add(User.EMAIL);
+		REQUIRED_ATTRIBUTES.add(User.WEBSITE);
+	}
+	
+	// POST is for handling AJAX requests
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		super.doPost(req, resp);
+		UserRegistrationRequest request = new UserRegistrationRequest();
+		
+		// Convert submitted form data into a User object
+		for (ModelObjectField<? super UserRegistrationRequest, ?> field : User.SCHEMA.getFieldList()) {
+			if (!REQUIRED_ATTRIBUTES.contains(field)) {
+				continue;
+			}
+			
+			String value = ServletUtil.getRequiredParam(req, "u_" + field.getName());
+			if (value != null) {
+				Object convertedValue = ModelObjectUtil.convertString(value, field.getType());
+				field.setUntyped(request, convertedValue);
+			}
+		}
+		
+		// Get password. No need to check confirmation, since that's checked on
+		// the client side.
+		String password = ServletUtil.getRequiredParam(req, "u_password");
+		request.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt(12)));
+		
+		// Generate a secret.
+		SHA1 computeHash = new SHA1();
+		computeHash.update(String.valueOf(random.nextLong()).getBytes("UTF-8"));
+		for (ModelObjectField<? super UserRegistrationRequest, ?> field : REQUIRED_ATTRIBUTES) {
+			computeHash.update(field.get(request).toString().getBytes("UTF-8"));
+		}
+		request.setSecret(new ConvertBytesToHex(computeHash.digest()).convert());
+		
+		// Status is PENDING.
+		request.setStatus(UserRegistrationRequestStatus.PENDING);
+		
+		// Attempt to insert the request in the database
+		OperationResult result = Database.getInstance().addUserRegistrationRequest(request);
+		
+		// If request was successfully added to database, then send an email
+		if (result.isSuccess()) {
+			// TODO: send email
+			
+			result.setMessage("Please check your email to complete the registration.");
+		}
+		
+		resp.setStatus(HttpServletResponse.SC_OK);
+		resp.setContentType("application/json");
+		JSONValue.writeJSONString(JSONConversion.convertOperationResultToJSON(result), resp.getWriter());
 	}
 }

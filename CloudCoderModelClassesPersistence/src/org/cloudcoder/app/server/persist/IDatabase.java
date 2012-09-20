@@ -27,6 +27,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -42,6 +43,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 
 /**
  * Thin abstraction layer for interactions with database.
@@ -325,4 +327,12 @@ public interface IDatabase {
 	 * @throws NetCoderAuthenticationException if an authorization exception occurs
 	 */
 	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException;
+
+	/**
+	 * Add a {@link UserRegistrationRequest} to the database.
+	 * 
+	 * @param request the {@link UserRegistrationRequest} to add
+	 * @return an {@link OperationResult} indicating whether adding the request succeeded or failed
+	 */
+	public OperationResult addUserRegistrationRequest(UserRegistrationRequest request);
 }

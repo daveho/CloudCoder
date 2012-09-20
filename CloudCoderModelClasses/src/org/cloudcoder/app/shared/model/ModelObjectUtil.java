@@ -67,4 +67,21 @@ public class ModelObjectUtil {
 		
 		return result;
 	}
+	
+	/**
+	 * Convert a string into an object of given type.
+	 * 
+	 * @param s    a string
+	 * @param cls  the type to convert the string to
+	 * @return object of given type
+	 */
+	public static Object convertString(String s, Class<?> cls) {
+		if (cls == Integer.class) {
+			return Integer.valueOf(s);
+		} else if (cls == String.class){
+			return s;
+		} else {
+			throw new IllegalArgumentException("Don't know how to convert string to " + cls.getName());
+		}
+	}
 }

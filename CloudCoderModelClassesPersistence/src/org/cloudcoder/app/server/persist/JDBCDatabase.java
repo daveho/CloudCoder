@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -61,6 +62,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1339,6 +1341,29 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " deleting problem";
+			}
+		});
+	}
+	
+	@Override
+	public OperationResult addUserRegistrationRequest(final UserRegistrationRequest request) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<OperationResult>() {
+			@Override
+			public OperationResult run(Connection conn) throws SQLException {
+				// Make sure that username is not already taken
+				User existing = getUser(conn, request.getUsername());
+				if (existing != null) {
+					return new OperationResult(false, "Username " + request.getUsername() + " is already in use");
+				}
+				
+				// Insert the request
+				DBUtil.storeModelObject(conn, request, UserRegistrationRequest.SCHEMA);
+				
+				return new OperationResult(true, "Successfully added registration request to database");
+			}
+			@Override
+			public String getDescription() {
+				return " adding user registration request";
 			}
 		});
 	}

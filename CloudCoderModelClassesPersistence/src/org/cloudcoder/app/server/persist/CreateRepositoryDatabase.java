@@ -28,6 +28,7 @@ import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 
 /**
  * Create the exercise repository database.
@@ -72,6 +73,7 @@ public class CreateRepositoryDatabase {
 		createTable(conn, RepoProblem.SCHEMA);
 		createTable(conn, RepoTestCase.SCHEMA);
 		createTable(conn, RepoProblemTag.SCHEMA);
+		createTable(conn, UserRegistrationRequest.SCHEMA);
 
 		// Create an initial user
 		System.out.println("Creating initial user...");

@@ -41,6 +41,7 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -479,7 +480,12 @@ public class DBUtil {
 	 * @param bean      the bean (model object) to store in the database
 	 */
 	public static<E extends IModelObject<E>> void storeModelObject(Connection conn, E bean) throws SQLException {
-		ModelObjectSchema<? super E> schema = bean.getSchema();
+		storeModelObject(conn, bean, bean.getSchema());
+	}
+
+	public static<E> void storeModelObject(
+			Connection conn, E bean, ModelObjectSchema<? super E> schema)
+		throws SQLException {
 		
 		String insertSql = createInsertStatement(schema);
 		
@@ -494,7 +500,7 @@ public class DBUtil {
 			
 			// Execute the insert
 			stmt.executeUpdate();
-			
+
 			// Store back the unique id to the model object
 			if (schema.hasUniqueId()) {
 				genKeys = stmt.getGeneratedKeys();
@@ -506,6 +512,7 @@ public class DBUtil {
 			closeQuietly(genKeys);
 			closeQuietly(stmt);
 		}
+		
 	}
 
 //	public static<E extends IModelObject<E>> void updateModelObject(Connection conn, E bean) throws SQLException {

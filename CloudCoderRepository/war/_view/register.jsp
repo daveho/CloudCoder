@@ -11,14 +11,31 @@
 			$(document).ready(function() {
 				$("#regForm").validate({
 					submitHandler: function(form) {
-						alert("Submit handler!");
+						var queryUri = "${pageContext.servletContext.contextPath}/register";
 						$(this).ajaxSubmit({
+							url: queryUri,
+							data: {
+								u_username: $("#u_username").val(),
+								u_firstname: $("#u_firstname").val(),
+								u_lastname: $("#u_lastname").val(),
+								u_email: $("#u_email").val(),
+								u_website: $("#u_website").val(),
+								u_password: $("#u_password").val()
+							},
 							dataType: "json",
+							type: "post",
 							success: function(data, textStatus, jqXHR) {
-								alert("Success!");
+								//alert("Success!");
+								$("#messageElt").text(data.message);
+								if (data.success) {
+									$("#messageElt").removeClass("error");
+								} else {
+									$("#messageElt").addClass("error");
+								}
 							},
 							error: function(jqXHR, textStatus, errorThrown) {
-								alert("Error!");
+								$("#messageElt").text("Error: " + errorThrown);
+								$("#messageElt").addClass('error');
 							}
 						});
 					},
@@ -40,35 +57,40 @@
 		<form id="regForm">
 			<table>
 				<tr>
-					<td class="label">First name:</td>
+					<td><label for="u_username">User name:</label></td>
+					<td><input id="u_username" name="u_username" class="required" type="text" size="20"></input></td>
+				</tr>
+				<tr>
+					<td><label for="u_firstname">First name:</label></td>
 					<td><input id="u_firstname" name="u_firstname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
-					<td class="label">Last name:</td>
+					<td><label for="u_lastname">Last name:</label></td>
 					<td><input id="u_lastname" name="u_lastname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
-					<td class="label">Email address:</td>
-					<td><input id="u_username" name="u_username" class="required email" type="text" size="30"></input></td>
+					<td><label for="u_email">Email address:</label></td>
+					<td><input id="u_email" name="u_email" class="required email" type="text" size="30"></input></td>
 				</tr>
 				<tr>
-					<td class="label">Website URL:</td>
+					<td><label for="u_website">Website URL:</label></td>
 					<td><input id="u_website" name="u_website" type="text" size="50"></input></td>
 				</tr>
 				<tr>
-					<td class="label">Password:</td>
+					<td><label for="u_password">Password:</label></td>
 					<td><input id="u_password" name="u_password" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
-					<td class="label">Password (confirm):</td>
+					<td><label for="u_passwordConfirm">Password (confirm):</label></td>
 					<td><input id="u_passwordConfirm" name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
 				</tr>
-				
 				<tr>
-					<td></td><td><input name="submitElt" type="submit" value="Submit!" /></td>
+					<td></td>
+					<td><input name="submitElt" type="submit" value="Submit!" /></td>
 				</tr>
-				
 			</table>
+			
+			<p id="messageElt"></p>
 		</form>
 		</div>
 	</body>

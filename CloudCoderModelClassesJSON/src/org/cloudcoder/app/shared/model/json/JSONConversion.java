@@ -30,6 +30,7 @@ import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
@@ -142,6 +143,19 @@ public class JSONConversion {
 			result.add(convertModelObjectToJSON(obj, schema));
 		}
 		
+		return result;
+	}
+	
+	/**
+	 * Convert an {@link OperationResult} to a JSON object.
+	 * 
+	 * @param operationResult the {@link OperationResult}
+	 * @return a JSON object containing the operation result's data 
+	 */
+	public static Object convertOperationResultToJSON(OperationResult operationResult) {
+		LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
+		result.put("success", operationResult.isSuccess());
+		result.put("message", operationResult.getMessage());
 		return result;
 	}
 

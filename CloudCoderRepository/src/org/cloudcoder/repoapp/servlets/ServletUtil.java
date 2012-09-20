@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -171,6 +172,22 @@ public class ServletUtil {
 		resp.setStatus(statusCode);
 		resp.setContentType("text/plain");
 		resp.getWriter().println(msg);
+	}
+
+	/**
+	 * Get a required parameter.
+	 * 
+	 * @param req     the HttpServletRequest
+	 * @param name    the parameter name
+	 * @return the parameter value
+	 * @throws ServletException if the parameter is not set
+	 */
+	public static String getRequiredParam(HttpServletRequest req, String name) throws ServletException {
+		String value = req.getParameter(name);
+		if (value == null) {
+			throw new ServletException("Missing: required parameter: " + name);
+		}
+		return value;
 	}
 
 }
