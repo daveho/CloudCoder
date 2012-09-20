@@ -18,9 +18,8 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
@@ -44,37 +44,57 @@ import org.json.simple.JSONValue;
 public class Search extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	// Javascript array mapping problem type ordinals to programming languages
-	private static String PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP;
+	// Javascript hash mapping problem type ordinals to programming language names
+	private static String PROBLEM_TYPE_TO_PROGRAMMING_LANGUAGE_MAP;
 	static {
 		StringBuilder buf = new StringBuilder();
-		buf.append("[");
+		buf.append("{");
+		int count = 0;
 		for (ProblemType problemType : ProblemType.values()) {
+			if (count > 0) {
+				buf.append(",");
+			}
 			buf.append("'");
+			buf.append(problemType.ordinal());
+			buf.append("':'");
 			buf.append(problemType.getLanguage().getName());
 			buf.append("'");
-			buf.append(",");
+			count++;
 		}
-		buf.append("'']");
-		PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP = buf.toString();
+		buf.append("}");
+		PROBLEM_TYPE_TO_PROGRAMMING_LANGUAGE_MAP = buf.toString();
 	}
+	
+//	// Javascript array mapping problem type ordinals to problem type names
+//	private static String PROBLEM_TYPE_ORDINAL_TO_PROBLEM_TYPE_MAP;
+//	static {
+//		StringBuilder buf = new StringBuilder();
+//		
+//		buf.append("[");
+//		for (ProblemType problemType : ProblemType.values()) {
+//			if (buf.length() > 1) {
+//				buf.append(",");
+//			}
+//			buf.append("'");
+//			buf.append(problemType.toString());
+//			buf.append("'");
+//		}
+//		buf.append("]");
+//		PROBLEM_TYPE_ORDINAL_TO_PROBLEM_TYPE_MAP = buf.toString();
+//	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.setAttribute("problemTypes", ProblemType.values());
-		
-		// Thank you, Sun, for using the method "ordinal()" rather than
-		// "getOrdinal()" to get the ordinal value of an enumeration constant.
-		// Saving three characters of typing far outweighs the utter violation
-		// of standard bean property accessor naming.
-		Map<ProblemType, Integer> problemTypeOrdinals = new HashMap<ProblemType, Integer>();
-		for (ProblemType problemType : ProblemType.values()) {
-			problemTypeOrdinals.put(problemType, problemType.ordinal());
-		}
-		req.setAttribute("problemTypeOrdinals", problemTypeOrdinals);
 
-		// Javascript array mapping problem type ordinals to programming languages
-		req.setAttribute("problemTypeOrdinalToLanguage", PROBLEM_TYPE_ORDINAL_TO_PROGRAMMING_LANGUAGE_MAP);
+		// Programming languages (for search by language)
+		req.setAttribute("languages", Language.values());
+		
+		// Javascript array mapping problem types to programming language names
+		req.setAttribute("problemTypeToLanguage", PROBLEM_TYPE_TO_PROGRAMMING_LANGUAGE_MAP);
+		
+//		// Javascript array mapping problem type ordinals to problem type names
+//		req.setAttribute("problemTypeOrdinalToProblemTypeMap", PROBLEM_TYPE_ORDINAL_TO_PROBLEM_TYPE_MAP);
 		
 		req.getRequestDispatcher("_view/search.jsp").forward(req, resp);
 	}
@@ -85,18 +105,18 @@ public class Search extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		
-		ProblemType problemType = null;
-		if (req.getParameter("problemType") != null) {
-			Integer problemTypeOrdinal = Integer.parseInt(req.getParameter("problemType"));
-			ProblemType[] values = ProblemType.values();
-			if (problemTypeOrdinal >= 0 && problemTypeOrdinal < values.length) {
-				problemType = values[problemTypeOrdinal];
-				System.out.println("Search for " + problemType + " exercises");
+		Language language = null;
+		String lang = req.getParameter("language");
+		if (lang != null && !lang.equals("ANY")) {
+			try {
+				language = Language.valueOf(lang);
+			} catch (NoSuchElementException e) {
+				// Hmm... 
 			}
 		}
 		
 		RepoProblemSearchCriteria searchCriteria = new RepoProblemSearchCriteria();
-		searchCriteria.setProblemType(problemType);
+		searchCriteria.setLanguage(language);
 		
 		// See if tags were specified
 		String selectedTags = req.getParameter("selectedTags");

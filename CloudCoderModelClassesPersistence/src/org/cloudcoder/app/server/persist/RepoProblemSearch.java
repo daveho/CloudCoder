@@ -22,8 +22,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.cloudcoder.app.shared.model.Language;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
@@ -35,6 +39,20 @@ import org.cloudcoder.app.shared.model.RepoProblemTag;
  * @author David Hovemeyer
  */
 public class RepoProblemSearch {
+	// Build a map of Languages to search clauses matching ProblemTypes
+	// using those languages.  The repository supports search by language
+	// rather than problem type (since that is probably more useful).
+	private static final Map<Language, String> LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP = new HashMap<Language, String>();
+	static {
+		for (ProblemType problemType : ProblemType.values()) {
+			Language language = problemType.getLanguage();
+			String clause = LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(language);
+			clause = (clause == null ? "" : clause + " or ") +
+					"rp." + RepoProblem.PROBLEM_TYPE.getName() + " = " + problemType.ordinal();
+			LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.put(language, clause);
+		}
+	}
+	
 	private RepoProblemSearchCriteria searchCriteria;
 	private List<RepoProblemSearchResult> searchResultList;
 	
@@ -47,11 +65,19 @@ public class RepoProblemSearch {
 	}
 	
 	public void execute(Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
+		// Special case: if neither language nor tags is specified,
+		// then the search criteria are invalid and we return no results.
+		// The client Javascript should refuse to submit such searches
+		// (and inform the user of the error).
+		if (searchCriteria.isEmpty()) {
+			return;
+		}
+		
 		if (searchCriteria.getTagList().isEmpty()) {
-			// Searching by problem type only
-			searchByProblemType(conn, dbRunnable);
+			// Searching by language only
+			searchByLanguage(conn, dbRunnable);
 		} else {
-			// Search by problem type and tags
+			// Search by tags and (maybe) language
 			StringBuilder sql = new StringBuilder()
 				.append("select rp.*, rpt.* ")
 				.append("  from ")
@@ -70,8 +96,10 @@ public class RepoProblemSearch {
 			
 			sql.append(")");
 			
-			if (searchCriteria.getProblemType() != null) {
-				sql.append(" and rp." + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
+			if (searchCriteria.getLanguage() != null) {
+				sql.append(" and (");
+				sql.append(LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
+				sql.append(")");
 			}
 			
 			sql.append(" order by rp." + RepoProblem.ID.getName() + " asc");
@@ -87,10 +115,6 @@ public class RepoProblemSearch {
 			int index = 1;
 			for (String tag : searchCriteria.getTagList()) {
 				stmt.setString(index++, tag);
-			}
-			
-			if (searchCriteria.getProblemType() != null) {
-				stmt.setInt(index++, searchCriteria.getProblemType().ordinal());
 			}
 			
 			ResultSet resultSet = dbRunnable.executeQuery(stmt);
@@ -116,14 +140,13 @@ public class RepoProblemSearch {
 		}
 	}
 
-	protected void searchByProblemType(Connection conn,
+	protected void searchByLanguage(Connection conn,
 			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
 			throws SQLException {
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
 				"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
-				" where " + RepoProblem.PROBLEM_TYPE.getName() + " = ?");
-		stmt.setInt(1, searchCriteria.getProblemType().ordinal());
+				" where " + LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
 
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		while (resultSet.next()) {

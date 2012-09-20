@@ -27,26 +27,57 @@ import java.util.List;
  * @author David Hovemeyer
  */
 public class RepoProblemSearchCriteria {
-	private ProblemType problemType;
+	private Language language;
 	private List<String> tagList;
 	
+	/**
+	 * Constructor.
+	 */
 	public RepoProblemSearchCriteria() {
 		tagList= new ArrayList<String>();
 	}
-	
-	public void setProblemType(ProblemType problemType) {
-		this.problemType = problemType;
+
+	/**
+	 * Set the language to search for.
+	 * 
+	 * @param language the language to search for
+	 */
+	public void setLanguage(Language language) {
+		this.language = language;
 	}
 	
-	public ProblemType getProblemType() {
-		return problemType;
+	/**
+	 * @return the language to search for
+	 */
+	public Language getLanguage() {
+		return language;
 	}
 	
+	/**
+	 * Add a tag to search for.
+	 * 
+	 * @param tag a tag to search for
+	 */
 	public void addTag(String tag) {
 		tagList.add(tag);
 	}
 	
+	/**
+	 * Get list of tags to search for.
+	 * 
+	 * @return list of tags to search for
+	 */
 	public List<String> getTagList() {
 		return tagList;
+	}
+
+	/**
+	 * Determine whether search criteria are "empty",
+	 * meaning no search criteria are specified.
+	 * 
+	 * @return true if search criteria are empty, false otherwise
+	 */
+	public boolean isEmpty() {
+		return language == null && tagList.isEmpty();
 	}
 }

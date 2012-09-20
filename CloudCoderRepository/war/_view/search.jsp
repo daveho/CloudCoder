@@ -8,12 +8,13 @@
 		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript">
-			var problemTypeOrdinalToLanguage = ${problemTypeOrdinalToLanguage};
+			var problemTypeToLanguage = ${problemTypeToLanguage};
+//			var problemTypeOrdinalToProblemTypeMap = ${problemTypeOrdinalToProblemTypeMap};
 			
 			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
 			// search results DataTable.
 			var repoProblemConvertFields = [
-				function(obj) { return problemTypeOrdinalToLanguage[obj.repo_problem.problem_type]; },
+				function(obj) { return problemTypeToLanguage[obj.repo_problem.problem_type]; },
 				function(obj) { return obj.repo_problem.testname; },
 				function(obj) { return obj.repo_problem.brief_description; },
 				function(obj) { return obj.repo_problem.author_name; },
@@ -25,8 +26,7 @@
 			
 			// Initiate an AJAX request to retrieve search results.
 			function onSubmit() {
-				var problemTypeOrdinal = $("#selectedProblemType option:selected").attr('value');
-				//alert("Problem type is " + problemType);
+				var selectedLanguage = $("#selectedLanguage option:selected").attr('value');
 				
 				var queryUri = "${pageContext.servletContext.contextPath}/search";
 				$.ajax({
@@ -34,13 +34,13 @@
 					dataType: "json",
 					type: "post",
 					data: {
-						problemType: problemTypeOrdinal,
+						language: selectedLanguage,
 						selectedTags: $("#selectedTags").val()
 					},
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
 						
-						//alert("Search returned " + data.length + " exercises");
+						alert("Search returned " + data.length + " exercises");
 
 						// Convert exercises to row tuples						
 						var j, i;
@@ -81,7 +81,11 @@
 								"<img src='${pageContext.servletContext.contextPath}/images/newWindow.png' />";
 						},
 						aTargets: [ 2 ]
-					}]
+					}],
+					bPaginate: false,
+					bSort: false,
+					bInfo: false,
+					bFilter: false
 				});
 			});
 		</script>
@@ -91,11 +95,11 @@
 		<div id="content">
 			<h1>Search the exercise repository</h1>
 			<p>Select problem type and tags</p>
-			<p> Problem type:
-			<select id="selectedProblemType">
-				<option value="-1">Any problem type</option>
-				<c:forEach var="problemType" items="${problemTypes}">
-					<option value="${problemTypeOrdinals[problemType]}">${problemType}</option>
+			<p> Programming Language:
+			<select id="selectedLanguage">
+				<option value="ANY">Any Language</option>
+				<c:forEach var="language" items="${languages}">
+					<option value="${language}">${language.name}</option>
 				</c:forEach>
 			</select>
 			Tags:
