@@ -152,7 +152,7 @@ public class Register extends HttpServlet {
 		// If request was successfully added to database, then send an email
 		if (result.isSuccess()) {
 			// send email
-			boolean sent = sendConfirmationEmail(req.getScheme(), req.getServerName(), request);
+			boolean sent = sendConfirmationEmail(request);
 			if (sent) {
 				result.setMessage("Please check your email to complete the registration.");
 			} else {
@@ -165,7 +165,7 @@ public class Register extends HttpServlet {
 		JSONValue.writeJSONString(JSONConversion.convertOperationResultToJSON(result), resp.getWriter());
 	}
 
-	private boolean sendConfirmationEmail(String scheme, String host, UserRegistrationRequest request) {
+	private boolean sendConfirmationEmail(UserRegistrationRequest request) {
 		try {
 			MimeMessage message = new MimeMessage(session);
 			message.setFrom(new InternetAddress("support@cloudcoder.org"));
@@ -174,7 +174,7 @@ public class Register extends HttpServlet {
 			
 			StringBuilder body = new StringBuilder();
 			
-			String confirmUrl = scheme + "://" + host + getServletContext().getContextPath() + "/confirm/" + request.getSecret();
+			String confirmUrl = "https://cloudcoder.org" + getServletContext().getContextPath() + "/confirm/" + request.getSecret();
 			System.out.println("Confirmation link: " + confirmUrl);
 			
 			body.append("<h1>CloudCoder exercise repository user registration</h1>\n");
