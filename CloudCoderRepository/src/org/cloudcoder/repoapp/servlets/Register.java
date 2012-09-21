@@ -23,7 +23,9 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.mail.Authenticator;
 import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -73,17 +75,24 @@ public class Register extends HttpServlet {
 			String smtpPassword = context.getInitParameter("cloudcoder.repoapp.smtp.passwd");
 			String smtpPort = context.getInitParameter("cloudcoder.repoapp.smtp.port");
 			
-			System.out.println("smtpHost="+smtpHost);
-			System.out.println("dbUser="+context.getInitParameter("cloudcoder.repoapp.db.user"));
+			final PasswordAuthentication passwordAuthentication = new PasswordAuthentication(smtpUsername, smtpPassword);
+			Authenticator authenticator = new Authenticator() {
+				@Override
+				public PasswordAuthentication getPasswordAuthentication() {
+					return passwordAuthentication;
+				}
+			};
 	
 			Properties properties = new Properties();
 			properties.putAll(System.getProperties());
-			properties.setProperty("mail.user", smtpUsername);
+//			properties.setProperty("mail.user", smtpUsername);
+			properties.setProperty("mail.smtp.submitter", passwordAuthentication.getUserName());
+			properties.setProperty("mail.smtp.auth", "true");
 			properties.setProperty("mail.password", smtpPassword);
 			properties.setProperty("mail.smtp.host", smtpHost);
 			properties.setProperty("mail.smtp.port", smtpPort);
 	
-			this.session = Session.getInstance(properties);
+			this.session = Session.getInstance(properties, authenticator);
 		}
 	}
 	
