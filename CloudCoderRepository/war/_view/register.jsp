@@ -53,6 +53,13 @@
 		<repo:topBanner/>
 		<div id="content">
 		<h1>Create an account</h1>
+		<p>
+			Creating an account will allow you to share programming exercises that
+			you write with other instructors.
+			Please note that you do <em>not</em> need to create an account in order
+			to <em>use</em> the problems in the repository.
+		</p>
+		
 		<p>Please enter your account information (* denotes a required field):</p>
 		<form id="regForm">
 			<table>
