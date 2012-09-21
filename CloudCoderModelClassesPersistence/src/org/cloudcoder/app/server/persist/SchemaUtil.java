@@ -163,7 +163,7 @@ public class SchemaUtil {
 			for (int version = dbSchemaVersion + 1; version <= table.getVersion(); version++) {
 				ModelObjectSchema<E> prevSchema = table.getSchemaWithVersion(version);
 				for (Delta<? super E> delta : prevSchema.getDeltaList()) {
-					applyDelta(conn, table.getDbTableName(), delta, version);
+					applyDelta(conn, table.getDbTableName(), prevSchema, delta, version);
 				}
 			}
 			
@@ -187,7 +187,7 @@ public class SchemaUtil {
 		}
 	}
 	
-	private static<E> void applyDelta(Connection conn, String dbTableName, Delta<E> delta, int version) throws SQLException {
+	private static<E> void applyDelta(Connection conn, String dbTableName, ModelObjectSchema<E> schema, Delta<? super E> delta, int version) throws SQLException {
 		if (delta.getType() == DeltaType.ADD_FIELD_AFTER) {
 			Statement stmt = null;
 			StringBuilder buf;
@@ -214,13 +214,14 @@ public class SchemaUtil {
 				
 				stmt.execute(sql);
 				
-				if (delta.getField().getIndexType() != ModelObjectIndexType.NONE) {
+				ModelObjectIndexType indexType = schema.getIndexType(delta.getField());
+				if (indexType != ModelObjectIndexType.NONE) {
 					buf = new StringBuilder();
 					
 					buf.append("alter table ");
 					buf.append(dbTableName);
 					buf.append(" add ");
-					if (delta.getField().getIndexType() == ModelObjectIndexType.UNIQUE) {
+					if (indexType == ModelObjectIndexType.UNIQUE) {
 						buf.append("unique ");
 					}
 					buf.append("index ");

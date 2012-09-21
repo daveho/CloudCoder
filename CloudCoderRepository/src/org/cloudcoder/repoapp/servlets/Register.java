@@ -20,9 +20,16 @@ package org.cloudcoder.repoapp.servlets;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 
-import javax.servlet.ServletConfig;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +47,8 @@ import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Servlet allowing a new user to register.
@@ -49,19 +58,35 @@ import org.json.simple.JSONValue;
 public class Register extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	private static final Logger logger = LoggerFactory.getLogger(Register.class);
+	
 	private static final SecureRandom random = new SecureRandom();
 	
-	private String smtpHost;
-	private String smtpUsername;
-	private String smtpPassword;
-	
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		smtpHost = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.host");
-		smtpUsername = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.user");
-		smtpPassword = config.getServletContext().getInitParameter("cloudcoder.repoapp.smtp.passwd");
-	}
+	private volatile Session session;
 
+	@Override
+	public void init() throws ServletException {
+		ServletContext context = getServletContext();
+		if (this.session == null) {
+			String smtpHost = context.getInitParameter("cloudcoder.repoapp.smtp.host");
+			String smtpUsername = context.getInitParameter("cloudcoder.repoapp.smtp.user");
+			String smtpPassword = context.getInitParameter("cloudcoder.repoapp.smtp.passwd");
+			String smtpPort = context.getInitParameter("cloudcoder.repoapp.smtp.port");
+			
+			System.out.println("smtpHost="+smtpHost);
+			System.out.println("dbUser="+context.getInitParameter("cloudcoder.repoapp.db.user"));
+	
+			Properties properties = new Properties();
+			properties.putAll(System.getProperties());
+			properties.setProperty("mail.user", smtpUsername);
+			properties.setProperty("mail.password", smtpPassword);
+			properties.setProperty("mail.smtp.host", smtpHost);
+			properties.setProperty("mail.smtp.port", smtpPort);
+	
+			this.session = Session.getInstance(properties);
+		}
+	}
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -117,9 +142,13 @@ public class Register extends HttpServlet {
 		
 		// If request was successfully added to database, then send an email
 		if (result.isSuccess()) {
-			// TODO: send email
-			sendConfirmationEmail(request);
-			result.setMessage("Please check your email to complete the registration.");
+			// send email
+			boolean sent = sendConfirmationEmail(req.getScheme(), req.getServerName(), request);
+			if (sent) {
+				result.setMessage("Please check your email to complete the registration.");
+			} else {
+				result = new OperationResult(false, "Could not send registration email");
+			}
 		}
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
@@ -127,7 +156,35 @@ public class Register extends HttpServlet {
 		JSONValue.writeJSONString(JSONConversion.convertOperationResultToJSON(result), resp.getWriter());
 	}
 
-	private void sendConfirmationEmail(UserRegistrationRequest request) {
-		// TODO: send email
+	private boolean sendConfirmationEmail(String scheme, String host, UserRegistrationRequest request) {
+		try {
+			MimeMessage message = new MimeMessage(session);
+			message.setFrom(new InternetAddress("support@cloudcoder.org"));
+			message.addRecipient(RecipientType.TO, new InternetAddress(request.getEmail()));
+			message.setSubject("CloudCoder exercise repository user registration");
+			
+			StringBuilder body = new StringBuilder();
+			
+			String confirmUrl = scheme + "://" + host + getServletContext().getContextPath() + "/confirm/" + request.getSecret();
+			System.out.println("Confirmation link: " + confirmUrl);
+			
+			body.append("<h1>CloudCoder exercise repository user registration</h1>\n");
+			body.append("<p>Please visit the link below to confirm your user registration\n");
+			body.append("for the CloudCoder excercise repository:\n");
+			body.append("<blockquote><a href='");
+			body.append(confirmUrl);
+			body.append("'>");
+			body.append(confirmUrl);
+			body.append("</a></blockquote>\n");
+			
+			message.setContent(body.toString(), "text/html");
+			
+			Transport.send(message);
+
+			return true;
+		} catch (MessagingException e) {
+			logger.error("Could not send registration email", e);
+			return false;
+		}
 	}
 }

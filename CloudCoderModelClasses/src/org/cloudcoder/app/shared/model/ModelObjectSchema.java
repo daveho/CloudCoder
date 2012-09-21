@@ -88,6 +88,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
 	private final List<ModelObjectIndex<ModelObjectType>> indexList;
 	private final List<Delta<? super ModelObjectType>> deltaList;
+	private final Map<ModelObjectField<? super ModelObjectType, ?>, ModelObjectIndexType> indexTypeOverrideMap;
 
 	/**
 	 * Constructor.
@@ -114,6 +115,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
 		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
 		this.deltaList = new ArrayList<Delta<? super ModelObjectType>>();
+		this.indexTypeOverrideMap = new HashMap<ModelObjectField<? super ModelObjectType,?>, ModelObjectIndexType>();
 	}
 	
 	/**
@@ -210,7 +212,19 @@ public class ModelObjectSchema<ModelObjectType> {
 		}
 		return this;
 	}
-	
+
+	/**
+	 * Change the index type on given field.
+	 * 
+	 * @param field     a field
+	 * @param indexType the index type to set on the field
+	 * @return a reference to this object
+	 */
+	public ModelObjectSchema<ModelObjectType> setIndexOn(ModelObjectField<? super ModelObjectType, ?> field, ModelObjectIndexType indexType) {
+		indexTypeOverrideMap.put(field, indexType);
+		return this;
+	}
+
 	/**
 	 * Add a {@link ModelObjectIndex} to the schema.
 	 * Returns a reference to the schema object, so calls
@@ -242,6 +256,19 @@ public class ModelObjectSchema<ModelObjectType> {
 	 */
 	public ModelObjectField<? super ModelObjectType, ?> getFieldByName(String fieldName) {
 		return nameToFieldList.get(fieldName);
+	}
+	
+	/**
+	 * Get the index type for a given field.
+	 */
+	public ModelObjectIndexType getIndexType(ModelObjectField<? super ModelObjectType, ?> field) {
+		// See if the index type has been overridden.
+		ModelObjectIndexType indexType = indexTypeOverrideMap.get(field);
+		if (indexType == null) {
+			// Index type is not overridden: just use the index type defined in the field.
+			indexType = field.getIndexType();
+		}
+		return indexType;
 	}
 	
 	/**

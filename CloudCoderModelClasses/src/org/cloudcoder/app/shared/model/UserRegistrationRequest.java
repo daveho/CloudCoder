@@ -43,6 +43,8 @@ public class UserRegistrationRequest extends User {
 
 	public static final ModelObjectSchema<UserRegistrationRequest> SCHEMA_V0 = new ModelObjectSchema<UserRegistrationRequest>("user_registration_request")
 			.addAll(User.SCHEMA_V1.getFieldList())
+			.setIndexOn(User.USERNAME, ModelObjectIndexType.NONE) // Allow duplicate reg requests for same username
+			.setIndexOn(User.EMAIL, ModelObjectIndexType.NONE)    // Allow duplicate reg requests for same email address
 			.add(STATUS)
 			.add(TIMESTAMP)
 			.add(SECRET);

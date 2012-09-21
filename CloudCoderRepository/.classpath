@@ -11,5 +11,6 @@
 			<attribute name="javadoc_location" value="http://javamail.kenai.com/nonav/javadocs"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

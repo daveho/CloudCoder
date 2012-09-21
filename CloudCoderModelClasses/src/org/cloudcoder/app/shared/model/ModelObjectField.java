@@ -124,7 +124,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 * Get the field's index type.
 	 * @return the field's index type
 	 */
-	public ModelObjectIndexType getIndexType() {
+	ModelObjectIndexType getIndexType() {
 		return indexType;
 	}
 

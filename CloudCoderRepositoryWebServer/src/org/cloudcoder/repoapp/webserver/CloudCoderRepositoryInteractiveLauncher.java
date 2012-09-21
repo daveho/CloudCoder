@@ -19,6 +19,7 @@ package org.cloudcoder.repoapp.webserver;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
@@ -45,9 +46,10 @@ public class CloudCoderRepositoryInteractiveLauncher {
 		// projects.
 		daemon.setExtraClasspath(System.getProperty("java.class.path").replace(File.pathSeparatorChar, ','));
 		
-		// Setting empty config properties should result in default values
-		// being used, which should be appropriate for development.
-		daemon.setConfigProperties(new Properties());
+		// Assume that valid config properties can be found in ../cloudcoder.properties
+		Properties config = new Properties();
+		config.load(new FileReader("../cloudcoder.properties"));
+		daemon.setConfigProperties(config);
 		
 		// Ensure logs directory exists
 		new File("logs").mkdirs();

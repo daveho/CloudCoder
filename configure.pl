@@ -126,11 +126,13 @@ if ($configRepoWebapp) {
 		"cloudcoder.repoapp.webserver.port", "8082");
 	askprop("What context path should the exercise repository webapp use?",
 		"cloudcoder.repoapp.webserver.contextpath", "/repo");
-	askprop("Should the exercise repository web server accempt connections only from localhost?\n" .
+	askprop("Should the exercise repository web server accept connections only from localhost?\n" .
 		"(Set this to 'true' if using a reverse proxy, which is recommended)",
 		"cloudcoder.repoapp.webserver.localhostonly", "true");
 	askprop("What SMTP server should the repo webapp use to send mail?",
 		"cloudcoder.repoapp.smtp.host", "smtp.1and1.com");
+	askprop("What SMTP port should the repo webapp use to send mail?",
+		"cloudcoder.repoapp.smtp.port", "587");
 	askprop("What SMTP username should the repo webapp use?",
 		"cloudcoder.repoapp.smtp.user", undef);
 	askprop("What SMTP password should the repo webapp use?",

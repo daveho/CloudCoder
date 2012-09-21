@@ -213,7 +213,7 @@ public class DBUtil {
 			
 			sql.append(field.isAllowNull() ? " NULL" : " NOT NULL");
 			
-			if (field.getIndexType() == ModelObjectIndexType.IDENTITY) {
+			if (schema.getIndexType(field) == ModelObjectIndexType.IDENTITY) {
 				sql.append(" AUTO_INCREMENT");
 			}
 			
@@ -222,17 +222,19 @@ public class DBUtil {
 		
 		// Keys
 		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-			if (field.getIndexType() == ModelObjectIndexType.NONE) {
+			ModelObjectIndexType indexType = schema.getIndexType(field);
+			
+			if (indexType == ModelObjectIndexType.NONE) {
 				continue;
 			}
-			String keyType = getKeyType(field.getIndexType());
+			String keyType = getKeyType(indexType);
 			
 			if (createDefinitionCount > 0) {
 				sql.append(",");
 			}
 			sql.append("\n  ");
 
-			switch (field.getIndexType()) {
+			switch (indexType) {
 			case IDENTITY:
 				sql.append(keyType + " KEY (`");
 				sql.append(field.getName());
