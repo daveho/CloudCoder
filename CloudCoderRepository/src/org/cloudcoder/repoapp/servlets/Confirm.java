@@ -17,7 +17,17 @@
 
 package org.cloudcoder.repoapp.servlets;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 
 /**
  * Servlet for confirming a registration request.
@@ -26,5 +36,32 @@ import javax.servlet.http.HttpServlet;
  */
 public class Confirm extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		String secret = req.getPathInfo();
+		if (secret.startsWith("/")) {
+			secret = secret.substring(1);
+		}
+		
+		UserRegistrationRequest request = Database.getInstance().findUserRegistrationRequest(secret);
+		
+		if (request == null) {
+			req.setAttribute("confSuccess", false);
+			req.setAttribute("confMessage", "Sorry, this registration URL doesn't seem to be valid.");
+		} else if (request.getStatus() != UserRegistrationRequestStatus.PENDING) {
+			req.setAttribute("confSuccess", false);
+			req.setAttribute("confMessage", "This registration has already been confirmed. Thanks!");
+		} else {
+			OperationResult result = Database.getInstance().completeRegistration(request);
+			req.setAttribute("confSuccess", result.isSuccess());
+			req.setAttribute("confMessage", result.getMessage());
+		}
+		req.setAttribute("confSuccess", true);
+		req.setAttribute("confMessage", "What the heck?");
+		
+		req.getRequestDispatcher("_view/confirm.jsp").forward(req, resp);
+	}
 
 }

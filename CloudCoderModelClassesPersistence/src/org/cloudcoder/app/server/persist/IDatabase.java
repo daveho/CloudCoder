@@ -335,4 +335,22 @@ public interface IDatabase {
 	 * @return an {@link OperationResult} indicating whether adding the request succeeded or failed
 	 */
 	public OperationResult addUserRegistrationRequest(UserRegistrationRequest request);
+
+	/**
+	 * Find the {@link UserRegistrationRequest} corresponding to given secret.
+	 * 
+	 * @param secret the secret
+	 * @return the {@link UserRegistrationRequest} corresponding to the secret, or null if there
+	 *         is no such request
+	 */
+	public UserRegistrationRequest findUserRegistrationRequest(String secret);
+
+	/**
+	 * Complete a {@link UserRegistrationRequest}.
+	 * 
+	 * @param request the {@link UserRegistrationRequest} to complete
+	 * @return an {@link OperationResult} describing the success or failure: if successful,
+	 *         it means that a new user account has been created
+	 */
+	public OperationResult completeRegistration(UserRegistrationRequest request);
 }

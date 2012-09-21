@@ -63,6 +63,7 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1364,6 +1365,79 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " adding user registration request";
+			}
+		});
+	}
+	
+	@Override
+	public UserRegistrationRequest findUserRegistrationRequest(final String secret) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<UserRegistrationRequest>() {
+			@Override
+			public UserRegistrationRequest run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + UserRegistrationRequest.SCHEMA.getDbTableName() + " as urr " +
+						" where urr." + UserRegistrationRequest.SECRET.getName() + " = ?"
+				);
+				stmt.setString(1, secret);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return null;
+				}
+				UserRegistrationRequest request = new UserRegistrationRequest();
+				loadGeneric(request, resultSet, 1, UserRegistrationRequest.SCHEMA);
+				return request;
+			}
+			@Override
+			public String getDescription() {
+				return " finding user registration request";
+			}
+		});
+	}
+	
+	@Override
+	public OperationResult completeRegistration(final UserRegistrationRequest request) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<OperationResult>() {
+			@Override
+			public OperationResult run(Connection conn) throws SQLException {
+				// Copy information from request into a User object
+				User user = new User();
+				for (ModelObjectField<? super User, ?> field : User.SCHEMA.getFieldList()) {
+					Object val = field.get(request);
+					field.setUntyped(user, val);
+				}
+				
+				// Attempt to insert the User
+				try {
+					DBUtil.storeModelObject(conn, user);
+				} catch (SQLException e) {
+					// Check to see if it was a duplicate key error, which would mean
+					// an account with the same username or password has already been
+					// created.
+					if (e.getSQLState().equals("23000")) {
+						return new OperationResult(
+								false,
+								"A user account with the same username or password has already been created.");
+					} else {
+						return new OperationResult(false, "Could not create new user account: " + e.getMessage());
+					}
+				}
+				
+				// Successfully added User - now set request status to CONFIRMED
+				request.setStatus(UserRegistrationRequestStatus.CONFIRMED);
+				try {
+					DBUtil.updateModelObject(conn, request, UserRegistrationRequest.SCHEMA);
+				} catch (SQLException e) {
+					return new OperationResult(false, "Could not update request record.");
+				}
+				
+				// Success!
+				return new OperationResult(true, "User account " + user.getUsername() + " created successfully!");
+			}
+			@Override
+			public String getDescription() {
+				return " completing user registration request";
 			}
 		});
 	}

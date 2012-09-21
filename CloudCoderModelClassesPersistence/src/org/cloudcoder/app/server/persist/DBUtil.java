@@ -41,6 +41,7 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -516,35 +517,42 @@ public class DBUtil {
 		
 	}
 
-//	public static<E extends IModelObject<E>> void updateModelObject(Connection conn, E bean) throws SQLException {
-//        ModelObjectSchema<E> schema = bean.getSchema();
-//        
-//        String updateSql = createUpdateStatement(schema);
-//        
-//        PreparedStatement stmt = null;
-//        ResultSet genKeys = null;
-//        
-//        try {
-//            stmt = conn.prepareStatement(updateSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
-//            
-//            // Bind model object field values
-//            bindModelObjectValuesForInsert(bean, schema, stmt);
-//            
-//            // Execute the insert
-//            stmt.executeUpdate();
-//            
-//            // Store back the unique id to the model object
-//            if (schema.hasUniqueId()) {
-//                genKeys = stmt.getGeneratedKeys();
-//                List<E> beans = new ArrayList<E>();
-//                beans.add(bean);
-//                getModelObjectUniqueIds(beans, schema, genKeys);
-//            }
-//        } finally {
-//            closeQuietly(genKeys);
-//            closeQuietly(stmt);
-//        }
-//    }
+	/**
+	 * Update a model object loaded from an database record,
+	 * based on the model object's unique id.
+	 * The model object schema <em>must</em> have a unique id field.
+	 * 
+	 * @param conn    the database connection
+	 * @param bean    the model object to update
+	 * @param schema  the model object's schema
+	 * @throws SQLException
+	 */
+	public static<E> void updateModelObject(Connection conn, E bean, ModelObjectSchema<? super E> schema) throws SQLException {
+        ModelObjectField<? super E, ?> uniqueIdField = schema.getUniqueIdField();	
+		
+        // Generate an SQL update statement to update the model object's database record
+		String updateSql = createUpdateStatement(schema);
+        
+        PreparedStatement stmt = null;
+        ResultSet genKeys = null;
+        
+        try {
+        	// Prepare the statement
+            stmt = conn.prepareStatement(updateSql);
+            
+            // Bind model object field values (except for unique id)
+            int index = bindModelObjectValuesForUpdate(bean, schema, stmt);
+            
+            // Bind unique id
+            stmt.setObject(index, uniqueIdField.get(bean));
+            
+            // Execute the update
+            stmt.executeUpdate();
+        } finally {
+            closeQuietly(genKeys);
+            closeQuietly(stmt);
+        }
+    }
 	
 	/**
 	 * Get the generated unique id(s) resulting from an insert statement,
@@ -605,6 +613,8 @@ public class DBUtil {
      * Bind all of the field values in given model object to the given
      * {@link PreparedStatement}, which should be an update statement prepared
      * from the SQL returned by {@link #createUpdateStatement(ModelObjectSchema)}.
+     * Note that this method does <em>not</em> bind the model object's
+     * unique id.
      * 
      * @param bean    the model object
      * @param schema  the model object's schema
@@ -652,19 +662,28 @@ public class DBUtil {
 	
 	/**
      * Create an SQL statement for updating a model object.
-     * The SQL statement will have placeholders for every model object
-     * field except for the unique id (if any).
+     * The SQL statement will have update placeholders for every model object
+     * field except for the unique id, followed by a placeholder for the
+     * unique id (as part of the WHERE clause).
+     * The schema <em>must</em> have a unique id field.
      *  
      * @param schema the model object schema
      * @return the SQL update statement
      */
     public static <E> String createUpdateStatement(ModelObjectSchema<E> schema) {
+    	ModelObjectField<? super E, ?> uniqueIdField = schema.getUniqueIdField();
+    	
         StringBuilder buf = new StringBuilder();
         
         buf.append("update " + schema.getDbTableName());
         buf.append(" set ");
         
         buf.append(getUpdatePlaceholders(schema));
+        
+        buf.append(" where ");
+        buf.append(uniqueIdField.getName());
+        buf.append(" = ?");
+        
         return buf.toString();
     }
 
