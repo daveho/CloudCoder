@@ -53,23 +53,23 @@
 		<repo:topBanner/>
 		<div id="content">
 		<h1>Create an account</h1>
-		<p>Please enter your account information:</p>
+		<p>Please enter your account information (* denotes a required field):</p>
 		<form id="regForm">
 			<table>
 				<tr>
-					<td><label for="u_username">User name:</label></td>
+					<td><label for="u_username">* User name:</label></td>
 					<td><input id="u_username" name="u_username" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_firstname">First name:</label></td>
+					<td><label for="u_firstname">* First name:</label></td>
 					<td><input id="u_firstname" name="u_firstname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_lastname">Last name:</label></td>
+					<td><label for="u_lastname">* Last name:</label></td>
 					<td><input id="u_lastname" name="u_lastname" class="required" type="text" size="20"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_email">Email address:</label></td>
+					<td><label for="u_email">* Email address:</label></td>
 					<td><input id="u_email" name="u_email" class="required email" type="text" size="30"></input></td>
 				</tr>
 				<tr>
@@ -77,11 +77,11 @@
 					<td><input id="u_website" name="u_website" type="text" size="50"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_password">Password:</label></td>
+					<td><label for="u_password">* Password:</label></td>
 					<td><input id="u_password" name="u_password" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_passwordConfirm">Password (confirm):</label></td>
+					<td><label for="u_passwordConfirm">* Password (confirm):</label></td>
 					<td><input id="u_passwordConfirm" name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
