@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 	<head>
-		<repo:headStuff title="Search the repository"></repo:headStuff>
+		<repo:headStuff title="Create an account"></repo:headStuff>
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.validate.min.js"></script>
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.form.js"></script>
 		<script type="text/javascript">
