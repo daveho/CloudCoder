@@ -28,6 +28,8 @@
 			function onSubmit() {
 				var selectedLanguage = $("#selectedLanguage option:selected").attr('value');
 				
+				$("#status").attr('class', 'status-pending').text("Seaching...");
+				
 				var queryUri = "${pageContext.servletContext.contextPath}/search";
 				$.ajax({
 					url: queryUri,
@@ -40,7 +42,8 @@
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
 						
-						alert("Search returned " + data.length + " exercises");
+						//alert("Search returned " + data.length + " exercises");
+						$("#status").attr('class', 'status-none').text("Received " + data.length + " results");
 
 						// Convert exercises to row tuples						
 						var j, i;
@@ -63,7 +66,7 @@
 						$("#searchResultsTable").dataTable().fnAddData(rowData);
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
-						$("#errorElt").text(errorThrown);
+						$("#status").attr('class', 'status-error').text("" + errorThrown);
 					}
 				});
 			}
@@ -82,7 +85,7 @@
 						},
 						aTargets: [ 2 ]
 					}],
-					bPaginate: false,
+					//bPaginate: false,
 					bSort: false,
 					bInfo: false,
 					bFilter: false
@@ -106,7 +109,7 @@
 			<input id="selectedTags" type="text" size="60" />
 			</p>
 			
-			<button id="submitButton">Search!</button> <span id="errorElt" class="error"></span>
+			<button id="submitButton">Search!</button> <span id="status" class="status-none"></span>
 			
 			<p>
 				To see information about a specific exercise, click on the link in the

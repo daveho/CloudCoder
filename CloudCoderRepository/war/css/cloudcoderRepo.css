@@ -97,9 +97,15 @@ div.error {
 }
 
 .status-none, .status-pending, .status-success, .status-error {
-	margin-top: 8px;
+	height: 24px;
+}
+
+.status-pending, .status-success, .status-error {
 	padding-left: 32px;
-	height: 32px;
+}
+
+div.status-none, div.status-pending, div.status-success, div.status-error {
+	margin-top: 8px;
 }
 
 .status-none {
