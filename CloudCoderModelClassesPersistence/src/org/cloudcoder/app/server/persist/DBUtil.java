@@ -678,7 +678,7 @@ public class DBUtil {
         buf.append("update " + schema.getDbTableName());
         buf.append(" set ");
         
-        buf.append(getUpdatePlaceholders(schema));
+        buf.append(getUpdatePlaceholdersNoId(schema));
         
         buf.append(" where ");
         buf.append(uniqueIdField.getName());

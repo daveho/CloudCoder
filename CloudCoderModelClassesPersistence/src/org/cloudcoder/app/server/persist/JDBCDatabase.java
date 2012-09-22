@@ -1416,21 +1416,15 @@ public class JDBCDatabase implements IDatabase {
 					// an account with the same username or password has already been
 					// created.
 					if (e.getSQLState().equals("23000")) {
-						return new OperationResult(
-								false,
-								"A user account with the same username or password has already been created.");
+						throw new SQLException("A user account with the same username or email address has already been created.");
 					} else {
-						return new OperationResult(false, "Could not create new user account: " + e.getMessage());
+						throw e;
 					}
 				}
 				
 				// Successfully added User - now set request status to CONFIRMED
 				request.setStatus(UserRegistrationRequestStatus.CONFIRMED);
-				try {
-					DBUtil.updateModelObject(conn, request, UserRegistrationRequest.SCHEMA);
-				} catch (SQLException e) {
-					return new OperationResult(false, "Could not update request record.");
-				}
+				DBUtil.updateModelObject(conn, request, UserRegistrationRequest.SCHEMA);
 				
 				// Success!
 				return new OperationResult(true, "User account " + user.getUsername() + " created successfully!");

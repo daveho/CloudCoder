@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.server.persist.PersistenceException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
@@ -46,18 +47,24 @@ public class Confirm extends HttpServlet {
 		}
 		
 		UserRegistrationRequest request = Database.getInstance().findUserRegistrationRequest(secret);
-		
+
+		OperationResult result;
 		if (request == null) {
-			req.setAttribute("confSuccess", false);
-			req.setAttribute("confMessage", "Sorry, this registration URL doesn't seem to be valid.");
+			result = new OperationResult(false, "Sorry, this registration URL doesn't seem to be valid.");
 		} else if (request.getStatus() != UserRegistrationRequestStatus.PENDING) {
-			req.setAttribute("confSuccess", false);
-			req.setAttribute("confMessage", "This registration has already been confirmed. Thanks!");
+			result = new OperationResult(false, "This registration has already been confirmed.");
 		} else {
-			OperationResult result = Database.getInstance().completeRegistration(request);
-			req.setAttribute("confSuccess", result.isSuccess());
-			req.setAttribute("confMessage", result.getMessage());
+			try {
+				// Attempt to confirm the registration by creating the user account
+				// and changing the request status to CONFIRMED.
+				result = Database.getInstance().completeRegistration(request);
+			} catch (PersistenceException e) {
+				Throwable cause = e.getCause();
+				result = new OperationResult(false, cause != null ? cause.getMessage() : e.getMessage());
+			}
 		}
+		req.setAttribute("confSuccess", result.isSuccess());
+		req.setAttribute("confMessage", result.getMessage());
 		
 		req.getRequestDispatcher("/_view/confirm.jsp").forward(req, resp);
 	}
