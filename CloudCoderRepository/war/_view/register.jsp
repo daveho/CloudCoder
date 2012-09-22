@@ -11,6 +11,8 @@
 			$(document).ready(function() {
 				$("#regForm").validate({
 					submitHandler: function(form) {
+						$("#status").attr('class', 'status-pending').text("Submitting registration information...");
+					
 						var queryUri = "${pageContext.servletContext.contextPath}/register";
 						$(this).ajaxSubmit({
 							url: queryUri,
@@ -25,17 +27,10 @@
 							dataType: "json",
 							type: "post",
 							success: function(data, textStatus, jqXHR) {
-								//alert("Success!");
-								$("#messageElt").text(data.message);
-								if (data.success) {
-									$("#messageElt").removeClass("error");
-								} else {
-									$("#messageElt").addClass("error");
-								}
+								$("#status").attr('class', data.success ? 'status-success' : 'status-error').text(data.message);
 							},
 							error: function(jqXHR, textStatus, errorThrown) {
-								$("#messageElt").text("Error: " + errorThrown);
-								$("#messageElt").addClass('error');
+								$("#status").attr('class', 'status-error').text("" + errorThrown);
 							}
 						});
 					},
@@ -97,7 +92,7 @@
 				</tr>
 			</table>
 			
-			<p id="messageElt"></p>
+			<div class="status-none" id="status"></div>
 		</form>
 		</div>
 	</body>

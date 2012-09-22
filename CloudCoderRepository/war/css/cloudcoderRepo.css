@@ -95,3 +95,29 @@ div.error {
 	border: 10px solid #fffacd;
 	border-radius: 20px;
 }
+
+.status-none, .status-pending, .status-success, .status-error {
+	margin-top: 8px;
+	padding-left: 32px;
+	height: 32px;
+}
+
+.status-none {
+	
+}
+
+.status-pending {
+	background-image: url(/repo/images/spinner.gif);
+	background-repeat:no-repeat;
+}
+
+.status-success {
+	background-image: url(/repo/images/success.png);
+	background-repeat:no-repeat;
+}
+
+.status-error {
+	background-image: url(/repo/images/error.png);
+	background-repeat:no-repeat;
+	color: red;
+}
