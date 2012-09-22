@@ -58,10 +58,8 @@ public class Confirm extends HttpServlet {
 			req.setAttribute("confSuccess", result.isSuccess());
 			req.setAttribute("confMessage", result.getMessage());
 		}
-		req.setAttribute("confSuccess", true);
-		req.setAttribute("confMessage", "What the heck?");
 		
-		req.getRequestDispatcher("_view/confirm.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/confirm.jsp").forward(req, resp);
 	}
 
 }

@@ -41,7 +41,7 @@ public class Login extends HttpServlet {
 		ServletUtil.removeModelObject(req.getSession(), User.class);
 		
 		// Render the view (with the login form)
-		req.getRequestDispatcher("_view/login.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/login.jsp").forward(req, resp);
 	}
 	
 	@Override
@@ -65,6 +65,6 @@ public class Login extends HttpServlet {
 			req.setAttribute("error", "Username/password not found");
 		}
 
-		req.getRequestDispatcher("_view/login.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/login.jsp").forward(req, resp);
 	}
 }

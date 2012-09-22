@@ -96,7 +96,7 @@ public class Search extends HttpServlet {
 //		// Javascript array mapping problem type ordinals to problem type names
 //		req.setAttribute("problemTypeOrdinalToProblemTypeMap", PROBLEM_TYPE_ORDINAL_TO_PROBLEM_TYPE_MAP);
 		
-		req.getRequestDispatcher("_view/search.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/search.jsp").forward(req, resp);
 	}
 	
 	// Note: POST requests are assumed to come from the search page via AJAX.

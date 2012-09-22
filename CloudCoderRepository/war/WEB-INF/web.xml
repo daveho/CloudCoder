@@ -71,7 +71,7 @@
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>Confirm</servlet-name>
-		<url-pattern>/x/*</url-pattern>
+		<url-pattern>/confirm/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Use the /index servlet as the welcome file -->

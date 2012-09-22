@@ -99,7 +99,7 @@ public class Register extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		req.getRequestDispatcher("_view/register.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/register.jsp").forward(req, resp);
 	}
 	
 	private static final Set<ModelObjectField<? super UserRegistrationRequest, ?>> REQUIRED_ATTRIBUTES = new LinkedHashSet<ModelObjectField<? super UserRegistrationRequest, ?>>();
