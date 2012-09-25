@@ -166,6 +166,17 @@
     <url-pattern>/admin/problems/*</url-pattern>
   </servlet-mapping>
   
+  <!-- General filters. -->
+  <filter>
+    <!-- Prevent .nocache.js files from being cached. -->
+    <filter-name>NocacheJsFilter</filter-name>
+    <filter-class>org.cloudcoder.app.server.filter.NocacheJsFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>NocacheJsFilter</filter-name>
+    <url-pattern>*.nocache.js</url-pattern>
+  </filter-mapping>
+  
   <!-- Admin filters. -->
   <filter>
     <filter-name>AdminProblemsAuthorizationFilter</filter-name>
