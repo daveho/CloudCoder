@@ -2018,6 +2018,17 @@ public class JDBCDatabase implements IDatabase {
 			if (!field.isUniqueId()) {
 				Object value = field.get(modelObj);
 				value = DBUtil.convertValueToStore(value);
+				
+				if (value instanceof String) {
+					String s = (String) value;
+					// Somewhat hackish solution to avoiding "string too long" errors inserting into database
+					// FIXME: broken if string contains characters that don't have a 1-byte encoding in UTF8
+					if (s.length() > field.getSize()) {
+						s = s.substring(0, field.getSize());
+						value = s;
+					}
+				}
+				
 				stmt.setObject(index++, value);
 			}
 		}
