@@ -35,8 +35,10 @@ public class CompilationResult implements Serializable
     
     public String toString() {
         StringBuilder buf=new StringBuilder();
-        for (CompilerDiagnostic d : diagnosticList) {
-            buf.append(d.toString());
+        if (diagnosticList!=null) {
+            for (CompilerDiagnostic d : diagnosticList) {
+                buf.append(d.toString());
+            }
         }
         return buf.toString();
     }
