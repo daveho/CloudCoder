@@ -47,14 +47,9 @@ public class JavaTester implements ITester
         try {
         	// Force TestResult, TestOutcome, and any nested classes referenced
         	// by their static initializers to load
-        	TestResult tr = new TestResult();
-        	tr.setOutcome(TestOutcome.PASSED);
-        	logger.info("test outcome hack: {}", tr.getOutcome().toString());
-//            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestResult");
-//            for (int i=1; i<=6; i++) {
-//                ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestResult$"+i);
-//            }
-//            ClassLoader.getSystemClassLoader().loadClass("org.cloudcoder.app.shared.model.TestOutcome");
+        	    TestResult tr = new TestResult();
+        	    tr.setOutcome(TestOutcome.PASSED);
+        	    logger.info("test outcome hack: {}", tr.getOutcome().toString());
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -63,6 +58,14 @@ public class JavaTester implements ITester
     
     static {
         loadClasses();
+    }
+    
+    public static SubmissionResult createSubmissionResultFromFailedCompile(InMemoryJavaCompiler compiler, int prologueLength, int epilogueLength) {
+        CompilationResult compilationResult = compiler.getCompileResult();
+        compilationResult.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
+        SubmissionResult submissionResult = new SubmissionResult(compilationResult);
+        submissionResult.setTestResults(new TestResult[0]);
+        return submissionResult;
     }
     
     public SubmissionResult testSubmission(Submission submission)
@@ -82,46 +85,14 @@ public class JavaTester implements ITester
         compiler.addClassFile("Test", testCode);
         compiler.addClassFile("Tester", testerCode);
         if (!compiler.compile()) {
-            return new SubmissionResult(compiler.getCompileResult());
+            return createSubmissionResultFromFailedCompile(compiler, 0, 0);
         }
 
         // create a list of tasks to be executed
         List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
         final Class<?> testerCls=compiler.getClass("Tester");
-        //Bob b=new Bob(7);
-        //System.out.println(b.getX());
         for (final TestCase t : testCaseList) {
             tasks.add(new IsolatedTaskRunner(testerCls, t));
-            /*
-            tasks.add(new IsolatedTask<TestResult>() {
-                @Override
-                public TestResult execute() {
-                    try {
-                        Method m = testerCls.getMethod(t.getTestCaseName());
-                        Boolean result = (Boolean) m.invoke(null);
-                        Bob b=new Bob(5);
-                        System.out.println(b.getX());
-                        if (result) {
-                            return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
-                        } else {
-                            return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
-                        }
-                    } catch (InvocationTargetException e) {
-                        if (e.getCause() instanceof SecurityException) {
-                            logger.warn("Security exception with code: "+programText);
-                            return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
-                        } 
-                        logger.warn("InvocationTargetException", e);
-                        return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
-                    } catch (NoSuchMethodException e) {
-                        return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
-                    } catch (IllegalAccessException e) {
-                        return new TestResult(TestOutcome.INTERNAL_ERROR, "Illegal access while testing submission");
-                    }
-                    //TODO: Catch Throwable and report INTERNAL_ERROR for anything else
-                }
-            });
-            */
         }
 
         KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
@@ -162,9 +133,9 @@ public class JavaTester implements ITester
                 Method m = theClass.getMethod(testCase.getTestCaseName());
                 Boolean result = (Boolean) m.invoke(null);
                 if (result) {
-                    return new TestResult(TestOutcome.PASSED, "Passed! input=" + testCase.getInput() + ", output=" + testCase.getOutput());
+                    return new TestResult(TestOutcome.PASSED, "Passed! input=(" + testCase.getInput() + ") output=" + testCase.getOutput());
                 } else {
-                    return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
+                    return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=(" + testCase.getInput() + ") expected=" + testCase.getOutput());
                 }
             } catch (InvocationTargetException e) {
                 if (e.getCause() instanceof SecurityException) {
@@ -172,7 +143,9 @@ public class JavaTester implements ITester
                     return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
                 } 
                 logger.warn("InvocationTargetException", e);
-                return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with "+e.getTargetException().getMessage());
+                return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, 
+                        "Failed for input=(" + testCase.getInput() + ") expected=" + testCase.getOutput()+
+                        ", exception "+e.getTargetException().getMessage());
             } catch (NoSuchMethodException e) {
                 return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
             } catch (IllegalAccessException e) {

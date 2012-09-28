@@ -34,8 +34,11 @@ public class CompilationResult implements Serializable
     }
     
     public String toString() {
-        //TODO:  Write this
-        return "TODO: Write this";
+        StringBuilder buf=new StringBuilder();
+        for (CompilerDiagnostic d : diagnosticList) {
+            buf.append(d.toString());
+        }
+        return buf.toString();
     }
     
     /**

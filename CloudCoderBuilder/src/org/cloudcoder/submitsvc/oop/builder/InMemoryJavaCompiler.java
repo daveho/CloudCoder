@@ -80,7 +80,7 @@ public class InMemoryJavaCompiler
         // Compile, but don't load the classes yet
         if (!compileWithoutLoadingClasses()) {
         	// Code does not compile
-        	return false;
+            return false;
         }
 
         // Load the classes
