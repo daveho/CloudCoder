@@ -97,6 +97,7 @@ public class User implements Serializable, IModelObject<User> {
 	 * Constructor.
 	 */
 	public User() {
+	    this.website="";
 	}
 	
 	@Override

@@ -63,12 +63,29 @@ public class CFunctionTestCaseExecutor extends CTestCaseExecutor implements Runn
     {
         String stdout=processRunner.getStdout();
         String stderr=processRunner.getStderr();
+        
+        
+        String inputs="("+testCase.getInput()+")";
+        
         if (processRunner.getExitCode()==passedReturnValue) {
-            return new TestResult(TestOutcome.PASSED, "Success!", stdout, stderr);
+            return new TestResult(TestOutcome.PASSED, 
+                    "Success with inputs: "+inputs+" and output: "+testCase.getOutput(),
+                    stdout, 
+                    stderr);
         } else if (processRunner.getExitCode()==failedReturnValue){
-            return new TestResult(TestOutcome.FAILED_ASSERTION, "Test case failed", stdout, stderr);
+            return new TestResult(TestOutcome.FAILED_ASSERTION, 
+                    "Failed with inputs: "+inputs+
+                        ",\n expected output: "+testCase.getOutput()+ 
+                        ",\n your output did not match",
+                    stdout, 
+                    stderr);
         } else {
-            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "Failed with exception, exit code: "+processRunner.getExitCode(), stdout, stderr);
+            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION,
+                    "Crashed with inputs: "+inputs+
+                        ",\n expected output: "+testCase.getOutput()+ 
+                        ",\n your output crashed with exit code: " +processRunner.getExitCode(),
+                    stdout, 
+                    stderr);
         }
     }
     

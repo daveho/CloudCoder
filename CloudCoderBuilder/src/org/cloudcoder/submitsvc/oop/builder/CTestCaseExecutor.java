@@ -41,7 +41,7 @@ public abstract class CTestCaseExecutor implements Runnable {
 	private static final int MAX_TEST_EXECUTOR_JOIN_ATTEMPTS = 10;
 
 	private File tempDir;
-	private TestCase testCase;
+	protected TestCase testCase;
 	private TestResult testResult;
 	private Thread thread;
 	

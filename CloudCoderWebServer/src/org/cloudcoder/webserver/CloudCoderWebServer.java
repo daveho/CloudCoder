@@ -47,6 +47,9 @@ public class CloudCoderWebServer {
 		programCommands.put("createuser", "org.cloudcoder.app.server.persist.CreateUser");
 		programCommands.put("configure", "org.cloudcoder.app.server.persist.ConfigureCloudCoder");
 		programCommands.put("listconfig", "org.cloudcoder.app.server.persist.ListCloudCoderProperties");
+		programCommands.put("help", "org.cloudcoder.app.server.persist.PrintHelp");
+		programCommands.put("-h", "org.cloudcoder.app.server.persist.PrintHelp");
+		programCommands.put("--help", "org.cloudcoder.app.server.persist.PrintHelp");
 	}
 	
 	public static void main(String[] args) throws Exception {

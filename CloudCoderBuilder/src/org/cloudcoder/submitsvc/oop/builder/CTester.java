@@ -19,7 +19,6 @@ package org.cloudcoder.submitsvc.oop.builder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -179,6 +178,7 @@ public class CTester implements ITester
         int failRetVal=78;
         List<CTestCaseExecutor> testCaseExecutors = new ArrayList<CTestCaseExecutor>();
         for (TestCase testCase : submission.getTestCaseList()) {
+            
             CTestCaseExecutor executor = createTestExecutor(workDir, testCase, passRetVal, failRetVal);
             executor.start();
             testCaseExecutors.add(executor);

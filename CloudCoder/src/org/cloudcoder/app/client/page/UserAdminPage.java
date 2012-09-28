@@ -223,6 +223,12 @@ public class UserAdminPage extends CloudCoderPage
                final TextBox email = new TextBox();
                email.setName("email");
                holder.add(email);
+               
+               // website
+               holder.add(new Label("Website"));
+               final TextBox website = new TextBox();
+               email.setName("website");
+               holder.add(website);
 
                // password
                holder.add(new Label("Password"));
@@ -275,6 +281,8 @@ public class UserAdminPage extends CloudCoderPage
                            Window.alert("Password cannot be empty");
                            return;
                        }
+                       // website is allowed to be empty, but not null
+                       user.setWebsite(website.getValue());
                        if (!passwd.getValue().equals(passwd2.getValue())) {
                            Window.alert("Passwords do no match");
                            return;
