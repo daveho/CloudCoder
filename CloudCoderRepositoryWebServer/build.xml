@@ -1,6 +1,9 @@
 <project name="cloudcoderrepowebserver" default="jar">
 	<property name="jarfile" value="cloudcoderRepoApp.jar"/>
 	
+	<!-- Filename of JSTL jarfile. -->
+	<property name="jstl.jar" value="org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar"/>
+	
 	<path id="cloudcoderrepowebserver.path">
 		<pathelement location="bin"/>
 		<pathelement location="../CloudCoderJetty/cloudcoderJetty.jar"/>
@@ -72,6 +75,11 @@
 			<zipfileset
 				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
 				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
+			
+			<!-- Include JSTL taglib jarfile. -->
+			<zipfileset
+				file="../CloudCoderJetty/lib/jetty/jsp/${jstl.jar}"
+				fullpath="war/WEB-INF/lib/${jstl.jar}"/>
 			
 			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset

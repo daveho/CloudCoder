@@ -23,7 +23,7 @@
 	-->
 	<target name="deps">
 		<jar destfile="jettyDeps.jar">
-			<zipgroupfileset dir="lib" includes="**/*.jar"/>
+			<zipgroupfileset dir="lib" includes="**/*.jar" excludes="**/*taglibs*.jar"/>
 			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
 		</jar>
 	</target>
