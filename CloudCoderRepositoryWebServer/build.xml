@@ -1,0 +1,44 @@
+<project name="cloudcoderrepowebserver" default="jar">
+	<property name="jarfile" value="cloudcoderRepoApp.jar"/>
+	
+	<path id="cloudcoderrepowebserver.path">
+		<pathelement location="bin"/>
+		<pathelement location="../CloudCoderJetty/cloudcoderJetty.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+	</path>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="modelClassesPersist">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="cloudcoderJetty">
+		<ant dir="../CloudCoderJetty" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="javac" depends="modelClasses,modelClassesPersist,cloudcoderJetty">
+		<javac srcdir="src" destdir="bin" source="1.6" target="1.6">
+			<classpath refid="cloudcoderrepowebserver.path"/>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="javac">
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="${jarfile}"/>
+	</target>
+	
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesPersistence" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderJettynt" target="clean" inheritall="false"/>
+	</target>
+</project>
