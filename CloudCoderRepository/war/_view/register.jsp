@@ -87,6 +87,10 @@
 					<td><input id="u_passwordConfirm" name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
+					<td>* Terms of service:</td>
+					<td><input id="u_agreeToTOS" name="u_agreeToTOS" class="required" type="checkbox" /><label for="u_agreeToTOS">I agree to the <a target="_blank" href="${pageContext.servletContext.contextPath}/termsOfService">terms of service</a> <img src='${pageContext.servletContext.contextPath}/images/newWindow.png' /></label></td>
+				</tr>
+				<tr>
 					<td></td>
 					<td><input name="submitElt" type="submit" value="Submit!" /></td>
 				</tr>
