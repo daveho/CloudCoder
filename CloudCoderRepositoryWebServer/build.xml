@@ -110,5 +110,6 @@
 		<ant dir="../CloudCoderModelClassesPersistence" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderJetty" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderRepository" target="clean" inheritall="false"/>
 	</target>
 </project>
