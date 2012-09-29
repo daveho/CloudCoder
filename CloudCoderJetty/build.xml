@@ -12,7 +12,23 @@
 		</javac>
 	</target>
 	
-	<target name="jar" depends="javac">
+	<!--
+		Target to build deps.jar, which is a single jarfile containing the
+		contents of all of the Jetty jarfiles and the logging jarfiles.
+		The single-jarfile deployable apps will include the contents
+		(minus the signing information).
+		
+		TODO: should prune out Jetty libraries that we don't
+		actually need.
+	-->
+	<target name="deps">
+		<jar destfile="jettyDeps.jar">
+			<zipgroupfileset dir="lib" includes="**/*.jar"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		</jar>
+	</target>
+	
+	<target name="jar" depends="javac,deps">
 		<jar destfile="cloudcoderJetty.jar" basedir="bin" includes="**/*.class"/>
 	</target>
 	

@@ -36,4 +36,15 @@ public class CloudCoderRepositoryDaemonController extends DaemonController {
 	public Class<? extends IDaemon> getDaemonClass() {
 		return CloudCoderRepositoryDaemon.class;
 	}
+	
+	@Override
+	protected Options createOptions() {
+		// Put the stdout log in the "logs" directory.
+		return new Options() {
+			@Override
+			public String getStdoutLogFileName() {
+				return "logs/stdout.log";
+			}
+		};
+	}
 }
