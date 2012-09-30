@@ -127,3 +127,8 @@ div.status-none, div.status-pending, div.status-success, div.status-error {
 	background-repeat:no-repeat;
 	color: red;
 }
+
+ol.termsOfService li {
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
