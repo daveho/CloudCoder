@@ -32,6 +32,7 @@
 	</target>
 	
 	<target name="javac" depends="cloudcoderJetty">
+		<mkdir dir="bin"/>
 		<javac srcdir="src" destdir="bin" source="1.6" target="1.6">
 			<classpath refid="cloudcoderrepowebserver.path"/>
 		</javac>
