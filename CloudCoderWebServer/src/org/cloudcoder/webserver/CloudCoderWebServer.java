@@ -17,16 +17,11 @@
 
 package org.cloudcoder.webserver;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarFile;
 
 import org.cloudcoder.jetty.NestedJarClassLoader;
 
@@ -58,45 +53,14 @@ public class CloudCoderWebServer {
 			List<String> cmdLineArgs = new LinkedList<String>(Arrays.asList(args));
 			cmdLineArgs.remove(0);
 			
-			// A command to run an administrative program.
-			runMain(programCommands.get(args[0]), cmdLineArgs);
+			// Run the administrative program.
+			NestedJarClassLoader.runMain(CloudCoderWebServer.class, programCommands.get(args[0]), cmdLineArgs);
 		} else {
 			// Otherwise, use the CloudCoderDaemonController to handle the command.
 			// CloudCoderDaemonController handles requests to start/control/shutdown
 			// the webapp (and its web server).
 			CloudCoderDaemonController controller = new CloudCoderDaemonController();
 			controller.exec(args);
-		}
-	}
-	
-	private static void runMain(String mainClassName, List<String> cmdLineArgs) throws IOException,
-			ClassNotFoundException, NoSuchMethodException,
-			IllegalAccessException, InvocationTargetException {
-		ProtectionDomain p = CloudCoderWebServer.class.getProtectionDomain();
-		String codeBase = p.getCodeSource().getLocation().toExternalForm();
-		
-		// Get path of executable jar file
-		if (!codeBase.startsWith("file:") || !codeBase.endsWith(".jar")) {
-			throw new IllegalStateException("Codebase " + codeBase + " not a jarfile");
-		}
-		String jarPath = codeBase.substring("file:".length());
-		//System.out.println(jarPath);
-		
-		// Create a JarFile object to read from the executable jarfile.
-		JarFile jarFile = new JarFile(jarPath);
-		
-		try {
-			// A NestedJarClassLoader will allow the admin program to run out of
-			// the cloudcoderModelClassesPersist.jar nested in the executable jarfile,
-			// along with its dependencies, some of which are also nested jarfiles. 
-			NestedJarClassLoader classLoader = new NestedJarClassLoader(jarFile, CloudCoderWebServer.class.getClassLoader());
-			
-			// Load and run the main class's main method via reflection.
-			Class<?> createWebappDatabase = classLoader.loadClass(mainClassName);
-			Method main = createWebappDatabase.getMethod("main", new Class<?>[]{String[].class});
-			main.invoke(null, new Object[]{ cmdLineArgs.toArray(new String[cmdLineArgs.size()]) });
-		} finally {
-			jarFile.close();
 		}
 	}
 }

@@ -21,23 +21,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 /**
- * Load classes from jarfiles nested within the given jarfile.
+ * <p>Load classes from jarfiles nested within the given jarfile.
  * This is <em>extremely</em> slow, since resources are located by a
  * sequential scan of the nested jarfiles.  We use it here
  * only because we're doing something (creating the webapp database)
  * that is not performance-critical.  Also, the URLs of resources
  * loaded from this classloader refer to temporary files (since jar:
  * URLs don't nest), and code that expects the URL of a returned resource
- * to bear some resemblance to its resource name will break.
+ * to bear some resemblance to its resource name will break.</p>
+ * 
+ * <p>The {@link #runMain(Class, String, List)} method is a convenient
+ * way to run the <code>main</code> method of a class in a nested
+ * jar file.</p>
  * 
  * @author David Hovemeyer
  */
@@ -57,6 +65,49 @@ public class NestedJarClassLoader extends ClassLoader {
 		super(parent);
 		this.jar = jar;
 		scanNestedJarFiles();
+	}
+	
+	/**
+	 * Run the <code>main</code> method in a class in a nested jar file.
+	 * 
+	 * @param fromClass      Class object of a "normally" loaded class
+	 * @param mainClassName  the name of the nested class with the main method to run
+	 * @param cmdLineArgs    command line arguments to pass to the main method
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws NoSuchMethodException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 */
+	public static void runMain(Class<?> fromClass, String mainClassName, List<String> cmdLineArgs) throws IOException,
+			ClassNotFoundException, NoSuchMethodException,
+			IllegalAccessException, InvocationTargetException {
+		ProtectionDomain p = fromClass.getProtectionDomain();
+		String codeBase = p.getCodeSource().getLocation().toExternalForm();
+		
+		// Get path of executable jar file
+		if (!codeBase.startsWith("file:") || !codeBase.endsWith(".jar")) {
+			throw new IllegalStateException("Codebase " + codeBase + " not a jarfile");
+		}
+		String jarPath = codeBase.substring("file:".length());
+		//System.out.println(jarPath);
+		
+		// Create a JarFile object to read from the executable jarfile.
+		JarFile jarFile = new JarFile(jarPath);
+		
+		try {
+			// A NestedJarClassLoader will allow the admin program to run out of
+			// the cloudcoderModelClassesPersist.jar nested in the executable jarfile,
+			// along with its dependencies, some of which are also nested jarfiles. 
+			NestedJarClassLoader classLoader = new NestedJarClassLoader(jarFile, fromClass.getClassLoader());
+			
+			// Load and run the main class's main method via reflection.
+			Class<?> createWebappDatabase = classLoader.loadClass(mainClassName);
+			Method main = createWebappDatabase.getMethod("main", new Class<?>[]{String[].class});
+			main.invoke(null, new Object[]{ cmdLineArgs.toArray(new String[cmdLineArgs.size()]) });
+		} finally {
+			jarFile.close();
+		}
 	}
 	
 	private void scanNestedJarFiles() throws IOException {
