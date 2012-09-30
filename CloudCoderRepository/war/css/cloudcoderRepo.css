@@ -64,7 +64,6 @@ ul.navChoiceList li:before {
 
 #content h1, #content h2 {
 	font-weight: bold;
-	color: #228;
 }
 
 .error {
@@ -75,9 +74,13 @@ div.error {
 	margin: 10px 0px;
 }
 
-#submitButton {
+#submitButton, #searchButton {
 	font-size: 120%;
 	font-weight: bold;
+}
+
+#submitButton {
+	margin-top: 16px;
 }
 
 #searchResultsTable {

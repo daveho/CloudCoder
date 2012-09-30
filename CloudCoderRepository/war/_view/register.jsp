@@ -59,10 +59,6 @@
 		<form id="regForm">
 			<table>
 				<tr>
-					<td><label for="u_username">* User name:</label></td>
-					<td><input id="u_username" name="u_username" class="required" type="text" size="20"></input></td>
-				</tr>
-				<tr>
 					<td><label for="u_firstname">* First name:</label></td>
 					<td><input id="u_firstname" name="u_firstname" class="required" type="text" size="20"></input></td>
 				</tr>
@@ -79,11 +75,15 @@
 					<td><input id="u_website" name="u_website" type="text" size="50"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_password">* Password:</label></td>
+					<td><label for="u_username">* Choose a user name:</label></td>
+					<td><input id="u_username" name="u_username" class="required" type="text" size="20"></input></td>
+				</tr>
+				<tr>
+					<td><label for="u_password">* Choose a password:</label></td>
 					<td><input id="u_password" name="u_password" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
-					<td><label for="u_passwordConfirm">* Password (confirm):</label></td>
+					<td><label for="u_passwordConfirm">* Confirm password:</label></td>
 					<td><input id="u_passwordConfirm" name="u_passwordConfirm" class="required" type="password" size="12"></input></td>
 				</tr>
 				<tr>
@@ -92,7 +92,7 @@
 				</tr>
 				<tr>
 					<td></td>
-					<td><input name="submitElt" type="submit" value="Submit!" /></td>
+					<td><input id="submitButton" name="submitElt" type="submit" value="Submit!" /></td>
 				</tr>
 			</table>
 			

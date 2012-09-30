@@ -109,7 +109,7 @@
 			<input id="selectedTags" type="text" size="60" />
 			</p>
 			
-			<button id="submitButton">Search!</button> <span id="status" class="status-none"></span>
+			<button id="searchButton">Search!</button> <span id="status" class="status-none"></span>
 			
 			<p>
 				To see information about a specific exercise, click on the link in the
