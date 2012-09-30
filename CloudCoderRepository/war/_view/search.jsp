@@ -72,7 +72,7 @@
 			}
 		
 			$(document).ready(function() {
-				$("#submitButton").click(onSubmit);
+				$("#searchButton").click(onSubmit);
 				
 				// Enable DataTable on the search results table.
 				dataTable = $("#searchResultsTable").dataTable({
