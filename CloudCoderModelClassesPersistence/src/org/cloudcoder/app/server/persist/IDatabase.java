@@ -295,4 +295,6 @@ public interface IDatabase {
 	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
 	 */
 	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
+
+	public User getUserGivenId(int userId);
 }

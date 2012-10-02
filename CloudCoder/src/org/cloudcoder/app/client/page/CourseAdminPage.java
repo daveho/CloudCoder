@@ -60,6 +60,7 @@ public class CourseAdminPage extends CloudCoderPage {
 	private enum ButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
+		STATISTICS("Statistics"),
 		IMPORT("Import problem"),
 		MAKE_VISIBLE("Make visible"),
 		MAKE_INVISIBLE("Make invisible"),
@@ -170,6 +171,10 @@ public class CourseAdminPage extends CloudCoderPage {
 				handleEditProblem();
 				break;
 				
+			case STATISTICS:
+				handleStatistics();
+				break;
+				
 			case SHARE:
 				doShareProblem();
 				break;
@@ -247,6 +252,20 @@ public class CourseAdminPage extends CloudCoderPage {
 					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, value);
 				}
 			});
+		}
+		
+		/**
+		 * @author Andrei Papancea
+		 * 
+		 * Updated: 9/17/2012 at 3:44 PM
+		 * 
+		 */
+		private void handleStatistics() {
+			// Get the selected problem
+			final Problem chosen = getSession().get(Problem.class);
+			
+			String URL = GWT.getHostPageBaseURL()+"cloudcoder/admin/problems/"+chosen.getCourseId()+"/"+chosen.getProblemId();			
+			com.google.gwt.user.client.Window.open(URL, "_blank", "");
 		}
 
 		/**
@@ -334,6 +353,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		private void onSelectProblem(Problem problem) {
 			// Problem selected: enable/disable buttons appropriately
 			problemButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
+			problemButtons[ButtonPanelAction.STATISTICS.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(!problem.isVisible());
 			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem.isVisible());
 			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);

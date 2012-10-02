@@ -31,7 +31,7 @@
   <context-param>
     <!-- Name of MySQL database where the CloudCoder tables are. -->
     <param-name>cloudcoder.db.databaseName</param-name>
-    <param-value>cloudcoder</param-value>
+    <param-value>cloudcoderdb</param-value>
   </context-param>
   <context-param>
     <!-- Host where MySQL server is running. -->
@@ -69,7 +69,7 @@
   --> 
   <context-param>
 	<param-name>cloudcoder.login.service</param-name>
-	<param-value>imap</param-value>
+	<param-value>database</param-value>
   </context-param>
   <!--
   	Name of keystore containing keys to be used for TLS communication

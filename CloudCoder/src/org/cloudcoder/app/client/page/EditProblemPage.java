@@ -384,6 +384,8 @@ public class EditProblemPage extends CloudCoderPage {
 		protected void handleAddTestCase() {
 			// Add the TestCase to the ProblemAndTestCaseList
 			TestCase testCase = TestCase.createEmpty();
+			int numTests = testCaseEditorList.size();
+			testCase.setTestCaseName("t"+numTests);
 			getSession().get(ProblemAndTestCaseList.class).addTestCase(testCase);
 
 			// Add a new TestCase editor and its UI widget

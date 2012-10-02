@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
+import org.cloudcoder.app.client.view.UserProgressListView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
@@ -70,7 +71,9 @@ public class UserAdminPage extends CloudCoderPage
         NEW("Add new user"),
         EDIT("Edit user"),
         DELETE("Delete user"),
-        REGISTER_USERS("Register users");
+        REGISTER_USERS("Register users"),
+        VIEW_ALL_PROGRESS("View All Progress"),
+        VIEW_USER_PROGRESS("View User Progress");
         
         private String name;
         
@@ -86,7 +89,7 @@ public class UserAdminPage extends CloudCoderPage
         }
         
         public boolean isEnabledByDefault() {
-            return this == NEW || this == REGISTER_USERS;
+            return this == NEW || this == REGISTER_USERS || this == VIEW_ALL_PROGRESS;
         }
     }
     private class UI extends Composite implements SessionObserver, Subscriber {
@@ -151,6 +154,14 @@ public class UserAdminPage extends CloudCoderPage
                         case DELETE:
                             handleDeleteUser();
                             break;
+                            
+                        case VIEW_ALL_PROGRESS:
+                            handleDeleteUser();
+                            break;
+                            
+                        case VIEW_USER_PROGRESS:
+                            handleUserProgress(event);
+                            break;
                         }                    }
                 });
                 button.setEnabled(action.isEnabledByDefault());
@@ -178,6 +189,39 @@ public class UserAdminPage extends CloudCoderPage
             initWidget(dockLayoutPanel);
         }
         
+        /**
+         * @author Andrei Papancea
+         *
+         * View a particular user's progress throughout the course.
+         * The pop-up will display the problems that the user has started
+         * and their status (complete/incomplete, num_tests_passed/num_tests_total).
+         * 
+         */
+        private class UserProgressPopupPanel extends PopupPanel{
+        	
+        	public UserProgressPopupPanel(final Widget widget, final User user, 
+                    final Course course, final CourseRegistrationType originalType, final Session session)
+            {
+               super(true);
+               
+               VerticalPanel vp = new VerticalPanel();
+               
+               setWidget(vp);
+               
+               vp.setWidth("600px");
+               
+               //vp.setSize("600px", "400px");      
+
+               vp.add(new HTML("Problem statistics for <b>"+
+            		   			user.getFirstname()+" "+user.getLastname()+" ("+
+            		   			user.getUsername()+")</b><br /><br />"));
+               
+               UserProgressListView myGrid = new UserProgressListView(user);
+               myGrid.activate(session, getSubscriptionRegistrar());
+               vp.add(myGrid);
+            }        	
+        }
+        
         private class AddUserPopupPanel extends PopupPanel{
 
             public AddUserPopupPanel(final Widget widget, final int courseId){
@@ -190,7 +234,7 @@ public class UserAdminPage extends CloudCoderPage
                // to be used by inner classes
                final PopupPanel panelCopy=this;
                
-               // We actually perform the submit asynchrnonously
+               // We actually perform the submit asynchronously
                //form.setEncoding(FormPanel.ENCODING_MULTIPART);
                //form.setMethod(FormPanel.METHOD_POST);
               
@@ -541,6 +585,8 @@ public class UserAdminPage extends CloudCoderPage
             userManagementButtons[ButtonPanelAction.NEW.ordinal()].setEnabled(true);
             userManagementButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
             userManagementButtons[ButtonPanelAction.REGISTER_USERS.ordinal()].setEnabled(true);
+            userManagementButtons[ButtonPanelAction.VIEW_ALL_PROGRESS.ordinal()].setEnabled(true);
+            userManagementButtons[ButtonPanelAction.VIEW_USER_PROGRESS.ordinal()].setEnabled(true);
         }
         
         private void handleEditUser(ClickEvent event) {
@@ -580,6 +626,26 @@ public class UserAdminPage extends CloudCoderPage
             GWT.log("handle Register new users");
             Widget w = (Widget)event.getSource();
             RegisterUsersPopupPanel pop = new RegisterUsersPopupPanel(w, courseId);
+            pop.center();
+            pop.setGlassEnabled(true);
+            pop.show();
+        }
+        
+        private void handleUserProgress(ClickEvent event) {
+            GWT.log("handle user progress");
+            final User chosen = getSession().get(User.class);
+            final Course course = getSession().get(Course.class);
+            
+            GWT.log("handling user "+chosen.getUsername());
+            //TODO get the course type?
+            //TODO wtf is the in the user record and how does it get there?
+            CourseRegistrationType type=null;
+            Widget w = (Widget)event.getSource();
+            UserProgressPopupPanel pop = new UserProgressPopupPanel(w, 
+                    chosen, 
+                    course,
+                    type,
+                    getSession());
             pop.center();
             pop.setGlassEnabled(true);
             pop.show();

@@ -81,6 +81,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
 	
 	/**
+	 * @param course
+	 * @param user
+	 * @return
+	 * @throws NetCoderAuthenticationException
+	 */
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws NetCoderAuthenticationException;
+	
+	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.
 	 * This will only succeed if the authenticated user is an instructor in the course
 	 * the problem is assigned in.
@@ -123,4 +131,5 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @return the exercise, or null if no such exercise could be found in the repository
 	 */
 	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException;
+
 }
