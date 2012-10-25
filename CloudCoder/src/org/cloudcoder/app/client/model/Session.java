@@ -44,6 +44,9 @@ public class Session extends Publisher {
 		/** An object was removed from the session. The hint is the object removed. */
 		REMOVED_OBJECT,
 		
+		/** The user has chosen to view his account. */
+		USER_ACCOUNT,
+		
 		/** The user logged in. Hint is the User object. */
 		LOGIN,
 		
