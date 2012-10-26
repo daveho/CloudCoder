@@ -111,7 +111,7 @@ public class Problems extends HttpServlet {
 	}
 	
 	private static final String[] BEST_SUBMISSION_HEADER = new String[]{
-		"username", "numPassed"
+		"Username","Passed/Total"
 	};
 
 	/**
@@ -131,13 +131,20 @@ public class Problems extends HttpServlet {
 		List<Pair<User, SubmissionReceipt>> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problemId);
 		
 		CSVWriter writer = new CSVWriter(resp.getWriter());
+		
+		String problemName = Database.getInstance().getProblem(problemId).getBriefDescription();
+		int numTests = Database.getInstance().getTestCasesForProblem(problemId).size();
+		
+		writer.writeNext(new String[]{course.getName()+" - \""+problemName+"\""});
+		writer.writeNext(new String[]{});
 		writer.writeNext(BEST_SUBMISSION_HEADER);
 		
 		for (Pair<User, SubmissionReceipt> pair : bestSubmissions) {
 			List<String> entry = new ArrayList<String>();
 			entry.add(pair.getLeft().getUsername());
-			entry.add(String.valueOf(pair.getRight().getNumTestsPassed()));
+			entry.add(String.valueOf(pair.getRight().getNumTestsPassed()+" out of "+numTests));
 			writer.writeNext(entry.toArray(new String[entry.size()]));
 		}
 	}
+	
 }

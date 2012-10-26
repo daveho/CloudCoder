@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
@@ -47,10 +48,13 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
+import org.cloudcoder.app.shared.model.ProblemList;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -135,6 +139,18 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		return resultList.toArray(new Problem[resultList.size()]);
 	}
 	
+	public Problem[] getProblemsForUser(Course course,int userId) throws NetCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = Database.getInstance().getUserGivenId(userId);
+		
+		List<Problem> resultList = Database.getInstance().getProblemsInCourse(user, course).getProblemList();
+		for (Problem p : resultList) {
+			logger.warn(p.getTestname() + " - " + p.getBriefDescription());
+		}
+		
+		return resultList.toArray(new Problem[resultList.size()]);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getProblemAndSubscriptionReceipts(org.cloudcoder.app.shared.model.Course)
 	 */
@@ -144,7 +160,33 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
+		logger.warn("getting submission receipts for authentificated user "+user.getUsername());
+		
 		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course);
+		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getProblemAndSubscriptionReceipts(org.cloudcoder.app.shared.model.Course)
+	 */
+	@Override
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
+			Course course, User user) throws NetCoderAuthenticationException {
+
+		logger.warn("yay! getting submission receipts for user "+user.getUsername());
+		
+		List<ProblemAndSubmissionReceipt> resultList = new LinkedList<ProblemAndSubmissionReceipt>();
+		ProblemList problems = Database.getInstance().getProblemsInCourse(user, course);
+		for(Problem p : problems.getProblemList()){
+			List<Pair<User, SubmissionReceipt>> e = Database.getInstance().getBestSubmissionReceipts(course, p.getProblemId());
+			for(Pair<User,SubmissionReceipt> pair : e){
+				if(pair.getLeft().getId() == user.getId()){
+					resultList.add(new ProblemAndSubmissionReceipt(p,pair.getRight()));
+				}
+			}
+		}
+		
+		//List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getBestSubmissionReceipts(course, problemId).getProblemAndSubscriptionReceiptsInCourse(user, course);
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
 	}
 	

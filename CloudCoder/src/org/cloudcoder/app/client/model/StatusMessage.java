@@ -50,7 +50,7 @@ public class StatusMessage {
 	private Category category;
 	private String message;
 	
-	private StatusMessage(Category category, String message) {
+	public StatusMessage(Category category, String message) {
 		this.category = category;
 		this.message = message;
 	}

@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.page.UserAccountPage;
 import org.cloudcoder.app.client.page.UserAdminPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
@@ -221,6 +222,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			changePage(new LoginPage());
 		} else if (key == Session.Event.EDIT_PROBLEM) {
 			changePage(new EditProblemPage());
+		} else if (key == Session.Event.USER_ACCOUNT) {
+		    changePage(new UserAccountPage());
 		}
 	}
 }

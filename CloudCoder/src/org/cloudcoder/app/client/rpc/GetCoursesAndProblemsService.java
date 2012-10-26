@@ -26,6 +26,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -78,6 +79,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         or is not regsitered in the course 
 	 */
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
+	
+	/**
+	 * @param course
+	 * @param user
+	 * @return
+	 * @throws NetCoderAuthenticationException
+	 */
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws NetCoderAuthenticationException;
 	
 	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.

@@ -353,4 +353,7 @@ public interface IDatabase {
 	 *         it means that a new user account has been created
 	 */
 	public OperationResult completeRegistration(UserRegistrationRequest request);
+
+	public User getUserGivenId(int userId);
+
 }

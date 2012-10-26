@@ -76,7 +76,6 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
             }
         }, "Email");
         
-        
         initWidget(grid);
     }
 
@@ -106,6 +105,7 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
         // If the session contains a list of Users, display them.
         // Otherwise, initiate loading of users for this course.
         User[] userList = session.get(User[].class);
+        	
         //ProblemAndSubmissionReceipt[] problemAndSubmissionReceiptList = session.get(ProblemAndSubmissionReceipt[].class);
         if (userList != null) {
             displayUsers(userList);

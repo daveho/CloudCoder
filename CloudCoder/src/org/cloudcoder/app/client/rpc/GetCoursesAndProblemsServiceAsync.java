@@ -19,11 +19,13 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -39,6 +41,9 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void getProblemAndSubscriptionReceipts(Course course,
 			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
 
+	void getProblemAndSubscriptionReceipts(Course course, User user,
+			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
+	
 	void getTestCasesForProblem(int problemId,
 			AsyncCallback<TestCase[]> callback);
 

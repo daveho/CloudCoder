@@ -171,6 +171,41 @@ public class JDBCDatabase implements IDatabase {
         return user;
 	}
 	
+	private User getUser(Connection conn, int userId) throws SQLException {
+	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where id = ?");
+        stmt.setInt(1, userId);
+        
+        ResultSet resultSet = stmt.executeQuery();
+        if (!resultSet.next()) {
+            return null;
+        }
+        
+        User user = new User();
+        load(user, resultSet, 1);
+        return user;
+	}
+	
+	public User getUserGivenId(final int userId) {
+		
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
+			 */
+			@Override
+			public User run(Connection conn) throws SQLException {
+				return getUser(conn, userId);
+			}
+			/* (non-Javadoc)
+			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
+			 */
+			@Override
+			public String getDescription() {
+				return "retrieving user for username";
+			}
+		});
+		
+	}
+	
 	@Override
 	public User authenticateUser(final String userName, final String password) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
@@ -495,8 +530,8 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblemAndSubscriptionReceiptsInCourse(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Course)
+	/**
+	 * Description
 	 */
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
@@ -2050,4 +2085,5 @@ public class JDBCDatabase implements IDatabase {
 		load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
 		return submissionReceipt;
 	}
+	
 }

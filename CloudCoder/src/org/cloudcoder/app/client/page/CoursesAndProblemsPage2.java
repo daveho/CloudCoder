@@ -76,6 +76,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
         private Button courseAdminButton;
         private Button userAdminButton;
         private Button loadProblemButton;
+        private Button accountButton;
 
         public UI() {
             DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -185,17 +186,32 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 eastLayoutPanel.setWidgetLeftRight(termAndCourseTreeView, 8.0, Unit.PX, 0.0, Unit.PX);
                 eastLayoutPanel.setWidgetTopBottom(
                         termAndCourseTreeView,
-                        PageNavPanel.HEIGHT + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 12.0 : 0),
+                        PageNavPanel.HEIGHT + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 70.0 : 10),
                         PageNavPanel.HEIGHT_UNIT,
                         0.0,
                         Unit.PX);
 
+                accountButton = new Button("My Account");
+                accountButton.setEnabled(false);
+                eastLayoutPanel.add(accountButton);
+                eastLayoutPanel.setWidgetRightWidth(accountButton, 0.0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+                eastLayoutPanel.setWidgetTopHeight(accountButton, PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+                accountButton.addClickHandler(new ClickHandler(){
+                    /* (non-Javadoc)
+                     * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
+                     */
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        handleAccountButtonClicked();
+                    }
+                });
+                
                 // Create the "Course admin" button if appropriate.
                 if (isInstructor) {
                     courseAdminButton = new Button("Course admin");
                     eastLayoutPanel.add(courseAdminButton);
                     eastLayoutPanel.setWidgetRightWidth(courseAdminButton, 0.0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-                    eastLayoutPanel.setWidgetTopHeight(courseAdminButton, PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+                    eastLayoutPanel.setWidgetTopHeight(courseAdminButton, 2 * PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
                     courseAdminButton.addClickHandler(new ClickHandler(){
                         /* (non-Javadoc)
                          * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
@@ -209,7 +225,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                     userAdminButton = new Button("User admin");
                     eastLayoutPanel.add(userAdminButton);
                     eastLayoutPanel.setWidgetRightWidth(userAdminButton, 0.0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-                    eastLayoutPanel.setWidgetTopHeight(userAdminButton, 2 * PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+                    eastLayoutPanel.setWidgetTopHeight(userAdminButton, 3 * PageNavPanel.HEIGHT + 4.0, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
                     userAdminButton.addClickHandler(new ClickHandler(){
                         /* (non-Javadoc)
                          * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
@@ -254,6 +270,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                         }
                     }
                 }
+                
+                accountButton.setEnabled(true);
             }
         }
 
@@ -270,6 +288,14 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
             Course course = getSession().get(Course.class);
             if (course != null) {
                 getSession().notifySubscribers(Session.Event.USER_ADMIN, course);
+            }
+        }
+        
+        protected void handleAccountButtonClicked() {
+            GWT.log("My account button clicked");
+            Course course = getSession().get(Course.class);
+            if(course != null) {
+            	getSession().notifySubscribers(Session.Event.USER_ACCOUNT, course);
             }
         }
     }
