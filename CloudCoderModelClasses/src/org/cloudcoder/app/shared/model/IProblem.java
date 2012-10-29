@@ -100,5 +100,17 @@ public interface IProblem extends IProblemData {
 	 * @return the {@link ProblemAuthorship} for this problem
 	 */
 	public ProblemAuthorship getProblemAuthorship();
+	
+	/**
+	 * Set deleted flag.
+	 * @param deleted deleted flag to set
+	 */
+	public void setDeleted(boolean deleted);
+	
+	/**
+	 * Return true if this problem has been deleted, false otherwise.
+	 * @return true if problem has been deleted, false otherwise
+	 */
+	public boolean isDeleted();
 
 }

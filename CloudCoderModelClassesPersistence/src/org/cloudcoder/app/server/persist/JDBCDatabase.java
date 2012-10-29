@@ -526,6 +526,7 @@ public class JDBCDatabase implements IDatabase {
 						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
 						"   and p.course_id = cr.course_id " +
 						"   and e.problem_id = p.problem_id " +
+						"   and p." + Problem.DELETED.getName() + " = 0 " +
 						"   and e.user_id = cr.user_id " +
 						"   and r.event_id = e.id "
 				);
@@ -1323,19 +1324,21 @@ public class JDBCDatabase implements IDatabase {
 					throw new NetCoderAuthenticationException("Only instructor can delete a problem");
 				}
 				
-				// delete the problem
-				PreparedStatement delProbStmt = prepareStatement(
+				// Delete the problem
+				// Note that we do NOT delete the problem from the database.
+				// Instead, we just set the deleted flag to true, which prevents the
+				// problem from coming up in future searches.  Because lots
+				// of information is linked to a problem, and serious database
+				// corruption could occur if a problem id were reused, this
+				// is a much safer approach than physical deletion.
+				PreparedStatement stmt = prepareStatement(
 						conn,
-						"delete from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
-				delProbStmt.setInt(1, problem.getProblemId());
-				delProbStmt.executeUpdate();
+						"update " + Problem.SCHEMA.getDbTableName() +
+						"   set " + Problem.DELETED.getName() + " = 1 " +
+						" where " + Problem.PROBLEM_ID.getName() + " = ?");
+				stmt.setInt(1, problem.getProblemId());
 				
-				// delete the problem's test cases
-				PreparedStatement delTestCasesStmt = prepareStatement(
-						conn,
-						"delete from " + TestCase.SCHEMA.getDbTableName() + " where " + TestCase.PROBLEM_ID.getName() + " = ?");
-				delTestCasesStmt.setInt(1, problem.getProblemId());
-				delTestCasesStmt.executeUpdate();
+				stmt.executeUpdate();
 				
 				return true;
 			}
@@ -1619,6 +1622,7 @@ public class JDBCDatabase implements IDatabase {
 				conn,
 				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where p.course_id = c.id " +
+				"   and p." + Problem.DELETED.getName() + " = 0 " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
 				"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +

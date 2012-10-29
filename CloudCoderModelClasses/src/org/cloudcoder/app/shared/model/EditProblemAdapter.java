@@ -240,5 +240,16 @@ public abstract class EditProblemAdapter implements IProblem {
 	public ProblemAuthorship getProblemAuthorship() {
 		return delegate.getProblemAuthorship();
 	}
+	
+	@Override
+	public void setDeleted(boolean deleted) {
+		delegate.setDeleted(deleted);
+		onChange();
+	}
+	
+	@Override
+	public boolean isDeleted() {
+		return delegate.isDeleted();
+	}
 
 }
