@@ -151,6 +151,8 @@
 }
 .cc-fieldEditorLabel, .cc-fieldEditorErrorLabel {
 	font-size: 16px;
+}
+.cc-fieldEditorLabel {
 	font-weight: bold;
 }
 .cc-fieldEditorErrorLabel {
