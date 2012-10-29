@@ -23,7 +23,6 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -38,7 +37,7 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 public class EditDateField<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, Long> {
 	
-	private class UI extends Composite {
+	private class UI extends EditModelObjectFieldUI {
 		private DatePicker datePicker;
 
 		public UI() {
@@ -48,6 +47,8 @@ public class EditDateField<ModelObjectType>
 			Label label = new Label(getDescription());
 			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
+			
+			panel.add(getErrorLabel());
 			
 			this.datePicker = new DatePicker();
 			panel.add(datePicker);
@@ -97,7 +98,15 @@ public class EditDateField<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getDate().getTime());
+		Date date = ui.getDate();
+		if (date == null) {
+			setCommitError(true);
+			ui.setError("Please enter a date");
+		} else {
+			setCommitError(false);
+			ui.clearError();
+			setField(date.getTime());
+		}
 	}
 
 	/* (non-Javadoc)
