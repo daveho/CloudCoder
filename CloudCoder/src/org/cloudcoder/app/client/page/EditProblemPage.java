@@ -141,7 +141,10 @@ public class EditProblemPage extends CloudCoderPage {
 
 		protected void handleSaveProblem() {
 			// Commit the contents of all editors
-			commitAll();
+			if (!commitAll()) {
+				getSession().add(StatusMessage.error("One or more field values is invalid"));
+				return;
+			}
 			
 			// Create a pending operation message
 			getSession().add(StatusMessage.pending("Sending problem data to server..."));
@@ -324,13 +327,17 @@ public class EditProblemPage extends CloudCoderPage {
 		
 		private void leavePage(final Runnable action) {
 			// Commit all changes made in the editors to the model objects.
-			commitAll();
-
+			boolean successfulCommit = commitAll();
+			
 			// If the Problem has not been modified, then it's fine to leave the page
 			// without a prompt.
-			if (!isProblemModified()) {
+			if (successfulCommit && !isProblemModified()) {
 				action.run();
 				return;
+			}
+			
+			if (successfulCommit) {
+				getSession().add(StatusMessage.error("One or more values is invalid"));
 			}
 			
 			// Prompt user to confirm leaving page (and abandoning changes to Problem)
@@ -352,13 +359,20 @@ public class EditProblemPage extends CloudCoderPage {
 		/**
 		 * Commit all changes in the UI to the underlying ProblemAndTestCaseList model object.
 		 */
-		private void commitAll() {
+		private boolean commitAll() {
 			for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
 				editor.commit();
 			}
 			for (TestCaseEditor editor : testCaseEditorList) {
 				editor.commit();
 			}
+			boolean success = true;
+			for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
+				if (editor.isCommitError()) {
+					success = false;
+				}
+			}
+			return success;
 		}
 		
 		/**
