@@ -26,7 +26,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -214,10 +214,10 @@ public interface IDatabase {
 	 * @param course the course in which the problem is (or will be) assigned
 	 * @param user the authenticated user
 	 * @return updated ProblemAndTestCaseList
-	 * @throws NetCoderAuthenticationException if the user is not an instructor in the course)
+	 * @throws CloudCoderAuthenticationException if the user is not an instructor in the course)
 	 */
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course, User user)
-		throws NetCoderAuthenticationException;
+		throws CloudCoderAuthenticationException;
 
 	/**
 	 * Get a {@link RepoProblemAndTestCaseList} from the database.
@@ -307,7 +307,7 @@ public interface IDatabase {
 	 * @param problem    the problem
 	 * @return true if the problem was deleted successfully, false otherwise
 	 */
-	public boolean deleteProblem(User user, Course course, Problem problem) throws NetCoderAuthenticationException;
+	public boolean deleteProblem(User user, Course course, Problem problem) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Run a database transaction.
@@ -324,9 +324,9 @@ public interface IDatabase {
 	 * @param databaseRunnable the database transaction to run
 	 * @return the result of the database transaction
 	 * @throws PersistenceException if an error occurs
-	 * @throws NetCoderAuthenticationException if an authorization exception occurs
+	 * @throws CloudCoderAuthenticationException if an authorization exception occurs
 	 */
-	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException;
+	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException;
 
 	/**
 	 * Add a {@link UserRegistrationRequest} to the database.

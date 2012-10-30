@@ -42,7 +42,7 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -691,7 +691,7 @@ public class JDBCDatabase implements IDatabase {
 	    databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
 
             @Override
-            public Boolean run(Connection conn) throws SQLException,NetCoderAuthenticationException
+            public Boolean run(Connection conn) throws SQLException,CloudCoderAuthenticationException
             {
                 doInsertUsersFromInputStream(in, course, conn);
                 return true;
@@ -703,7 +703,7 @@ public class JDBCDatabase implements IDatabase {
             }
 	        
         });
-	    } catch (NetCoderAuthenticationException e) {
+	    } catch (CloudCoderAuthenticationException e) {
 	        // TODO proper error handling
 	        throw new RuntimeException(e);
 	    }
@@ -1072,14 +1072,14 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
 			final ProblemAndTestCaseList problemAndTestCaseList, final Course course, final User user)
-			throws NetCoderAuthenticationException {
+			throws CloudCoderAuthenticationException {
 		return databaseRunAuth(new AbstractDatabaseRunnable<ProblemAndTestCaseList>() {
 			@Override
 			public ProblemAndTestCaseList run(Connection conn)
-					throws SQLException, NetCoderAuthenticationException {
+					throws SQLException, CloudCoderAuthenticationException {
 				// Ensure problem and course id match.
 				if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
-					throw new NetCoderAuthenticationException("Problem does not match course");
+					throw new CloudCoderAuthenticationException("Problem does not match course");
 				}
 				
 				// Check that user is registered as an instructor in the course.
@@ -1094,7 +1094,7 @@ public class JDBCDatabase implements IDatabase {
 					}
 				}
 				if (!isInstructor) {
-					throw new NetCoderAuthenticationException("not instructor in course");
+					throw new CloudCoderAuthenticationException("not instructor in course");
 				}
 				
 				// If the problem id is not set, then insert the problem.
@@ -1314,14 +1314,14 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public boolean deleteProblem(final User user, final Course course, final Problem problem)
-			throws NetCoderAuthenticationException {
+			throws CloudCoderAuthenticationException {
 		return databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
 			@Override
-			public Boolean run(Connection conn) throws SQLException, NetCoderAuthenticationException {
+			public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
 				// verify that the user is an instructor in the course
 				CourseRegistration courseReg = doGetCourseRegistration(conn, course.getId(), user.getId(), this);
 				if (courseReg == null || courseReg.getRegistrationType() != CourseRegistrationType.INSTRUCTOR) {
-					throw new NetCoderAuthenticationException("Only instructor can delete a problem");
+					throw new CloudCoderAuthenticationException("Only instructor can delete a problem");
 				}
 				
 				// Delete the problem
@@ -1442,7 +1442,7 @@ public class JDBCDatabase implements IDatabase {
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that extend {@link AbstractDatabaseRunnableNoAuthException}
-	 * and thus are guaranteed not to throw {@link NetCoderAuthenticationException}.
+	 * and thus are guaranteed not to throw {@link CloudCoderAuthenticationException}.
 	 * 
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
@@ -1450,7 +1450,7 @@ public class JDBCDatabase implements IDatabase {
 	public<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable) {
 		try {
 			return doDatabaseRun(databaseRunnable);
-		} catch (NetCoderAuthenticationException e) {
+		} catch (CloudCoderAuthenticationException e) {
 			// The fact that the method takes an
 			// AbstractDatabaseRunnableNoAuthException guarantees that the transaction
 			// won't throw NetcoderAuthenticationException.
@@ -1461,16 +1461,16 @@ public class JDBCDatabase implements IDatabase {
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that check the authenticity of provided
-	 * user credentials and may throw {@link NetCoderAuthenticationException}.
+	 * user credentials and may throw {@link CloudCoderAuthenticationException}.
 	 * 
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
 	 */
-	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
 		return doDatabaseRun(databaseRunnable);
 	}
 
-	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
 		try {
 			Connection conn = null;
 			boolean committed = false;

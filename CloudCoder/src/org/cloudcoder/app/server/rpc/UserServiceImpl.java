@@ -23,7 +23,7 @@ import org.cloudcoder.app.client.rpc.UserService;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
      */
     @Override
     public User[] getUsers(int courseId)
-    throws NetCoderAuthenticationException
+    throws CloudCoderAuthenticationException
     {
         //logger.warn("Getting all users in course "+course.getName());
         GWT.log("Getting all users in courseId "+courseId);
@@ -59,7 +59,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     }
     
     public Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section)
-    throws NetCoderAuthenticationException
+    throws CloudCoderAuthenticationException
     {
         logger.warn("Adding "+user.getUsername()+" to courseId "+courseId);
         GWT.log("Adding "+user.getUsername()+" to course "+courseId);
@@ -70,7 +70,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     
     public Boolean editUser(int id, String username, String firstname, String lastname,
         String email, String passwd)
-    throws NetCoderAuthenticationException
+    throws CloudCoderAuthenticationException
     {
         logger.warn("Editing userid "+id+", username "+username);
         User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
@@ -79,7 +79,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     }
     
     public void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type)
-    throws NetCoderAuthenticationException
+    throws CloudCoderAuthenticationException
     {
         logger.warn("Editing registration type of "+userId+" in course "+courseId);
         User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());

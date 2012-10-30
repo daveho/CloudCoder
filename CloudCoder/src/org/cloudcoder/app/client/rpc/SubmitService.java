@@ -17,7 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 
@@ -31,9 +31,9 @@ public interface SubmitService extends RemoteService {
 	 * 
 	 * @param problemId
 	 * @param programText
-	 * @throws NetCoderAuthenticationException
+	 * @throws CloudCoderAuthenticationException
 	 */
-    public void submit(int problemId, String programText) throws NetCoderAuthenticationException, SubmissionException;
+    public void submit(int problemId, String programText) throws CloudCoderAuthenticationException, SubmissionException;
     
     /**
      * Check to see if a {@link SubmissionResult} for the most-recently-submitted
@@ -41,7 +41,7 @@ public interface SubmitService extends RemoteService {
      * 
      * @return a SubmissionResult, or null if compilation/testing of the
      *         submission has not completed yet) 
-     * @throws NetCoderAuthenticationException
+     * @throws CloudCoderAuthenticationException
      */
-    public SubmissionResult checkSubmission()  throws NetCoderAuthenticationException, SubmissionException;
+    public SubmissionResult checkSubmission()  throws CloudCoderAuthenticationException, SubmissionException;
 }

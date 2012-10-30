@@ -45,7 +45,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -70,7 +70,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	private static final Logger logger=LoggerFactory.getLogger(GetCoursesAndProblemsServiceImpl.class);
 
 	@Override
-	public Course[] getCourses() throws NetCoderAuthenticationException {
+	public Course[] getCourses() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
@@ -96,7 +96,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getCourseAndCourseRegistrations()
 	 */
 	@Override
-	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws NetCoderAuthenticationException {
+	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
@@ -123,7 +123,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 
 	@Override
-	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException {
+	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
@@ -140,7 +140,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 */
 	@Override
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
-			Course course) throws NetCoderAuthenticationException {
+			Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
@@ -152,7 +152,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getTestCasesForProblem(int)
 	 */
 	@Override
-	public TestCase[] getTestCasesForProblem(int problemId) throws NetCoderAuthenticationException {
+	public TestCase[] getTestCasesForProblem(int problemId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
@@ -164,7 +164,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 */
 	@Override
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course)
-			throws NetCoderAuthenticationException {
+			throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
@@ -180,7 +180,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 */
 	@Override
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
-		throws NetCoderAuthenticationException  {
+		throws CloudCoderAuthenticationException  {
 		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
 		
 		ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
@@ -236,7 +236,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 	
 	@Override
-	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException {
+	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws CloudCoderAuthenticationException {
 		if (course == null || exerciseHash == null) {
 			throw new IllegalArgumentException();
 		}
@@ -248,7 +248,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// import is not allowed
 		CourseRegistration reg = Database.getInstance().findCourseRegistration(user, course);
 		if (reg.getRegistrationType().ordinal() < CourseRegistrationType.INSTRUCTOR.ordinal()) {
-			throw new NetCoderAuthenticationException("Only an instructor can import a problem in a course");
+			throw new CloudCoderAuthenticationException("Only an instructor can import a problem in a course");
 		}
 		
 		// Attempt to load the problem from the exercise repository.
@@ -308,7 +308,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 	
 	@Override
-	public OperationResult deleteProblem(Course course, Problem problem) throws NetCoderAuthenticationException {
+	public OperationResult deleteProblem(Course course, Problem problem) throws CloudCoderAuthenticationException {
 		// Make sure a user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		boolean result = Database.getInstance().deleteProblem(user, course, problem);

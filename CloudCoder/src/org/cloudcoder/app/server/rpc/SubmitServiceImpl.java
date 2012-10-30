@@ -29,7 +29,7 @@ import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -54,7 +54,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	private static final Logger logger=LoggerFactory.getLogger(SubmitServiceImpl.class);
 
 	@Override
-	public void submit(int problemId, String programText) throws NetCoderAuthenticationException, SubmissionException {
+	public void submit(int problemId, String programText) throws CloudCoderAuthenticationException, SubmissionException {
 		// Make sure that client is authenticated and has permission to edit the given problem
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
@@ -63,7 +63,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		// The Problem should be stored in the user's session
 		Problem problem = (Problem) session.getAttribute(SessionAttributeKeys.PROBLEM_KEY);
 		if (problem == null || problem.getProblemId() != problemId) {
-			throw new NetCoderAuthenticationException();
+			throw new CloudCoderAuthenticationException();
 		}
 
 		// Insert a full-text change into the database.
@@ -91,7 +91,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	 * @see org.cloudcoder.app.client.rpc.SubmitService#checkSubmission()
 	 */
 	@Override
-	public SubmissionResult checkSubmission() throws NetCoderAuthenticationException, SubmissionException {
+	public SubmissionResult checkSubmission() throws CloudCoderAuthenticationException, SubmissionException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
@@ -100,7 +100,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		// The Problem should be stored in the user's session
 		Problem problem = (Problem) session.getAttribute(SessionAttributeKeys.PROBLEM_KEY);
 		if (problem == null) {
-			throw new NetCoderAuthenticationException();
+			throw new CloudCoderAuthenticationException();
 		}
 		
 		// Retrieve session objects for submission

@@ -20,7 +20,7 @@ package org.cloudcoder.app.server.persist;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 
 /**
  * Interface for database transactions.
@@ -30,7 +30,7 @@ import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
  * @param <E>
  */
 public interface DatabaseRunnable<E> {
-	public E run(Connection conn) throws SQLException, NetCoderAuthenticationException;
+	public E run(Connection conn) throws SQLException, CloudCoderAuthenticationException;
 	public String getDescription();
 	public void cleanup();
 }

@@ -19,7 +19,7 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -40,9 +40,9 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * Get the courses the client user is registered for.
 	 * 
 	 * @return list of courses the client user is registered for
-	 * @throws NetCoderAuthenticationException if the client is not authenticated
+	 * @throws CloudCoderAuthenticationException if the client is not authenticated
 	 */
-	public Course[] getCourses() throws NetCoderAuthenticationException;
+	public Course[] getCourses() throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get {@link CourseAndCourseRegistration} objects representing
@@ -51,9 +51,9 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * course.
 	 * 
 	 * @return list of {@link CourseAndCourseRegistration} objects for client
-	 * @throws NetCoderAuthenticationException if the client is not authenticated
+	 * @throws CloudCoderAuthenticationException if the client is not authenticated
 	 */
-	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws NetCoderAuthenticationException;
+	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get {@link Problem}s available in given {@link Course}.
@@ -61,10 +61,10 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * 
 	 * @param course the Course
 	 * @return the Problems available in the course
-	 * @throws NetCoderAuthenticationException if the client is not authenticated,
+	 * @throws CloudCoderAuthenticationException if the client is not authenticated,
 	 *         or is not regsitered in the course 
 	 */
-	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException;
+	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
@@ -74,10 +74,10 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * 
 	 * @param course the Course
 	 * @return the ProblemAndSubmissionReceipts for the client's work in the Course
-	 * @throws NetCoderAuthenticationException if the client is not authenticated,
+	 * @throws CloudCoderAuthenticationException if the client is not authenticated,
 	 *         or is not regsitered in the course 
 	 */
-	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws NetCoderAuthenticationException;
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.
@@ -87,7 +87,7 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @param problemId the id of the Problem
 	 * @return the list of TestCases for the Problem
 	 */
-	public TestCase[] getTestCasesForProblem(int problemId) throws NetCoderAuthenticationException;
+	public TestCase[] getTestCasesForProblem(int problemId) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Store given {@link ProblemAndTestCaseList} in the database.
@@ -101,7 +101,7 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
 			ProblemAndTestCaseList problemAndTestCaseList,
-			Course course) throws NetCoderAuthenticationException;
+			Course course) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Submit an exercise (problem and testcases) to the exercise repository.
@@ -111,7 +111,7 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @param repoPassword the repository password
 	 */
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
-		throws NetCoderAuthenticationException;
+		throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Import an exercise (problem and testcases) from the exercise repository.
@@ -121,11 +121,11 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @param exerciseHash the hash of the execise to import
 	 * @return the exercise, or null if no such exercise could be found in the repository
 	 */
-	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws NetCoderAuthenticationException;
+	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Delete a problem (and its test cases) from the local database.
 	 * The currently-authenticated user must be an instructor in the course.
 	 */
-	public OperationResult deleteProblem(Course course, Problem problem) throws NetCoderAuthenticationException;
+	public OperationResult deleteProblem(Course course, Problem problem) throws CloudCoderAuthenticationException;
 }
