@@ -47,6 +47,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 public class CourseAdminProblemListView extends ResizeComposite implements Subscriber, SessionObserver {
 	private DataGrid<Problem> grid;
 	private Session session;
+	private SingleSelectionModel<Problem> selectionModel;
 	
 	/**
 	 * Constructor.
@@ -132,7 +133,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		
 		// Set selection model.
 		// When a Problem is selected, it will be added to the Session.
-		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
+		this.selectionModel = new SingleSelectionModel<Problem>();
 		selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent event) {
@@ -153,6 +154,15 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			Course course = session.get(Course.class);
 			loadProblems(session, course);
 		}
+	}
+	
+	/**
+	 * Get the currently-selected {@link Problem}.
+	 * 
+	 * @return the currently-selected {@link Problem}
+	 */
+	public Problem getSelected() {
+		return selectionModel.getSelectedObject();
 	}
 
 	private void loadProblems(final Session session, Course course) {

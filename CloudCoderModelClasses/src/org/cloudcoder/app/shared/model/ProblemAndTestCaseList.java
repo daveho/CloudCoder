@@ -36,7 +36,7 @@ public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCa
 	 * Constructor.
 	 */
 	public ProblemAndTestCaseList() {
-		
+		testCaseList = new TestCase[0];
 	}
 	
 	/**
@@ -72,6 +72,9 @@ public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCa
 	
 	@Override
 	public List<TestCase> getTestCaseData() {
+		if (testCaseList == null) {
+			throw new IllegalStateException();
+		}
 		return Arrays.asList(testCaseList);
 	}
 

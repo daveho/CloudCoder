@@ -647,11 +647,6 @@ public class JDBCDatabase implements IDatabase {
 					result.add(testCase);
 				}
 				
-				if (result.isEmpty()) {
-					// Most likely, the user is not authorized (not an instructor for the course)
-					return null;
-				}
-				
 				// Success!
 				return result.toArray(new TestCase[result.size()]);
 			}

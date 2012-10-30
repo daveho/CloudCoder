@@ -418,14 +418,17 @@ public class CourseAdminPage extends CloudCoderPage {
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
 				onSelectProblem((Problem) hint);
+			} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem[])) {
+				// Problems were reloaded: sync the buttons with the current Problem selection
+				onSelectProblem(courseAdminProblemListView.getSelected());
 			}
 		}
 
 		private void onSelectProblem(Problem problem) {
 			// Problem selected: enable/disable buttons appropriately
 			problemButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(!problem.isVisible());
-			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem.isVisible());
+			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(problem != null && !problem.isVisible());
+			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem != null && problem.isVisible());
 			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.SHARE.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
@@ -450,7 +453,6 @@ public class CourseAdminPage extends CloudCoderPage {
 				public void onSuccess(OperationResult result) {
 					if (result.isSuccess()) {
 						getSession().add(StatusMessage.goodNews(result.getMessage()));
-						
 						// Reload problems
 						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 					} else {
@@ -482,7 +484,6 @@ public class CourseAdminPage extends CloudCoderPage {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
 					getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
-					
 					// Reload problems
 					SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 				}

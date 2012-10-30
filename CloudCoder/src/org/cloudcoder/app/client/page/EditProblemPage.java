@@ -35,6 +35,7 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestCaseEditor;
 import org.cloudcoder.app.client.view.ViewUtil;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
@@ -152,6 +153,12 @@ public class EditProblemPage extends CloudCoderPage {
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getSession().get(Course.class);
+			saveProblem(problemAndTestCaseList, course);
+		}
+
+		public void saveProblem(
+				final ProblemAndTestCaseList problemAndTestCaseList,
+				final Course course) {
 			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
@@ -172,7 +179,16 @@ public class EditProblemPage extends CloudCoderPage {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								saveProblem(problemAndTestCaseList, course);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
+					}
 				}
 			});
 		}
