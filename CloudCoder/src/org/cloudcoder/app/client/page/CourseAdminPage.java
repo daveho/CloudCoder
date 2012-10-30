@@ -229,7 +229,7 @@ public class CourseAdminPage extends CloudCoderPage {
 							getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
 							
 							// Reload problems
-							SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+							SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 						}
 					});
 				}
@@ -291,7 +291,7 @@ public class CourseAdminPage extends CloudCoderPage {
 						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
 						
 						// Reload the problem list
-						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 					} else {
 						getSession().add(StatusMessage.error("Exercise was not found"));
 					}
@@ -349,7 +349,7 @@ public class CourseAdminPage extends CloudCoderPage {
 											getSession().add(StatusMessage.goodNews(result.getMessage()));
 											
 											// Reload problems
-											SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+											SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 										} else {
 											getSession().add(StatusMessage.error(result.getMessage()));
 										}

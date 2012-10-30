@@ -20,15 +20,24 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.SessionExpiredDialogBox;
+import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
 /**
  * Common superclass for all CloudCoder "pages".
  * Provides helper methods for managing session data and event subscribers.
+ * Also provides support for allowing the user to log back in
+ * when a server-side session timeout occurs.
  */
 public abstract class CloudCoderPage {
 	private List<Class<?>> sessionObjectClassList;
@@ -50,6 +59,60 @@ public abstract class CloudCoderPage {
 	 */
 	public void setSession(Session session) {
 		this.session = session;
+	}
+	
+	/**
+	 * Subclasses may call this method when a server-side session
+	 * timeout occurs. It will allow the user to log back in,
+	 * establishing a new valid server-side session if successful.
+	 */
+	public void recoverFromServerSessionTimeout(final Runnable successfulRecoveryCallback) {
+		final SessionExpiredDialogBox dialog = new SessionExpiredDialogBox();
+		
+		Runnable callback = new Runnable() {
+			@Override
+			public void run() {
+				String password = dialog.getPassword();
+				
+				// Try to log back in.
+				RPC.loginService.login(session.get(User.class).getUsername(), password, new AsyncCallback<User>() {
+					@Override
+					public void onSuccess(User result) {
+						session.add(StatusMessage.goodNews("Successfully logged back in"));
+						
+						// Try to set the Activity in the server-side session.
+						Activity activity = CloudCoder.getActivityForSessionAndPage(CloudCoderPage.this, session);
+						RPC.loginService.setActivity(activity, new AsyncCallback<Void>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								// Not a fatal problem: we're logged in, but for some reason
+								// we couldn't set the activity in the server-side session.
+								session.add(StatusMessage.information("Logged back in, but couldn't set activity on server"));
+								dialog.hide();
+								successfulRecoveryCallback.run();
+							}
+
+							@Override
+							public void onSuccess(Void result) {
+								// At this point, we are completely logged back in an
+								// we have a valid Activity set on the server.
+								dialog.hide();
+								successfulRecoveryCallback.run();
+							}
+						});
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						dialog.setError("Could not log in: " + caught.getMessage());
+					}
+				});
+			}
+		};
+		
+		dialog.setLoginButtonHandler(callback);
+		
+		dialog.center();
 	}
 	
 	/**

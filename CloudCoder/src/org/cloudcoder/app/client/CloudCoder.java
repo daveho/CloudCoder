@@ -155,6 +155,17 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	}
 	
 	protected Activity getActivityForPage(CloudCoderPage page) {
+		return getActivityForSessionAndPage(page, session);
+	}
+
+	/**
+	 * Create an {@link Activity} for current page and session.
+	 *  
+	 * @param page     current page
+	 * @param session  current session
+	 * @return the {@link Activity}
+	 */
+	public static Activity getActivityForSessionAndPage(CloudCoderPage page, Session session) {
 		Activity activity = new Activity(page.getClass().getName());
 		
 		// Record the Session objects (the ones that are ActivityObjects)

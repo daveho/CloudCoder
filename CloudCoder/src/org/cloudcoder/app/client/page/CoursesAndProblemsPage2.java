@@ -238,7 +238,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
                 Course course = (Course) hint;
 
                 // Load problems
-                SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+                SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CoursesAndProblemsPage2.this, course, getSession());
 
                 if (courseAdminButton != null || userAdminButton != null) {
                     // Find the CourseRegistration for this Course
