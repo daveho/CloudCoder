@@ -148,7 +148,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			centerPanel.setWidgetLeftRight(problemButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			// Create problems list
-			this.courseAdminProblemListView = new CourseAdminProblemListView();
+			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
 			centerPanel.add(courseAdminProblemListView);
 			centerPanel.setWidgetTopBottom(courseAdminProblemListView, PROBLEM_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			centerPanel.setWidgetLeftRight(courseAdminProblemListView, 0.0, Unit.PX, 0.0, Unit.PX);
