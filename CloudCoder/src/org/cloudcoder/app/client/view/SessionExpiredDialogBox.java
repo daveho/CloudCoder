@@ -82,9 +82,9 @@ public class SessionExpiredDialogBox extends DialogBox {
 		});
 		passwordBoxAndLoginButtonPanel.add(loginButton);
 		
-		// FIXME: I can't figure out how to get a blank label or HTML element to be visible
-		errorLabel = new HTML("&nbsp;");
+		errorLabel = new HTML("");
 		errorLabel.setStyleName("cc-errorText", true);
+		errorLabel.setHeight("24px"); // force the label to be visible even though initially blank
 		passwordBoxAndLoginButtonPanel.add(errorLabel);
 		
 		panel.add(passwordBoxAndLoginButtonPanel);

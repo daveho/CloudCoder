@@ -78,6 +78,11 @@ public abstract class CloudCoderPage {
 				RPC.loginService.login(session.get(User.class).getUsername(), password, new AsyncCallback<User>() {
 					@Override
 					public void onSuccess(User result) {
+						if (result == null) {
+							dialog.setError("Unknown username/password");
+							return;
+						}
+						
 						session.add(StatusMessage.goodNews("Successfully logged back in"));
 						
 						// Try to set the Activity in the server-side session.
