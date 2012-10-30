@@ -65,6 +65,11 @@ public abstract class CloudCoderPage {
 	 * Subclasses may call this method when a server-side session
 	 * timeout occurs. It will allow the user to log back in,
 	 * establishing a new valid server-side session if successful.
+	 * A callback is invoked upon a successful recovery, which can be
+	 * used to retry the RPC call that failed.
+	 * 
+	 * @param successfulRecoveryCallback callback to invoke when the session
+	 *                                   is successfully recovered
 	 */
 	public void recoverFromServerSessionTimeout(final Runnable successfulRecoveryCallback) {
 		final SessionExpiredDialogBox dialog = new SessionExpiredDialogBox();
@@ -79,7 +84,7 @@ public abstract class CloudCoderPage {
 					@Override
 					public void onSuccess(User result) {
 						if (result == null) {
-							dialog.setError("Unknown username/password");
+							dialog.setError("Invalid password");
 							return;
 						}
 						
