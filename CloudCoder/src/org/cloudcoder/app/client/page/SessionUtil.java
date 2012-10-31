@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 
@@ -35,19 +36,31 @@ public class SessionUtil {
 	/**
 	 * Retrieve list of {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
 	 * 
+	 * @param page     the {@link CloudCoderPage} which initiated the loading of problems
 	 * @param course   the {@link Course}
 	 * @param session  the {@link Session}
 	 */
-	public static void loadProblemAndSubmissionReceiptsInCourse(final Course course, final Session session) {
+	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final Course course, final Session session) {
         RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
             @Override
             public void onFailure(Throwable caught) {
-                GWT.log("Error loading problems", caught);
-                session.add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
+            	if (caught instanceof CloudCoderAuthenticationException) {
+            		// See if we can log back in
+            		page.recoverFromServerSessionTimeout(new Runnable() {
+            			public void run() {
+            				// Try again!
+            				loadProblemAndSubmissionReceiptsInCourse(page, course, session);
+            			}
+            		});
+            	} else {
+	                GWT.log("Error loading problems", caught);
+	                session.add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
+            	}
             }
 
             @Override
             public void onSuccess(ProblemAndSubmissionReceipt[] result) {
+            	GWT.log(result.length + " ProblemAndSubmissionReceipts loaded successfully, adding to client-side session...");
                 session.add(result);
             }
         });

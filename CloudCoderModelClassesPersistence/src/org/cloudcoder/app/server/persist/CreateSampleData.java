@@ -96,10 +96,10 @@ public class CreateSampleData {
 				"}\n"
 				);
 		problemData.setSchemaVersion(Problem.SCHEMA.getVersion());
-		problemData.setAuthorName("A. User");
-		problemData.setAuthorEmail("auser@cs.unseen.edu");
-		problemData.setAuthorWebsite("http://cs.unseen.edu/~auser");
-		problemData.setTimestampUtc(System.currentTimeMillis());
+		problemData.setAuthorName("David Hovemeyer");
+		problemData.setAuthorEmail("dhovemey@ycp.edu");
+		problemData.setAuthorWebsite("http://faculty.ycp.edu/~dhovemey");
+		problemData.setTimestampUtc(1349008031587L);
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		problemData.setParentHash("");
 	}

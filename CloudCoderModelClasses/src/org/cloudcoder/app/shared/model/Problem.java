@@ -35,6 +35,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private long whenDue;
 	private boolean visible;
 	private ProblemAuthorship problemAuthorship;
+	private boolean deleted;
 	
 	/** {@link ModelObjectField} for problem id. */
 	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
@@ -74,6 +75,13 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		public ProblemAuthorship get(IProblem obj) { return obj.getProblemAuthorship(); }
 	};
 	
+	/** {@link ModelObjectField} for deleted flag. */
+	public static final ModelObjectField<IProblem, Boolean> DELETED = 
+			new ModelObjectField<IProblem, Boolean>("deleted", Boolean.class, 0) {
+				public void set(IProblem obj, Boolean value) { obj.setDeleted(value); }
+				public Boolean get(IProblem obj) { return obj.isDeleted(); }
+			};
+	
 	/**
 	 * Description of fields (schema version 0).
 	 */
@@ -104,9 +112,17 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 			.finishDelta();
 	
 	/**
+	 * Description of fields (schema version 3).
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V3 =
+			ModelObjectSchema.basedOn(SCHEMA_V2)
+			.addAfter(PROBLEM_AUTHORSHIP, DELETED)
+			.finishDelta();
+	
+	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V2;
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V3;
 	
 	/**
 	 * Number of fields.
@@ -229,6 +245,16 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	public void setProblemAuthorship(ProblemAuthorship problemAuthorship) {
 		this.problemAuthorship = problemAuthorship;
 	}
+	
+	@Override
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+	
+	@Override
+	public boolean isDeleted() {
+		return deleted;
+	}
 
 	@Override
 	public String toString() {
@@ -278,6 +304,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		empty.setWhenDue(0L);
 		empty.setVisible(false);
 		empty.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
+		empty.setDeleted(false);
 		ProblemData.initEmpty(empty);
 	}
 }

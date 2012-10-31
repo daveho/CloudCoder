@@ -35,6 +35,7 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestCaseEditor;
 import org.cloudcoder.app.client.view.ViewUtil;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
@@ -141,7 +142,10 @@ public class EditProblemPage extends CloudCoderPage {
 
 		protected void handleSaveProblem() {
 			// Commit the contents of all editors
-			commitAll();
+			if (!commitAll()) {
+				getSession().add(StatusMessage.error("One or more field values is invalid"));
+				return;
+			}
 			
 			// Create a pending operation message
 			getSession().add(StatusMessage.pending("Sending problem data to server..."));
@@ -149,6 +153,12 @@ public class EditProblemPage extends CloudCoderPage {
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getSession().get(Course.class);
+			saveProblem(problemAndTestCaseList, course);
+		}
+
+		public void saveProblem(
+				final ProblemAndTestCaseList problemAndTestCaseList,
+				final Course course) {
 			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(problemAndTestCaseList, course, new AsyncCallback<ProblemAndTestCaseList>() {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
@@ -169,7 +179,16 @@ public class EditProblemPage extends CloudCoderPage {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								saveProblem(problemAndTestCaseList, course);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not save problem: " + caught.getMessage()));
+					}
 				}
 			});
 		}
@@ -324,13 +343,17 @@ public class EditProblemPage extends CloudCoderPage {
 		
 		private void leavePage(final Runnable action) {
 			// Commit all changes made in the editors to the model objects.
-			commitAll();
-
+			boolean successfulCommit = commitAll();
+			
 			// If the Problem has not been modified, then it's fine to leave the page
 			// without a prompt.
-			if (!isProblemModified()) {
+			if (successfulCommit && !isProblemModified()) {
 				action.run();
 				return;
+			}
+			
+			if (successfulCommit) {
+				getSession().add(StatusMessage.error("One or more values is invalid"));
 			}
 			
 			// Prompt user to confirm leaving page (and abandoning changes to Problem)
@@ -352,13 +375,20 @@ public class EditProblemPage extends CloudCoderPage {
 		/**
 		 * Commit all changes in the UI to the underlying ProblemAndTestCaseList model object.
 		 */
-		private void commitAll() {
+		private boolean commitAll() {
 			for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
 				editor.commit();
 			}
 			for (TestCaseEditor editor : testCaseEditorList) {
 				editor.commit();
 			}
+			boolean success = true;
+			for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
+				if (editor.isCommitError()) {
+					success = false;
+				}
+			}
+			return success;
 		}
 		
 		/**

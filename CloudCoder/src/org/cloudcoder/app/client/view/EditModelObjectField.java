@@ -30,6 +30,7 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	private final String desc;
 	private ModelObjectField<? super ModelObjectType, FieldType> field;
 	private ModelObjectType modelObj;
+	private boolean commitError;
 	
 	/**
 	 * Constructor.
@@ -73,6 +74,15 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	}
 	
 	/**
+	 * Set or clear the commit error flag.
+	 * 
+	 * @param commitError value to set or clear the commit error flag
+	 */
+	protected void setCommitError(boolean commitError) {
+		this.commitError = commitError;
+	}
+	
+	/**
 	 * Get a widget for editing the field of the model object.
 	 * 
 	 * @return a widget for editing the field of the model object
@@ -81,8 +91,19 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	
 	/**
 	 * Commit any changes made in the UI to the model object.
+	 * Note that if the editor currently has an invalid value, the commit
+	 * will fail.  This can be detected by calling {@link #isCommitError()}.
 	 */
 	public abstract void commit();
+	
+	/**
+	 * Check whether there was an error committing to the model object.
+	 * Typically, an error indicates that the value entered in the
+	 * UI is too large or otherwise illegal.
+	 */
+	public boolean isCommitError() {
+		return commitError;
+	}
 	
 	/**
 	 * Force the editor to refresh itself by synchronizing its
@@ -118,5 +139,15 @@ public abstract class EditModelObjectField<ModelObjectType, FieldType> {
 	 */
 	protected final FieldType getField() {
 		return field.get(modelObj);
+	}
+	
+	/**
+	 * Get the {@link ModelObjectField} that gets/sets the model object field
+	 * this object is editing.
+	 * 
+	 * @return the {@link ModelObjectField}
+	 */
+	protected ModelObjectField<? super ModelObjectType, FieldType> getModelObjectField() {
+		return field;
 	}
 }

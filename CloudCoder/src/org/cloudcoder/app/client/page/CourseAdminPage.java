@@ -27,6 +27,7 @@ import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -148,7 +149,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			centerPanel.setWidgetLeftRight(problemButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			// Create problems list
-			this.courseAdminProblemListView = new CourseAdminProblemListView();
+			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
 			centerPanel.add(courseAdminProblemListView);
 			centerPanel.setWidgetTopBottom(courseAdminProblemListView, PROBLEM_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			centerPanel.setWidgetLeftRight(courseAdminProblemListView, 0.0, Unit.PX, 0.0, Unit.PX);
@@ -218,24 +219,7 @@ public class CourseAdminPage extends CloudCoderPage {
 				@Override
 				public void call(ProblemAndTestCaseList value) {
 					value.getProblem().setVisible(visible);
-					
-					RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(value, course, new AsyncCallback<ProblemAndTestCaseList>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							getSession().add(StatusMessage.error("Could not update problem visibility: " + caught.getMessage()));
-						}
-						
-						/* (non-Javadoc)
-						 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
-						 */
-						@Override
-						public void onSuccess(ProblemAndTestCaseList result) {
-							getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
-							
-							// Reload problems
-							SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
-						}
-					});
+					updateProblem(value, course);
 				}
 			});
 		}
@@ -295,7 +279,7 @@ public class CourseAdminPage extends CloudCoderPage {
 						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
 						
 						// Reload the problem list
-						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
+						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
 					} else {
 						getSession().add(StatusMessage.error("Exercise was not found"));
 					}
@@ -341,24 +325,7 @@ public class CourseAdminPage extends CloudCoderPage {
 						public void handleChoice(DeleteChoice choice) {
 							if (choice == DeleteChoice.DELETE) {
 								getSession().add(StatusMessage.pending("Deleting problem..."));
-								
-								RPC.getCoursesAndProblemsService.deleteProblem(course, chosen, new AsyncCallback<OperationResult>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										getSession().add(StatusMessage.error("Error deleting problem: " + caught.getMessage()));
-									}
-									@Override
-									public void onSuccess(OperationResult result) {
-										if (result.isSuccess()) {
-											getSession().add(StatusMessage.goodNews(result.getMessage()));
-											
-											// Reload problems
-											SessionUtil.loadProblemAndSubmissionReceiptsInCourse(course, getSession());
-										} else {
-											getSession().add(StatusMessage.error(result.getMessage()));
-										}
-									}
-								});
+								deleteProblem(chosen, course);
 							}
 						}
 					}
@@ -396,7 +363,16 @@ public class CourseAdminPage extends CloudCoderPage {
 			RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								loadProblemAndTestCaseList(problem, callback);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
+					}
 				}
 
 				@Override
@@ -460,18 +436,77 @@ public class CourseAdminPage extends CloudCoderPage {
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
 				onSelectProblem((Problem) hint);
+			} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem[])) {
+				// Problems were reloaded: sync the buttons with the current Problem selection
+				onSelectProblem(courseAdminProblemListView.getSelected());
 			}
 		}
 
 		private void onSelectProblem(Problem problem) {
 			// Problem selected: enable/disable buttons appropriately
 			problemButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.STATISTICS.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(!problem.isVisible());
-			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem.isVisible());
+            problemButtons[ButtonPanelAction.STATISTICS.ordinal()].setEnabled(true);
+			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(problem != null && !problem.isVisible());
+			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem != null && problem.isVisible());
 			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.SHARE.ordinal()].setEnabled(true);
 			problemButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
+		}
+
+		public void deleteProblem(final Problem chosen, final Course course) {
+			RPC.getCoursesAndProblemsService.deleteProblem(course, chosen, new AsyncCallback<OperationResult>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								deleteProblem(chosen, course);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Error deleting problem: " + caught.getMessage()));
+					}
+				}
+				@Override
+				public void onSuccess(OperationResult result) {
+					if (result.isSuccess()) {
+						getSession().add(StatusMessage.goodNews(result.getMessage()));
+						// Reload problems
+						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+					} else {
+						getSession().add(StatusMessage.error(result.getMessage()));
+					}
+				}
+			});
+		}
+
+		public void updateProblem(final ProblemAndTestCaseList value, final Course course) {
+			RPC.getCoursesAndProblemsService.storeProblemAndTestCaseList(value, course, new AsyncCallback<ProblemAndTestCaseList>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								updateProblem(value, course);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not update problem visibility: " + caught.getMessage()));
+					}
+				}
+				
+				/* (non-Javadoc)
+				 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
+				 */
+				@Override
+				public void onSuccess(ProblemAndTestCaseList result) {
+					getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
+					// Reload problems
+					SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+				}
+			});
 		}
 	}
 

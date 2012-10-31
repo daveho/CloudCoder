@@ -116,6 +116,9 @@ public class EditEnumField<ModelObjectType, EnumType extends Enum<EnumType>>
 	 */
 	@Override
 	public void commit() {
+		// There is no way to select an invalid value,
+		// so the commit will always succeed.
+		setCommitError(false);
 		setField(ui.getEnumValue());
 	}
 	

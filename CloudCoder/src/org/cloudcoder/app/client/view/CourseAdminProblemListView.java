@@ -21,9 +21,11 @@ import java.util.Arrays;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CourseAdminPage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -45,13 +47,16 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * @author David Hovemeyer
  */
 public class CourseAdminProblemListView extends ResizeComposite implements Subscriber, SessionObserver {
+	private CloudCoderPage page;
 	private DataGrid<Problem> grid;
 	private Session session;
+	private SingleSelectionModel<Problem> selectionModel;
 	
 	/**
 	 * Constructor.
 	 */
-	public CourseAdminProblemListView() {
+	public CourseAdminProblemListView(CloudCoderPage page) {
+		this.page = page;
 		grid = new DataGrid<Problem>();
 		grid.addColumn(new ProblemNameColumn(), "Name");
 		grid.addColumn(new ProblemBriefDescriptionColumn(), "Description");
@@ -132,7 +137,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		
 		// Set selection model.
 		// When a Problem is selected, it will be added to the Session.
-		final SingleSelectionModel<Problem> selectionModel = new SingleSelectionModel<Problem>();
+		this.selectionModel = new SingleSelectionModel<Problem>();
 		selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent event) {
@@ -154,8 +159,17 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			loadProblems(session, course);
 		}
 	}
+	
+	/**
+	 * Get the currently-selected {@link Problem}.
+	 * 
+	 * @return the currently-selected {@link Problem}
+	 */
+	public Problem getSelected() {
+		return selectionModel.getSelectedObject();
+	}
 
-	private void loadProblems(final Session session, Course course) {
+	private void loadProblems(final Session session, final Course course) {
 		RPC.getCoursesAndProblemsService.getProblems(course, new AsyncCallback<Problem[]>() {
 			@Override
 			public void onSuccess(Problem[] result) {
@@ -164,7 +178,16 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				session.add(StatusMessage.error("Could not load problems for course: " + caught.getMessage()));
+				if (caught instanceof CloudCoderAuthenticationException) {
+					page.recoverFromServerSessionTimeout(new Runnable() {
+						public void run() {
+							// Try again!
+							loadProblems(session, course);
+						}
+					});
+				} else {
+					session.add(StatusMessage.error("Could not load problems for course: " + caught.getMessage()));
+				}
 			}
 		});
 	}

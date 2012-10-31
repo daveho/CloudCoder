@@ -19,7 +19,6 @@ package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.shared.model.ModelObjectField;
 
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -35,7 +34,7 @@ public class EditStringField<ModelObjectType> extends EditModelObjectField<Model
 	
 	public static final double HEIGHT_PX = 32.0;
 
-	private class UI extends Composite {
+	private class UI extends EditModelObjectFieldUI {
 		private TextBox textBox;
 
 		public UI() {
@@ -47,6 +46,8 @@ public class EditStringField<ModelObjectType> extends EditModelObjectField<Model
 			Label label = new Label(getDescription());
 			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
+			
+			panel.add(getErrorLabel());
 			
 			textBox = new TextBox();
 			textBox.setWidth("300px"); // TODO: allow this to be configurable?
@@ -90,7 +91,15 @@ public class EditStringField<ModelObjectType> extends EditModelObjectField<Model
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getText());
+		String text = ui.getText();
+		if (text.length() > getModelObjectField().getSize()) {
+			setCommitError(true);
+			ui.setError("Value cannot be longer than " + getModelObjectField().getSize() + " characters");
+		} else {
+			setCommitError(false);
+			ui.clearError();
+			setField(text);
+		}
 	}
 	
 	@Override

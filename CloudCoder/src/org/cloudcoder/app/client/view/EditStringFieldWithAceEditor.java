@@ -37,7 +37,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 public class EditStringFieldWithAceEditor<ModelObjectType>
 		extends EditModelObjectField<ModelObjectType, String> {
 	
-	private class UI extends Composite {
+	private class UI extends EditModelObjectFieldUI {
 		private AceEditor editor;
 		private boolean editorStarted;
 		private AceEditorMode currentMode;
@@ -49,6 +49,8 @@ public class EditStringFieldWithAceEditor<ModelObjectType>
 			Label label = new Label(getDescription());
 			label.setStyleName("cc-fieldEditorLabel", true);
 			panel.add(label);
+			
+			panel.add(getErrorLabel());
 
 			editor = new AceEditor(true);
 			editor.setSize("600px", "300px");
@@ -148,7 +150,15 @@ public class EditStringFieldWithAceEditor<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getText());
+		String text = ui.getText();
+		if (text.length() > getModelObjectField().getSize()) {
+			setCommitError(true);
+			ui.setError("Value cannot be longer than " + getModelObjectField().getSize() + " characters");
+		} else {
+			setCommitError(false);
+			ui.clearError();
+			setField(text);
+		}
 	}
 
 	@Override

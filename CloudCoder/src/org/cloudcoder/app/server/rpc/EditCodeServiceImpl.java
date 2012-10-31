@@ -28,7 +28,7 @@ import org.cloudcoder.app.server.model.TextDocument;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.User;
@@ -49,7 +49,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	private static final boolean DEBUG_CODE_DELTAS = false;
 
 	@Override
-	public Problem setProblem(int problemId) throws NetCoderAuthenticationException {
+	public Problem setProblem(int problemId) throws CloudCoderAuthenticationException {
 		// make sure client is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
@@ -71,7 +71,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
     @Override
-    public ProblemText loadCurrentText() throws NetCoderAuthenticationException {
+    public ProblemText loadCurrentText() throws CloudCoderAuthenticationException {
     	// make sure client is authenticated
     	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
     	
@@ -80,7 +80,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     	
     	if (problem == null) {
     		// Can't load current text unless a Problem has been loaded
-    		throw new NetCoderAuthenticationException();
+    		throw new CloudCoderAuthenticationException();
     	}
 
     	ProblemText text = doLoadCurrentText(user, problem);
@@ -154,7 +154,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
 	@Override
-	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws NetCoderAuthenticationException {
+	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws CloudCoderAuthenticationException {
 		long serverSubmitTime = System.currentTimeMillis();
 
 		// make sure client is authenticated
@@ -163,7 +163,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// Make sure all Changes have proper user id
 		for (Change change : changeList) {
 			if (change.getEvent().getUserId() != user.getId()) {
-				throw new NetCoderAuthenticationException();
+				throw new CloudCoderAuthenticationException();
 			}
 		}
 		

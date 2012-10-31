@@ -1,0 +1,116 @@
+<project name="cloudcoderrepowebserver" default="jar">
+	<property name="jarfile" value="cloudcoderRepoApp.jar"/>
+	
+	<!-- Filename of JSTL jarfile. -->
+	<property name="jstl.jar" value="org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar"/>
+	
+	<path id="cloudcoderrepowebserver.path">
+		<pathelement location="bin"/>
+		<pathelement location="../CloudCoderJetty/cloudcoderJetty.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+	</path>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="modelClassesPersist">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="cloudcoderJetty">
+		<ant dir="../CloudCoderJetty" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="modelClassesJSON">
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
+	</target>
+	
+	<target name="repoWebapp">
+		<ant dir="../CloudCoderRepository" target="build" inheritall="false"/>
+	</target>
+	
+	<target name="javac" depends="cloudcoderJetty">
+		<mkdir dir="bin"/>
+		<javac srcdir="src" destdir="bin" source="1.6" target="1.6">
+			<classpath refid="cloudcoderrepowebserver.path"/>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="javac,modelClasses,modelClassesPersist,modelClassesJSON,repoWebapp">
+		<jar destfile="${jarfile}">
+			<!-- Copy classes  from the bin directory. -->
+			<fileset dir="bin" includes="**"/>
+	
+			<!-- Copy classes and other files from required libraries and Jetty. -->
+			<zipfileset src="../CloudCoderJetty/jettyDeps.jar" excludes="META-INF/**"/>
+			
+			<!-- Copy Jetty single-file-deployment support code. -->
+			<zipfileset src="../CloudCoderJetty/cloudcoderJetty.jar" excludes="META-INF/**"/>
+			
+			<!-- Include the repository webapp.
+			     However, exclude the slf4j jars, since Jetty will already have
+			     them on its classpath, and we don't want two copies. -->
+			<fileset
+				dir="../CloudCoderRepository"
+				includes="war/**"
+				excludes="**/slf4j*.jar,war/logs/**" />			
+				
+			<!-- Include the model classes jar file in webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClasses/cloudcoderModelClasses.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClasses.jar"/>
+	
+			<!-- Include the model classes persistence jar file in webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClassesPersist.jar"/>
+			
+			<!-- Include the model classes JSON serialization jar file in the webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderModelClassesJSON.jar"/>
+			
+			<!-- Include libraries needed for JSON serialization. -->
+			<zipfileset
+				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
+				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
+			
+			<!-- Include JSTL taglib jarfile. -->
+			<zipfileset
+				file="../CloudCoderJetty/lib/jetty/jsp/${jstl.jar}"
+				fullpath="war/WEB-INF/lib/${jstl.jar}"/>
+			
+			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
+			<zipfileset
+				file="../cloudcoder.properties"
+				fullpath="cloudcoder.properties"/>
+			
+			<!-- Include log4j.properties -->
+			<zipfileset
+				file="src/log4j.properties"
+				fullpath="log4j.properties"/>
+
+			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.repoapp.webserver.CloudCoderRepositoryWebServer" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="${jarfile}"/>
+	</target>
+	
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesPersistence" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderJetty" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderRepository" target="clean" inheritall="false"/>
+	</target>
+</project>

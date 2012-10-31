@@ -24,7 +24,6 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -50,7 +49,7 @@ public class EditDateTimeField<ModelObjectType>
 	private static final RegExp HOUR_MINUTE_PATTERN =
 			RegExp.compile("^\\s*(\\d\\d?)\\s*:\\s*(\\d\\d?)\\s*$");
 
-	private class UI extends Composite {
+	private class UI extends EditModelObjectFieldUI {
 		private DatePicker datePicker;
 		private TextBox hourMinuteTextBox;
 
@@ -61,6 +60,8 @@ public class EditDateTimeField<ModelObjectType>
 			Label label = new Label(getDescription());
 			label.setStyleName("cc-fieldEditorLabel");
 			panel.add(label);
+			
+			panel.add(getErrorLabel());
 			
 			// Add a date picker and float it left
 			this.datePicker = new DatePicker();
@@ -97,20 +98,19 @@ public class EditDateTimeField<ModelObjectType>
 			String hourMinuteString = hourMinuteTextBox.getText();
 			MatchResult match = HOUR_MINUTE_PATTERN.exec(hourMinuteString);
 			
-			if (match != null) {
-				// We have a valid date, hour, and minute.
-				// Assemble them into a Date.
-				result = DATE_HOUR_MINUTE_FORMAT.parse(
-						DATE_FORMAT.format(datePickerDate) +
-						" " +
-						match.getGroup(1) +
-						":" +
-						match.getGroup(2));
-			} else {
+			if (match == null) {
 				// We have a valid date, but not hour and minute.
-				// Just accept what we got from the DatePicker.
-				result = datePickerDate;
+				return null;
 			}
+			
+			// We have a valid date, hour, and minute.
+			// Assemble them into a Date.
+			result = DATE_HOUR_MINUTE_FORMAT.parse(
+					DATE_FORMAT.format(datePickerDate) +
+					" " +
+					match.getGroup(1) +
+					":" +
+					match.getGroup(2));
 			
 			return result;
 		}
@@ -152,7 +152,15 @@ public class EditDateTimeField<ModelObjectType>
 	 */
 	@Override
 	public void commit() {
-		setField(ui.getDate().getTime());
+		Date date = ui.getDate();
+		if (date == null) {
+			setCommitError(true);
+			ui.setError("Please enter a valid date and time");
+		} else {
+			setCommitError(false);
+			ui.clearError();
+			setField(date.getTime());
+		}
 	}
 
 	/* (non-Javadoc)

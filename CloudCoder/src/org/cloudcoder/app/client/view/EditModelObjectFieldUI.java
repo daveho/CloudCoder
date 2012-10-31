@@ -15,36 +15,52 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.repoapp.webserver;
+package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.daemon.DaemonController;
-import org.cloudcoder.daemon.IDaemon;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 
 /**
- * Variant of {@link DaemonController} for the CloudCoder exercise
- * repository webapp.
+ * Base class for UI widgets for {@link EditModelObjectField}
+ * implementations.
  * 
  * @author David Hovemeyer
  */
-public class CloudCoderRepositoryDaemonController extends DaemonController {
-	@Override
-	public String getDefaultInstanceName() {
-		return "instance";
+public abstract class EditModelObjectFieldUI extends Composite {
+	private Label errorLabel;
+	
+	/**
+	 * Constructor.
+	 */
+	public EditModelObjectFieldUI() {
 	}
 
-	@Override
-	public Class<? extends IDaemon> getDaemonClass() {
-		return CloudCoderRepositoryDaemon.class;
+	/**
+	 * @return the errorLabel
+	 */
+	public Label getErrorLabel() {
+		if (errorLabel == null) {
+			errorLabel = new Label("");
+			errorLabel.setStyleName("cc-fieldEditorErrorLabel", true);
+			errorLabel.setVisible(false);
+		}
+		return errorLabel;
 	}
 	
-	@Override
-	protected Options createOptions() {
-		// Put the stdout log in the "logs" directory.
-		return new Options() {
-			@Override
-			public String getStdoutLogFileName() {
-				return "logs/stdout.log";
-			}
-		};
+	/**
+	 * Set an error message.
+	 * 
+	 * @param errorMessage error message to set
+	 */
+	public void setError(String errorMessage) {
+		errorLabel.setText(errorMessage);
+		errorLabel.setVisible(true);
+	}
+	
+	/**
+	 * Clear the error message.
+	 */
+	public void clearError() {
+		errorLabel.setVisible(false);
 	}
 }

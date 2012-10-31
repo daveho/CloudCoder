@@ -37,6 +37,7 @@ import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Language;
@@ -447,8 +448,17 @@ public class DevelopmentPage extends CloudCoderPage {
 			RPC.editCodeService.setProblem(problem.getProblemId(), new AsyncCallback<Problem>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					GWT.log("Could not set problem", caught);
-					addSessionObject(StatusMessage.error("Error loading problem on server: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								setProblem(session, problem);
+							}
+						});
+					} else {
+						GWT.log("Could not set problem", caught);
+						addSessionObject(StatusMessage.error("Error loading problem on server: " + caught.getMessage()));
+					}
 				}
 				
 				@Override

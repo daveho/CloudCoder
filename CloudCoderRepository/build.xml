@@ -1,0 +1,45 @@
+<project name="cloudcoderrepo" default="build">
+	<path id="cloudcoderrepo.path">
+		<pathelement location="bin"/>
+		<fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
+		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+		<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		<fileset dir="../CloudCoderModelClassesJSON/lib" includes="**.jar"/>
+	</path>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="modelClassesPersist">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="modelClassesJSON">
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
+	</target>
+	
+	<target name="javac" depends="modelClasses,modelClassesPersist,modelClassesJSON">
+		<javac srcdir="src" destdir="war/WEB-INF/classes" source="1.6" target="1.6">
+			<classpath refid="cloudcoderrepo.path"/>
+		</javac>
+	</target>
+	
+	<target name="build" depends="javac">
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="war/WEB-INF/classes" includes="**"/>
+        </delete>
+	</target>
+
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesPersistence" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
+	</target>
+</project>

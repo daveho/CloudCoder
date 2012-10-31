@@ -192,6 +192,12 @@ public abstract class JettyDaemon implements IDaemon {
 			// Configure the override-web.xml
 			handler.setOverrideDescriptors(Arrays.asList(overrideWebXml));
 		}
+		
+		// Don't allow directory listings
+		handler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+		
+		// Allow the welcome file to be a servlet
+		handler.setInitParameter("org.eclipse.jetty.servlet.Default.welcomeServlets", "true");
 
 		// Add it to the server
 		server.setHandler(handler);

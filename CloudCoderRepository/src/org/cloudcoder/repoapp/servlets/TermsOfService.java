@@ -15,36 +15,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.repoapp.webserver;
+package org.cloudcoder.repoapp.servlets;
 
-import org.cloudcoder.daemon.DaemonController;
-import org.cloudcoder.daemon.IDaemon;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * Variant of {@link DaemonController} for the CloudCoder exercise
- * repository webapp.
+ * Terms of service servlet.
  * 
  * @author David Hovemeyer
  */
-public class CloudCoderRepositoryDaemonController extends DaemonController {
-	@Override
-	public String getDefaultInstanceName() {
-		return "instance";
-	}
+public class TermsOfService extends HttpServlet {
+	private static final long serialVersionUID = 1L;
 
 	@Override
-	public Class<? extends IDaemon> getDaemonClass() {
-		return CloudCoderRepositoryDaemon.class;
-	}
-	
-	@Override
-	protected Options createOptions() {
-		// Put the stdout log in the "logs" directory.
-		return new Options() {
-			@Override
-			public String getStdoutLogFileName() {
-				return "logs/stdout.log";
-			}
-		};
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		req.getRequestDispatcher("/_view/termsOfService.jsp").forward(req, resp);
 	}
 }

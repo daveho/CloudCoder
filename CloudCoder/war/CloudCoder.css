@@ -149,9 +149,14 @@
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
-.cc-fieldEditorLabel {
+.cc-fieldEditorLabel, .cc-fieldEditorErrorLabel {
 	font-size: 16px;
+}
+.cc-fieldEditorLabel {
 	font-weight: bold;
+}
+.cc-fieldEditorErrorLabel {
+	color: red;
 }
 
 /*

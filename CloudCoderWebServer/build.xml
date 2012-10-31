@@ -67,13 +67,6 @@
 		the webapp (and required libraries) and Jetty (the web server).
 	-->
 	<target name="jar" depends="build,modelClasses,modelClassesPersistence,modelClassesJSON,webapp">
-		<!--
-			Build single jar containing contents of all required libraries.
-		-->
-		<jar destfile="deps.jar">
-			<zipgroupfileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
-			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
-		</jar>
 		
 		<!--
 			Build single deployable jarfile containing our launcher code,
@@ -85,7 +78,7 @@
 			<fileset dir="bin" includes="**"/>
 
 			<!-- Copy classes and other files from required libraries and Jetty. -->
-			<zipfileset src="deps.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderJetty/jettyDeps.jar" excludes="META-INF/**"/>
 			
 			<!-- Copy Jetty single-file-deployment support code. -->
 			<zipfileset src="../CloudCoderJetty/cloudcoderJetty.jar" excludes="META-INF/**"/>

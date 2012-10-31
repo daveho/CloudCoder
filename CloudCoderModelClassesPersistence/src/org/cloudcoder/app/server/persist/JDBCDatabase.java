@@ -42,7 +42,7 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -561,6 +561,7 @@ public class JDBCDatabase implements IDatabase {
 						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
 						"   and p.course_id = cr.course_id " +
 						"   and e.problem_id = p.problem_id " +
+						"   and p." + Problem.DELETED.getName() + " = 0 " +
 						"   and e.user_id = cr.user_id " +
 						"   and r.event_id = e.id "
 				);
@@ -681,11 +682,6 @@ public class JDBCDatabase implements IDatabase {
 					result.add(testCase);
 				}
 				
-				if (result.isEmpty()) {
-					// Most likely, the user is not authorized (not an instructor for the course)
-					return null;
-				}
-				
 				// Success!
 				return result.toArray(new TestCase[result.size()]);
 			}
@@ -725,7 +721,7 @@ public class JDBCDatabase implements IDatabase {
 	    databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
 
             @Override
-            public Boolean run(Connection conn) throws SQLException,NetCoderAuthenticationException
+            public Boolean run(Connection conn) throws SQLException,CloudCoderAuthenticationException
             {
                 doInsertUsersFromInputStream(in, course, conn);
                 return true;
@@ -737,7 +733,7 @@ public class JDBCDatabase implements IDatabase {
             }
 	        
         });
-	    } catch (NetCoderAuthenticationException e) {
+	    } catch (CloudCoderAuthenticationException e) {
 	        // TODO proper error handling
 	        throw new RuntimeException(e);
 	    }
@@ -1106,14 +1102,14 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
 			final ProblemAndTestCaseList problemAndTestCaseList, final Course course, final User user)
-			throws NetCoderAuthenticationException {
+			throws CloudCoderAuthenticationException {
 		return databaseRunAuth(new AbstractDatabaseRunnable<ProblemAndTestCaseList>() {
 			@Override
 			public ProblemAndTestCaseList run(Connection conn)
-					throws SQLException, NetCoderAuthenticationException {
+					throws SQLException, CloudCoderAuthenticationException {
 				// Ensure problem and course id match.
 				if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
-					throw new NetCoderAuthenticationException("Problem does not match course");
+					throw new CloudCoderAuthenticationException("Problem does not match course");
 				}
 				
 				// Check that user is registered as an instructor in the course.
@@ -1128,7 +1124,7 @@ public class JDBCDatabase implements IDatabase {
 					}
 				}
 				if (!isInstructor) {
-					throw new NetCoderAuthenticationException("not instructor in course");
+					throw new CloudCoderAuthenticationException("not instructor in course");
 				}
 				
 				// If the problem id is not set, then insert the problem.
@@ -1348,29 +1344,31 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public boolean deleteProblem(final User user, final Course course, final Problem problem)
-			throws NetCoderAuthenticationException {
+			throws CloudCoderAuthenticationException {
 		return databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
 			@Override
-			public Boolean run(Connection conn) throws SQLException, NetCoderAuthenticationException {
+			public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
 				// verify that the user is an instructor in the course
 				CourseRegistration courseReg = doGetCourseRegistration(conn, course.getId(), user.getId(), this);
 				if (courseReg == null || courseReg.getRegistrationType() != CourseRegistrationType.INSTRUCTOR) {
-					throw new NetCoderAuthenticationException("Only instructor can delete a problem");
+					throw new CloudCoderAuthenticationException("Only instructor can delete a problem");
 				}
 				
-				// delete the problem
-				PreparedStatement delProbStmt = prepareStatement(
+				// Delete the problem
+				// Note that we do NOT delete the problem from the database.
+				// Instead, we just set the deleted flag to true, which prevents the
+				// problem from coming up in future searches.  Because lots
+				// of information is linked to a problem, and serious database
+				// corruption could occur if a problem id were reused, this
+				// is a much safer approach than physical deletion.
+				PreparedStatement stmt = prepareStatement(
 						conn,
-						"delete from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
-				delProbStmt.setInt(1, problem.getProblemId());
-				delProbStmt.executeUpdate();
+						"update " + Problem.SCHEMA.getDbTableName() +
+						"   set " + Problem.DELETED.getName() + " = 1 " +
+						" where " + Problem.PROBLEM_ID.getName() + " = ?");
+				stmt.setInt(1, problem.getProblemId());
 				
-				// delete the problem's test cases
-				PreparedStatement delTestCasesStmt = prepareStatement(
-						conn,
-						"delete from " + TestCase.SCHEMA.getDbTableName() + " where " + TestCase.PROBLEM_ID.getName() + " = ?");
-				delTestCasesStmt.setInt(1, problem.getProblemId());
-				delTestCasesStmt.executeUpdate();
+				stmt.executeUpdate();
 				
 				return true;
 			}
@@ -1474,7 +1472,7 @@ public class JDBCDatabase implements IDatabase {
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that extend {@link AbstractDatabaseRunnableNoAuthException}
-	 * and thus are guaranteed not to throw {@link NetCoderAuthenticationException}.
+	 * and thus are guaranteed not to throw {@link CloudCoderAuthenticationException}.
 	 * 
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
@@ -1482,7 +1480,7 @@ public class JDBCDatabase implements IDatabase {
 	public<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable) {
 		try {
 			return doDatabaseRun(databaseRunnable);
-		} catch (NetCoderAuthenticationException e) {
+		} catch (CloudCoderAuthenticationException e) {
 			// The fact that the method takes an
 			// AbstractDatabaseRunnableNoAuthException guarantees that the transaction
 			// won't throw NetcoderAuthenticationException.
@@ -1493,16 +1491,16 @@ public class JDBCDatabase implements IDatabase {
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that check the authenticity of provided
-	 * user credentials and may throw {@link NetCoderAuthenticationException}.
+	 * user credentials and may throw {@link CloudCoderAuthenticationException}.
 	 * 
 	 * @param databaseRunnable the transaction to run
 	 * @return the result
 	 */
-	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
 		return doDatabaseRun(databaseRunnable);
 	}
 
-	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws NetCoderAuthenticationException {
+	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
 		try {
 			Connection conn = null;
 			boolean committed = false;
@@ -1654,6 +1652,7 @@ public class JDBCDatabase implements IDatabase {
 				conn,
 				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 				" where p.course_id = c.id " +
+				"   and p." + Problem.DELETED.getName() + " = 0 " +
 				"   and r.course_id = c.id " +
 				"   and r.user_id = ? " +
 				"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +

@@ -20,11 +20,11 @@ package org.cloudcoder.app.server.persist;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 
 /**
  * Variant of {@link AbstractDatabaseRunnable} whose run() method is guaranteed
- * not to throw {@link NetCoderAuthenticationException}.  Subclass this for
+ * not to throw {@link CloudCoderAuthenticationException}.  Subclass this for
  * database transactions that don't require user authentication.
  * 
  * @author David Hovemeyer

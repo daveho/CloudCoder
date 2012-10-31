@@ -18,7 +18,6 @@
 package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
-import java.util.Date;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -32,8 +31,6 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -146,6 +143,11 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 		if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
 			// A Course has been selected: load its problems
 			loadProblemsForCourse((Course) hint);
+		} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof ProblemAndSubmissionReceipt[])) {
+			// The list of ProblemAndSubmissionReceipts has been reloaded.
+			// This can happen because the current page has done something to change
+			// the list (e.g., adding or removing a problem) for the current course.
+			displayLoadedProblems((ProblemAndSubmissionReceipt[])hint);
 		}
 	}
 

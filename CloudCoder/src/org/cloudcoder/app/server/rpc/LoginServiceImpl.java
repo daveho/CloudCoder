@@ -38,6 +38,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  * Implementation of {@link LoginService}.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 	private static final long serialVersionUID = 1L;
@@ -52,6 +53,15 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	public static final String IMAP_SOCKET_FACTORY_CLASS="mail.imap.socketFactory.class";
     public static final String IMAP_SOCKET_FACTORY_FALLBACK= "mail.imap.socketFactory.fallback";
     public static final String IMAP_SOCKET_FACTORY_PORT= "mail.imap.socketFactory.port";
+    
+    /**
+     * Set this to true to have very short session timeouts.
+     * Useful for testing that RPC calls that fail because of session
+     * timeouts can be successfully completed following a successful
+     * call to CloudCoderPage.recoverFromServerSessionTimeout().
+     * Should NOT be set to true for production!
+     */
+    private static boolean DEBUG_SESSION_TIMEOUTS = false;
 
 	@Override
 	public User login(String userName, String password) {
@@ -85,6 +95,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			// servlets will know that the client is logged in
 			HttpSession session = getThreadLocalRequest().getSession();
 			session.setAttribute(SessionAttributeKeys.USER_KEY, user);
+			
+			if (DEBUG_SESSION_TIMEOUTS) {
+				// time session out after 10 seconds of inactivity
+				session.setMaxInactiveInterval(10);
+			}
 		}
 		
 		return user;

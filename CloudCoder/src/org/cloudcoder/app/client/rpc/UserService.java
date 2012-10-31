@@ -18,7 +18,7 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.NetCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -39,11 +39,11 @@ public interface UserService extends RemoteService
      * 
      * @param course The course for which we want the users.
      * @return An array of all of the Users registered for the given course.
-     * @throws NetCoderAuthenticationException if the client is not authenticated
+     * @throws CloudCoderAuthenticationException if the client is not authenticated
      */
-    User[] getUsers(int courseId) throws NetCoderAuthenticationException;
+    User[] getUsers(int courseId) throws CloudCoderAuthenticationException;
     
-    Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section) throws NetCoderAuthenticationException;
+    Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section) throws CloudCoderAuthenticationException;
     
     /**
      * Edit the fields of the {@link User} record indicated by the
@@ -61,7 +61,7 @@ public interface UserService extends RemoteService
      */
     Boolean editUser(int id, String username, String firstname, String lastname,
         String email, String passwd)
-    throws NetCoderAuthenticationException;
+    throws CloudCoderAuthenticationException;
     
-    void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type) throws NetCoderAuthenticationException;
+    void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type) throws CloudCoderAuthenticationException;
 }

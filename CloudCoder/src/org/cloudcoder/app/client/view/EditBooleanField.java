@@ -97,4 +97,14 @@ public class EditBooleanField<ModelObjectType>
 	public void update() {
 		ui.setValue(getField());
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.view.EditModelObjectField#isCommitError()
+	 */
+	@Override
+	public boolean isCommitError() {
+		// There is no way to enter an invalid value
+		// in the checkbox.
+		return false;
+	}
 }

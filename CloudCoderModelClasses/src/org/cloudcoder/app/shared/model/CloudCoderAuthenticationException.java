@@ -15,36 +15,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.repoapp.webserver;
-
-import org.cloudcoder.daemon.DaemonController;
-import org.cloudcoder.daemon.IDaemon;
+package org.cloudcoder.app.shared.model;
 
 /**
- * Variant of {@link DaemonController} for the CloudCoder exercise
- * repository webapp.
- * 
- * @author David Hovemeyer
+ * Exception type to indicate than an RPC failed because
+ * the client was not authenticated.
  */
-public class CloudCoderRepositoryDaemonController extends DaemonController {
-	@Override
-	public String getDefaultInstanceName() {
-		return "instance";
-	}
+public class CloudCoderAuthenticationException extends Exception {
+	private static final long serialVersionUID = 1L;
 
-	@Override
-	public Class<? extends IDaemon> getDaemonClass() {
-		return CloudCoderRepositoryDaemon.class;
+	/**
+	 * Constructor (no message).
+	 */
+	public CloudCoderAuthenticationException() {
+		
 	}
 	
-	@Override
-	protected Options createOptions() {
-		// Put the stdout log in the "logs" directory.
-		return new Options() {
-			@Override
-			public String getStdoutLogFileName() {
-				return "logs/stdout.log";
-			}
-		};
+	/**
+	 * Constructor.
+	 * 
+	 * @param msg message describing the exception
+	 */
+	public CloudCoderAuthenticationException(String msg) {
+		super(msg);
 	}
+
 }
