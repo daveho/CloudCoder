@@ -1,0 +1,11 @@
+* text=lf
+
+*.java text
+*.properties text
+*.js text
+*.xml text
+*.sh text
+*.html text
+
+
+*.jar binary
