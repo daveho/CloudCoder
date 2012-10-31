@@ -5,6 +5,7 @@
 *.js text
 *.xml text
 *.sh text
+*.pl text
 *.html text
 
 
