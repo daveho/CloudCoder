@@ -86,7 +86,7 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @return
 	 * @throws NetCoderAuthenticationException
 	 */
-	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws NetCoderAuthenticationException;
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.

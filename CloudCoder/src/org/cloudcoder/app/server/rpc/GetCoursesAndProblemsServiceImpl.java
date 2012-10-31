@@ -139,7 +139,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		return resultList.toArray(new Problem[resultList.size()]);
 	}
 	
-	public Problem[] getProblemsForUser(Course course,int userId) throws NetCoderAuthenticationException {
+	public Problem[] getProblemsForUser(Course course,int userId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = Database.getInstance().getUserGivenId(userId);
 		
@@ -171,7 +171,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 */
 	@Override
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
-			Course course, User user) throws NetCoderAuthenticationException {
+			Course course, User user) throws CloudCoderAuthenticationException {
 
 		logger.warn("yay! getting submission receipts for user "+user.getUsername());
 		
