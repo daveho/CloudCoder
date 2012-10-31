@@ -63,6 +63,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
      */
     private static boolean DEBUG_SESSION_TIMEOUTS = false;
 
+    /**
+     * Default session timeout in seconds.  Defaults to 30 minutes.
+     */
+    private static final int SESSION_TIMEOUT_IN_SECONDS = 30 * 60;
+
 	@Override
 	public User login(String userName, String password) {
 	    // Can this method be called anywhere?
@@ -96,10 +101,15 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			HttpSession session = getThreadLocalRequest().getSession();
 			session.setAttribute(SessionAttributeKeys.USER_KEY, user);
 			
+			// Set session timeout.
+			int maxInactive = SESSION_TIMEOUT_IN_SECONDS;
 			if (DEBUG_SESSION_TIMEOUTS) {
-				int maxInactive = 60;
-				session.setMaxInactiveInterval(maxInactive);
+				// This is useful for testing automatic retry of RPC calls
+				// that fail because of a server session timeout:
+				// expires server sessions after 20 seconds of inactivity.
+				maxInactive = 20;
 			}
+			session.setMaxInactiveInterval(maxInactive);
 		}
 		
 		return user;
