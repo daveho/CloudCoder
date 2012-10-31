@@ -124,4 +124,13 @@ public class SessionExpiredDialogBox extends DialogBox {
 	public void setLoginButtonHandler(Runnable loginButtonHandler) {
 		this.loginButtonHandler = loginButtonHandler;
 	}
+	
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.PopupPanel#center()
+	 */
+	@Override
+	public void center() {
+		super.center();
+		passwordBox.setFocus(true);
+	}
 }

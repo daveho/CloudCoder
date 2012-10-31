@@ -25,6 +25,7 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
@@ -117,7 +118,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
             dockLayoutPanel.addSouth(southLayoutPanel, ProblemDescriptionView.HEIGHT_PX + StatusMessageView.HEIGHT_PX*2);
 
-            this.problemListView2 = new ProblemListView2();
+            this.problemListView2 = new ProblemListView2(CoursesAndProblemsPage2.this);
             dockLayoutPanel.add(problemListView2);
 
             initWidget(dockLayoutPanel);
@@ -140,12 +141,17 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
             // activate views
             problemListView2.activate(session, subscriptionRegistrar);
             problemDescriptionView.activate(session, subscriptionRegistrar);
+            statusMessageView.activate(session, subscriptionRegistrar);
 
             // register a logout handler
             this.pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 
             // Load courses
-            RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
+            getCoursesAndProblemsRPC(session);
+        }
+
+		protected void getCoursesAndProblemsRPC(final Session session) {
+			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
                 @Override
                 public void onSuccess(CourseAndCourseRegistration[] result) {
                     GWT.log(result.length + " course(s) loaded");
@@ -154,11 +160,21 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
                 @Override
                 public void onFailure(Throwable caught) {
-                    GWT.log("Error loading courses", caught);
-                    session.add(StatusMessage.error("Error loading courses: " + caught.getMessage()));
+                	if (caught instanceof CloudCoderAuthenticationException) {
+                		recoverFromServerSessionTimeout(new Runnable() {
+                			@Override
+                			public void run() {
+                				// Try again!
+                				getCoursesAndProblemsRPC(session);
+                			}
+                		});
+                	} else {
+	                    GWT.log("Error loading courses", caught);
+	                    session.add(StatusMessage.error("Error loading courses", caught));
+                	}
                 }
             });
-        }
+		}
 
         /* (non-Javadoc)
          * @see org.cloudcoder.app.shared.util.Subscriber#eventOccurred(java.lang.Object, org.cloudcoder.app.shared.util.Publisher, java.lang.Object)

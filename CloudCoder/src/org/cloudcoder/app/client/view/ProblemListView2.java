@@ -21,8 +21,10 @@ import java.util.Arrays;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -47,10 +49,18 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * @author David Hovemeyer
  */
 public class ProblemListView2 extends ResizeComposite implements SessionObserver, Subscriber {
+	private CloudCoderPage page;
 	private Session session;
 	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
 
-	public ProblemListView2() {
+	/**
+	 * Constructor.
+	 * 
+	 * @param page the {@link CloudCoderPage} that will contain this view
+	 */
+	public ProblemListView2(CloudCoderPage page) {
+		this.page = page;
+		
 		cellTable = new DataGrid<ProblemAndSubmissionReceipt>();
 		
 		// Configure the DataGrid that will show the problems
@@ -151,12 +161,22 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 		}
 	}
 
-	public void loadProblemsForCourse(Course course) {
+	public void loadProblemsForCourse(final Course course) {
 		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				GWT.log("Error loading problems for course", caught);
-				session.add(StatusMessage.error("Error loading problems for course: " + caught.getMessage()));
+				if (caught instanceof CloudCoderAuthenticationException) {
+					page.recoverFromServerSessionTimeout(new Runnable() {
+						@Override
+						public void run() {
+							// Try again!
+							loadProblemsForCourse(course);
+						}
+					});
+				} else {
+					GWT.log("Error loading problems for course", caught);
+					session.add(StatusMessage.error("Error loading problems for course", caught));
+				}
 			}
 
 			@Override

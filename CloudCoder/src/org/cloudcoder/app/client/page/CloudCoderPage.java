@@ -30,6 +30,7 @@ import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
@@ -43,6 +44,7 @@ public abstract class CloudCoderPage {
 	private List<Class<?>> sessionObjectClassList;
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
 	private Session session;
+	private List<Runnable> recoveryCallbackList;
 	
 	/**
 	 * Constructor.
@@ -50,6 +52,7 @@ public abstract class CloudCoderPage {
 	public CloudCoderPage() {
 		this.sessionObjectClassList = new ArrayList<Class<?>>();
 		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+		this.recoveryCallbackList = new ArrayList<Runnable>();
 	}
 
 	/**
@@ -72,6 +75,19 @@ public abstract class CloudCoderPage {
 	 *                                   is successfully recovered
 	 */
 	public void recoverFromServerSessionTimeout(final Runnable successfulRecoveryCallback) {
+		GWT.log("Starting recovery from server side session timeout...");
+		
+		recoveryCallbackList.add(successfulRecoveryCallback);
+		
+		if (recoveryCallbackList.size() > 1) {
+			// There is already at least one recovery callback registered,
+			// meaning that the session expired dialog has already been displayed.
+			// Just return without creating another one; on a successful
+			// recovery, all registered recovery callbacks will be executed.
+			GWT.log("Recovery callbacks pending (dialog is up?), returning");
+			return;
+		}
+		
 		final SessionExpiredDialogBox dialog = new SessionExpiredDialogBox();
 		
 		Runnable callback = new Runnable() {
@@ -99,7 +115,7 @@ public abstract class CloudCoderPage {
 								// we couldn't set the activity in the server-side session.
 								session.add(StatusMessage.information("Logged back in, but couldn't set activity on server"));
 								dialog.hide();
-								successfulRecoveryCallback.run();
+								executeRecoveryCallbacks();
 							}
 
 							@Override
@@ -107,7 +123,7 @@ public abstract class CloudCoderPage {
 								// At this point, we are completely logged back in an
 								// we have a valid Activity set on the server.
 								dialog.hide();
-								successfulRecoveryCallback.run();
+								executeRecoveryCallbacks();
 							}
 						});
 					}
@@ -122,7 +138,15 @@ public abstract class CloudCoderPage {
 		
 		dialog.setLoginButtonHandler(callback);
 		
+		GWT.log("Showing session timeout dialog");
 		dialog.center();
+	}
+
+	protected void executeRecoveryCallbacks() {
+		for (Runnable callback : recoveryCallbackList) {
+			callback.run();
+		}
+		recoveryCallbackList.clear();
 	}
 	
 	/**

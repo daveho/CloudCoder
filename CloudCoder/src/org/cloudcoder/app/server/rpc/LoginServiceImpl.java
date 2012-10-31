@@ -97,8 +97,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			session.setAttribute(SessionAttributeKeys.USER_KEY, user);
 			
 			if (DEBUG_SESSION_TIMEOUTS) {
-				// time session out after 10 seconds of inactivity
-				session.setMaxInactiveInterval(10);
+				int maxInactive = 60;
+				session.setMaxInactiveInterval(maxInactive);
 			}
 		}
 		

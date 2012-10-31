@@ -160,7 +160,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
-		logger.warn("getting submission receipts for authentificated user "+user.getUsername());
+		logger.info("getting submission receipts for authenticated user "+user.getUsername());
 		
 		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course);
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);

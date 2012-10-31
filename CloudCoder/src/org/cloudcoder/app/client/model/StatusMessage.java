@@ -90,6 +90,22 @@ public class StatusMessage {
 	}
 
 	/**
+	 * Factory method to create an error status message.
+	 * Appends the exception object's message if there is one.
+	 * 
+	 * @param message the message text
+	 * @param caught the exception that signaled the error
+	 * @return the error status message
+	 */
+	public static Object error(String message, Throwable caught) {
+		String exceptionMessage = caught.getMessage();
+		if (exceptionMessage != null) {
+			message = message + ": " + exceptionMessage;
+		}
+		return new StatusMessage(Category.ERROR, message);
+	}
+
+	/**
 	 * Factory method to create a pending operation status message.
 	 * 
 	 * @param message

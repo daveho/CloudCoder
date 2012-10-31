@@ -351,12 +351,26 @@ public class DevelopmentPage extends CloudCoderPage {
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();
 
+			doSubmitRPC(problem, text);
+		}
+
+		protected void doSubmitRPC(final Problem problem, final String text) {
 			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
-				    //TODO: Is this where a better message should come if we can't
-				    // find a C/C++ compiler?
-					addSessionObject(StatusMessage.error("Error: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable(){
+							public void run() {
+								// Try again!
+								doSubmitRPC(problem, text);
+							}
+						});
+					} else {
+					    //TODO: Is this where a better message should come if we can't
+					    // find a C/C++ compiler?
+						addSessionObject(StatusMessage.error("Error: " + caught.getMessage()));
+						// FIXME: restore editor to read/write
+					}
 				}
 
 				@Override
@@ -521,8 +535,17 @@ public class DevelopmentPage extends CloudCoderPage {
 
 				@Override
 				public void onFailure(Throwable caught) {
-					GWT.log("Couldn't get current text for problem", caught);
-					addSessionObject(StatusMessage.error("Could not get problem text: " + caught.getMessage()));
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							public void run() {
+								// Try again!
+								asyncLoadCurrentProblemText();
+							}
+						});
+					} else {
+						GWT.log("Couldn't get current text for problem", caught);
+						addSessionObject(StatusMessage.error("Could not get problem text", caught));
+					}
 				}
 			});
 		}
@@ -541,23 +564,34 @@ public class DevelopmentPage extends CloudCoderPage {
 
 					if (changeList.getState() == ChangeList.State.UNSENT) {
 						Change[] changeBatch = changeList.beginTransmit();
-
-						AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								changeList.endTransmit(false);
-								GWT.log("Failed to send change batch to server");
-								addSessionObject(StatusMessage.error("Could not save code to server!"));
-							}
-
-							@Override
-							public void onSuccess(Boolean result) {
-								changeList.endTransmit(true);
-							}
-						};
-
-						RPC.editCodeService.logChange(changeBatch, System.currentTimeMillis(), callback);
+						logChangeRPC(changeList, changeBatch);
 					}
+				}
+
+				protected void logChangeRPC(final ChangeList changeList, final Change[] changeBatch) {
+					RPC.editCodeService.logChange(changeBatch, System.currentTimeMillis(), new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							GWT.log("Error sending change batch", caught);
+							if (caught instanceof CloudCoderAuthenticationException) {
+								GWT.log("Starting recovery from server session timeout...");
+								recoverFromServerSessionTimeout(new Runnable(){
+									public void run() {
+										// Try again!
+										logChangeRPC(changeList, changeBatch);
+									}
+								});
+							} else {
+								changeList.endTransmit(false);
+								addSessionObject(StatusMessage.error("Could not save code to server", caught));
+							}
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							changeList.endTransmit(true);
+						}
+					});
 				}
 			};
 			flushPendingChangeEventsTimer.scheduleRepeating(FLUSH_CHANGES_INTERVAL_MS);
@@ -573,31 +607,45 @@ public class DevelopmentPage extends CloudCoderPage {
 				public void run() {
 					if (!checking) {
 						checking = true;
-						RPC.submitService.checkSubmission(new AsyncCallback<SubmissionResult>() {
-							/* (non-Javadoc)
-							 * @see com.google.gwt.user.client.rpc.AsyncCallback#onFailure(java.lang.Throwable)
-							 */
-							@Override
-							public void onFailure(Throwable caught) {
+						checkSubmissionRPC();
+					}
+				}
+
+				protected void checkSubmissionRPC() {
+					RPC.submitService.checkSubmission(new AsyncCallback<SubmissionResult>() {
+						/* (non-Javadoc)
+						 * @see com.google.gwt.user.client.rpc.AsyncCallback#onFailure(java.lang.Throwable)
+						 */
+						@Override
+						public void onFailure(Throwable caught) {
+							if (caught instanceof CloudCoderAuthenticationException) {
+								recoverFromServerSessionTimeout(new Runnable() {
+									@Override
+									public void run() {
+										// Try again!
+										checkSubmissionRPC();
+									}
+								});
+							} else {
 								checking = false;
-								addSessionObject(StatusMessage.error("Error: " + caught.getMessage()));
+								addSessionObject(StatusMessage.error("Error checking pending submission", caught));
 								checkPendingSubmissionTimer.cancel();
 							}
-							
-							/* (non-Javadoc)
-							 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
-							 */
-							@Override
-							public void onSuccess(SubmissionResult result) {
-								checking = false;
-								if (result != null) {
-									// Received the SubmissionResult, yay
-									onReceiveSubmissionResult(result);
-									checkPendingSubmissionTimer.cancel();
-								}
+						}
+						
+						/* (non-Javadoc)
+						 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
+						 */
+						@Override
+						public void onSuccess(SubmissionResult result) {
+							checking = false;
+							if (result != null) {
+								// Received the SubmissionResult, yay
+								onReceiveSubmissionResult(result);
+								checkPendingSubmissionTimer.cancel();
 							}
-						});
-					}
+						}
+					});
 				}
 			};
 		}
