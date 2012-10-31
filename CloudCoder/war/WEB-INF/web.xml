@@ -26,7 +26,7 @@
   <context-param>
     <!-- MySQL password. -->
     <param-name>cloudcoder.db.passwd</param-name>
-    <param-value></param-value>
+    <param-value>root</param-value>
   </context-param>
   <context-param>
     <!-- Name of MySQL database where the CloudCoder tables are. -->
@@ -46,7 +46,7 @@
       modify this parameter.
     -->
     <param-name>cloudcoder.db.portstr</param-name>
-    <param-value>:3306</param-value>
+    <param-value></param-value>
   </context-param>
   <!-- 
     If set to true, this system property causes the webapp to automatically
@@ -55,7 +55,7 @@
   -->
   <context-param>
     <param-name>cloudcoder.db.checkmacos</param-name>
-    <param-value>false</param-value>
+    <param-value>true</param-value>
   </context-param>
   <context-param>
     <!-- Port that the out of process submit service will listen on
