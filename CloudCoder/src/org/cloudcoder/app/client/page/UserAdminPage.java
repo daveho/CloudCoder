@@ -462,7 +462,7 @@ public class UserAdminPage extends CloudCoderPage
                        int section=101;
                        
                        if (!user.getUsername().equals(username.getValue()) ||
-                               user.getFirstname().equals(username.getValue()) ||
+                               user.getFirstname().equals(firstname.getValue()) ||
                                user.getLastname().equals(lastname.getValue()) ||
                                user.getEmail().equals(email.getValue()) ||
                                passwd.getValue().length()>0)
@@ -471,15 +471,28 @@ public class UserAdminPage extends CloudCoderPage
                                Window.alert("Passwords do no match");
                                return;
                            }
+                           if (passwd.getValue().length()==60) {
+                               Window.alert("Passwords cannot be 60 characters long");
+                               return;
+                           }
+                           // set the new fields to be saved into the DB
+                           user.setUsername(username.getValue());
+                           user.setFirstname(firstname.getValue());
+                           user.setLastname(lastname.getValue());
+                           user.setEmail(email.getValue());
+                           if (passwd.getValue().length()>0) {
+                               // it's sort of a hack but if a new password is set
+                               // the backend will figure out that it's not a hash
+                               // and then hash it to storage into the DB.
+                               // The backend figures this out by checking
+                               // if the password is exactly 60 characters long,
+                               // which is why 60 char long passwords are illegal.
+                               user.setPasswordHash(passwd.getValue());
+                           }
                            // at least one field was edited
                            GWT.log("user id is "+user.getId());
                            GWT.log("username from the session is "+user.getUsername());
-                           RPC.usersService.editUser(user.getId(), 
-                                   username.getValue(), 
-                                   firstname.getValue(), 
-                                   lastname.getValue(), 
-                                   email.getValue(), 
-                                   passwd.getValue(),
+                           RPC.usersService.editUser(user, 
                                    new AsyncCallback<Boolean>()
                            { 
                                @Override
