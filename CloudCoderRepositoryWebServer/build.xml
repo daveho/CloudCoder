@@ -82,6 +82,14 @@
 				file="../CloudCoderJetty/lib/jetty/jsp/${jstl.jar}"
 				fullpath="war/WEB-INF/lib/${jstl.jar}"/>
 			
+			<!-- Include owasp-java-html-sanitizer and associated jarfiles. -->
+			<zipfileset
+				file="../CloudCoderLogging/lib/owasp-java-html-sanitizer.jar"
+				fullpath="war/WEB-INF/lib/owasp-java-html-sanitizer.jar"/>
+			<zipfileset
+				file="../CloudCoderLogging/lib/guava.jar"
+				fullpath="war/WEB-INF/lib/guava.jar"/>
+			
 			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset
 				file="../cloudcoder.properties"

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="repo" %>
+<%@ taglib uri="/WEB-INF/repo.tld" prefix="repo" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
@@ -20,7 +20,7 @@
 			
 			<p><b>Description:</b></p>
 			<blockquote class="exerciseDescription">
-			${RepoProblem.description}
+				<repo:sanitizeHTML html="${RepoProblem.description}"/>
 			</blockquote>
 			
 			<p><b>License:</b> <a href="${RepoProblem.license.url}">${RepoProblem.license.name}</a>
