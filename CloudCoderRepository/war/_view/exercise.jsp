@@ -11,7 +11,7 @@
 		<div id="content">
 			<h1>Exercise ${RepoProblem.testname}</h1>
 			
-			<p><b>Author:</b> ${RepoProblem.authorName} &lt;<a href="mailto:${RepoProblem.authorEmail}">${RepoProblem.authorEmail}</a>&gt;</p>
+			<p><b>Author:</b> ${fn:escapeXml(RepoProblem.authorName)} &lt;<a href="mailto:${fn:escapeXml(RepoProblem.authorEmail)}">${fn:escapeXml(RepoProblem.authorEmail)}</a>&gt;</p>
 			
 			<p><b>Programming language:</b> ${RepoProblem.problemType.language.name} </p>
 			
@@ -25,7 +25,7 @@
 			
 			<p><b>Test cases (${fn:length(RepoTestCases)}):</b></p>
 			<c:forEach var="repoTestCase" items="${RepoTestCases}">
-				<c:out value="${repoTestCase.testCaseName}"/>
+				${fn:escapeXml(repoTestCase.testCaseName)}
 			</c:forEach>
 			
 			<p><b>License:</b> <a href="${RepoProblem.license.url}">${RepoProblem.license.name}</a>
