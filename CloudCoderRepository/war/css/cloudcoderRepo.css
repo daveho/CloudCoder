@@ -93,9 +93,9 @@ div.error {
 }
 
 .exerciseDescription {
-	background-color: #fffacd;
+	/*background-color: #fffacd;*/
 	padding: 0px 10px;
-	border: 10px solid #fffacd;
+	border: 10px solid #ddd;
 	border-radius: 20px;
 }
 
