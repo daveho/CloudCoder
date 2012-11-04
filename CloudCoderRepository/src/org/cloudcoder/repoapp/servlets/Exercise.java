@@ -38,6 +38,7 @@ public class Exercise extends LoadExerciseServlet {
 			throws ServletException, IOException {
 		
 		ServletUtil.addModelObject(req, exercise.getProblem());
+		req.setAttribute("RepoTestCases", exercise.getTestCaseData());
 		
 		req.getRequestDispatcher("/_view/exercise.jsp").forward(req, resp);
 	}

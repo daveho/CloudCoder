@@ -23,6 +23,11 @@
 				<repo:sanitizeHTML html="${RepoProblem.description}"/>
 			</blockquote>
 			
+			<p><b>Test cases (${fn:length(RepoTestCases)}):</b></p>
+			<c:forEach var="repoTestCase" items="${RepoTestCases}">
+				<c:out value="${repoTestCase.testCaseName}"/>
+			</c:forEach>
+			
 			<p><b>License:</b> <a href="${RepoProblem.license.url}">${RepoProblem.license.name}</a>
 			
 			<c:if test="${! empty RepoProblem.parentHash}">
