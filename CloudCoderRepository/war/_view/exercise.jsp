@@ -23,6 +23,13 @@
 				<repo:sanitizeHTML html="${RepoProblem.description}"/>
 			</blockquote>
 			
+			<c:if test="${fn:length(RepoProblemTags) > 0}">
+				<p><b>Tags:</b></p>
+				<c:forEach var="tag" items="${RepoProblemTags}">
+					<span class="repoProblemTag">${tag.name}</span>
+				</c:forEach>
+			</c:if>
+			
 			<p><b>Test cases (${fn:length(RepoTestCases)}):</b></p>
 			<c:forEach var="repoTestCase" items="${RepoTestCases}">
 				${fn:escapeXml(repoTestCase.testCaseName)}
