@@ -29,6 +29,14 @@
 					<span class="repoProblemTag">${tag.name}</span>
 				</c:forEach>
 			</c:if>
+			<p>
+				<c:if test="${empty User}">
+					Log in to tag this problem
+				</c:if>
+				<c:if test="${!empty User}">
+					Add a tag to this problem
+				</c:if>
+			</p>
 			
 			<p><b>Test cases (${fn:length(RepoTestCases)}):</b></p>
 			<c:forEach var="repoTestCase" items="${RepoTestCases}">
