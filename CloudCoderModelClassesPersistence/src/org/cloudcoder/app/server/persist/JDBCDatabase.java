@@ -55,6 +55,7 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -1465,6 +1466,41 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " completing user registration request";
+			}
+		});
+	}
+	
+	@Override
+	public List<RepoProblemTag> getProblemTags(RepoProblem problem) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemTag>>() {
+			@Override
+			public List<RepoProblemTag> run(Connection conn) throws SQLException {
+				// Order the tags by decreasing order of popularity
+				// and (secondarily) ascending name order.
+				// Return at most 8 tags.
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select rpt.*, count(rpt." + RepoProblemTag.NAME.getName() + ") as count " +
+						"  from " + RepoProblemTag.SCHEMA.getDbTableName() + " as rpt " +
+						" where rpt." + RepoProblemTag.REPO_PROBLEM_ID.getName() + " = 1 " +
+						" group by rpt." + RepoProblemTag.NAME.getName() + " " +
+						" order by count desc, rpt." + RepoProblemTag.NAME.getName() + " asc " +
+						" limit 8"
+						);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<RepoProblemTag> result = new ArrayList<RepoProblemTag>();
+				while (resultSet.next()) {
+					RepoProblemTag tag = new RepoProblemTag();
+					loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
+					result.add(tag);
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " getting tags for repository exercise"; 
 			}
 		});
 	}

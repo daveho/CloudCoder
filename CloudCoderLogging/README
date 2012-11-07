@@ -1,2 +1,7 @@
 This project holds the log4j and slf4j jarfiles, to avoid
 duplicating them in every project.
+
+It also contains the jarfiles for owasp-java-html-sanitizer,
+to avoid duplication.
+
+Probably the project should be renamed something like "CloudCoderWebappCommon".

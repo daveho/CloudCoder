@@ -18,12 +18,15 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 
 /**
  * Servlet to display an exercise in human-readable form.
@@ -38,6 +41,10 @@ public class Exercise extends LoadExerciseServlet {
 			throws ServletException, IOException {
 		
 		ServletUtil.addModelObject(req, exercise.getProblem());
+		req.setAttribute("RepoTestCases", exercise.getTestCaseData());
+		
+		List<RepoProblemTag> repoProblemTags = Database.getInstance().getProblemTags(exercise.getProblem());
+		req.setAttribute("RepoProblemTags", repoProblemTags);
 		
 		req.getRequestDispatcher("/_view/exercise.jsp").forward(req, resp);
 	}

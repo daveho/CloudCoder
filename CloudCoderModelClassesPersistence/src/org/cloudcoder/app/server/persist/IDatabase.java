@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -355,5 +356,13 @@ public interface IDatabase {
 	public OperationResult completeRegistration(UserRegistrationRequest request);
 
 	public User getUserGivenId(int userId);
+
+	/**
+	 * Get the most popular tags for given {@link RepoProblem}.
+	 * 
+	 * @param problem the {@link RepoProblem}
+	 * @return the most popular tags
+	 */
+	public List<RepoProblemTag> getProblemTags(RepoProblem problem);
 
 }
