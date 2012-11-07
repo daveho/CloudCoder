@@ -5,6 +5,29 @@
 <html>
 	<head>
 		<repo:headStuff title="View exercise"></repo:headStuff>
+		<script type="text/javascript">
+		$(document).ready(function() {
+			$("#addTagButton").click(function() {
+				$.ajax(
+					"${pageContext.servletContext.contextPath}/addTag",
+					{
+						data: {
+							repoProblemId: ${RepoProblem.id},
+							tag: $("#addTag").text()
+						},
+						dataType: "json",
+						error: function(jqXHR, textStatus, errorThrown) {
+							$("#addTagResult").text("Error adding tag: " + errorThrown);
+						},
+						success: function(data, textStatus, jqXHR) {
+							$("#addTagResult").text(data.message);
+						},
+						type: "POST"
+					}
+				);
+			});
+		});
+		</script>
 	</head>
 	<body>
 		<repo:topBanner/>
@@ -34,7 +57,10 @@
 					Log in to tag this problem
 				</c:if>
 				<c:if test="${!empty User}">
-					Add a tag to this problem
+					Add a tag to this problem:
+					<input id="addTag" type="text" size="25" />
+					<button id="addTagButton">Add tag!</button>
+					<span id="addTagResult"></span>
 				</c:if>
 			</p>
 			

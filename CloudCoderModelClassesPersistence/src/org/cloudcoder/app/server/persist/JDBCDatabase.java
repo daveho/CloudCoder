@@ -1504,6 +1504,31 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public void addRepoProblemTag(final RepoProblemTag repoProblemTag) {
+		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
+						" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
+				);
+				
+				DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
+				
+				stmt.executeUpdate();
+				
+				return true;
+			}
+			
+			@Override
+			public String getDescription() {
+				return " adding tag to repository exercise";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

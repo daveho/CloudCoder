@@ -365,4 +365,12 @@ public interface IDatabase {
 	 */
 	public List<RepoProblemTag> getProblemTags(RepoProblem problem);
 
+	/**
+	 * Add a {@link RepoProblemTag} which records a {@link User}'s tagging
+	 * of a repository exercise.
+	 * 
+	 * @param repoProblemTag the {@link RepoProblemTag} to add
+	 */
+	public void addRepoProblemTag(RepoProblemTag repoProblemTag);
+
 }

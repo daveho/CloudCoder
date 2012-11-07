@@ -19,6 +19,8 @@ package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -188,6 +190,19 @@ public class ServletUtil {
 			throw new ServletException("Missing: required parameter: " + name);
 		}
 		return value;
+	}
+	
+	private static final Pattern INVALID_TAG_CHARS = Pattern.compile("[^a-z0-9]");
+
+	/**
+	 * Normalize a raw tag by removing all non-alphanumeric characters.
+	 * 
+	 * @param rawTag a raw tag
+	 * @return the normalized tag
+	 */
+	public static String normalizeTag(String rawTag) {
+		Matcher m = INVALID_TAG_CHARS.matcher(rawTag);
+		return m.replaceAll("");
 	}
 
 }
