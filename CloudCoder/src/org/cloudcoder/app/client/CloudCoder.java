@@ -43,7 +43,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
@@ -54,8 +53,6 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private SubscriptionRegistrar subscriptionRegistrar;
 	private CloudCoderPage currentPage;
 	
-	private LayoutPanel layoutPanel;
-	
 	/**
 	 * This is the entry point method.
 	 */
@@ -65,15 +62,6 @@ public class CloudCoder implements EntryPoint, Subscriber {
 
 		// Subscribe to all Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
-		
-		RootLayoutPanel rootLayoutPanel = RootLayoutPanel.get();
-		
-		// Create a LayoutPanel to be the parent of all CloudCoder page UIs,
-		// and inset it by 10px from each edge of the browser client area.
-		layoutPanel = new LayoutPanel();
-		rootLayoutPanel.add(layoutPanel);
-		rootLayoutPanel.setWidgetLeftRight(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
-		rootLayoutPanel.setWidgetTopBottom(layoutPanel, 10.0, Unit.PX, 10.0, Unit.PX);
 
 		// Go to whatever initial page is appropriate.
 		createInitialPage();
@@ -183,19 +171,20 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	private void changePage(CloudCoderPage page) {
 		if (currentPage != null) {
 			currentPage.deactivate();
-			layoutPanel.remove(currentPage.getWidget());
+			RootLayoutPanel.get().remove(currentPage.getWidget());
 			
 			// make sure there is no StatusMessage from the previous page
 			session.remove(StatusMessage.class);
 		}
 		page.setSession(session);
 
-		// Create the page's Widget and add it to the DOM tree
+		// Create the page's Widget and add it to the DOM tree.
+		// Leave a 10 pixel border around the page widget.
 		page.createWidget();
 		IsWidget w = page.getWidget();
-		layoutPanel.add(w);
-		layoutPanel.setWidgetLeftRight(w, 0.0, Unit.PX, 0.0, Unit.PX);
-		layoutPanel.setWidgetTopBottom(w, 0.0, Unit.PX, 0.0, Unit.PX);
+		RootLayoutPanel.get().add(w);
+		RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
+		RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
 
 		// Now it is safe to activate the page
 		page.activate();
