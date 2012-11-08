@@ -18,6 +18,7 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -27,13 +28,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 
 /**
  * Servlet to retrieve the most popular tags for a {@link RepoProblem}
  * via an AJAX GET request.  The result is a serialized JSON array of
- * tag name strings.
+ * {@link RepoProblemTag} objects, where an extra <code>count</code>
+ * field has been added to each object.  The count indicates the number
+ * of users who tagged the problem.
  * 
  * @author David Hovemeyer
  */
@@ -55,7 +59,10 @@ public class GetTags extends HttpServlet {
 		
 		JSONArray result = new JSONArray();
 		for (RepoProblemTag tag : tags) {
-			result.add(tag.getName());
+			LinkedHashMap<String, Object> obj = JSONConversion.convertModelObjectToJSON(tag, RepoProblemTag.SCHEMA);
+			// Set the count field
+			obj.put("count", tag.getCount());
+			result.add(obj);
 		}
 		
 		resp.setContentType("application/json");

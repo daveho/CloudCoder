@@ -22,8 +22,8 @@
 						for (i = 0; i < data.length; i++) {
 							elt = $("<span></span>")
 								.addClass("repoProblemTag")
-								.text(data[i]);
-							$("#repoProblemTags").append(elt).append(" ");
+								.text(data[i].name);
+							$("#repoProblemTags").append(elt).append("&times;").append("" + data[i].count).append("&nbsp; "); 
 						}
 					},
 					type: "GET"

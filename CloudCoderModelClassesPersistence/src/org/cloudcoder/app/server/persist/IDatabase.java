@@ -359,6 +359,10 @@ public interface IDatabase {
 
 	/**
 	 * Get the most popular tags for given {@link RepoProblem}.
+	 * Note that the tags returned are "aggregate" tags, meaning that
+	 * they represent all of the users who added a tag to a particular
+	 * problem.  As such, they contain a valid user count that can
+	 * be retrieved by calling {@link RepoProblemTag#getCount()}.
 	 * 
 	 * @param repoProblemId the unique id of the {@link RepoProblem}
 	 * @return the most popular tags

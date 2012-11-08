@@ -1493,7 +1493,17 @@ public class JDBCDatabase implements IDatabase {
 				List<RepoProblemTag> result = new ArrayList<RepoProblemTag>();
 				while (resultSet.next()) {
 					RepoProblemTag tag = new RepoProblemTag();
+					
 					loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
+					
+					// Because these tags are aggregated from (potentially) multiple
+					// records in the table, we set the user id to 0, so there is no
+					// confusion over whether the tag is linked to a specific user.
+					tag.setUserId(0);
+					
+					// Set the count (number of users who added this tag to this problem)
+					tag.setCount(resultSet.getInt(RepoProblemTag.SCHEMA.getNumFields() + 1));
+					
 					result.add(tag);
 				}
 				
