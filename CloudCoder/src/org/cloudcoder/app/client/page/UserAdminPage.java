@@ -60,7 +60,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author jspacco
  * 
  * TODO
- *    Button for bulk registration with a "browse for files" widget
+ *    Fix the slowness of bulk registration 
  *
  */
 public class UserAdminPage extends CloudCoderPage
@@ -434,9 +434,9 @@ public class UserAdminPage extends CloudCoderPage
                
                // radio button for the account type
                holder.add(new Label("Account type"));
-               final RadioButton studentAccountButton = new RadioButton("student","student");
+               final RadioButton studentAccountButton = new RadioButton("type","student");
                studentAccountButton.setValue(true);
-               final RadioButton instructorAccountButton = new RadioButton("instructor","instructor");
+               final RadioButton instructorAccountButton = new RadioButton("type","instructor");
                holder.add(studentAccountButton);
                holder.add(instructorAccountButton);
                
@@ -451,7 +451,8 @@ public class UserAdminPage extends CloudCoderPage
                        //This is more like a fake form
                        //we're not submitting it to a server-side servlet
                        GWT.log("edit user submit clicked");
-                       final User user=getSession().get(User.class);
+                       //final User user=getSession().get(User.class);
+                       final User user=userAdminUsersListView.getSelectedUser();
                        
                        //TODO add support for editing registration type
                        CourseRegistrationType type=CourseRegistrationType.STUDENT;
@@ -613,7 +614,8 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleEditUser(ClickEvent event) {
             GWT.log("handle edit user");
-            final User chosen = getSession().get(User.class);
+            //final User chosen = getSession().get(User.class);
+            final User chosen = userAdminUsersListView.getSelectedUser();
             final Course course = getSession().get(Course.class);
             //TODO get the course type?
             //TODO wtf is the in the user record and how does it get there?
@@ -655,7 +657,11 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleUserProgress(ClickEvent event) {
             GWT.log("handle user progress");
-            final User chosen = getSession().get(User.class);
+            //final User chosen = getSession().get(User.class);
+            final User chosen = userAdminUsersListView.getSelectedUser();
+            if (chosen==null) {
+                return;
+            }
             final Course course = getSession().get(Course.class);
             
             GWT.log("handling user "+chosen.getUsername());
