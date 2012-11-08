@@ -25,6 +25,7 @@
 						<td><input name="password" type="password" size="20" /></td>
 					</tr>
 				</table>
+				<input type="hidden" name="redirectPath" value="${redirectPath}" />
 				<input type="submit" value="Log In!" />
 			</form>
 			<c:if test="${! empty error}">

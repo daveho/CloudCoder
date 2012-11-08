@@ -80,7 +80,7 @@
 			<div id="repoProblemTags"></div>
 			<p>
 				<c:if test="${empty User}">
-					Log in to tag this problem
+					<a href="${pageContext.servletContext.contextPath}/login">Log in</a> to add a tag to this exercise
 				</c:if>
 				<c:if test="${!empty User}">
 					Add a tag to this problem:

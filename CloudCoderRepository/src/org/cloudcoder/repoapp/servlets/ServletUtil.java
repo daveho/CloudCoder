@@ -18,6 +18,8 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -203,6 +205,35 @@ public class ServletUtil {
 	public static String normalizeTag(String rawTag) {
 		Matcher m = INVALID_TAG_CHARS.matcher(rawTag);
 		return m.replaceAll("");
+	}
+
+	/**
+	 * Return just the path part of a URL, without the context path.
+	 * The path can then be used to send a redirect.
+	 * 
+	 * @param req         the HttpServletRequest
+	 * @param url         the URL
+	 * @param defaultPath the path to return if the URL can't be parsed
+	 * @return the path part of the URL
+	 */
+	public static String getUrlPath(HttpServletRequest req, String urlStr, String defaultPath) {
+		URL url;
+		try {
+			url = new URL(urlStr);
+		} catch (MalformedURLException e) {
+			return defaultPath;
+		}
+		
+		String path = url.getPath();
+		if (path.startsWith(req.getContextPath())) {
+			// The path had better start with the context path.
+			path = path.substring(req.getContextPath().length());
+			if (!path.startsWith("/")) {
+				path = "/" + path; // paranoia
+			}
+		}
+		
+		return path;
 	}
 
 }
