@@ -36,6 +36,7 @@ public class CloudCoderRepositoryWebServer {
 	private static final Map<String, String> programCommands = new HashMap<String, String>();
 	static {
 		programCommands.put("createdb", "org.cloudcoder.app.server.persist.CreateRepositoryDatabase");
+		programCommands.put("migratedb", "org.cloudcoder.app.server.persist.MigrateRepositoryDatabase");
 	}
 	
 	public static void main(String[] args) throws Exception {
