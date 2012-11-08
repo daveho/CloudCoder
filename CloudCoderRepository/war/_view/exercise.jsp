@@ -13,7 +13,7 @@
 					{
 						data: {
 							repoProblemId: ${RepoProblem.id},
-							tag: $("#addTag").text()
+							tag: $("#addTag").val()
 						},
 						dataType: "json",
 						error: function(jqXHR, textStatus, errorThrown) {
@@ -21,6 +21,7 @@
 						},
 						success: function(data, textStatus, jqXHR) {
 							$("#addTagResult").text(data.message);
+							$("#addTag").val(""); // clear the textbox
 						},
 						type: "POST"
 					}
