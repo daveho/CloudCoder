@@ -3,12 +3,12 @@ package org.cloudcoder.app.server.persist;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class MigrateWebappDatabase {
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+public class MigrateRepositoryDatabase {
+	public static void main(String[] args) throws ClassNotFoundException, IOException {
 		ConfigurationUtil.configureLog4j();
 		
 		try {
-			MigrateDatabase.migrateDatabase(CreateWebappDatabase.TABLES, "CloudCoder", "cloudcoder.db");
+			MigrateDatabase.migrateDatabase(CreateRepositoryDatabase.TABLES, "CloudCoder Repository", "cloudcoder.repoapp.db");
 		} catch (SQLException e) {
 			System.err.println("Database error: " + e.getMessage());
 			e.printStackTrace();

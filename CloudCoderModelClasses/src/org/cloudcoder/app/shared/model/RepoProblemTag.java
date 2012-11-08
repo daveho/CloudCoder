@@ -43,7 +43,10 @@ public class RepoProblemTag {
 		public String get(RepoProblemTag obj) { return obj.getName(); }
 	};
 	
-	public static final ModelObjectSchema<RepoProblemTag> SCHEMA = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
+	/**
+	 * Description of fields (schema version 0).
+	 */
+	public static final ModelObjectSchema<RepoProblemTag> SCHEMA_V0 = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)
 			.add(NAME)
@@ -55,6 +58,11 @@ public class RepoProblemTag {
 					.addField(REPO_PROBLEM_ID)
 					.addField(NAME)
 					);
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<RepoProblemTag> SCHEMA = SCHEMA_V0;
 	
 	/**
 	 * Constructor.

@@ -36,6 +36,14 @@ import org.cloudcoder.app.shared.model.UserRegistrationRequest;
  * @author David Hovemeyer
  */
 public class CreateRepositoryDatabase {
+	public static final ModelObjectSchema<?>[] TABLES = {
+		User.SCHEMA,
+		RepoProblem.SCHEMA,
+		RepoTestCase.SCHEMA,
+		RepoProblemTag.SCHEMA,
+		UserRegistrationRequest.SCHEMA,
+	};
+	
 	public static void main(String[] args) throws Exception {
 		try {
 			doCreateRepositoryDatabase();
@@ -67,13 +75,15 @@ public class CreateRepositoryDatabase {
 		// Connect to the newly-created database
 		conn.close();
 		conn = DBUtil.connectToDatabase(config, "cloudcoder.repoapp.db");
-		
+
+		// Create schema version table
+		System.out.println("Creating schema version table...");
+		SchemaUtil.createSchemaVersionTableIfNeeded(conn, TABLES);
+
 		// Create tables
-		createTable(conn, User.SCHEMA);
-		createTable(conn, RepoProblem.SCHEMA);
-		createTable(conn, RepoTestCase.SCHEMA);
-		createTable(conn, RepoProblemTag.SCHEMA);
-		createTable(conn, UserRegistrationRequest.SCHEMA);
+		for (ModelObjectSchema<?> table : TABLES) {
+			createTable(conn, table);
+		}
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
