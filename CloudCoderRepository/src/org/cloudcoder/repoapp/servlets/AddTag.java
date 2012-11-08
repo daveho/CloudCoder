@@ -18,7 +18,6 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,7 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Servlet to add a tag to a {@link RepoProblem}.
+ * Servlet to add a tag to a {@link RepoProblem} via an AJAX POST request.
+ * An {@link OperationResult} serialized as a JSON object is returned
+ * to indicate success or failure.
  * 
  * @author David Hovemeyer
  */

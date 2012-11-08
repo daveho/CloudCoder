@@ -18,28 +18,47 @@
 package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONValue;
 
 /**
- * Servlet to display an exercise in human-readable form.
+ * Servlet to retrieve the most popular tags for a {@link RepoProblem}
+ * via an AJAX GET request.  The result is a serialized JSON array of
+ * tag name strings.
  * 
  * @author David Hovemeyer
  */
-public class Exercise extends LoadExerciseServlet {
+public class GetTags extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
+
+	@SuppressWarnings("unchecked")
 	@Override
-	protected void doExercise(HttpServletRequest req, HttpServletResponse resp, RepoProblemAndTestCaseList exercise)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
-		ServletUtil.addModelObject(req, exercise.getProblem());
-		req.setAttribute("RepoTestCases", exercise.getTestCaseData());
+		String repoProblemIdStr = req.getParameter("repoProblemId");
+		if (repoProblemIdStr == null) {
+			ServletUtil.badRequest(resp, "Missing repo problem id");
+			return;
+		}
 		
-		req.getRequestDispatcher("/_view/exercise.jsp").forward(req, resp);
+		Integer repoProblemId = Integer.parseInt(repoProblemIdStr);
+		List<RepoProblemTag> tags = Database.getInstance().getProblemTags(repoProblemId);
+		
+		JSONArray result = new JSONArray();
+		for (RepoProblemTag tag : tags) {
+			result.add(tag.getName());
+		}
+		
+		resp.setContentType("application/json");
+		resp.getWriter().write(JSONValue.toJSONString(result));
 	}
 }

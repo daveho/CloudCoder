@@ -6,7 +6,35 @@
 	<head>
 		<repo:headStuff title="View exercise"></repo:headStuff>
 		<script type="text/javascript">
+		function getTags() {
+			$.ajax(
+				"${pageContext.servletContext.contextPath}/getTags",
+				{
+					data: { repoProblemId: ${RepoProblem.id} },
+					dataType: "json",
+					error: function(jqXHR, textStatus, errorThrown) {
+						$("#repoProblemTags").text("Could not retrieve tags: " + errorThrown);
+					},
+					success: function(data, textStatus, jqXHR) {
+						// Update repoProblemTags div
+						$("#repoProblemTags").empty();
+						var i, elt;
+						for (i = 0; i < data.length; i++) {
+							elt = $("<span></span>")
+								.addClass("repoProblemTag")
+								.text(data[i]);
+							$("#repoProblemTags").append(elt).append(" ");
+						}
+					},
+					type: "GET"
+				}
+			);
+		}
+
 		$(document).ready(function() {
+			// Get initial tags
+			getTags();
+		
 			$("#addTagButton").click(function() {
 				$.ajax(
 					"${pageContext.servletContext.contextPath}/addTag",
@@ -22,6 +50,7 @@
 						success: function(data, textStatus, jqXHR) {
 							$("#addTagResult").text(data.message);
 							$("#addTag").val(""); // clear the textbox
+							getTags(); // update tags
 						},
 						type: "POST"
 					}
@@ -47,12 +76,8 @@
 				<repo:sanitizeHTML html="${RepoProblem.description}"/>
 			</blockquote>
 			
-			<c:if test="${fn:length(RepoProblemTags) > 0}">
-				<p><b>Tags:</b></p>
-				<c:forEach var="tag" items="${RepoProblemTags}">
-					<span class="repoProblemTag">${tag.name}</span>
-				</c:forEach>
-			</c:if>
+			<p><b>Tags:</b></p>
+			<div id="repoProblemTags"></div>
 			<p>
 				<c:if test="${empty User}">
 					Log in to tag this problem

@@ -360,10 +360,10 @@ public interface IDatabase {
 	/**
 	 * Get the most popular tags for given {@link RepoProblem}.
 	 * 
-	 * @param problem the {@link RepoProblem}
+	 * @param repoProblemId the unique id of the {@link RepoProblem}
 	 * @return the most popular tags
 	 */
-	public List<RepoProblemTag> getProblemTags(RepoProblem problem);
+	public List<RepoProblemTag> getProblemTags(int repoProblemId);
 
 	/**
 	 * Add a {@link RepoProblemTag} which records a {@link User}'s tagging

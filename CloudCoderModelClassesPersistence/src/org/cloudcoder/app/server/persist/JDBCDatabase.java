@@ -1471,7 +1471,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<RepoProblemTag> getProblemTags(RepoProblem problem) {
+	public List<RepoProblemTag> getProblemTags(final int repoProblemId) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemTag>>() {
 			@Override
 			public List<RepoProblemTag> run(Connection conn) throws SQLException {
@@ -1482,11 +1482,12 @@ public class JDBCDatabase implements IDatabase {
 						conn,
 						"select rpt.*, count(rpt." + RepoProblemTag.NAME.getName() + ") as count " +
 						"  from " + RepoProblemTag.SCHEMA.getDbTableName() + " as rpt " +
-						" where rpt." + RepoProblemTag.REPO_PROBLEM_ID.getName() + " = 1 " +
+						" where rpt." + RepoProblemTag.REPO_PROBLEM_ID.getName() + " = ? " +
 						" group by rpt." + RepoProblemTag.NAME.getName() + " " +
 						" order by count desc, rpt." + RepoProblemTag.NAME.getName() + " asc " +
 						" limit 8"
 						);
+				stmt.setInt(1, repoProblemId);
 				
 				ResultSet resultSet = executeQuery(stmt);
 				List<RepoProblemTag> result = new ArrayList<RepoProblemTag>();
