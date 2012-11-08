@@ -62,7 +62,7 @@
 	<body>
 		<repo:topBanner/>
 		<div id="content">
-			<h1>Exercise ${RepoProblem.testname}</h1>
+			<h1>${fn:escapeXml(RepoProblem.testname)}</h1>
 			
 			<p><b>Author:</b> ${fn:escapeXml(RepoProblem.authorName)} &lt;<a href="mailto:${fn:escapeXml(RepoProblem.authorEmail)}">${fn:escapeXml(RepoProblem.authorEmail)}</a>&gt;</p>
 			
