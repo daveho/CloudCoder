@@ -17,13 +17,8 @@
 
 package org.cloudcoder.repoapp.webserver;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import org.cloudcoder.jetty.WebServer;
 
-import org.cloudcoder.jetty.NestedJarClassLoader;
 
 /**
  * Main class for the CloudCoder exercise repository webapp.
@@ -32,25 +27,20 @@ import org.cloudcoder.jetty.NestedJarClassLoader;
  * 
  * @author David Hovemeyer
  */
-public class CloudCoderRepositoryWebServer {
-	private static final Map<String, String> programCommands = new HashMap<String, String>();
-	static {
-		programCommands.put("createdb", "org.cloudcoder.app.server.persist.CreateRepositoryDatabase");
-		programCommands.put("migratedb", "org.cloudcoder.app.server.persist.MigrateRepositoryDatabase");
+public class CloudCoderRepositoryWebServer extends WebServer {
+	
+	public CloudCoderRepositoryWebServer() {
+		super(new CloudCoderRepositoryDaemonController());
+		
+		addAdminCommand("createdb", "org.cloudcoder.app.server.persist.CreateRepositoryDatabase",
+				"Create the repository webapp database (only do this\n" +
+				"once!)");
+		addAdminCommand("migratedb", "org.cloudcoder.app.server.persist.MigrateRepositoryDatabase",
+				"Migrate database table schemas to match latest model\n" +
+				"object classes");
 	}
 	
 	public static void main(String[] args) throws Exception {
-		if (args.length >= 1 && programCommands.containsKey(args[0])) {
-			// Collect command line arguments to send to the administrative program
-			List<String> cmdLineArgs = new LinkedList<String>(Arrays.asList(args));
-			cmdLineArgs.remove(0);
-			
-			// Run the administrative program.
-			NestedJarClassLoader.runMain(CloudCoderRepositoryWebServer.class, programCommands.get(args[0]), cmdLineArgs);
-		} else {
-			// Let the daemon controller handle the command.
-			CloudCoderRepositoryDaemonController controller = new CloudCoderRepositoryDaemonController();
-			controller.exec(args);
-		}
+		new CloudCoderRepositoryWebServer().handleCommand(args);
 	}
 }
