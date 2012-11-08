@@ -14,6 +14,7 @@
 	<body>
 		<repo:topBanner/>
 		<div id="content">
+			<h1>Log in to the CloudCoder exercise repository</h1>
 			<form action="${pageContext.servletContext.contextPath}/login" method="POST">
 				<table>
 					<tr>
@@ -24,9 +25,12 @@
 						<td>Password: </td>
 						<td><input name="password" type="password" size="20" /></td>
 					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="Log In!" /></td>
+					</tr>
 				</table>
 				<input type="hidden" name="redirectPath" value="${redirectPath}" />
-				<input type="submit" value="Log In!" />
 			</form>
 			<c:if test="${! empty error}">
 				<div class="error">${error}</div>
