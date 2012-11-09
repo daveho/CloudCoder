@@ -135,3 +135,10 @@ ol.termsOfService li {
 	margin-top: 12px;
 	margin-bottom: 12px;
 }
+
+.tooltipAnchor {
+	font-style: italic;
+	background-repeat:no-repeat;
+	background-position: right;
+	border-bottom: 1px dashed black;
+}

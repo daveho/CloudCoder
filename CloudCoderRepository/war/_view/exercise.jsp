@@ -5,6 +5,7 @@
 <html>
 	<head>
 		<repo:headStuff title="View exercise"></repo:headStuff>
+		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.qtip-1.0.0-rc3.min.js"></script>
 		<script type="text/javascript">
 		function getTags() {
 			$.ajax(
@@ -34,6 +35,22 @@
 		$(document).ready(function() {
 			// Get initial tags
 			getTags();
+			
+			$("#tagTooltip").qtip({
+				content: {
+					text:
+					"Adding a tag to an exercise helps categorize it for searches. " +
+					"Multiple users can add the same tag, indicating which tags are " +
+					"most important."
+				},
+				position: {
+					corner: {
+						target: 'bottomMiddle',
+						tooltip: 'topMiddle'
+					}
+				},
+				style: { name: 'blue', color: '#00A' }
+			});
 		
 			$("#addTagButton").click(function() {
 				$.ajax(
@@ -80,10 +97,11 @@
 			<div id="repoProblemTags"></div>
 			<p>
 				<c:if test="${empty User}">
-					<a href="${pageContext.servletContext.contextPath}/login">Log in</a> to add a tag to this exercise
+					<a href="${pageContext.servletContext.contextPath}/login">Log in</a>
+					to <span id="tagTooltip" class="tooltipAnchor">add a tag to this exercise</span>
 				</c:if>
 				<c:if test="${!empty User}">
-					Add a tag to this problem:
+					<span id="tagTooltip" class="tooltipAnchor">Add a tag to this problem</span>:
 					<input id="addTag" type="text" size="25" />
 					<button id="addTagButton">Add tag!</button>
 					<span id="addTagResult"></span>
