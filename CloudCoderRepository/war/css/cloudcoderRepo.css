@@ -138,7 +138,5 @@ ol.termsOfService li {
 
 .tooltipAnchor {
 	font-style: italic;
-	background-repeat:no-repeat;
-	background-position: right;
 	border-bottom: 1px dashed black;
 }
