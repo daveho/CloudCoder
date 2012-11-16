@@ -12,7 +12,7 @@
 		<link
 			rel="stylesheet"
 			type="text/css"
-			href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
+			href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
 		<link
 			rel="stylesheet"
 			href="css/jquery.tagit.css"
