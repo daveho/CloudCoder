@@ -40,6 +40,7 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -65,6 +66,7 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
+import org.eclipse.jdt.internal.compiler.ast.DoStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1228,6 +1230,14 @@ public class JDBCDatabase implements IDatabase {
 				ResultSet genKeys = getGeneratedKeys(stmt);
 				DBUtil.getModelObjectUniqueIds(exercise.getTestCaseData(), RepoTestCase.SCHEMA, genKeys);
 				
+				// Add a tag indicating the programming language
+				Language language = exercise.getProblem().getProblemType().getLanguage();
+				RepoProblemTag tag = new RepoProblemTag();
+				tag.setName(language.getTagName());
+				tag.setRepoProblemId(exercise.getProblem().getId());
+				tag.setUserId(user.getId());
+				doAddRepoProblemTag(conn, tag, this);
+				
 				return true;
 			}
 			@Override
@@ -1521,17 +1531,7 @@ public class JDBCDatabase implements IDatabase {
 		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
-						" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
-				);
-				
-				DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
-				
-				stmt.executeUpdate();
-				
-				return true;
+				return doAddRepoProblemTag(conn, repoProblemTag, this);
 			}
 			
 			@Override
@@ -1977,6 +1977,34 @@ public class JDBCDatabase implements IDatabase {
 		CourseRegistration reg = new CourseRegistration();
 		DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
 		return reg;
+	}
+
+	public Boolean doAddRepoProblemTag(
+			Connection conn,
+			RepoProblemTag repoProblemTag,
+			AbstractDatabaseRunnableNoAuthException<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
+				" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
+		);
+		
+		DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
+		
+		try {
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			if (e.getSQLState().equals("23000")) {
+				// failed due to duplicate key: this almost certainly means
+				// that the user has already added the same tag
+				return false;
+			} else {
+				// some other failure
+				throw e;
+			}
+		}
+		
+		return true;
 	}
 	
 	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

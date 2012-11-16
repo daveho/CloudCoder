@@ -50,4 +50,17 @@ public enum Language {
 	public String getName() {
 		return name;
 	}
+
+	/**
+	 * Convert the language to the tag name used to identify the language
+	 * in the exercise repository.  E.g., "c", "java", etc.
+	 * 
+	 * @return the language's tag name
+	 */
+	public String getTagName() {
+		// Convert the enumeration member name to lower case.
+		// The name (of the programming language, e.g., "C++", could
+		// have non-alphanumeric characters.)
+		return name().toLowerCase();
+	}
 }
