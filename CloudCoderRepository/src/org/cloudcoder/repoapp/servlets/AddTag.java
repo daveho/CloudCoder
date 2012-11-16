@@ -75,12 +75,13 @@ public class AddTag extends HttpServlet {
 		repoProblemTag.setRepoProblemId(repoProblemId);
 		repoProblemTag.setUserId(user.getId());
 		
-		// TODO: check success
-		Database.getInstance().addRepoProblemTag(repoProblemTag);
+		// Attempt to add the tag
+		boolean success = Database.getInstance().addRepoProblemTag(repoProblemTag);
 		
 		// Report result as a serialized OperationResult
 		resp.setContentType("application/json");
-		OperationResult result = new OperationResult(true, "Tag added successfully");
+		OperationResult result = new OperationResult(success,
+				success ? "Tag added successfully" : "You have already added that tag");
 		Object obj = JSONConversion.convertOperationResultToJSON(result);
 		resp.getWriter().write(JSONValue.toJSONString(obj));
 	}

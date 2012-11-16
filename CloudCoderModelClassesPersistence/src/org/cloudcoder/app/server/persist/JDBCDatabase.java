@@ -33,6 +33,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
@@ -43,7 +44,6 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -66,7 +66,6 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
-import org.eclipse.jdt.internal.compiler.ast.DoStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1527,8 +1526,8 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public void addRepoProblemTag(final RepoProblemTag repoProblemTag) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+	public boolean addRepoProblemTag(final RepoProblemTag repoProblemTag) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
 				return doAddRepoProblemTag(conn, repoProblemTag, this);
@@ -2008,7 +2007,17 @@ public class JDBCDatabase implements IDatabase {
 		return reg;
 	}
 
-	public Boolean doAddRepoProblemTag(
+	/**
+	 * Add a {@link RepoProblemTag} to the database as part of a transaction.
+	 * 
+	 * @param conn             the database connection
+	 * @param repoProblemTag   the {@link RepoProblemTag} to add
+	 * @param databaseRunnable the transaction ({@link AbstractDatabaseRunnableNoAuthException})
+	 * @return true if the tag was added succesfully,
+	 *         false if the user has already added an identical tag
+	 * @throws SQLException
+	 */
+	protected Boolean doAddRepoProblemTag(
 			Connection conn,
 			RepoProblemTag repoProblemTag,
 			AbstractDatabaseRunnableNoAuthException<?> databaseRunnable) throws SQLException {

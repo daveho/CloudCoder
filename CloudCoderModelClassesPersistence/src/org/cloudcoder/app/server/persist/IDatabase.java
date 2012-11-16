@@ -374,8 +374,10 @@ public interface IDatabase {
 	 * of a repository exercise.
 	 * 
 	 * @param repoProblemTag the {@link RepoProblemTag} to add
+	 * @return true if adding the tag succeeded, false
+	 *         if the user has already added an identical tag
 	 */
-	public void addRepoProblemTag(RepoProblemTag repoProblemTag);
+	public boolean addRepoProblemTag(RepoProblemTag repoProblemTag);
 
 	/**
 	 * Given a search term (partial tag name), suggest possible repository tag names.
