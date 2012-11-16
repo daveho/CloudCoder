@@ -5,10 +5,29 @@
 <html>
 	<head>
 		<repo:headStuff title="Search the repository"></repo:headStuff>
-		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css" />
-		<link rel="stylesheet" type="" href="${pageContext.servletContext.contextPath}/css/smoothness/jquery-ui-1.9.1.custom.min.css" />
-		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery-ui-1.9.1.custom.min.js"></script>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
+		<link
+			rel="stylesheet"
+			href="css/jquery.tagit.css"
+			type="text/css" />
+		<script
+			src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"
+			type="text/javascript"
+			charset="utf-8"></script>
+		<script
+			src="${pageContext.servletContext.contextPath}/js/tag-it.js"
+			type="text/javascript"
+			charset="utf-8"></script>
+		<script
+			type="text/javascript"
+			src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript">
 			var problemTypeToLanguage = ${problemTypeToLanguage};
 		
@@ -71,11 +90,25 @@
 		
 			$(document).ready(function() {
 				$("#searchButton").click(onSubmit);
-				
-				// Enable autocomplete on the selectedTags textbox
-				$("#selectedTags").autocomplete({
-					source: "${pageContext.servletContext.contextPath}/suggestTags",
-					minLength: 1
+
+				// Use tag-it! on the selectedTags textbox.
+				// Ajax/autocomplete code shamelessly stolen from
+				// http://tag-it-autocomplete.heroku.com/
+				$("#selectedTags").tagit({
+				  tagSource: function(search, showChoices) {
+				    var that = this;
+				    $.ajax({
+				      url: "${pageContext.servletContext.contextPath}/suggestTags",
+				      data: {term: search.term},
+				      type: "GET",
+				      success: function(choices) {
+				        showChoices(that._subtractArray(choices, that.assignedTags()));
+				      }
+				    });
+				  }/*,
+				  show_tag_url: "/tags/",
+				  singleField: true,
+				  singleFieldNode: $('#submit_tag_names')*/
 				});
 				
 				// Enable DataTable on the search results table.
