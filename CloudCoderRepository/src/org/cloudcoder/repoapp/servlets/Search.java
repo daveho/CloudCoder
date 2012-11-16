@@ -19,7 +19,6 @@ package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -105,18 +104,18 @@ public class Search extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		
-		Language language = null;
-		String lang = req.getParameter("language");
-		if (lang != null && !lang.equals("ANY")) {
-			try {
-				language = Language.valueOf(lang);
-			} catch (NoSuchElementException e) {
-				// Hmm... 
-			}
-		}
+//		Language language = null;
+//		String lang = req.getParameter("language");
+//		if (lang != null && !lang.equals("ANY")) {
+//			try {
+//				language = Language.valueOf(lang);
+//			} catch (NoSuchElementException e) {
+//				// Hmm... 
+//			}
+//		}
 		
 		RepoProblemSearchCriteria searchCriteria = new RepoProblemSearchCriteria();
-		searchCriteria.setLanguage(language);
+//		searchCriteria.setLanguage(language);
 		
 		// See if tags were specified
 		String selectedTags = req.getParameter("selectedTags");

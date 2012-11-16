@@ -73,10 +73,10 @@ public class RepoProblemSearch {
 			return;
 		}
 		
-		if (searchCriteria.getTagList().isEmpty()) {
-			// Searching by language only
-			searchByLanguage(conn, dbRunnable);
-		} else {
+//		if (searchCriteria.getTagList().isEmpty()) {
+//			// Searching by language only
+//			searchByLanguage(conn, dbRunnable);
+//		} else {
 			// Search by tags and (maybe) language
 			StringBuilder sql = new StringBuilder()
 				.append("select rp.*, rpt.* ")
@@ -96,11 +96,11 @@ public class RepoProblemSearch {
 			
 			sql.append(")");
 			
-			if (searchCriteria.getLanguage() != null) {
-				sql.append(" and (");
-				sql.append(LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
-				sql.append(")");
-			}
+//			if (searchCriteria.getLanguage() != null) {
+//				sql.append(" and (");
+//				sql.append(LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
+//				sql.append(")");
+//			}
 			
 			sql.append(" order by rp." + RepoProblem.ID.getName() + " asc");
 			
@@ -137,28 +137,28 @@ public class RepoProblemSearch {
 				curSearchResult.addMatchedTag(repoProblemTag.getName());
 				//System.out.println(curSearchResult.getRepoProblem().getTestname() + " => " + repoProblemTag.getName());
 			}
-		}
+		//}
 	}
 
-	protected void searchByLanguage(Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
-			throws SQLException {
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
-				" where " + LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
-
-		ResultSet resultSet = dbRunnable.executeQuery(stmt);
-		while (resultSet.next()) {
-			RepoProblem repoProblem = new RepoProblem();
-			DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
-			
-			RepoProblemSearchResult searchResult = new RepoProblemSearchResult();
-			searchResult.setRepoProblem(repoProblem);
-			
-			searchResultList.add(searchResult);
-		}
-	}
+//	protected void searchByLanguage(Connection conn,
+//			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
+//			throws SQLException {
+//		PreparedStatement stmt = dbRunnable.prepareStatement(
+//				conn,
+//				"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
+//				" where " + LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
+//
+//		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+//		while (resultSet.next()) {
+//			RepoProblem repoProblem = new RepoProblem();
+//			DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
+//			
+//			RepoProblemSearchResult searchResult = new RepoProblemSearchResult();
+//			searchResult.setRepoProblem(repoProblem);
+//			
+//			searchResultList.add(searchResult);
+//		}
+//	}
 	
 	public List<RepoProblemSearchResult> getSearchResultList() {
 		return searchResultList;

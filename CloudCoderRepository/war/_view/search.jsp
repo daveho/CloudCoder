@@ -9,8 +9,7 @@
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript">
 			var problemTypeToLanguage = ${problemTypeToLanguage};
-//			var problemTypeOrdinalToProblemTypeMap = ${problemTypeOrdinalToProblemTypeMap};
-			
+		
 			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
 			// search results DataTable.
 			var repoProblemConvertFields = [
@@ -26,8 +25,6 @@
 			
 			// Initiate an AJAX request to retrieve search results.
 			function onSubmit() {
-				var selectedLanguage = $("#selectedLanguage option:selected").attr('value');
-				
 				$("#status").attr('class', 'status-pending').text("Seaching...");
 				
 				var queryUri = "${pageContext.servletContext.contextPath}/search";
@@ -36,7 +33,6 @@
 					dataType: "json",
 					type: "post",
 					data: {
-						language: selectedLanguage,
 						selectedTags: $("#selectedTags").val()
 					},
 					success: function(data, textStatus, jqXHR) {
@@ -97,15 +93,7 @@
 		<repo:topBanner/>
 		<div id="content">
 			<h1>Search the exercise repository</h1>
-			<p>Select problem type and tags</p>
-			<p> Programming Language:
-			<select id="selectedLanguage">
-				<option value="ANY">Any Language</option>
-				<c:forEach var="language" items="${languages}">
-					<option value="${language}">${language.name}</option>
-				</c:forEach>
-			</select>
-			Tags:
+			<p> Enter tags (e.g., java, c, etc.):
 			<input id="selectedTags" type="text" size="60" />
 			</p>
 			
