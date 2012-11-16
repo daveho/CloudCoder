@@ -51,6 +51,10 @@
 		<servlet-name>GetTags</servlet-name>
 		<servlet-class>org.cloudcoder.repoapp.servlets.GetTags</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>SuggestTags</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.SuggestTags</servlet-class>
+	</servlet>
 	
 	<!-- Servlet-mapping -->
 	<servlet-mapping>
@@ -96,6 +100,10 @@
 	<servlet-mapping>
 		<servlet-name>GetTags</servlet-name>
 		<url-pattern>/getTags/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SuggestTags</servlet-name>
+		<url-pattern>/suggestTags/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Use the /index servlet as the welcome file -->

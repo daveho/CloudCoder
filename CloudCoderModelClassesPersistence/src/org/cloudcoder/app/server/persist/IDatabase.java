@@ -377,4 +377,12 @@ public interface IDatabase {
 	 */
 	public void addRepoProblemTag(RepoProblemTag repoProblemTag);
 
+	/**
+	 * Given a search term (partial tag name), suggest possible repository tag names.
+	 *  
+	 * @param term a search term (partial tag name)
+	 * @return list of possible tag names matching the search term
+	 */
+	public List<String> suggestTagNames(String term);
+
 }

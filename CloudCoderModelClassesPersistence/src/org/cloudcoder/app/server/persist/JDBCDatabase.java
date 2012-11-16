@@ -1540,6 +1540,35 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public List<String> suggestTagNames(final String term) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<String>>() {
+			@Override
+			public List<String> run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select distinct " + RepoProblemTag.NAME.getName() +
+						"  from " + RepoProblemTag.SCHEMA.getDbTableName() +
+						" where "+ RepoProblemTag.NAME.getName() + " like ? " +
+						" order by "+ RepoProblemTag.NAME.getName() + " asc"
+				);
+				stmt.setString(1, term + "%");
+				
+				List<String> result = new ArrayList<String>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					result.add(resultSet.getString(1));
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " suggesting tag names";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

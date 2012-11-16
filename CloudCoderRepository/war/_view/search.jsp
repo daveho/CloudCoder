@@ -5,8 +5,10 @@
 <html>
 	<head>
 		<repo:headStuff title="Search the repository"></repo:headStuff>
-		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
+		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css" />
+		<link rel="stylesheet" type="" href="${pageContext.servletContext.contextPath}/css/smoothness/jquery-ui-1.9.1.custom.min.css" />
 		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery-ui-1.9.1.custom.min.js"></script>
 		<script type="text/javascript">
 			var problemTypeToLanguage = ${problemTypeToLanguage};
 		
@@ -69,6 +71,12 @@
 		
 			$(document).ready(function() {
 				$("#searchButton").click(onSubmit);
+				
+				// Enable autocomplete on the selectedTags textbox
+				$("#selectedTags").autocomplete({
+					source: "${pageContext.servletContext.contextPath}/suggestTags",
+					minLength: 1
+				});
 				
 				// Enable DataTable on the search results table.
 				dataTable = $("#searchResultsTable").dataTable({
