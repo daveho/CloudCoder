@@ -54,7 +54,7 @@
 					dataType: "json",
 					type: "post",
 					data: {
-						selectedTags: $("#selectedTags").val()
+						selectedTags: $("#selectedTags").tagit("assignedTags").join(" ")
 					},
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
