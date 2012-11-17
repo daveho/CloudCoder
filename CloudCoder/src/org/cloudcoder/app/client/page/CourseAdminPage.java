@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
+import org.cloudcoder.app.client.view.IButtonPanelAction;
 import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -60,7 +61,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  * @author David Hovemeyer
  */
 public class CourseAdminPage extends CloudCoderPage {
-	private enum ButtonPanelAction {
+	private enum ButtonPanelAction implements IButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
 		DELETE("Delete problem"),
@@ -77,9 +78,6 @@ public class CourseAdminPage extends CloudCoderPage {
 			this.name = name;
 		}
 		
-		/**
-		 * @return the name
-		 */
 		public String getName() {
 			return name;
 		}
