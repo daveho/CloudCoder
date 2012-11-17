@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 /**
  * A panel containing a horizontal row of buttons.
@@ -55,6 +56,11 @@ public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends
 				}
 			});
 			button.setEnabled(action.isEnabledByDefault());
+			
+			// Add some space between buttons
+			if (actionToButtonMap.size() > 1) {
+				panel.add(new InlineHTML(" "));
+			}
 			
 			panel.add(button);
 		}
