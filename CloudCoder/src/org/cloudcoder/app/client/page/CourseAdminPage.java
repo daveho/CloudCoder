@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.ButtonPanel;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.IButtonPanelAction;
@@ -43,14 +44,10 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -61,7 +58,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  * @author David Hovemeyer
  */
 public class CourseAdminPage extends CloudCoderPage {
-	private enum ButtonPanelAction implements IButtonPanelAction {
+	private enum ProblemAction implements IButtonPanelAction {
 		NEW("New problem"),
 		EDIT("Edit problem"),
 		DELETE("Delete problem"),
@@ -74,7 +71,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		
 		private String name;
 		
-		private ButtonPanelAction(String name) {
+		private ProblemAction(String name) {
 			this.name = name;
 		}
 		
@@ -97,7 +94,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private PageNavPanel pageNavPanel;
 		private Label courseLabel;
-		private Button[] problemButtons;
+		private ButtonPanel<ProblemAction> buttonPanel;
 		private CourseAdminProblemListView courseAdminProblemListView;
 		private StatusMessageView statusMessageView;
 
@@ -125,26 +122,34 @@ public class CourseAdminPage extends CloudCoderPage {
 			LayoutPanel centerPanel = new LayoutPanel();
 
 			// Create a button panel with buttons for problem-related actions
-			// (new problem, edit problem, make visible, make invisible, quiz, share)
-			FlowPanel problemButtonPanel = new FlowPanel();
-			ButtonPanelAction[] actions = ButtonPanelAction.values();
-			problemButtons = new Button[actions.length];
-			for (final ButtonPanelAction action : actions) {
-				final Button button = new Button(action.getName());
-				problemButtons[action.ordinal()] = button;
-				button.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						onProblemButtonClick(action);
+			buttonPanel = new ButtonPanel<ProblemAction>(ProblemAction.values()) {
+				@Override
+				public void onButtonClick(ProblemAction action) {
+					onProblemButtonClick(action);
+				}
+				
+				/* (non-Javadoc)
+				 * @see org.cloudcoder.app.client.view.ButtonPanel#isEnabled(org.cloudcoder.app.client.view.IButtonPanelAction)
+				 */
+				@Override
+				public boolean isEnabled(ProblemAction action) {
+					if (action == ProblemAction.MAKE_VISIBLE || action == ProblemAction.MAKE_INVISIBLE) {
+						Problem problem = getSession().get(Problem.class);
+						//    PV  MV  enable
+						//    t   t   f
+						//    t   f   t
+						//    f   t   t
+						//    f   f   f
+						return (problem != null) && problem.isVisible() != (action == ProblemAction.MAKE_VISIBLE);
+					} else {
+						return true;
 					}
-				});
-				button.setEnabled(action.isEnabledByDefault());
-				problemButtonPanel.add(button);
-			}
+				}
+			};
 			
-			centerPanel.add(problemButtonPanel);
-			centerPanel.setWidgetTopHeight(problemButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
-			centerPanel.setWidgetLeftRight(problemButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			centerPanel.add(buttonPanel);
+			centerPanel.setWidgetTopHeight(buttonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
+			centerPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			// Create problems list
 			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
@@ -168,7 +173,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		 * 
 		 * @param action the ProblemButtonAction
 		 */
-		protected void onProblemButtonClick(ButtonPanelAction action) {
+		protected void onProblemButtonClick(ProblemAction action) {
 			switch (action) {
 			case NEW:
 				handleNewProblem();
@@ -195,7 +200,7 @@ public class CourseAdminPage extends CloudCoderPage {
 				
 			case MAKE_VISIBLE:
 			case MAKE_INVISIBLE:
-				doChangeVisibility(action == ButtonPanelAction.MAKE_VISIBLE);
+				doChangeVisibility(action == ProblemAction.MAKE_VISIBLE);
 				break;
 				
 			case QUIZ:
@@ -276,8 +281,7 @@ public class CourseAdminPage extends CloudCoderPage {
 					if (value != null) {
 						getSession().add(StatusMessage.goodNews("Exercise imported successfully!"));
 						
-						// Reload the problem list
-						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+						reloadProblems(course);
 					} else {
 						getSession().add(StatusMessage.error("Exercise was not found"));
 					}
@@ -433,22 +437,9 @@ public class CourseAdminPage extends CloudCoderPage {
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
-				onSelectProblem((Problem) hint);
-			} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem[])) {
-				// Problems were reloaded: sync the buttons with the current Problem selection
-				onSelectProblem(courseAdminProblemListView.getSelected());
+				// Problem selected: enable/disable buttons appropriately
+				buttonPanel.updateButtonEnablement();
 			}
-		}
-
-		private void onSelectProblem(Problem problem) {
-			// Problem selected: enable/disable buttons appropriately
-			problemButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
-            problemButtons[ButtonPanelAction.STATISTICS.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.MAKE_VISIBLE.ordinal()].setEnabled(problem != null && !problem.isVisible());
-			problemButtons[ButtonPanelAction.MAKE_INVISIBLE.ordinal()].setEnabled(problem != null && problem.isVisible());
-			problemButtons[ButtonPanelAction.QUIZ.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.SHARE.ordinal()].setEnabled(true);
-			problemButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
 		}
 
 		public void deleteProblem(final Problem chosen, final Course course) {
@@ -470,8 +461,7 @@ public class CourseAdminPage extends CloudCoderPage {
 				public void onSuccess(OperationResult result) {
 					if (result.isSuccess()) {
 						getSession().add(StatusMessage.goodNews(result.getMessage()));
-						// Reload problems
-						SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+						reloadProblems(course);
 					} else {
 						getSession().add(StatusMessage.error(result.getMessage()));
 					}
@@ -501,10 +491,21 @@ public class CourseAdminPage extends CloudCoderPage {
 				@Override
 				public void onSuccess(ProblemAndTestCaseList result) {
 					getSession().add(StatusMessage.goodNews("Problem visibility updated successfully"));
-					// Reload problems
-					SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+					reloadProblems(course);
 				}
 			});
+		}
+
+		public void reloadProblems(final Course course) {
+			// Reload problems
+			SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+			
+			// If a problem is selected, add it to the session
+			// (so the buttons are enabled/disable appropriately).
+			Problem currentProblem = courseAdminProblemListView.getSelected();
+			if (currentProblem != null) {
+				getSession().add(currentProblem);
+			}
 		}
 	}
 

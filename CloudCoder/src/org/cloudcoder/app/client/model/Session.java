@@ -83,8 +83,8 @@ public class Session extends Publisher {
 	 * @param obj object to add to the session
 	 */
 	public void add(Object obj) {
-		notifySubscribers(Event.ADDED_OBJECT, obj);
 		data.put(obj.getClass(), obj);
+		notifySubscribers(Event.ADDED_OBJECT, obj);
 	}
 
 	/**
