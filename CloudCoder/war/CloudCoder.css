@@ -21,6 +21,11 @@
 	margin-left: 0 auto;
 	margin-right: 0 auto;
 }
+.cc-sectionLabel {
+	font-size: 16px;
+	font-weight: bold;
+	border-bottom: 2px solid gray;
+}
 
 /*
  * Styles for StatusMessageView
