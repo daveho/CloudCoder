@@ -59,24 +59,34 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  */
 public class CourseAdminPage extends CloudCoderPage {
 	private enum ProblemAction implements IButtonPanelAction {
-		NEW("New problem"),
-		EDIT("Edit problem"),
-		DELETE("Delete problem"),
-		STATISTICS("Statistics"),
-		IMPORT("Import problem"),
-		MAKE_VISIBLE("Make visible"),
-		MAKE_INVISIBLE("Make invisible"),
-		QUIZ("Quiz"),
-		SHARE("Share");
+		NEW("New exercise", "Create a new exercise"),
+		EDIT("Edit exercise", "Edit the selected exercise"),
+		DELETE("Delete exercise", "Delete the selected exercise"),
+		STATISTICS("Statistics", "See statistics on selected exercise"),
+		IMPORT("Import exercise", "Import an exercise from the CloudCoder exercise repository"),
+		SHARE("Share exercise", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
+		MAKE_VISIBLE("Make visible", "Make selected exerise visible to students"),
+		MAKE_INVISIBLE("Make invisible", "Make selected exercise invisible to students"),
+		QUIZ("Quiz", "Give selected exercise as a quiz");
 		
-		private String name;
+		private final String name;
+		private final String tooltip;
 		
-		private ProblemAction(String name) {
+		private ProblemAction(String name, String tooltip) {
 			this.name = name;
+			this.tooltip = tooltip;
 		}
 		
 		public String getName() {
 			return name;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.cloudcoder.app.client.view.IButtonPanelAction#getTooltip()
+		 */
+		@Override
+		public String getTooltip() {
+			return tooltip;
 		}
 		
 		public boolean isEnabledByDefault() {
@@ -101,7 +111,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
-			// Create a north panel with course info and a PageNavPanel
+			// Create a north panel with course info, PageNavPanel, and button panel
 			LayoutPanel northPanel = new LayoutPanel();
 			
 			this.courseLabel = new Label();
@@ -114,12 +124,6 @@ public class CourseAdminPage extends CloudCoderPage {
 			northPanel.add(pageNavPanel);
 			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
 			northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
-			
-			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT);
-			
-			// Create a center panel with problem button panel and problems list.
-			// Can eventually put other stuff here too.
-			LayoutPanel centerPanel = new LayoutPanel();
 
 			// Create a button panel with buttons for problem-related actions
 			buttonPanel = new ButtonPanel<ProblemAction>(ProblemAction.values()) {
@@ -147,23 +151,19 @@ public class CourseAdminPage extends CloudCoderPage {
 				}
 			};
 			
-			centerPanel.add(buttonPanel);
-			centerPanel.setWidgetTopHeight(buttonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
-			centerPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			northPanel.add(buttonPanel);
+			northPanel.setWidgetTopHeight(buttonPanel, PageNavPanel.HEIGHT, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
-			// Create problems list
-			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
-			centerPanel.add(courseAdminProblemListView);
-			centerPanel.setWidgetTopBottom(courseAdminProblemListView, PROBLEM_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
-			centerPanel.setWidgetLeftRight(courseAdminProblemListView, 0.0, Unit.PX, 0.0, Unit.PX);
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT + ButtonPanel.HEIGHT_PX + 10.0);
 			
-			// Create a StatusMessageView
+			// Create a south panel with a StatusMessageView
 			this.statusMessageView = new StatusMessageView();
-			centerPanel.add(statusMessageView);
-			centerPanel.setWidgetBottomHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
-			centerPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, 0.0, Unit.PX);
+			dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
 			
-			dockLayoutPanel.add(centerPanel);
+			// Create a center panel with problems list.
+			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
+			dockLayoutPanel.add(courseAdminProblemListView);
 			
 			initWidget(dockLayoutPanel);
 		}

@@ -33,6 +33,11 @@ import com.google.gwt.user.client.ui.InlineHTML;
  * @author David Hovemeyer
  */
 public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends Composite {
+	/**
+	 * Height in pixels.
+	 */
+	public static final double HEIGHT_PX = 28.0;
+	
 	private Map<ActionType, Button> actionToButtonMap;
 
 	/**
@@ -56,6 +61,11 @@ public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends
 				}
 			});
 			button.setEnabled(action.isEnabledByDefault());
+			
+			String tooltip = action.getTooltip();
+			if (!tooltip.equals("")) {
+				button.setTitle(tooltip);
+			}
 			
 			// Add some space between buttons
 			if (actionToButtonMap.size() > 1) {

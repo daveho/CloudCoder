@@ -31,6 +31,14 @@ public interface IButtonPanelAction {
 	public String getName();
 	
 	/**
+	 * Get tooltip to display when the mouse hovers over the button.
+	 * 
+	 * @return tooltip to display when the mouse hovers over the button;
+	 *         empty string if there should not be any tooltip
+	 */
+	public String getTooltip();
+	
+	/**
 	 * @return true if the button is enabled by default,
 	 *         false otherwise
 	 */
