@@ -154,11 +154,11 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			SplitLayoutPanel centerSplit = new SplitLayoutPanel();
 
 			LayoutPanel problemDescriptionPanel = new LayoutPanel();
-			IsWidget problemDescriptionLabel = createSectionLabel("Problem Description");
+			IsWidget problemDescriptionLabel = createSectionLabel("Exercise Description");
 			problemDescriptionPanel.add(problemDescriptionLabel);
 			problemDescriptionPanel.setWidgetTopHeight(problemDescriptionLabel, VSEP_PX, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			problemDescriptionPanel.setWidgetLeftRight(problemDescriptionLabel, 0.0, Unit.PX, LOAD_PROBLEM_BUTTON_WIDTH_PX, Unit.PX);
-			this.loadProblemButton = new Button("Load problem!");
+			this.loadProblemButton = new Button("Load exercise!");
 			loadProblemButton.setStylePrimaryName("cc-emphButton");
 			loadProblemButton.addClickHandler(new ClickHandler() {
 				@Override
@@ -176,7 +176,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			centerSplit.addSouth(problemDescriptionPanel, 300.0);
 
 			LayoutPanel problemListPanel = new LayoutPanel();
-			IsWidget problemLabel = createSectionLabel("Problems");
+			IsWidget problemLabel = createSectionLabel("Exercises");
 			problemListPanel.add(problemLabel);
 			problemListPanel.setWidgetTopHeight(problemLabel, 0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			problemListPanel.setWidgetLeftRight(problemLabel, 0.0, Unit.PX, 0.0, Unit.PX);
