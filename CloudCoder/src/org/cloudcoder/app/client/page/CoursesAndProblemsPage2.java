@@ -23,6 +23,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
+import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -43,6 +44,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -59,11 +61,6 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	 * UI class for CoursesAndProblemsPage2.
 	 */
 	private class UI extends Composite implements SessionObserver, Subscriber {
-		/**
-		 * Height of a section label.
-		 */
-		private static final double SECTION_LABEL_HEIGHT_PX = 32.0;
-		
 		/**
 		 * Width of the west panel (which has the term/course tree view).
 		 */
@@ -117,7 +114,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			westPanel = new LayoutPanel();
 			IsWidget coursesLabel = createSectionLabel("Courses");
 			westPanel.add(coursesLabel);
-			westPanel.setWidgetTopHeight(coursesLabel, 0, Unit.PX, SECTION_LABEL_HEIGHT_PX, Unit.PX);
+			westPanel.setWidgetTopHeight(coursesLabel, 0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			westPanel.setWidgetLeftRight(coursesLabel, 0.0, Unit.PX, SEP_PX, Unit.PX);
 
 			dockLayoutPanel.addWest(westPanel, WEST_PANEL_WIDTH_PX);
@@ -158,7 +155,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			LayoutPanel problemDescriptionPanel = new LayoutPanel();
 			IsWidget problemDescriptionLabel = createSectionLabel("Problem Description");
 			problemDescriptionPanel.add(problemDescriptionLabel);
-			problemDescriptionPanel.setWidgetTopHeight(problemDescriptionLabel, VSEP_PX, Unit.PX, SECTION_LABEL_HEIGHT_PX, Unit.PX);
+			problemDescriptionPanel.setWidgetTopHeight(problemDescriptionLabel, VSEP_PX, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			problemDescriptionPanel.setWidgetLeftRight(problemDescriptionLabel, 0.0, Unit.PX, LOAD_PROBLEM_BUTTON_WIDTH_PX, Unit.PX);
 			this.loadProblemButton = new Button("Load problem!");
 			loadProblemButton.setStylePrimaryName("cc-emphButton");
@@ -173,18 +170,18 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			problemDescriptionPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, LOAD_PROBLEM_BUTTON_WIDTH_PX, Unit.PX);
 			problemDescriptionView = new ProblemDescriptionView();
 			problemDescriptionPanel.add(problemDescriptionView);
-			problemDescriptionPanel.setWidgetTopBottom(problemDescriptionView, VSEP_PX+SECTION_LABEL_HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			problemDescriptionPanel.setWidgetTopBottom(problemDescriptionView, VSEP_PX+SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			problemDescriptionPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
 			centerSplit.addSouth(problemDescriptionPanel, 300.0);
 
 			LayoutPanel problemListPanel = new LayoutPanel();
 			IsWidget problemLabel = createSectionLabel("Problems");
 			problemListPanel.add(problemLabel);
-			problemListPanel.setWidgetTopHeight(problemLabel, 0.0, Unit.PX, SECTION_LABEL_HEIGHT_PX, Unit.PX);
+			problemListPanel.setWidgetTopHeight(problemLabel, 0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			problemListPanel.setWidgetLeftRight(problemLabel, 0.0, Unit.PX, 0.0, Unit.PX);
 			problemListView2 = new ProblemListView2(CoursesAndProblemsPage2.this);
 			problemListPanel.add(problemListView2);
-			problemListPanel.setWidgetTopBottom(problemListView2, SECTION_LABEL_HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			problemListPanel.setWidgetTopBottom(problemListView2, SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			problemListPanel.setWidgetLeftRight(problemListView2, 0.0, Unit.PX, 0.0, Unit.PX);
 			centerSplit.add(problemListPanel);
 
@@ -201,11 +198,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		}
 
 		private IsWidget createSectionLabel(String text) {
-			Label label = new Label(text);
-			
-			label.setStyleName("cc-sectionLabel", true);
-			
-			return label;
+			return new SectionLabel(text);
 		}
 
 		private void loadProblemButtonClicked() {
@@ -285,18 +278,18 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				westPanel.add(termAndCourseTreeView);
 				westPanel.setWidgetTopBottom(
 						termAndCourseTreeView,
-						SECTION_LABEL_HEIGHT_PX + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX : 0.0),
+						SectionLabel.HEIGHT_PX + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX : 0.0),
 						Unit.PX,
 						0.0,
 						Unit.PX);
-				westPanel.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, 0.0, Unit.PX);
+				westPanel.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
 
 				// Create the "Course admin" and "user admin" buttons if appropriate.
 				if (isInstructor) {
 					courseAdminButton = new Button("Course admin");
 					westPanel.add(courseAdminButton);
 					westPanel.setWidgetRightWidth(courseAdminButton, SEP_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-					westPanel.setWidgetTopHeight(courseAdminButton, SECTION_LABEL_HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+					westPanel.setWidgetTopHeight(courseAdminButton, SectionLabel.HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 					courseAdminButton.addClickHandler(new ClickHandler(){
 						@Override
 						public void onClick(ClickEvent event) {
@@ -306,7 +299,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 					userAdminButton = new Button("User admin");
 					westPanel.add(userAdminButton);
 					westPanel.setWidgetRightWidth(userAdminButton, SEP_PX*2+COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-					westPanel.setWidgetTopHeight(userAdminButton, SECTION_LABEL_HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+					westPanel.setWidgetTopHeight(userAdminButton, SectionLabel.HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 					userAdminButton.addClickHandler(new ClickHandler(){
 						/* (non-Javadoc)
 						 * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
