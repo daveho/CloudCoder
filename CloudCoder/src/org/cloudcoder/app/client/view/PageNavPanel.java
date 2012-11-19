@@ -31,10 +31,15 @@ import com.google.gwt.user.client.ui.ResizeComposite;
  * @author David Hovemeyer
  */
 public class PageNavPanel extends ResizeComposite {
-	public static final double WIDTH = 250.0;
-	public static final Unit WIDTH_UNIT = Unit.PX;
-	public static final double HEIGHT = 40.0;
-	public static final Unit HEIGHT_UNIT = Unit.PX;
+	/**
+	 * Width in pixels.
+	 */
+	public static final double WIDTH_PX = 250.0;
+	
+	/**
+	 * Height in pixels.
+	 */
+	public static final double HEIGHT_PX = 40.0;
 	
 	private LayoutPanel layoutPanel;
 	private Button backPageButton;
@@ -43,10 +48,11 @@ public class PageNavPanel extends ResizeComposite {
 	private Runnable backHandler;
 	private Runnable logoutHandler;
 	
+	/**
+	 * Constructor.
+	 */
 	public PageNavPanel() {
 		this.layoutPanel = new LayoutPanel();
-		
-		//layoutPanel.setSize(WIDTH + WIDTH_UNIT.toString(), HEIGHT + HEIGHT_UNIT.toString());
 		
 		logOutButton = new Button("Log out");
 		logOutButton.addClickHandler(new ClickHandler() {
@@ -75,16 +81,29 @@ public class PageNavPanel extends ResizeComposite {
 		initWidget(layoutPanel);
 	}
 
+	/**
+	 * Set whether or not to show the "Back" button.
+	 * 
+	 * @param b true if the "Back" button should be shown, false otherwise.
+	 */
 	public void setShowBackButton(boolean b) {
 		if (!b) {
 			layoutPanel.remove(backPageButton);
 		}
 	}
 	
+	/**
+	 * Set callback to run when the "Back" button is clicked.
+	 * @param backHandler callback to run when the "Back" button is clicked
+	 */
 	public void setBackHandler(Runnable backHandler) {
 		this.backHandler = backHandler;
 	}
 	
+	/**
+	 * Set callback to run when the "Log out" button is clicked.
+	 * @param backHandler callback to run when the "Log out" button is clicked
+	 */
 	public void setLogoutHandler(Runnable logoutHandler) {
 		this.logoutHandler = logoutHandler;
 	}

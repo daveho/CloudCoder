@@ -37,6 +37,7 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -128,7 +129,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			pageNavPanel = new PageNavPanel();
 			pageNavPanel.setShowBackButton(false);
 			eastPanel.add(pageNavPanel);
-			eastPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
+			eastPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
 			eastPanel.setWidgetLeftRight(pageNavPanel, SEP_PX, Unit.PX, 0.0, Unit.PX);
 			
 			accountButton = new Button("My account");
@@ -140,7 +141,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			});
 			eastPanel.add(accountButton);
 			eastPanel.setWidgetRightWidth(accountButton, 0.0, Unit.PX, 120.0, Unit.PX);
-			eastPanel.setWidgetTopHeight(accountButton, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+			eastPanel.setWidgetTopHeight(accountButton, PageNavPanel.HEIGHT_PX, Style.Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 
 			dockLayoutPanel.addEast(eastPanel, 200);
 

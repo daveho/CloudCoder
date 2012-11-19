@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -116,14 +117,14 @@ public class CourseAdminPage extends CloudCoderPage {
 			
 			this.courseLabel = new Label();
 			northPanel.add(courseLabel);
-			northPanel.setWidgetLeftRight(courseLabel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
-			northPanel.setWidgetTopHeight(courseLabel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
+			northPanel.setWidgetLeftRight(courseLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Style.Unit.PX);
+			northPanel.setWidgetTopHeight(courseLabel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
 			courseLabel.setStyleName("cc-courseLabel");
 			
 			this.pageNavPanel = new PageNavPanel();
 			northPanel.add(pageNavPanel);
-			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
-			northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT, PageNavPanel.HEIGHT_UNIT);
+			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Style.Unit.PX);
+			northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
 
 			// Create a button panel with buttons for problem-related actions
 			buttonPanel = new ButtonPanel<ProblemAction>(ProblemAction.values()) {
@@ -152,10 +153,10 @@ public class CourseAdminPage extends CloudCoderPage {
 			};
 			
 			northPanel.add(buttonPanel);
-			northPanel.setWidgetTopHeight(buttonPanel, PageNavPanel.HEIGHT, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(buttonPanel, PageNavPanel.HEIGHT_PX, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
 			northPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
-			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT + ButtonPanel.HEIGHT_PX + 10.0);
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + ButtonPanel.HEIGHT_PX + 10.0);
 			
 			// Create a south panel with a StatusMessageView
 			this.statusMessageView = new StatusMessageView();
