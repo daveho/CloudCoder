@@ -9,7 +9,7 @@
 	color: red;
 	font-style: italic;
 }
-.cc-problemName, .cc-courseLabel {
+.cc-problemName, .cc-courseLabel, .cc-dialogTitle {
 	font-weight: bold;
 	font-size: 20px;
 }
@@ -188,4 +188,6 @@
  */ 
 .cc-editDateTimeClearFloats {
 	clear: both;
+}
+.cc-dialogTitle {
 }
