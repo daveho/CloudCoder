@@ -52,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
-public class Builder implements Runnable {
-	private static final Logger logger=LoggerFactory.getLogger(Builder.class);
+public class Builder2 implements Runnable {
+	private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
 
 	private volatile boolean shutdownRequested;
 	private volatile boolean working;
@@ -71,7 +71,7 @@ public class Builder implements Runnable {
 	 * @param webappSocketFactory the {@link WebappSocketFactory} that will create socket
 	 *                            connections to the webapp
 	 */
-	public Builder(WebappSocketFactory webappSocketFactory) {
+	public Builder2(WebappSocketFactory webappSocketFactory) {
 		this.shutdownRequested = false;
 		this.noConnectTimer = new NoConnectTimer();
 		this.webappSocketFactory = webappSocketFactory;
@@ -146,7 +146,7 @@ public class Builder implements Runnable {
 			// Based on the ProblemType, find a Tester
 			Tester tester = getTester(problem.getProblemType());
 			if (tester == null) {
-				throw new InternalBuilderException(Builder.class, problem.getProblemType() + " problems not supported yet");
+				throw new InternalBuilderException(Builder2.class, problem.getProblemType() + " problems not supported yet");
 			}
 
 			// Create and populate a BuilderSubmission
@@ -238,7 +238,7 @@ public class Builder implements Runnable {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Running the builder interactively (type \"shutdown\" to quit)");
 
-		BuilderDaemon daemon = new BuilderDaemon();
+		Builder2Daemon daemon = new Builder2Daemon();
 
 		daemon.start("instance");
 

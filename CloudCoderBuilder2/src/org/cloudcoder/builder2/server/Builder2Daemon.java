@@ -32,15 +32,15 @@ import org.slf4j.LoggerFactory;
  * 
  * @author David Hovemeyer
  */
-public class BuilderDaemon implements IDaemon {
+public class Builder2Daemon implements IDaemon {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private List<BuilderAndThread> builderAndThreadList;
 
 	private static class BuilderAndThread {
-		final Builder builder;
+		final Builder2 builder;
 		final Thread thread;
-		public BuilderAndThread(Builder builder, Thread thread) {
+		public BuilderAndThread(Builder2 builder, Thread thread) {
 			this.builder = builder;
 			this.thread = thread;
 		}
@@ -116,7 +116,7 @@ public class BuilderDaemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder builder_ = new Builder(webappSocketFactory);
+			Builder2 builder_ = new Builder2(webappSocketFactory);
 			Thread thread_ = new Thread(builder_);
 	
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);

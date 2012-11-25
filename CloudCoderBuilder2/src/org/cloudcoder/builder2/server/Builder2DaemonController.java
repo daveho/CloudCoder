@@ -27,7 +27,7 @@ import org.cloudcoder.daemon.IDaemon;
  * 
  * @author David Hovemeyer
  */
-public class BuilderDaemonController extends DaemonController {
+public class Builder2DaemonController extends DaemonController {
 
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.daemon.DaemonController#getDefaultInstanceName()
@@ -42,7 +42,7 @@ public class BuilderDaemonController extends DaemonController {
 	 */
 	@Override
 	public Class<? extends IDaemon> getDaemonClass() {
-		return BuilderDaemon.class;
+		return Builder2Daemon.class;
 	}
 	
 	/* (non-Javadoc)
@@ -60,7 +60,7 @@ public class BuilderDaemonController extends DaemonController {
 	}
 
 	public static void main(String[] args) {
-		BuilderDaemonController controller = new BuilderDaemonController();
+		Builder2DaemonController controller = new Builder2DaemonController();
 		controller.exec(args);
 	}
 }
