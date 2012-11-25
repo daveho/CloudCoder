@@ -17,6 +17,7 @@
 
 package org.cloudcoder.builder2.model;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.TestOutcome;
@@ -55,8 +56,8 @@ public class CommandResult {
 	 */
 	public CommandResult(int exitCode, List<String> stdout, List<String> stderr) {
 		this.exitCode = exitCode;
-		this.stdout = stdout;
-		this.stderr = stderr;
+		this.stdout = (stdout != null) ? stdout : Collections.<String>emptyList();
+		this.stderr = (stderr != null) ? stderr : Collections.<String>emptyList();
 	}
 	
 	/**

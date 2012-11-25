@@ -47,7 +47,7 @@ public class NativeExecutableToCommandBuildStep implements IBuildStep {
 		}
 		
 		List<String> args = new ArrayList<String>();
-		args.add(nativeExe.getExeFileName());
+		args.add("./" + nativeExe.getExeFileName());
 		
 		Command command = new Command(nativeExe.getDir(), args);
 		submission.addArtifact(command);
