@@ -22,12 +22,14 @@ import java.io.File;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
 import org.cloudcoder.builder2.model.IBuildStep;
+import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
+import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.FileUtil;
 
 /**
  * An {@link IBuildStep} that compiles a C/C++ program to produce a
- * {@link NativeExecutable}.
+ * {@link NativeExecutable} artifact.
  * 
  * @author David Hovemeyer
  * @author Jaime Spacco
@@ -37,6 +39,12 @@ public class CCompilerBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
+		ProgramSource programSource = submission.getArtifact(ProgramSource.class);
+		if (programSource == null) {
+			throw new InternalBuilderException(CCompilerBuildStep.class.getSimpleName() +
+					": No program source to compile");
+		}
+		
 		File tempDir = FileUtil.makeTempDir();
 		if (tempDir == null) {
 			// Couldn't create temp dir
@@ -46,7 +54,7 @@ public class CCompilerBuildStep implements IBuildStep {
 		}
 		submission.addCleanupAction(new DeleteDirectoryCleanupAction(tempDir));
 		
-		Compiler compiler = new Compiler(submission.getProgramText(), tempDir, DEFAULT_PROG_NAME);
+		Compiler compiler = new Compiler(programSource.getProgramText(), tempDir, DEFAULT_PROG_NAME);
 		compiler.setCompilerExe("g++"); // FIXME: should make this configurable
 		if (!compiler.compile()) {
 			// Compilation failed

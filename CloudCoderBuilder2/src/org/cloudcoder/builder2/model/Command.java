@@ -17,34 +17,31 @@
 
 package org.cloudcoder.builder2.model;
 
-import java.io.File;
+import java.util.List;
 
 /**
- * Submission artifact representing a native executable
- * (for example, the result of compiling a C/C++ program.)
+ * A command to be executed with specified arguments.
  * 
  * @author David Hovemeyer
  */
-public class NativeExecutable {
-	private final File dir;
-	private final String exeFileName;
+public class Command {
+	private List<String> args;
 	
 	/**
 	 * Constructor.
+	 * The first command argument is the path to the program (executable),
+	 * and the remaining arguments are command line arguments.
 	 * 
-	 * @param dir          directory containing the native executable
-	 * @param exeFileName  the unqualified filename of the native executable
+	 * @param args command arguments
 	 */
-	public NativeExecutable(File dir, String exeFileName) {
-		this.dir = dir;
-		this.exeFileName = exeFileName;
+	public Command(List<String> args) {
+		this.args = args;
 	}
 	
-	public File getDir() {
-		return dir;
-	}
-	
-	public String getExeFileName() {
-		return exeFileName;
+	/**
+	 * @return the command arguments
+	 */
+	public List<String> getArgs() {
+		return args;
 	}
 }

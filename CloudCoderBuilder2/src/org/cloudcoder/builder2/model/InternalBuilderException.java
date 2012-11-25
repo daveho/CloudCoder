@@ -17,34 +17,30 @@
 
 package org.cloudcoder.builder2.model;
 
-import java.io.File;
-
 /**
- * Submission artifact representing a native executable
- * (for example, the result of compiling a C/C++ program.)
+ * Exception to indicate that an internal error occurred.
  * 
  * @author David Hovemeyer
  */
-public class NativeExecutable {
-	private final File dir;
-	private final String exeFileName;
+public class InternalBuilderException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param msg message describing the error
+	 */
+	public InternalBuilderException(String msg) {
+		super(msg);
+	}
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param dir          directory containing the native executable
-	 * @param exeFileName  the unqualified filename of the native executable
+	 * @param msg message describing the error
+	 * @param cause the root cause
 	 */
-	public NativeExecutable(File dir, String exeFileName) {
-		this.dir = dir;
-		this.exeFileName = exeFileName;
-	}
-	
-	public File getDir() {
-		return dir;
-	}
-	
-	public String getExeFileName() {
-		return exeFileName;
+	public InternalBuilderException(String msg, Throwable cause) {
+		super(msg, cause);
 	}
 }

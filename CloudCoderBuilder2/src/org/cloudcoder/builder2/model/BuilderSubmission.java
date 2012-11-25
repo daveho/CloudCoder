@@ -18,91 +18,46 @@
 package org.cloudcoder.builder2.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 
 /**
  * A submission to the builder.
  * It will be processed by a series of {@link IBuildStep}s.
- * Each build step can add arbitrary artifact objects.
+ * Initially, {@link Problem}, {@link TestCase} array, and {@link ProgramSource}
+ * artifacts are added to describe the submission.
+ * Each build step can add arbitrary artifact objects
+ * (such as executables and test results).
  * The submission is complete when a build step adds
  * a {@link SubmissionResult} artifact.
  * 
  * @author David Hovemeyer
  */
 public class BuilderSubmission {
-	private Problem problem;
-	private List<TestCase> testCaseList;
-	private String programText;
-	private List<Object> artifactList;
+	private Map<Class<?>, Object> artifactMap;
 	private List<ICleanupAction> cleanupActionList;
 
 	/**
 	 * Constructor.
 	 */
 	public BuilderSubmission() {
-		artifactList = new ArrayList<Object>();
+		artifactMap = new HashMap<Class<?>, Object>();
 		cleanupActionList = new ArrayList<ICleanupAction>();
 	}
 	
 	/**
-	 * Set the {@link Problem}.
-	 * 
-	 * @param problem the {@link Problem} to set
-	 */
-	public void setProblem(Problem problem) {
-		this.problem = problem;
-	}
-	
-	/**
-	 * Set the list of {@link TestCase}s.
-	 * 
-	 * @param testCaseList the list of {@link TestCase}s to set
-	 */
-	public void setTestCaseList(List<TestCase> testCaseList) {
-		this.testCaseList = testCaseList;
-	}
-	
-	/**
-	 * Set the submitted program text.
-	 * 
-	 * @param programText the submitted program text to set
-	 */
-	public void setProgramText(String programText) {
-		this.programText = programText;
-	}
-	
-	/**
-	 * @return the {@link Problem}
-	 */
-	public Problem getProblem() {
-		return problem;
-	}
-
-	/**
-	 * @return the list of {@link TestCase}s
-	 */
-	public List<TestCase> getTestCaseList() {
-		return testCaseList;
-	}
-	
-	/**
-	 * @return the submitted program text
-	 */
-	public String getProgramText() {
-		return programText;
-	}
-	
-	/**
 	 * Add an artifact.
+	 * If an artifact of the given artifact's type already exists,
+	 * it is replaced.
 	 * 
-	 * @param artifact the artifact to add
+	 * @param artifact the artifact to add or replace
 	 */
 	public void addArtifact(Object artifact) {
-		artifactList.add(artifact);
+		artifactMap.put(artifact.getClass(), artifact);
 	}
 
 	/**
@@ -111,11 +66,11 @@ public class BuilderSubmission {
 	 * @param type the artifact type
 	 * @return the artifact of the given type, or null if there is no such artifact
 	 */
+	@SuppressWarnings("unchecked")
 	public<E> E getArtifact(Class<E> type) {
-		for (Object artifact : artifactList) {
-			if (artifact.getClass() == type) {
-				return type.cast(artifact);
-			}
+		Object artifact = artifactMap.get(type);
+		if (artifact != null) {
+			return (E) artifact;
 		}
 		return null;
 	}

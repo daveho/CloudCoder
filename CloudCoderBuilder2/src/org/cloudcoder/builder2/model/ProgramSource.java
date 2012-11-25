@@ -17,34 +17,27 @@
 
 package org.cloudcoder.builder2.model;
 
-import java.io.File;
-
 /**
- * Submission artifact representing a native executable
- * (for example, the result of compiling a C/C++ program.)
+ * Artifact with the source program text.
  * 
  * @author David Hovemeyer
  */
-public class NativeExecutable {
-	private final File dir;
-	private final String exeFileName;
-	
+public class ProgramSource {
+	private String programText;
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param dir          directory containing the native executable
-	 * @param exeFileName  the unqualified filename of the native executable
+	 * @param programText the source program text 
 	 */
-	public NativeExecutable(File dir, String exeFileName) {
-		this.dir = dir;
-		this.exeFileName = exeFileName;
+	public ProgramSource(String programText) {
+		this.programText = programText;
 	}
 	
-	public File getDir() {
-		return dir;
-	}
-	
-	public String getExeFileName() {
-		return exeFileName;
+	/**
+	 * @return the source program text
+	 */
+	public String getProgramText() {
+		return programText;
 	}
 }
