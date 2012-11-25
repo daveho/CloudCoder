@@ -17,6 +17,7 @@
 
 package org.cloudcoder.builder2.model;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -25,6 +26,7 @@ import java.util.List;
  * @author David Hovemeyer
  */
 public class Command {
+	private File dir;
 	private List<String> args;
 	
 	/**
@@ -32,10 +34,19 @@ public class Command {
 	 * The first command argument is the path to the program (executable),
 	 * and the remaining arguments are command line arguments.
 	 * 
+	 * @param dir  the directory to run the command in
 	 * @param args command arguments
 	 */
-	public Command(List<String> args) {
+	public Command(File dir, List<String> args) {
+		this.dir = dir;
 		this.args = args;
+	}
+	
+	/**
+	 * @return the directory to run the command in
+	 */
+	public File getDir() {
+		return dir;
 	}
 	
 	/**

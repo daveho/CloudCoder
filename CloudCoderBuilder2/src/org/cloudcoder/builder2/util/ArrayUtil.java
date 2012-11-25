@@ -15,42 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.builder2.model;
+package org.cloudcoder.builder2.util;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
- * Exception to indicate that an internal error occurred.
+ * Array utility methods.
  * 
  * @author David Hovemeyer
  */
-public class InternalBuilderException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
-
+public class ArrayUtil {
 	/**
-	 * Constructor.
+	 * Convert a Collection to an array.
 	 * 
-	 * @param msg message describing the error
+	 * @param c    the collection
+	 * @param cls  the element type
+	 * @return array containing all of the elements in the collection
 	 */
-	public InternalBuilderException(String msg) {
-		super(msg);
-	}
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param msg message describing the error
-	 * @param cause the root cause
-	 */
-	public InternalBuilderException(String msg, Throwable cause) {
-		super(msg, cause);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param cls class raising the exception
-	 * @param msg message describing the error
-	 */
-	public InternalBuilderException(Class<?> cls, String msg) {
-		this(cls.getSimpleName() + ": " + msg);
+	public static<E> E[] toArray(Collection<E> c, Class<E> cls) {
+		@SuppressWarnings("unchecked")
+		E[] result = (E[]) Array.newInstance(cls, c.size());
+		int i = 0;
+		for (E element : c) {
+			result[i++] = element;
+		}
+		return result;
 	}
 }

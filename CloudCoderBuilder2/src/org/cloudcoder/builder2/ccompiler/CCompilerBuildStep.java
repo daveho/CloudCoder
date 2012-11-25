@@ -41,8 +41,7 @@ public class CCompilerBuildStep implements IBuildStep {
 	public void execute(BuilderSubmission submission) {
 		ProgramSource programSource = submission.getArtifact(ProgramSource.class);
 		if (programSource == null) {
-			throw new InternalBuilderException(CCompilerBuildStep.class.getSimpleName() +
-					": No program source to compile");
+			throw new InternalBuilderException(this.getClass(), "No program source to compile");
 		}
 		
 		File tempDir = FileUtil.makeTempDir();
