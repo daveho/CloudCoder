@@ -19,6 +19,8 @@ package org.cloudcoder.builder2.ccompiler;
 
 import java.io.File;
 
+import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -61,8 +63,11 @@ public class CCompilerBuildStep implements IBuildStep {
 		} else {
 			// Compilation succeeded
 			
-			// Annotate with compiler diagnostics
-			submission.addArtifact(compiler.getCompilerDiagnosticList());
+			// Annotate with CompilationResult
+			CompilationResult compilationResult = new CompilationResult();
+			compilationResult.setOutcome(CompilationOutcome.SUCCESS);
+			compilationResult.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
+			submission.addArtifact(compilationResult);
 			
 			// Annotate with NativeExecutable
 			submission.addArtifact(new NativeExecutable(tempDir, DEFAULT_PROG_NAME));

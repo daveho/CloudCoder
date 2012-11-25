@@ -24,6 +24,7 @@ import org.cloudcoder.builder2.commandrunner.ExecuteCommandBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
+import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
 
 /**
  * Factory to create {@link Tester} objects.
@@ -40,6 +41,7 @@ public class TesterFactory {
 		new NativeExecutableToCommandBuildStep(),
 		new ExecuteCommandBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
+		new CreateSubmissionResultBuildStep(),
 	};
 	
 	/**
