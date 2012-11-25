@@ -29,6 +29,7 @@ import org.cloudcoder.app.shared.model.TestOutcome;
  */
 public class CommandResult {
 	private TestOutcome testOutcome;
+	private String statusMessage;
 	private int exitCode;
 	private List<String> stdout;
 	private List<String> stderr;
@@ -38,9 +39,11 @@ public class CommandResult {
 	 * of the {@link Command}.
 	 * 
 	 * @param testOutcome the {@link TestOutcome}
+	 * @param statusMessage a status message describing why the command did not complete normally
 	 */
-	public CommandResult(TestOutcome testOutcome) {
+	public CommandResult(TestOutcome testOutcome, String statusMessage) {
 		this.testOutcome = testOutcome;
+		this.statusMessage = statusMessage;
 	}
 	
 	/**
@@ -64,6 +67,16 @@ public class CommandResult {
 	 */
 	public TestOutcome getTestOutcome() {
 		return testOutcome;
+	}
+	
+	/**
+	 * Get the status message.  This is set only if the command did not
+	 * complete normally.
+	 * 
+	 * @return the status message
+	 */
+	public String getStatusMessage() {
+		return statusMessage;
 	}
 	
 	/**

@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.tester;
 
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
+import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -38,6 +39,7 @@ public class TesterFactory {
 		new CCompilerBuildStep(),
 		new NativeExecutableToCommandBuildStep(),
 		new ExecuteCommandBuildStep(),
+		new CheckCommandResultsUsingRegexBuildStep(),
 	};
 	
 	/**

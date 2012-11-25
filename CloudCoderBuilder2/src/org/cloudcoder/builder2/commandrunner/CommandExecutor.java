@@ -103,18 +103,18 @@ public class CommandExecutor implements Runnable {
 		if (processRunner.isRunning()) {
 			// timed out!
 			processRunner.killProcess();
-			commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT);
+			commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT, processRunner.getStatusMessage());
 
 		} else if (!processRunner.isExitStatusKnown()) {
-			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR);
+			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR, processRunner.getStatusMessage());
 		} else if (processRunner.isCoreDump()) {
 			if (processRunner.getExitCode() == 9 || processRunner.getExitCode() == 24) {
 				// Special case: signals 9 (KILL) and 24 (XCPU) indicate that the
 				// process exceeded its CPU limit, so treat them as a timeout.
-				commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT);
+				commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT, processRunner.getStatusMessage());
 			} else {
 				// Some other fatal signal (most likely SEGV).
-				commandResult = new CommandResult(TestOutcome.FAILED_WITH_EXCEPTION);
+				commandResult = new CommandResult(TestOutcome.FAILED_WITH_EXCEPTION, processRunner.getStatusMessage());
 			}
 		} else {
 			// Process completed normally.
@@ -152,7 +152,7 @@ public class CommandExecutor implements Runnable {
 			logger.error(
 					"could not join test executor after {} attempts - giving up",
 					MAX_TEST_EXECUTOR_JOIN_ATTEMPTS);
-			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR);
+			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR, "Command executor did not finish");
 		}
 	}
 	
