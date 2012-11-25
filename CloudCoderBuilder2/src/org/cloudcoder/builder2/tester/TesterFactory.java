@@ -17,6 +17,9 @@
 
 package org.cloudcoder.builder2.tester;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildStep;
@@ -50,11 +53,20 @@ public class TesterFactory {
 	 * @param stepList list of {@link IBuildStep}s
 	 * @return the {@link Tester}
 	 */
-	public Tester createTester(IBuildStep[] stepList) {
+	public static Tester createTester(IBuildStep[] stepList) {
 		Tester tester = new Tester();
 		for (IBuildStep buildStep : stepList) {
 			tester.addBuildStep(buildStep);
 		}
 		return tester;
+	}
+	
+	/**
+	 * Map of {@link ProblemType} values to {@link Tester} objects.
+	 */
+	public static final Map<ProblemType, Tester> PROBLEM_TYPE_TO_TESTER_MAP = new HashMap<ProblemType, Tester>();
+	static {
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
+		// TODO: Testers for other problem types
 	}
 }
