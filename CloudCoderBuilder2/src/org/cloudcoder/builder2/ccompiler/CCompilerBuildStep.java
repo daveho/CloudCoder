@@ -40,7 +40,7 @@ public class CCompilerBuildStep implements IBuildStep {
 		File tempDir = FileUtil.makeTempDir();
 		if (tempDir == null) {
 			// Couldn't create temp dir
-			submission.setSubmissionResult(CUtil.createSubmissionResultForUnexpectedBuildError(
+			submission.addArtifact(CUtil.createSubmissionResultForUnexpectedBuildError(
 					"Could not create temp directory for compilation"));
 			return;
 		}
@@ -50,11 +50,15 @@ public class CCompilerBuildStep implements IBuildStep {
 		compiler.setCompilerExe("g++"); // FIXME: should make this configurable
 		if (!compiler.compile()) {
 			// Compilation failed
-			submission.setSubmissionResult(CUtil.createSubmissionResultFromFailedCompile(compiler, 0, 0));
+			submission.addArtifact(CUtil.createSubmissionResultFromFailedCompile(compiler, 0, 0));
 		} else {
 			// Compilation succeeded
-			// FIXME: should annotate BuilderSubmission with compiler diagnostics
-			submission.setExecutable(new NativeExecutable(tempDir, DEFAULT_PROG_NAME));
+			
+			// Annotate with compiler diagnostics
+			submission.addArtifact(compiler.getCompilerDiagnosticList());
+			
+			// Annotate with NativeExecutable
+			submission.addArtifact(new NativeExecutable(tempDir, DEFAULT_PROG_NAME));
 		}
 	}
 }

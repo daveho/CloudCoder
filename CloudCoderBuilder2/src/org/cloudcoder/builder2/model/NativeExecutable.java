@@ -3,12 +3,12 @@ package org.cloudcoder.builder2.model;
 import java.io.File;
 
 /**
- * Implementation of {@link IExecutable} representing a native executable
+ * Submission artifact representing a native executable
  * (for example, the result of compiling a C/C++ program.)
  * 
  * @author David Hovemeyer
  */
-public class NativeExecutable implements IExecutable {
+public class NativeExecutable {
 	private final File dir;
 	private final String exeFileName;
 	

@@ -27,6 +27,9 @@ import org.cloudcoder.app.shared.model.TestCase;
 /**
  * A submission to the builder.
  * It will be processed by a series of {@link IBuildStep}s.
+ * Each build step can add arbitrary artifact objects.
+ * The submission is complete when a build step adds
+ * a {@link SubmissionResult} artifact.
  * 
  * @author David Hovemeyer
  */
@@ -34,15 +37,14 @@ public class BuilderSubmission {
 	private Problem problem;
 	private List<TestCase> testCaseList;
 	private String programText;
-	private IExecutable executable;
-	private IExecutionResult executionResult;
-	private SubmissionResult submissionResult;
+	private List<Object> artifactList;
 	private List<ICleanupAction> cleanupActionList;
 
 	/**
 	 * Constructor.
 	 */
 	public BuilderSubmission() {
+		artifactList = new ArrayList<Object>();
 		cleanupActionList = new ArrayList<ICleanupAction>();
 	}
 	
@@ -95,60 +97,37 @@ public class BuilderSubmission {
 	}
 	
 	/**
-	 * Set the {@link IExecutable} which resulted from compiling the submission.
+	 * Add an artifact.
 	 * 
-	 * @param executable the {@link IExecutable} to set
+	 * @param artifact the artifact to add
 	 */
-	public void setExecutable(IExecutable executable) {
-		this.executable = executable;
+	public void addArtifact(Object artifact) {
+		artifactList.add(artifact);
+	}
+
+	/**
+	 * Get artifact of given type.
+	 * 
+	 * @param type the artifact type
+	 * @return the artifact of the given type, or null if there is no such artifact
+	 */
+	public<E> E getArtifact(Class<E> type) {
+		for (Object artifact : artifactList) {
+			if (artifact.getClass() == type) {
+				return type.cast(artifact);
+			}
+		}
+		return null;
 	}
 	
 	/**
-	 * Get the {@link IExecutable} which resulted from compiling the submission.
+	 * Check whether the submission has an artifact of the given type.
 	 * 
-	 * @return the {@link IExecutable}
+	 * @param type the artifact type
+	 * @return true if the submission has an artifact of the given type, false otherwise
 	 */
-	public IExecutable getExecutable() {
-		return executable;
-	}
-	
-	/**
-	 * Set the {@link IExecutionResult} produced by executing the
-	 * submission's {@link IExecutable}.
-	 * 
-	 * @param executionResult the {@link IExecutionResult} to set
-	 */
-	public void setExecutionResult(IExecutionResult executionResult) {
-		this.executionResult = executionResult;
-	}
-	
-	/**
-	 * Get the {@link IExecutionResult} produced by executing the
-	 * submission's {@link IExecutable}.
-	 * 
-	 * @return the {@link IExecutionResult}
-	 */
-	public IExecutionResult getExecutionResult() {
-		return executionResult;
-	}
-	
-	/**
-	 * Set the {@link SubmissionResult} for this submission.
-	 * This marks building and testing of the submission as complete.
-	 * 
-	 * @param submissionResult the {@link SubmissionResult} to set
-	 */
-	public void setSubmissionResult(SubmissionResult submissionResult) {
-		this.submissionResult = submissionResult;
-	}
-	
-	/**
-	 * Get the {@link SubmissionResult} for this submission.
-	 * 
-	 * @return the {@link SubmissionResult}
-	 */
-	public SubmissionResult getSubmissionResult() {
-		return submissionResult;
+	public boolean hasArtifact(Class<?> type) {
+		return getArtifact(type) != null;
 	}
 	
 	/**
@@ -158,7 +137,7 @@ public class BuilderSubmission {
 	 * @return true if this submission is complete, false otherwise
 	 */
 	public boolean isComplete() {
-		return submissionResult != null;
+		return hasArtifact(SubmissionResult.class);
 	}
 
 	/**
