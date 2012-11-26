@@ -17,11 +17,10 @@
 
 package org.cloudcoder.builder2.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 
@@ -39,14 +38,14 @@ import org.cloudcoder.app.shared.model.TestCase;
  */
 public class BuilderSubmission {
 	private Map<Class<?>, Object> artifactMap;
-	private List<ICleanupAction> cleanupActionList;
+	public CleanupActionStack cleanupActionStack;
 
 	/**
 	 * Constructor.
 	 */
 	public BuilderSubmission() {
 		artifactMap = new HashMap<Class<?>, Object>();
-		cleanupActionList = new ArrayList<ICleanupAction>();
+		cleanupActionStack = new CleanupActionStack();
 	}
 	
 	/**
@@ -102,16 +101,14 @@ public class BuilderSubmission {
 	 * @param action the {@link ICleanupAction}
 	 */
 	public void addCleanupAction(ICleanupAction action) {
-		cleanupActionList.add(action);
+		cleanupActionStack.push(action);
 	}
 	
 	/**
-	 * Get the list of {@link ICleanupAction}s.
-	 * Note: they should be executed in reverse order (last action first, first action last).
-	 * 
-	 * @return the list of {@link ICleanupAction}s
+	 * Execute all cleanup actions (starting with the most recently added
+	 * and working back.)
 	 */
-	public List<ICleanupAction> getCleanupActionList() {
-		return cleanupActionList;
+	public void executeAllCleanupActions() {
+		cleanupActionStack.executeAll();
 	}
 }

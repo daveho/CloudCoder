@@ -154,12 +154,17 @@ public class Builder2 implements Runnable {
 			submission.addArtifact(problem);
 			submission.addArtifact(ArrayUtil.toArray(testCaseList, TestCase.class));
 			submission.addArtifact(new ProgramSource(programText));
-			
-			// Build and test
-			tester.execute(submission);
-			
-			// Get the SubmissionResult
-			result = submission.getArtifact(SubmissionResult.class);
+
+			try {
+				// Build and test
+				tester.execute(submission);
+				
+				// Get the SubmissionResult
+				result = submission.getArtifact(SubmissionResult.class);
+			} finally {
+				// Clean up all temporary resources created during building/testing
+				submission.executeAllCleanupActions();
+			}
 		} catch (Throwable e) {
 			CompilationResult compres = new CompilationResult(CompilationOutcome.BUILDER_ERROR);
 			logger.error("Builder error", e);
