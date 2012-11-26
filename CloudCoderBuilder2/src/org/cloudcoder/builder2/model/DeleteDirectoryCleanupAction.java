@@ -41,7 +41,7 @@ public class DeleteDirectoryCleanupAction implements ICleanupAction {
 
 	@Override
 	public void execute() {
-		new DeleteDirectoryRecursively(dir);
+		new DeleteDirectoryRecursively(dir).delete();
 	}
 
 }
