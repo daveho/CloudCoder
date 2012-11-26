@@ -24,6 +24,8 @@ package org.cloudcoder.builder2.model;
  */
 public class ProgramSource {
 	private String programText;
+	private int prologueLength;
+	private int epilogueLength;
 
 	/**
 	 * Constructor.
@@ -32,6 +34,21 @@ public class ProgramSource {
 	 */
 	public ProgramSource(String programText) {
 		this.programText = programText;
+		this.prologueLength = 0;
+		this.epilogueLength = 0;
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param programText    the source program text
+	 * @param prologueLength number of lines of automatically-generated code at beginning of file
+	 * @param epilogueLength number of lines of automatically-generated code at end of file
+	 */
+	public ProgramSource(String programText, int prologueLength, int epilogueLength) {
+		this.programText = programText;
+		this.prologueLength = prologueLength;
+		this.epilogueLength = epilogueLength;
 	}
 	
 	/**
@@ -39,5 +56,19 @@ public class ProgramSource {
 	 */
 	public String getProgramText() {
 		return programText;
+	}
+	
+	/**
+	 * @return number of lines of automatically-generated code at the beginning of the file
+	 */
+	public int getPrologueLength() {
+		return prologueLength;
+	}
+	
+	/**
+	 * @return number of lines of automatically-generated code at the end of the file
+	 */
+	public int getEpilogueLength() {
+		return epilogueLength;
 	}
 }

@@ -59,7 +59,10 @@ public class CCompilerBuildStep implements IBuildStep {
 		compiler.setCompilerExe("g++"); // FIXME: should make this configurable
 		if (!compiler.compile()) {
 			// Compilation failed
-			submission.addArtifact(CUtil.createSubmissionResultFromFailedCompile(compiler, 0, 0));
+			submission.addArtifact(CUtil.createSubmissionResultFromFailedCompile(
+					compiler,
+					programSource.getPrologueLength(),
+					programSource.getEpilogueLength()));
 		} else {
 			// Compilation succeeded
 			
@@ -67,6 +70,9 @@ public class CCompilerBuildStep implements IBuildStep {
 			CompilationResult compilationResult = new CompilationResult();
 			compilationResult.setOutcome(CompilationOutcome.SUCCESS);
 			compilationResult.setCompilerDiagnosticList(compiler.getCompilerDiagnosticList());
+			compilationResult.adjustDiagnosticLineNumbers(
+					programSource.getPrologueLength(),
+					programSource.getEpilogueLength());
 			submission.addArtifact(compilationResult);
 			
 			// Annotate with NativeExecutable
