@@ -3,8 +3,12 @@ package org.cloudcoder.builder2.util;
 import java.util.Arrays;
 import java.util.List;
 
-
-
+/**
+ * String utility methods.
+ * 
+ * @author David Hovemeyer
+ * @author Jaime Spacco
+ */
 public class StringUtil {
 
 	/**
@@ -51,6 +55,13 @@ public class StringUtil {
 		return StringUtil.doMerge(list, " ");
 	}
 
+	/**
+	 * Merge given strings by combining them using given separator.
+	 * 
+	 * @param list list of strings
+	 * @param sep  separator
+	 * @return merged result
+	 */
 	public static String doMerge(List<String> list, String sep) {
 		StringBuilder builder=new StringBuilder();
 		for (String s : list) {
@@ -60,4 +71,19 @@ public class StringUtil {
 		return builder.toString();
 	}
 
+	/**
+	 * Count the number of lines of text in given string.
+	 * 
+	 * @param s the string
+	 * @return number of lines
+	 */
+    public static int countLines(String s) {
+        int count=0;
+        for (int i=0; i<s.length(); i++) {
+            if (s.charAt(i)=='\n') {
+                count++;
+            }
+        }
+        return count;
+    }
 }

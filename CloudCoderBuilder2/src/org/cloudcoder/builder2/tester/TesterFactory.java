@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
+import org.cloudcoder.builder2.cfunction.AddCFunctionScaffoldingBuildStep;
+import org.cloudcoder.builder2.cfunction.CreateSecretSuccessAndFailureCodesBuildStep;
 import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandBuildStep;
@@ -45,6 +47,16 @@ public class TesterFactory {
 		new ExecuteCommandBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
 		new CreateSubmissionResultBuildStep(),
+	};
+	
+	/**
+	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_FUNCTION}
+	 * submission.
+	 */
+	public static final IBuildStep[] C_FUNCTION_TESTER_STEPS = {
+		new AddCFunctionScaffoldingBuildStep(),
+		new CCompilerBuildStep(),
+		new CreateSecretSuccessAndFailureCodesBuildStep(),
 	};
 	
 	/**
