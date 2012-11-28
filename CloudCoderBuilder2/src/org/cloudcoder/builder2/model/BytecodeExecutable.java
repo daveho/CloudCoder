@@ -37,6 +37,7 @@ public class BytecodeExecutable {
 	 * @param fileNameList  list of bytecode filenames
 	 */
 	public BytecodeExecutable(File dir, List<String> fileNameList) {
+		this.dir = dir;
 		this.fileNameList = fileNameList;
 	}
 	
