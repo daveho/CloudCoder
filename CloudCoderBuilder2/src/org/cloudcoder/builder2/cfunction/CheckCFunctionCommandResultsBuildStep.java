@@ -70,6 +70,8 @@ public class CheckCFunctionCommandResultsBuildStep implements IBuildStep {
 				}
 			}
 		}
+		
+		submission.addArtifact(testResultList);
 	}
 
 }

@@ -36,9 +36,9 @@ public class ExecuteCommandForEachCommandInputBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
-		// Get the Command
-		Command command = submission.getArtifact(Command.class);
-		if (command == null) {
+		// Get the Commands
+		Command[] commandList = submission.getArtifact(Command[].class);
+		if (commandList == null) {
 			throw new InternalBuilderException(this.getClass(),	"No Command");
 		}
 		
@@ -51,7 +51,7 @@ public class ExecuteCommandForEachCommandInputBuildStep implements IBuildStep {
 		// Create and start a CommandExecutor for each CommandInput
 		CommandExecutor[] commandExecutorList = new CommandExecutor[commandInputList.length];
 		for (int i = 0; i < commandInputList.length; i++) {
-			commandExecutorList[i] = new CommandExecutor(command, commandInputList[i]);
+			commandExecutorList[i] = new CommandExecutor(commandList[i], commandInputList[i]);
 			commandExecutorList[i].start();
 		}
 		
