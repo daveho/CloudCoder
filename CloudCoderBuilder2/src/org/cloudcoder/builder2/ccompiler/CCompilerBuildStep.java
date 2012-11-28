@@ -28,6 +28,7 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.FileUtil;
+import org.cloudcoder.builder2.util.SubmissionResultUtil;
 
 /**
  * An {@link IBuildStep} that compiles a C/C++ program to produce a
@@ -49,7 +50,7 @@ public class CCompilerBuildStep implements IBuildStep {
 		File tempDir = FileUtil.makeTempDir();
 		if (tempDir == null) {
 			// Couldn't create temp dir
-			submission.addArtifact(CUtil.createSubmissionResultForUnexpectedBuildError(
+			submission.addArtifact(SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
 					"Could not create temp directory for compilation"));
 			return;
 		}

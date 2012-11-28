@@ -38,7 +38,7 @@ import org.cloudcoder.app.shared.model.TestCase;
  */
 public class BuilderSubmission {
 	private Map<Class<?>, Object> artifactMap;
-	public CleanupActionStack cleanupActionStack;
+	private CleanupActionStack cleanupActionStack;
 
 	/**
 	 * Constructor.

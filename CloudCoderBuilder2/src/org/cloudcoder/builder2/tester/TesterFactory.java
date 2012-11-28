@@ -30,6 +30,8 @@ import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildS
 import org.cloudcoder.builder2.commandrunner.CreateCommandInputsForEachTestCaseBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
+import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
+import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
 import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
@@ -67,6 +69,15 @@ public class TesterFactory {
 		new CreateSubmissionResultBuildStep(),
 	};
 	
+	public static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
+		new JavaCompilerBuildStep(),
+		new CreateCommandInputsForEachTestCaseBuildStep(),
+		new JavaProgramToCommandForEachCommandInputBuildStep(),
+		new ExecuteCommandForEachCommandInputBuildStep(),
+		new CheckCommandResultsUsingRegexBuildStep(),
+		new CreateSubmissionResultBuildStep(),
+	};
+	
 	/**
 	 * Create a {@link Tester} with the given list of {@link IBuildStep}s.
 	 * 
@@ -88,6 +99,7 @@ public class TesterFactory {
 	static {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_PROGRAM, createTester(JAVA_PROGRAM_TESTER_STEPS));
 		// TODO: Testers for other problem types
 	}
 }
