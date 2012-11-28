@@ -17,22 +17,22 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
-import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
+import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.CommandResult;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 
 /**
- * An {@link IBuildStep} to execute a {@link Command} for each {@link TestCase}
+ * An {@link IBuildStep} to execute a {@link Command} for each {@link CommandInput}
  * and save the result of each execution as a {@link CommandResult}.
  * An array of {@link CommandResult}s is added to the submission
  * as an artifact. 
  * 
  * @author David Hovemeyer
  */
-public class ExecuteCommandBuildStep implements IBuildStep {
+public class ExecuteCommandForEachCommandInputBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
@@ -42,16 +42,16 @@ public class ExecuteCommandBuildStep implements IBuildStep {
 			throw new InternalBuilderException(this.getClass(),	"No Command");
 		}
 		
-		// Get TestCases
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
+		// Get CommandInputs
+		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
+		if (commandInputList == null) {
+			throw new InternalBuilderException(this.getClass(), "No CommandInput list");
 		}
 		
-		// Create and start a CommandExecutor for each TestCase
-		CommandExecutor[] commandExecutorList = new CommandExecutor[testCaseList.length];
-		for (int i = 0; i < testCaseList.length; i++) {
-			commandExecutorList[i] = new CommandExecutor(command, testCaseList[i]);
+		// Create and start a CommandExecutor for each CommandInput
+		CommandExecutor[] commandExecutorList = new CommandExecutor[commandInputList.length];
+		for (int i = 0; i < commandInputList.length; i++) {
+			commandExecutorList[i] = new CommandExecutor(command, commandInputList[i]);
 			commandExecutorList[i].start();
 		}
 		
@@ -61,8 +61,8 @@ public class ExecuteCommandBuildStep implements IBuildStep {
 		}
 		
 		// Create array of CommandResults
-		CommandResult[] commandResultList = new CommandResult[testCaseList.length];
-		for (int i = 0; i < testCaseList.length; i++) {
+		CommandResult[] commandResultList = new CommandResult[commandInputList.length];
+		for (int i = 0; i < commandInputList.length; i++) {
 			commandResultList[i] = commandExecutorList[i].getCommandResult();
 		}
 		submission.addArtifact(commandResultList);

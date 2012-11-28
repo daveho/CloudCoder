@@ -18,6 +18,9 @@
 package org.cloudcoder.builder2.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Submission artifact representing a native executable
@@ -40,11 +43,32 @@ public class NativeExecutable {
 		this.exeFileName = exeFileName;
 	}
 	
+	/**
+	 * @return directory containing the native executable
+	 */
 	public File getDir() {
 		return dir;
 	}
 	
+	/**
+	 * @return the unqualified filename of the native executable
+	 */
 	public String getExeFileName() {
 		return exeFileName;
+	}
+	
+	/**
+	 * Return a {@link Command} to execute this executable with the specified arguments.
+	 * 
+	 * @param args the command arguments
+	 * @return a {@link Command} to execute this executable with the specified arguments
+	 */
+	public Command toCommand(String... args) {
+		List<String> argList = new ArrayList<String>();
+		argList.add("./" + this.getExeFileName());
+		argList.addAll(Arrays.asList(args));
+		
+		Command command = new Command(this.getDir(), argList);
+		return command;
 	}
 }

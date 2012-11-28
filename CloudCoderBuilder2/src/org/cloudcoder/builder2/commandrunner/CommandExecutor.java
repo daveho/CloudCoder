@@ -17,9 +17,9 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
-import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.builder2.model.Command;
+import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.CommandResult;
 import org.cloudcoder.builder2.process.ProcessRunner;
 import org.cloudcoder.builder2.util.ArrayUtil;
@@ -38,7 +38,7 @@ public class CommandExecutor implements Runnable {
 	private static final int MAX_TEST_EXECUTOR_JOIN_ATTEMPTS = 10;
 
 	private Command command;
-	private TestCase testCase;
+	private CommandInput commandInput;
 	private Thread thread;
 	private CommandResult commandResult;
 
@@ -61,18 +61,18 @@ public class CommandExecutor implements Runnable {
 	 * Constructor.
 	 * 
 	 * @param command the {@link Command} to execute
-	 * @param testCase the {@link TestCase} to use to provide input to the command
+	 * @param commandInput the {@link CommandInput} to use to provide input to the command
 	 */
-	public CommandExecutor(Command command, TestCase testCase) {
+	public CommandExecutor(Command command, CommandInput commandInput) {
 		this.command = command;
-		this.testCase = testCase;
+		this.commandInput = commandInput;
 	}
 
 	/**
 	 * @return the testCase
 	 */
-	public TestCase getTestCase() {
-		return testCase;
+	public CommandInput getTestCase() {
+		return commandInput;
 	}
 
 	/* (non-Javadoc)
@@ -84,7 +84,7 @@ public class CommandExecutor implements Runnable {
 		// FIXME: allow use of a SECCOMP sandbox
 		ProcessRunner processRunner = new ProcessRunner();
 
-		processRunner.setStdin(testCase.getInput());
+		processRunner.setStdin(commandInput.getInput());
 
 		String[] cmd = ArrayUtil.toArray(command.getArgs(), String.class);
 		processRunner.runAsynchronous(command.getDir(), cmd);

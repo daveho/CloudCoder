@@ -17,40 +17,43 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
+import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
 
 /**
- * An {@link IBuildStep} to create a {@link Command} to execute
+ * An {@link IBuildStep} to create an array of {@link Command}s to execute
  * a {@link NativeExecutable} with no arguments in the directory
  * where the executable file is located.
+ * One {@link Command} is created for each {@link CommandInput}.
  * This is useful for executing the executable resulting from
  * the {@link CCompilerBuildStep} if it will be run without
- * arguments.
+ * arguments with a variety of inputs.  The resulting array of
+ * {@link Command} objects is added to the submission as an artifact.
  * 
  * @author David Hovemeyer
  */
-public class NativeExecutableToCommandBuildStep implements IBuildStep {
+public class NativeExecutableToCommandForEachCommandInputBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
-		NativeExecutable nativeExe = submission.getArtifact(NativeExecutable.class);
-		if (nativeExe == null) {
-			throw new InternalBuilderException(this.getClass(), "No NativeExecutable");
+		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
+		if (commandInputList == null) {
+			throw new InternalBuilderException(this.getClass(), "No CommandInput list");
 		}
 		
-		List<String> args = new ArrayList<String>();
-		args.add("./" + nativeExe.getExeFileName());
-		
-		Command command = new Command(nativeExe.getDir(), args);
-		submission.addArtifact(command);
+		for (int i = 0; i < commandInputList.length; i++) {
+			NativeExecutable nativeExe = submission.getArtifact(NativeExecutable.class);
+			if (nativeExe == null) {
+				throw new InternalBuilderException(this.getClass(), "No NativeExecutable");
+			}
+			
+			submission.addArtifact(nativeExe.toCommand());
+		}
 	}
 
 }

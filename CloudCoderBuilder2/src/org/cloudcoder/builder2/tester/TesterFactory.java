@@ -25,8 +25,9 @@ import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.cfunction.AddCFunctionScaffoldingBuildStep;
 import org.cloudcoder.builder2.cfunction.CreateSecretSuccessAndFailureCodesBuildStep;
 import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildStep;
-import org.cloudcoder.builder2.commandrunner.ExecuteCommandBuildStep;
-import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandBuildStep;
+import org.cloudcoder.builder2.commandrunner.CreateCommandInputsForEachTestCaseBuildStep;
+import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBuildStep;
+import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
 import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
@@ -43,8 +44,9 @@ public class TesterFactory {
 	 */
 	public static final IBuildStep[] C_PROGRAM_TESTER_STEPS = {
 		new CCompilerBuildStep(),
-		new NativeExecutableToCommandBuildStep(),
-		new ExecuteCommandBuildStep(),
+		new CreateCommandInputsForEachTestCaseBuildStep(),
+		new NativeExecutableToCommandForEachCommandInputBuildStep(),
+		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
 		new CreateSubmissionResultBuildStep(),
 	};
