@@ -30,6 +30,7 @@ import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildS
 import org.cloudcoder.builder2.commandrunner.CreateCommandInputsForEachTestCaseBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
+import org.cloudcoder.builder2.javacompiler.BytecodeToBytecodeExecutableBuildStep;
 import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
 import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -71,6 +72,7 @@ public class TesterFactory {
 	
 	public static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
 		new JavaCompilerBuildStep(),
+		new BytecodeToBytecodeExecutableBuildStep(),
 		new CreateCommandInputsForEachTestCaseBuildStep(),
 		new JavaProgramToCommandForEachCommandInputBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),

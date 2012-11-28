@@ -17,32 +17,28 @@
 
 package org.cloudcoder.builder2.javacompiler;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
-import org.cloudcoder.builder2.model.BytecodeExecutable;
-import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
+import org.cloudcoder.builder2.model.Bytecode;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
-import org.cloudcoder.builder2.util.FileUtil;
+import org.cloudcoder.builder2.util.ArrayUtil;
 import org.cloudcoder.builder2.util.SubmissionResultUtil;
 
 /**
  * Build step to compile a Java source file to class file(s).
- * Produces a {@link BytecodeExecutable} artifact as a result,
- * which describes the directory the resulting class files are
- * in and the names of the individual class files. 
+ * Produces an array of {@link Bytecode} objects as a submission
+ * artifact.  Also produces a {@link FindJavaPackageAndClassNames} object
+ * that records the name of the package and class name in the
+ * source program.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class JavaCompilerBuildStep implements IBuildStep {
 
@@ -53,7 +49,8 @@ public class JavaCompilerBuildStep implements IBuildStep {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource");
 		}
 
-		// Determine the package name and top-level class name
+		// Determine the package name and top-level class name,
+		// add resulting FindJavaPackageAndClassNames object as submission artifact
 		FindJavaPackageAndClassNames packageAndClassNames = new FindJavaPackageAndClassNames();
 		packageAndClassNames.determinePackageAndClassNames(programSource.getProgramText());
 		if (packageAndClassNames.getClassName() == null) {
@@ -62,6 +59,7 @@ public class JavaCompilerBuildStep implements IBuildStep {
 			submission.addArtifact(result);
 			return;
 		}
+		submission.addArtifact(packageAndClassNames);
 
 		// Attempt to compile the program
 		InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
@@ -72,46 +70,20 @@ public class JavaCompilerBuildStep implements IBuildStep {
 			return;
 		}
 		
-		// Create temporary directory
-		File tempDir = FileUtil.makeTempDir();
-		if (tempDir == null) {
-			// Couldn't create temp dir
-			submission.addArtifact(SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
-					"Could not create temp directory for compilation"));
-			return;
-		}
-		submission.addCleanupAction(new DeleteDirectoryCleanupAction(tempDir));
-		
-		// Write class files into temporary directory
-		List<String> fileNameList = new ArrayList<String>();
+		// Create Bytecode artifacts for each compiled class
 		Map<String, byte[]> compiledClasses = compiler.getFileManager().getClasses();
+		List<Bytecode> bytecodeList = new ArrayList<Bytecode>();
 		for (Map.Entry<String, byte[]> entry : compiledClasses.entrySet()) {
 			String clsName = entry.getKey();
 			byte[] bytes = entry.getValue();
 			
-			String fileName = clsName.replace('.', '/') + ".class";
-			fileNameList.add(fileName);
-			File out = new File(tempDir, fileName);
-			out.getParentFile().mkdirs();
-			
-			FileOutputStream os = null;
-			try {
-				os = new FileOutputStream(out);
-				IOUtils.copy(new ByteArrayInputStream(bytes), os);
-			} catch (IOException e) {
-				SubmissionResult result = SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
-						"Error writing Java class file: " + e.getMessage());
-				submission.addArtifact(result);
-				return;
-			} finally {
-				IOUtils.closeQuietly(os);
-			}
+			Bytecode bytecode = new Bytecode(clsName, bytes);
+			bytecodeList.add(bytecode);
 		}
 		
-		// Create BytecodeExecutable artifact
-		BytecodeExecutable bytecodeExe = new BytecodeExecutable(tempDir, fileNameList);
-		bytecodeExe.setMainClass(packageAndClassNames.getFullyQualifiedClassName());
-		submission.addArtifact(bytecodeExe);
+		// Create array of Bytecode objects, add as submission artifact
+		Bytecode[] bytecodeArray = ArrayUtil.toArray(bytecodeList, Bytecode.class);
+		submission.addArtifact(bytecodeArray);
 	}
 
 }
