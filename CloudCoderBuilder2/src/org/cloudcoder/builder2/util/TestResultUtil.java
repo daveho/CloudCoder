@@ -21,6 +21,7 @@ import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandResult;
 
 /**
@@ -114,5 +115,27 @@ public class TestResultUtil {
 				StringUtil.merge(p.getStdout()),
 				StringUtil.merge(p.getStderr()));
 		return testResult;
+	}
+	
+	/**
+	 * Create a {@link TestResult} for a case where a {@link Command}
+	 * did not exit normally.
+	 * 
+	 * @param p        the {@link CommandResult}
+	 * @param testCase the {@link TestCase} that was being executed
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createTestResultForAbnormalExit(CommandResult p, TestCase testCase) {
+		switch (p.getStatus()) {
+		case COULD_NOT_START:
+		case UNKNOWN:
+			return createTestResultForInternalError(p, testCase);
+		case KILLED_BY_SIGNAL:
+			return createTestResultForCoreDump(p, testCase);
+		case TIMED_OUT:
+			return createTestResultForTimeout(p, testCase);
+		default:
+			throw new IllegalArgumentException("Invalid process status: " + p.getStatus());
+		}
 	}
 }

@@ -20,8 +20,6 @@ package org.cloudcoder.builder2.model;
 import java.util.Collections;
 import java.util.List;
 
-import org.cloudcoder.app.shared.model.TestOutcome;
-
 /**
  * Artifact representing the result of executing a {@link Command} using
  * the input of a particular {@link TestCase}.
@@ -29,45 +27,52 @@ import org.cloudcoder.app.shared.model.TestOutcome;
  * @author David Hovemeyer
  */
 public class CommandResult {
-	private TestOutcome testOutcome;
+	//private TestOutcome testOutcome;
+	private ProcessStatus status;
 	private String statusMessage;
 	private int exitCode;
 	private List<String> stdout;
 	private List<String> stderr;
 	
 	/**
-	 * Constructor from a {@link TestOutcome} indicating abnormal completion
+	 * Constructor from a {@link ProcessStatus} indicating abnormal completion
 	 * of the {@link Command}.
 	 * 
-	 * @param testOutcome the {@link TestOutcome}
+	 * @param status        the process status
 	 * @param statusMessage a status message describing why the command did not complete normally
 	 */
-	public CommandResult(TestOutcome testOutcome, String statusMessage) {
-		this.testOutcome = testOutcome;
+	public CommandResult(ProcessStatus status, String statusMessage) {
+		this.status = status;
 		this.statusMessage = statusMessage;
+		this.exitCode = -1;
+		this.stdout = Collections.emptyList();
+		this.stderr = Collections.emptyList();
 	}
 	
 	/**
 	 * Constructor.
 	 * 
+	 * @param status        the process status
+	 * @param statusMessage a status message describing why the command did not complete normally
 	 * @param exitCode the command's exit code
 	 * @param stdout   the command's standard output lines
 	 * @param stderr   the command's standard error lines
 	 */
-	public CommandResult(int exitCode, List<String> stdout, List<String> stderr) {
+	public CommandResult(ProcessStatus status, String statusMessage, int exitCode, List<String> stdout, List<String> stderr) {
+		this.status = status;
+		this.statusMessage = statusMessage;
 		this.exitCode = exitCode;
 		this.stdout = (stdout != null) ? stdout : Collections.<String>emptyList();
 		this.stderr = (stderr != null) ? stderr : Collections.<String>emptyList();
 	}
 	
 	/**
-	 * Get the {@link TestOutcome}.  This is set only if the command did not
-	 * complete normally.
+	 * Get the {@link ProcessStatus}.
 	 * 
-	 * @return the {@link TestOutcome}
+	 * @return the {@link ProcessStatus}
 	 */
-	public TestOutcome getTestOutcome() {
-		return testOutcome;
+	public ProcessStatus getStatus() {
+		return status;
 	}
 	
 	/**

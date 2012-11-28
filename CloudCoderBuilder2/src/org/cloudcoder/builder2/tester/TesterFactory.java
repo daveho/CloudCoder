@@ -23,6 +23,7 @@ import java.util.Map;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.cfunction.AddCFunctionScaffoldingBuildStep;
+import org.cloudcoder.builder2.cfunction.CheckCFunctionCommandResultsBuildStep;
 import org.cloudcoder.builder2.cfunction.CreateCFunctionTestCommandsBuildStep;
 import org.cloudcoder.builder2.cfunction.CreateSecretSuccessAndFailureCodesBuildStep;
 import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildStep;
@@ -62,6 +63,8 @@ public class TesterFactory {
 		new CreateSecretSuccessAndFailureCodesBuildStep(),
 		new CreateCFunctionTestCommandsBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),
+		new CheckCFunctionCommandResultsBuildStep(),
+		new CreateSubmissionResultBuildStep(),
 	};
 	
 	/**
@@ -84,6 +87,7 @@ public class TesterFactory {
 	public static final Map<ProblemType, Tester> PROBLEM_TYPE_TO_TESTER_MAP = new HashMap<ProblemType, Tester>();
 	static {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
 		// TODO: Testers for other problem types
 	}
 }

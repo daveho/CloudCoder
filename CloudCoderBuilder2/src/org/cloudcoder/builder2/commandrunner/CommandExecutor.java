@@ -17,10 +17,10 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
-import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.CommandResult;
+import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.process.ProcessRunner;
 import org.cloudcoder.builder2.util.ArrayUtil;
 import org.slf4j.Logger;
@@ -103,22 +103,12 @@ public class CommandExecutor implements Runnable {
 		if (processRunner.isRunning()) {
 			// timed out!
 			processRunner.killProcess();
-			commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT, processRunner.getStatusMessage());
-
-		} else if (!processRunner.isExitStatusKnown()) {
-			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR, processRunner.getStatusMessage());
-		} else if (processRunner.isCoreDump()) {
-			if (processRunner.getExitCode() == 9 || processRunner.getExitCode() == 24) {
-				// Special case: signals 9 (KILL) and 24 (XCPU) indicate that the
-				// process exceeded its CPU limit, so treat them as a timeout.
-				commandResult = new CommandResult(TestOutcome.FAILED_FROM_TIMEOUT, processRunner.getStatusMessage());
-			} else {
-				// Some other fatal signal (most likely SEGV).
-				commandResult = new CommandResult(TestOutcome.FAILED_WITH_EXCEPTION, processRunner.getStatusMessage());
-			}
+			commandResult = new CommandResult(ProcessStatus.TIMED_OUT, processRunner.getStatusMessage());
 		} else {
-			// Process completed normally.
+			// Either completed normally or killed by signal
 			commandResult = new CommandResult(
+					processRunner.getStatus(),
+					processRunner.getStatusMessage(),
 					processRunner.getExitCode(),
 					processRunner.getStdoutAsList(),
 					processRunner.getStderrAsList());
@@ -152,7 +142,7 @@ public class CommandExecutor implements Runnable {
 			logger.error(
 					"could not join test executor after {} attempts - giving up",
 					MAX_TEST_EXECUTOR_JOIN_ATTEMPTS);
-			commandResult = new CommandResult(TestOutcome.INTERNAL_ERROR, "Command executor did not finish");
+			commandResult = new CommandResult(ProcessStatus.COULD_NOT_START, "Command executor did not finish");
 		}
 	}
 	

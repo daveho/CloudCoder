@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
+import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
@@ -61,10 +62,9 @@ public class ProcessRunner {
     
 	private String statusMessage = "";
 	
-	private boolean exitStatusKnown;
 	private boolean processStarted;
 	private int exitCode;
-	private boolean killedBySignal;
+	private ProcessStatus status;
 	
 	private volatile Process process;
 	private Thread exitValueMonitor;
@@ -82,6 +82,7 @@ public class ProcessRunner {
 	    for (Entry<String,String> entry : System.getenv().entrySet()) {
 	        env.put(entry.getKey(), entry.getValue());
 	    }
+	    status = ProcessStatus.UNKNOWN;
 	}
 	
 	/**
@@ -224,35 +225,35 @@ public class ProcessRunner {
 					// The process could not be started
 					this.processStarted = false;
 					this.statusMessage = "Process could not be started";
+					this.status = ProcessStatus.COULD_NOT_START;
 					
 					logger.debug("process stderr is {}", StringUtil.mergeOneLine(stderrCollector.getCollectedOutput()));
 				} else if (status.equals("exited")) {
 					// The process exited normally.
-					this.exitStatusKnown = true;
 					this.processStarted = true;
 					this.statusMessage = "Process exited";
+					this.status = ProcessStatus.EXITED;
 				} else if (status.equals("terminated_by_signal")) {
 					// The process was killed by a signal.
 					// The exit code is the signal that terminated the process.
-					this.exitStatusKnown = true;
 					this.processStarted = true;
-					this.killedBySignal = true;
 					this.statusMessage = "Process crashed (terminated by signal " + this.exitCode + ")";
+					this.status = ProcessStatus.KILLED_BY_SIGNAL;
 				} else {
 					// Should not happen.
 					logger.warn("Unknown process exit status " + status);
-					this.exitStatusKnown = false;
 					this.statusMessage = "Process status could not be determined";
+					this.status = ProcessStatus.COULD_NOT_START;
 				}
 			}
 		} catch (IOException e) {
 			logger.warn("IOException trying to read process status file");
-			this.exitStatusKnown = false;
 			this.statusMessage = "Process status could not be determined";
+			this.status = ProcessStatus.COULD_NOT_START;
 		} catch (NumberFormatException e) {
 			logger.warn("NumberFormatException trying to read process status file");
-			this.exitStatusKnown = false;
 			this.statusMessage = "Process status could not be determined";
+			this.status = ProcessStatus.COULD_NOT_START;
 		} finally {
 			IOUtils.closeQuietly(reader);
 			exitStatusFile.delete();
@@ -283,7 +284,7 @@ public class ProcessRunner {
 	 *         false otherwise
 	 */
 	public boolean isExitStatusKnown() {
-		return exitStatusKnown;
+		return status != ProcessStatus.COULD_NOT_START;
 	}
 	
 	/**
@@ -294,6 +295,21 @@ public class ProcessRunner {
 	 */
 	public boolean isProcessStarted() {
 		return processStarted;
+	}
+	
+	/**
+	 * Get the {@link ProcessStatus}.
+	 * <b>Important:</b>: don't call this unless the process is definitely not running.
+	 * 
+	 * @return the {@link ProcessStatus}
+	 */
+	public ProcessStatus getStatus() {
+		// Special case: if the process was killed by signals 9 (KILL) or 24 (XCPU),
+		// treat as a timeout.
+		if (status == ProcessStatus.KILLED_BY_SIGNAL && (exitCode == 9 || exitCode == 24)) {
+			return ProcessStatus.TIMED_OUT;
+		}
+		return status;
 	}
 	
 	/**
@@ -308,17 +324,10 @@ public class ProcessRunner {
 	public int getExitCode() {
 		return exitCode;
 	}
-	
+
 	/**
-	 * Find out whether the process was killed by a signal.
-	 * <b>Important:</b>: don't call this unless the process is definitely not running.
-	 * 
-	 * @return true if the process was killed by a signal, false otherwise
+	 * @return stdout as a single string
 	 */
-	public boolean isKilledBySignal() {
-		return killedBySignal;
-	}
-	
 	public String getStdout() {
 		return StringUtil.merge(getStdoutAsList());
 	}
@@ -329,7 +338,10 @@ public class ProcessRunner {
 	public List<String> getStdoutAsList() {
 		return stdoutCollector.getCollectedOutput();
 	}
-	
+
+	/**
+	 * @return stderr as a single string
+	 */
 	public String getStderr() {
 		return StringUtil.merge(getStderrAsList());
 	}
@@ -341,6 +353,11 @@ public class ProcessRunner {
 		return stderrCollector.getCollectedOutput();
 	}
 
+	/**
+	 * Check whether or not the process is still running.
+	 * 
+	 * @return true if the process is still running, false if it has completed
+	 */
     public boolean isRunning() {
     	Process p = process;
     	
@@ -357,7 +374,10 @@ public class ProcessRunner {
             return true;
         }
     }
-    
+
+    /**
+     * Forcibly kill the process.
+     */
     public void killProcess() {
         logger.info("Killing process");
         process.destroy();
@@ -367,15 +387,4 @@ public class ProcessRunner {
         	stdinSender.interrupt();
         }
     }
-
-	/**
-	 * Determine whether or not the process ended with a fatal signal.
-	 * <b>Important:</b>: don't call this unless the process is definitely not running.
-	 * 
-	 * @return true if the process ended with a fatal signal, false if
-	 *         it exited normally
-	 */
-	public boolean isCoreDump() {
-		return isKilledBySignal();
-	}
 }

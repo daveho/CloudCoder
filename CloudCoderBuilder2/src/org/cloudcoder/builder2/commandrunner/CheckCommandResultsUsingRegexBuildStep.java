@@ -11,6 +11,7 @@ import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandResult;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
+import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
 
@@ -51,6 +52,11 @@ public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
 	private static final Pattern REGEX_OPTIONS = Pattern.compile("\\$([ij]+)$");
 
 	private TestResult createTestResult(CommandResult commandResult, TestCase testCase) {
+		// Check whether the command completed normally.
+		if (commandResult.getStatus() != ProcessStatus.EXITED) {
+			return TestResultUtil.createTestResultForAbnormalExit(commandResult, testCase);
+		}
+		
 		// Special case: if the stdout is completely empty, it is possible
 		// that the expected output of the program is a blank line, and
 		// thus empty output is correct.  So, if the stdout is empty,
