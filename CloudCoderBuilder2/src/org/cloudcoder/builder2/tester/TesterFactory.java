@@ -32,6 +32,8 @@ import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBu
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.javacompiler.BytecodeToBytecodeExecutableBuildStep;
 import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
+import org.cloudcoder.builder2.javamethod.AddJavaMethodScaffoldingBuildStep;
+import org.cloudcoder.builder2.javamethod.AddJavaMethodTestDriverBuildStep;
 import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
@@ -78,6 +80,12 @@ public class TesterFactory {
 		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
 		new CreateSubmissionResultBuildStep(),
+	};
+	
+	public static final IBuildStep[] JAVA_METHOD_BUILD_STEPS = {
+		new AddJavaMethodScaffoldingBuildStep(),
+		new AddJavaMethodTestDriverBuildStep(),
+		new JavaCompilerBuildStep(),
 	};
 	
 	/**
