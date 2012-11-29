@@ -38,7 +38,9 @@ import org.cloudcoder.builder2.util.SubmissionResultUtil;
 /**
  * Convert array of {@link Bytecode} objects into a {@link BytecodeExecutable}
  * artifact which describes the directory the resulting class files are
- * in and the names of the individual class files.
+ * in and the names of the individual class files.  The name of the
+ * main class is taken from the first {@link FindJavaPackageAndClassNames}
+ * object found in the array of {@link FindJavaPackageAndClassNames} objects.
  * 
  * @author David Hovemeyer
  * @author Jaime Spacco
@@ -52,9 +54,9 @@ public class BytecodeToBytecodeExecutableBuildStep implements IBuildStep {
 			throw new InternalBuilderException(this.getClass(), "No Bytecode list");
 		}
 		
-		FindJavaPackageAndClassNames packageAndClassNames = submission.getArtifact(FindJavaPackageAndClassNames.class);
-		if (packageAndClassNames == null) {
-			throw new InternalBuilderException(this.getClass(), "No FindJavaPackageAndClassNames");
+		FindJavaPackageAndClassNames[] packageAndClassNamesList = submission.getArtifact(FindJavaPackageAndClassNames[].class);
+		if (packageAndClassNamesList == null) {
+			throw new InternalBuilderException(this.getClass(), "No FindJavaPackageAndClassNames list");
 		}
 		
 		// Create temporary directory
@@ -94,7 +96,7 @@ public class BytecodeToBytecodeExecutableBuildStep implements IBuildStep {
 		
 		// Create BytecodeExecutable artifact
 		BytecodeExecutable bytecodeExe = new BytecodeExecutable(tempDir, fileNameList);
-		bytecodeExe.setMainClass(packageAndClassNames.getFullyQualifiedClassName());
+		bytecodeExe.setMainClass(packageAndClassNamesList[0].getFullyQualifiedClassName());
 		submission.addArtifact(bytecodeExe);
 	}
 

@@ -5,6 +5,8 @@ import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Create a {@link CommandInput} with the input from each {@link TestCase}.
@@ -13,6 +15,8 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
  */
 public class CreateCommandInputsForEachTestCaseBuildStep implements IBuildStep {
 
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	@Override
 	public void execute(BuilderSubmission submission) {
 		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
@@ -25,6 +29,9 @@ public class CreateCommandInputsForEachTestCaseBuildStep implements IBuildStep {
 			commandInputList[i] = new CommandInput(testCaseList[i].getInput());
 		}
 		submission.addArtifact(commandInputList);
+		
+		logger.debug("Added {} CommandInputs", commandInputList.length);
+		
 	}
 
 }

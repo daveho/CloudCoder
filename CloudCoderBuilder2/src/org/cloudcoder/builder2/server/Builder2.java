@@ -153,7 +153,7 @@ public class Builder2 implements Runnable {
 			BuilderSubmission submission = new BuilderSubmission();
 			submission.addArtifact(problem);
 			submission.addArtifact(ArrayUtil.toArray(testCaseList, TestCase.class));
-			submission.addArtifact(new ProgramSource(programText));
+			submission.addArtifact(new ProgramSource[]{new ProgramSource(programText)});
 
 			try {
 				// Build and test

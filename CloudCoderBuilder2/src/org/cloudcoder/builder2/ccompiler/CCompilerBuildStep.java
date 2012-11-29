@@ -42,10 +42,17 @@ public class CCompilerBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
-		ProgramSource programSource = submission.getArtifact(ProgramSource.class);
-		if (programSource == null) {
-			throw new InternalBuilderException(this.getClass(), "No program source to compile");
+		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
+		if (programSourceList == null) {
+			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
 		}
+		
+		// For now, we only handle a single source file
+		if (programSourceList.length > 1) {
+			throw new InternalBuilderException(this.getClass(), "Multiple C source files are not supported yet");
+		}
+		
+		ProgramSource programSource = programSourceList[0];
 		
 		File tempDir = FileUtil.makeTempDir();
 		if (tempDir == null) {

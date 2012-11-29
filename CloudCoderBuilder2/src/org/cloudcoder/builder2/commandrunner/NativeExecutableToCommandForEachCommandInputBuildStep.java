@@ -17,6 +17,9 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
@@ -24,6 +27,9 @@ import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
+import org.cloudcoder.builder2.util.ArrayUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link IBuildStep} to create an array of {@link Command}s to execute
@@ -39,6 +45,8 @@ import org.cloudcoder.builder2.model.NativeExecutable;
  */
 public class NativeExecutableToCommandForEachCommandInputBuildStep implements IBuildStep {
 
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	@Override
 	public void execute(BuilderSubmission submission) {
 		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
@@ -46,14 +54,19 @@ public class NativeExecutableToCommandForEachCommandInputBuildStep implements IB
 			throw new InternalBuilderException(this.getClass(), "No CommandInput list");
 		}
 		
+		List<Command> commandList = new ArrayList<Command>();
+		
 		for (int i = 0; i < commandInputList.length; i++) {
 			NativeExecutable nativeExe = submission.getArtifact(NativeExecutable.class);
 			if (nativeExe == null) {
 				throw new InternalBuilderException(this.getClass(), "No NativeExecutable");
 			}
-			
-			submission.addArtifact(nativeExe.toCommand());
+			commandList.add(nativeExe.toCommand());
 		}
+		
+		submission.addArtifact(ArrayUtil.toArray(commandList, Command.class));
+		logger.debug("Added {} Commands for NativeExecutable", commandList.size());
+		
 	}
 
 }

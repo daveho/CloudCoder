@@ -31,11 +31,12 @@ import org.cloudcoder.builder2.util.ArrayUtil;
 import org.cloudcoder.builder2.util.SubmissionResultUtil;
 
 /**
- * Build step to compile a Java source file to class file(s).
+ * Build step to compile Java source files (from the array of
+ * {@link ProgramSource} objects) to class file(s).
  * Produces an array of {@link Bytecode} objects as a submission
- * artifact.  Also produces a {@link FindJavaPackageAndClassNames} object
- * that records the name of the package and class name in the
- * source program.
+ * artifact.  Also produces an array of {@link FindJavaPackageAndClassNames} objects
+ * that record the name of the package and class name in the
+ * source file(s), one for each {@link ProgramSource}.
  * 
  * @author David Hovemeyer
  * @author Jaime Spacco
@@ -44,26 +45,33 @@ public class JavaCompilerBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission) {
-		ProgramSource programSource = submission.getArtifact(ProgramSource.class);
-		if (programSource == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource");
+		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
+		if (programSourceList == null) {
+			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
 		}
 
 		// Determine the package name and top-level class name,
 		// add resulting FindJavaPackageAndClassNames object as submission artifact
-		FindJavaPackageAndClassNames packageAndClassNames = new FindJavaPackageAndClassNames();
-		packageAndClassNames.determinePackageAndClassNames(programSource.getProgramText());
-		if (packageAndClassNames.getClassName() == null) {
-			SubmissionResult result = SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
-					"Could not determine top-level class name");
-			submission.addArtifact(result);
-			return;
+		FindJavaPackageAndClassNames[] packageAndClassNamesList = new FindJavaPackageAndClassNames[programSourceList.length];
+		
+		for (int i = 0; i < programSourceList.length; i++) {
+			packageAndClassNamesList[i] = new FindJavaPackageAndClassNames();
+			packageAndClassNamesList[i].determinePackageAndClassNames(programSourceList[i].getProgramText());
+			if (packageAndClassNamesList[i].getClassName() == null) {
+				SubmissionResult result = SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
+						"Could not determine top-level class name");
+				submission.addArtifact(result);
+				return;
+			}
 		}
-		submission.addArtifact(packageAndClassNames);
+		
+		submission.addArtifact(packageAndClassNamesList);
 
 		// Attempt to compile the program
 		InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
-		compiler.addClassFile(packageAndClassNames.getFullyQualifiedClassName(), programSource.getProgramText());
+		for (int i = 0; i < programSourceList.length; i++) {
+			compiler.addClassFile(packageAndClassNamesList[i].getFullyQualifiedClassName(), programSourceList[i].getProgramText());
+		}
 		if (!compiler.compileWithoutLoadingClasses()) {
 			SubmissionResult result = new SubmissionResult(compiler.getCompileResult());
 			submission.addArtifact(result);
