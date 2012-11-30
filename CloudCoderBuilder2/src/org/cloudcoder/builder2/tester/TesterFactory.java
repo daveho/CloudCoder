@@ -72,6 +72,10 @@ public class TesterFactory {
 		new CreateSubmissionResultBuildStep(),
 	};
 	
+	/**
+	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#JAVA_PROGRAM}
+	 * submission.
+	 */
 	public static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
 		new JavaCompilerBuildStep(),
 		new BytecodeToBytecodeExecutableBuildStep(),
@@ -82,10 +86,15 @@ public class TesterFactory {
 		new CreateSubmissionResultBuildStep(),
 	};
 	
+	/**
+	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#JAVA_METHOD}
+	 * submission.
+	 */
 	public static final IBuildStep[] JAVA_METHOD_BUILD_STEPS = {
 		new AddJavaMethodScaffoldingBuildStep(),
 		new AddJavaMethodTestDriverBuildStep(),
 		new JavaCompilerBuildStep(),
+		// TODO: actually test it
 	};
 	
 	/**
