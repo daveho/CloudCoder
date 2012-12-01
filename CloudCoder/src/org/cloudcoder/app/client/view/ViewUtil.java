@@ -59,6 +59,8 @@ public class ViewUtil {
 		case C:
 		case CPLUSPLUS:
 			return AceEditorMode.C_CPP;
+		case RUBY:
+			return AceEditorMode.RUBY;
 		}
 		
 		// unknown Language

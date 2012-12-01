@@ -34,6 +34,9 @@ public enum Language {
 	
 	/** Python programming language. */
 	PYTHON("Python"),
+	
+	/** Ruby programming language. */
+	RUBY("Ruby"),
 	;
 	
 	private String name;
