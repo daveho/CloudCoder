@@ -1,7 +1,25 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.builder2.javamethod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -11,50 +29,54 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
+import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
 import org.cloudcoder.builder2.model.BuilderSubmission;
-import org.cloudcoder.builder2.model.Bytecode;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
+import org.cloudcoder.builder2.model.LoadedClasses;
 
 /**
- * Execute {@link ProblemType#JAVA_METHOD} tests.
+ * Execute {@link ProblemType#JAVA_METHOD} tests and create a
+ * {@link SubmissionResult}.
  * 
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
 public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
+    public static final long TIMEOUT_LIMIT = 2000;
 
 	@Override
 	public void execute(BuilderSubmission submission) {
-		// Get array of Bytecode objects representing compiled classes
-		Bytecode[] bytecodeList = submission.getArtifact(Bytecode[].class);
-		if (bytecodeList == null) {
-			throw new InternalBuilderException(this.getClass(), "No Bytecode list");
+		// Get LoadedClasses
+		LoadedClasses loadedClasses = submission.getArtifact(LoadedClasses.class);
+		if (loadedClasses == null) {
+			throw new InternalBuilderException(this.getClass(), "No LoadedClasses");
 		}
 		
-		// Find the bytecode for the Tester class
-		Bytecode tester = null;
-		for (Bytecode b : bytecodeList) {
-			if (b.getClassName().equals("Tester")) {
-				tester = b;
-				break;
-			}
-		}
-		if (tester == null) {
-			throw new InternalBuilderException(this.getClass(), "Could not find Tester bytecode");
+		// Get TestCase list
+		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
+		if (testCaseList == null) {
+			throw new InternalBuilderException(this.getClass(), "No TestCase list");
 		}
 		
-		// TODO: get classes for compiled bytecode - should use prior classloading step?
+		// Get the loaded Class for the Tester class
+		Class<?> testerCls_;
+		try {
+			testerCls_ = loadedClasses.getClassLoader().loadClass("Tester");
+		} catch (ClassNotFoundException e) {
+			// LoadClassesBuildStep tries loading all compiled classes,
+			// so this should not happen
+			throw new InternalBuilderException(this.getClass(), "Unexpectedly failed to load TesterClass", e);
+		}
+		final Class<?> testerCls = testerCls_;
 		
-		/*
         // create a list of tasks to be executed
-        List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
-        final Class<?> testerCls=compiler.getClass("Tester");
+        List<IsolatedTask<TestResult>> tasks = new ArrayList<IsolatedTask<TestResult>>();
         for (final TestCase t : testCaseList) {
             tasks.add(new IsolatedTaskRunner(testerCls, t));
         }
 
-        KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
+        KillableTaskManager<TestResult> pool = new KillableTaskManager<TestResult>(
                 tasks, 
                 TIMEOUT_LIMIT,
                 new KillableTaskManager.TimeoutHandler<TestResult>() {
@@ -69,11 +91,26 @@ public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
         pool.run();
 
         // merge outcomes with their buffered inputs for stdout/stderr
-        List<TestResult> outcomes=TesterUtils.getStdoutStderr(pool);
+        List<TestResult> outcomes = getStdoutStderr(pool);
         SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
         result.setTestResults(outcomes.toArray(new TestResult[outcomes.size()]));
-        logger.info("Sending back to server "+result.getTestResults().length+" results");
-        */
+        
+        // Add the completed SubmissionResult
+        submission.addArtifact(result);
 	}
+
+	private static List<TestResult> getStdoutStderr(KillableTaskManager<TestResult> pool) {
+        List<TestResult> outcomes=pool.getOutcomes();
+        Map<Integer,String> stdout=pool.getBufferedStdout();
+        Map<Integer,String> stderr=pool.getBufferedStderr();
+        for (int i=0; i<outcomes.size(); i++) {
+            TestResult t=outcomes.get(i);
+            if (t!=null) {
+                t.setStdout(stdout.get(i));
+                t.setStderr(stderr.get(i));
+            }
+        }
+        return outcomes;
+    }
 
 }

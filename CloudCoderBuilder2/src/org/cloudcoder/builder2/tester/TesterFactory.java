@@ -32,8 +32,10 @@ import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBu
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.javacompiler.BytecodeToBytecodeExecutableBuildStep;
 import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
+import org.cloudcoder.builder2.javacompiler.LoadClassesBuildStep;
 import org.cloudcoder.builder2.javamethod.AddJavaMethodScaffoldingBuildStep;
 import org.cloudcoder.builder2.javamethod.AddJavaMethodTestDriverBuildStep;
+import org.cloudcoder.builder2.javamethod.ExecuteJavaMethodTestsBuildStep;
 import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
@@ -44,7 +46,7 @@ import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
  * 
  * @author David Hovemeyer
  */
-public class TesterFactory {
+public abstract class TesterFactory {
 	/**
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_PROGRAM}
 	 * submission.
@@ -94,7 +96,8 @@ public class TesterFactory {
 		new AddJavaMethodScaffoldingBuildStep(),
 		new AddJavaMethodTestDriverBuildStep(),
 		new JavaCompilerBuildStep(),
-		// TODO: actually test it
+		new LoadClassesBuildStep(),
+		new ExecuteJavaMethodTestsBuildStep(),
 	};
 	
 	/**
@@ -119,6 +122,7 @@ public class TesterFactory {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_PROGRAM, createTester(JAVA_PROGRAM_TESTER_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_METHOD, createTester(JAVA_METHOD_BUILD_STEPS));
 		// TODO: Testers for other problem types
 	}
 }

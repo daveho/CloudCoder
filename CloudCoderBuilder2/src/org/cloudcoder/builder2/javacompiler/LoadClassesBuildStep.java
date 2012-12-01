@@ -63,7 +63,7 @@ public class LoadClassesBuildStep implements IBuildStep {
 			} catch (ClassNotFoundException e) {
 				// Fatal error: can't load a class needed to execute tests on the submission
 				SubmissionResult result = SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(
-						"Could not load compiled classes: " + e.getMessage());
+						"Could not load compiled classes" + e.getMessage());
 				submission.addArtifact(result);
 				return;
 			}

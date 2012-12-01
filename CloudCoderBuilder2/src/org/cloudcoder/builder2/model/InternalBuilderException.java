@@ -53,4 +53,16 @@ public class InternalBuilderException extends RuntimeException {
 	public InternalBuilderException(Class<?> cls, String msg) {
 		this(cls.getSimpleName() + ": " + msg);
 	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param cls class raising the exception
+	 * @param msg message describing the error
+	 * @param cause root cause
+	 */
+	public InternalBuilderException(Class<?> cls, String message, Throwable cause) {
+		this(cls, message);
+		initCause(cause);
+	}
 }
