@@ -70,9 +70,9 @@ public class JavaCompilerBuildStep implements IBuildStep {
 		// Attempt to compile the program
 		InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
 		for (int i = 0; i < programSourceList.length; i++) {
-			compiler.addClassFile(packageAndClassNamesList[i].getFullyQualifiedClassName(), programSourceList[i].getProgramText());
+			compiler.addSourceFile(packageAndClassNamesList[i].getFullyQualifiedClassName(), programSourceList[i].getProgramText());
 		}
-		if (!compiler.compileWithoutLoadingClasses()) {
+		if (!compiler.compile()) {
 			SubmissionResult result = new SubmissionResult(compiler.getCompileResult());
 			submission.addArtifact(result);
 			return;

@@ -18,17 +18,14 @@
 package org.cloudcoder.builder2.javacompiler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
@@ -38,139 +35,94 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author jaimespacco
- *
+ * Compile Java source code into class files (bytecode) in memory.
+ * 
+ * @author Jaime Spacco
  */
 public class InMemoryJavaCompiler
 {
-    private static final Logger logger=LoggerFactory.getLogger(InMemoryJavaCompiler.class);
-    
-    private MemoryFileManager fm;
-    private JavaCompiler compiler;
-    private CompilationResult compileResult;
-//    private ClassLoader classLoader;
-    private List<JavaFileObject> sources;
-    private Map<String, Class<?>> classMap=new HashMap<String, Class<?>>();
-    
-    public Class<?> getClass(String className) {
-        return classMap.get(className);
-    }
-    
-    public InMemoryJavaCompiler() {
-        compiler = ToolProvider.getSystemJavaCompiler();
-        fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
-        sources = new ArrayList<JavaFileObject>();
-    }
-    
-    public void addClassFile(String className, String classText) {
-        logger.trace(className);
-        logger.trace(classText);
-        sources.add(MemoryFileManager.makeSource(className, classText));
-    }
-    
-//    /**
-//     * Compile all of the classes added with {@link #addClassFile(String, String)}
-//     * and load them into memory.
-//     * 
-//     * @return true if the compilation succeeded, false if the code could
-//     *         not be compiled or the compiled classes could not be loaded
-//     */
-//    public boolean compile()
-//    {
-//        // Compile, but don't load the classes yet
-//        if (!compileWithoutLoadingClasses()) {
-//        	// Code does not compile
-//            return false;
-//        }
-//
-//        // Load the classes
-//        classLoader = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
-//        if (!loadClasses()) {
-//        	// Classes could not be loaded
-//            return false;
-//        }
-//        
-//        return true;
-//    }
+	private static final Logger logger=LoggerFactory.getLogger(InMemoryJavaCompiler.class);
 
-    /**
-     * Compile all of the classes added with {@link #addClassFile(String, String)},
-     * but do not load them into memory.
-     * 
-     * @return true if the compilation succeeded, false otherwise
-     */
-    public boolean compileWithoutLoadingClasses() {
-    	DiagnosticCollector<JavaFileObject> collector= new DiagnosticCollector<JavaFileObject>();
+	private MemoryFileManager fm;
+	private JavaCompiler compiler;
+	private CompilationResult compileResult;
+	private List<JavaFileObject> sources;
 
-    	CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
-    	if (!task.call()) {
-    		// Compiler error
-    		compileResult=new CompilationResult(CompilationOutcome.FAILURE);
-    		List<CompilerDiagnostic> diagnosticList=new LinkedList<CompilerDiagnostic>();
-    		for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
-    			// convert Java-specific diagnostics to the language-independent diagnostics
-    			// we could also 
-    			diagnosticList.add(InMemoryJavaCompiler.convertJavaxDiagnostic(d));
-    		}
-    		compileResult.setCompilerDiagnosticList(diagnosticList.toArray(new CompilerDiagnostic[diagnosticList.size()]));
-    		logger.warn("Unable to compile: "+compileResult);
-    		return false;
-    	} else {
-    		// Successful compilation
-    		compileResult=new CompilationResult(CompilationOutcome.SUCCESS);
-    		return true;
-    	}
-    }
-    
-    /**
-     * Get the {@link MemoryFileManager} that is keeping track of sources
-     * and compiled classes.
-     * 
-     * @return the {@link MemoryFileManager}
-     */
-    public MemoryFileManager getFileManager() {
-    	return fm;
-    }
-    
-//    private boolean loadClasses() {
-//        // Make sure that we can load the classfile we just compiled
-//        for (JavaFileObject jfo : sources) {
-//            try {
-//                String className=jfo.getName().replace("/", "").replace(".java","");
-//                Class<?> theClass=classLoader.loadClass(className);
-//                classMap.put(className, theClass);
-//            } catch (ClassNotFoundException e) {
-//                compileResult=new CompilationResult(
-//                        CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
-//                //compileResult.setException(e);
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+	/**
+	 * Constructor.
+	 */
+	public InMemoryJavaCompiler() {
+		compiler = ToolProvider.getSystemJavaCompiler();
+		fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
+		sources = new ArrayList<JavaFileObject>();
+	}
 
-    /**
-     * @return the compileResult
-     */
-    public CompilationResult getCompileResult() {
-        return compileResult;
-    }
+	/**
+	 * Add a source file to be compiled.
+	 * 
+	 * @param className  the full class name of the top-level class
+	 * @param classText  the full text of the source file
+	 */
+	public void addSourceFile(String className, String classText) {
+		logger.trace(className);
+		logger.trace(classText);
+		sources.add(MemoryFileManager.makeSource(className, classText));
+	}
 
-//    /**
-//     * @return the classLoader
-//     */
-//    public ClassLoader getClassLoader() {
-//        return classLoader;
-//    }
+	/**
+	 * Compile all of the classes added with {@link #addSourceFile(String, String)}.
+	 * 
+	 * @return true if the compilation succeeded, false otherwise
+	 */
+	public boolean compile() {
+		DiagnosticCollector<JavaFileObject> collector= new DiagnosticCollector<JavaFileObject>();
 
-    /**
-     * Putting this here, I think because things like javax.tools.Diagnostic cannot 
-     * be converted into Javascript by GWT?
-     * @param d
-     * @return
-     */
-    public static CompilerDiagnostic convertJavaxDiagnostic(Diagnostic<?> d) {
-        return new CompilerDiagnostic(d.getLineNumber(), d.getLineNumber(),
-                d.getColumnNumber(), d.getColumnNumber(), d.getMessage(null));
-    }
+		CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
+		if (!task.call()) {
+			// Compiler error
+			compileResult=new CompilationResult(CompilationOutcome.FAILURE);
+			List<CompilerDiagnostic> diagnosticList=new LinkedList<CompilerDiagnostic>();
+			for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
+				// convert Java-specific diagnostics to the language-independent diagnostics
+				// we could also 
+				diagnosticList.add(InMemoryJavaCompiler.convertJavaxDiagnostic(d));
+			}
+			compileResult.setCompilerDiagnosticList(diagnosticList.toArray(new CompilerDiagnostic[diagnosticList.size()]));
+			logger.warn("Unable to compile: "+compileResult);
+			return false;
+		} else {
+			// Successful compilation
+			compileResult=new CompilationResult(CompilationOutcome.SUCCESS);
+			return true;
+		}
+	}
+
+	/**
+	 * Get the {@link MemoryFileManager} that is keeping track of sources
+	 * and compiled classes.
+	 * 
+	 * @return the {@link MemoryFileManager}
+	 */
+	public MemoryFileManager getFileManager() {
+		return fm;
+	}
+
+	/**
+	 * @return the {@link CompilationResult} describing whether the compilation succeeded
+	 *         or failed, and what compiler diagnostics were emitted
+	 */
+	public CompilationResult getCompileResult() {
+		return compileResult;
+	}
+
+	/**
+	 * Convert a Java {@link Diagnostic} to a CloudCoder {@link CompilerDiagnostic}.
+	 * 
+	 * @param d the {@link Diagnostic}
+	 * @return the {@link CompilerDiagnostic}
+	 */
+	private static CompilerDiagnostic convertJavaxDiagnostic(Diagnostic<?> d) {
+		return new CompilerDiagnostic(d.getLineNumber(), d.getLineNumber(),
+				d.getColumnNumber(), d.getColumnNumber(), d.getMessage(null));
+	}
 }
