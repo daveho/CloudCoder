@@ -19,7 +19,6 @@ package org.cloudcoder.builder2.javamethod;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -30,6 +29,7 @@ import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
 import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
+import org.cloudcoder.builder2.javasandbox.SandboxUtil;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
@@ -91,26 +91,12 @@ public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
         pool.run();
 
         // merge outcomes with their buffered inputs for stdout/stderr
-        List<TestResult> outcomes = getStdoutStderr(pool);
+        List<TestResult> outcomes = SandboxUtil.getStdoutStderr(pool);
         SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
         result.setTestResults(outcomes.toArray(new TestResult[outcomes.size()]));
         
         // Add the completed SubmissionResult
         submission.addArtifact(result);
 	}
-
-	private static List<TestResult> getStdoutStderr(KillableTaskManager<TestResult> pool) {
-        List<TestResult> outcomes=pool.getOutcomes();
-        Map<Integer,String> stdout=pool.getBufferedStdout();
-        Map<Integer,String> stderr=pool.getBufferedStderr();
-        for (int i=0; i<outcomes.size(); i++) {
-            TestResult t=outcomes.get(i);
-            if (t!=null) {
-                t.setStdout(stdout.get(i));
-                t.setStderr(stderr.get(i));
-            }
-        }
-        return outcomes;
-    }
 
 }

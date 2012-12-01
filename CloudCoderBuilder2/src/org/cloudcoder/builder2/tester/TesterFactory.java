@@ -39,6 +39,7 @@ import org.cloudcoder.builder2.javamethod.ExecuteJavaMethodTestsBuildStep;
 import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
+import org.cloudcoder.builder2.pythonfunction.TestPythonFunctionBuildStep;
 import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
 
 /**
@@ -101,6 +102,14 @@ public abstract class TesterFactory {
 	};
 	
 	/**
+	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#PYTHON_FUNCTION}
+	 * submission.
+	 */
+	public static final IBuildStep[] PYTHON_FUNCTION_BUILD_STEPS = {
+		new TestPythonFunctionBuildStep(),
+	};
+	
+	/**
 	 * Create a {@link Tester} with the given list of {@link IBuildStep}s.
 	 * 
 	 * @param stepList list of {@link IBuildStep}s
@@ -123,6 +132,6 @@ public abstract class TesterFactory {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_PROGRAM, createTester(JAVA_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_METHOD, createTester(JAVA_METHOD_BUILD_STEPS));
-		// TODO: Testers for other problem types
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.PYTHON_FUNCTION, createTester(PYTHON_FUNCTION_BUILD_STEPS));
 	}
 }
