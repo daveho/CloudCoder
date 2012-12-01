@@ -48,7 +48,7 @@ public class InMemoryJavaCompiler
     private MemoryFileManager fm;
     private JavaCompiler compiler;
     private CompilationResult compileResult;
-    private ClassLoader classLoader;
+//    private ClassLoader classLoader;
     private List<JavaFileObject> sources;
     private Map<String, Class<?>> classMap=new HashMap<String, Class<?>>();
     
@@ -68,30 +68,30 @@ public class InMemoryJavaCompiler
         sources.add(MemoryFileManager.makeSource(className, classText));
     }
     
-    /**
-     * Compile all of the classes added with {@link #addClassFile(String, String)}
-     * and load them into memory.
-     * 
-     * @return true if the compilation succeeded, false if the code could
-     *         not be compiled or the compiled classes could not be loaded
-     */
-    public boolean compile()
-    {
-        // Compile, but don't load the classes yet
-        if (!compileWithoutLoadingClasses()) {
-        	// Code does not compile
-            return false;
-        }
-
-        // Load the classes
-        classLoader = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
-        if (!loadClasses()) {
-        	// Classes could not be loaded
-            return false;
-        }
-        
-        return true;
-    }
+//    /**
+//     * Compile all of the classes added with {@link #addClassFile(String, String)}
+//     * and load them into memory.
+//     * 
+//     * @return true if the compilation succeeded, false if the code could
+//     *         not be compiled or the compiled classes could not be loaded
+//     */
+//    public boolean compile()
+//    {
+//        // Compile, but don't load the classes yet
+//        if (!compileWithoutLoadingClasses()) {
+//        	// Code does not compile
+//            return false;
+//        }
+//
+//        // Load the classes
+//        classLoader = fm.getClassLoader(StandardLocation.CLASS_OUTPUT);
+//        if (!loadClasses()) {
+//        	// Classes could not be loaded
+//            return false;
+//        }
+//        
+//        return true;
+//    }
 
     /**
      * Compile all of the classes added with {@link #addClassFile(String, String)},
@@ -132,22 +132,22 @@ public class InMemoryJavaCompiler
     	return fm;
     }
     
-    private boolean loadClasses() {
-        // Make sure that we can load the classfile we just compiled
-        for (JavaFileObject jfo : sources) {
-            try {
-                String className=jfo.getName().replace("/", "").replace(".java","");
-                Class<?> theClass=classLoader.loadClass(className);
-                classMap.put(className, theClass);
-            } catch (ClassNotFoundException e) {
-                compileResult=new CompilationResult(
-                        CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
-                //compileResult.setException(e);
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean loadClasses() {
+//        // Make sure that we can load the classfile we just compiled
+//        for (JavaFileObject jfo : sources) {
+//            try {
+//                String className=jfo.getName().replace("/", "").replace(".java","");
+//                Class<?> theClass=classLoader.loadClass(className);
+//                classMap.put(className, theClass);
+//            } catch (ClassNotFoundException e) {
+//                compileResult=new CompilationResult(
+//                        CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
+//                //compileResult.setException(e);
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     /**
      * @return the compileResult
@@ -156,12 +156,12 @@ public class InMemoryJavaCompiler
         return compileResult;
     }
 
-    /**
-     * @return the classLoader
-     */
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
+//    /**
+//     * @return the classLoader
+//     */
+//    public ClassLoader getClassLoader() {
+//        return classLoader;
+//    }
 
     /**
      * Putting this here, I think because things like javax.tools.Diagnostic cannot 
