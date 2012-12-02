@@ -79,10 +79,6 @@ public class Builder2 implements Runnable {
 		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
 	}
 
-	private Tester getTester(ProblemType problemType) {
-		return TesterFactory.PROBLEM_TYPE_TO_TESTER_MAP.get(problemType);
-	}
-
 	public void run() {
 		requestLoop:
 			while (!shutdownRequested) {
@@ -144,7 +140,7 @@ public class Builder2 implements Runnable {
 		SubmissionResult result;
 		try {
 			// Based on the ProblemType, find a Tester
-			Tester tester = getTester(problem.getProblemType());
+			Tester tester = TesterFactory.getTester(problem.getProblemType());
 			if (tester == null) {
 				throw new InternalBuilderException(Builder2.class, problem.getProblemType() + " problems not supported yet");
 			}

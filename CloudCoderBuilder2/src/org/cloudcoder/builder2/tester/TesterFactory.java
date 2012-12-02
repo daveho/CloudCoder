@@ -40,6 +40,8 @@ import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInp
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
 import org.cloudcoder.builder2.pythonfunction.TestPythonFunctionBuildStep;
+import org.cloudcoder.builder2.rubymethod.AddRubyMethodScaffoldingBuildStep;
+import org.cloudcoder.builder2.rubymethod.TestRubyMethodBuildStep;
 import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
 
 /**
@@ -49,10 +51,20 @@ import org.cloudcoder.builder2.submissionresult.CreateSubmissionResultBuildStep;
  */
 public abstract class TesterFactory {
 	/**
+	 * Get a {@link Tester} for given {@link ProblemType}.
+	 * 
+	 * @param problemType the {@link ProblemType}
+	 * @return the {@link Tester}, or null if there is no tester for this problem type
+	 */
+	public static Tester getTester(ProblemType problemType) {
+		return PROBLEM_TYPE_TO_TESTER_MAP.get(problemType);
+	}
+	
+	/**
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_PROGRAM}
 	 * submission.
 	 */
-	public static final IBuildStep[] C_PROGRAM_TESTER_STEPS = {
+	private static final IBuildStep[] C_PROGRAM_TESTER_STEPS = {
 		new CCompilerBuildStep(),
 		new CreateCommandInputsForEachTestCaseBuildStep(),
 		new NativeExecutableToCommandForEachCommandInputBuildStep(),
@@ -65,7 +77,7 @@ public abstract class TesterFactory {
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_FUNCTION}
 	 * submission.
 	 */
-	public static final IBuildStep[] C_FUNCTION_TESTER_STEPS = {
+	private static final IBuildStep[] C_FUNCTION_TESTER_STEPS = {
 		new AddCFunctionScaffoldingBuildStep(),
 		new CCompilerBuildStep(),
 		new CreateSecretSuccessAndFailureCodesBuildStep(),
@@ -79,7 +91,7 @@ public abstract class TesterFactory {
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#JAVA_PROGRAM}
 	 * submission.
 	 */
-	public static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
+	private static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
 		new JavaCompilerBuildStep(),
 		new BytecodeToBytecodeExecutableBuildStep(),
 		new CreateCommandInputsForEachTestCaseBuildStep(),
@@ -93,7 +105,7 @@ public abstract class TesterFactory {
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#JAVA_METHOD}
 	 * submission.
 	 */
-	public static final IBuildStep[] JAVA_METHOD_BUILD_STEPS = {
+	private static final IBuildStep[] JAVA_METHOD_BUILD_STEPS = {
 		new AddJavaMethodScaffoldingBuildStep(),
 		new AddJavaMethodTestDriverBuildStep(),
 		new JavaCompilerBuildStep(),
@@ -105,8 +117,18 @@ public abstract class TesterFactory {
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#PYTHON_FUNCTION}
 	 * submission.
 	 */
-	public static final IBuildStep[] PYTHON_FUNCTION_BUILD_STEPS = {
+	private static final IBuildStep[] PYTHON_FUNCTION_BUILD_STEPS = {
 		new TestPythonFunctionBuildStep(),
+	};
+	
+	/**
+	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#RUBY_METHOD}
+	 * submission.
+	 */
+	private static final IBuildStep[] RUBY_METHOD_BUILD_STEPS = {
+		new AddRubyMethodScaffoldingBuildStep(),
+		new TestRubyMethodBuildStep(),
+		new CreateSubmissionResultBuildStep(),
 	};
 	
 	/**
@@ -115,7 +137,7 @@ public abstract class TesterFactory {
 	 * @param stepList list of {@link IBuildStep}s
 	 * @return the {@link Tester}
 	 */
-	public static Tester createTester(IBuildStep[] stepList) {
+	private static Tester createTester(IBuildStep[] stepList) {
 		Tester tester = new Tester();
 		for (IBuildStep buildStep : stepList) {
 			tester.addBuildStep(buildStep);
@@ -126,12 +148,13 @@ public abstract class TesterFactory {
 	/**
 	 * Map of {@link ProblemType} values to {@link Tester} objects.
 	 */
-	public static final Map<ProblemType, Tester> PROBLEM_TYPE_TO_TESTER_MAP = new HashMap<ProblemType, Tester>();
+	private static final Map<ProblemType, Tester> PROBLEM_TYPE_TO_TESTER_MAP = new HashMap<ProblemType, Tester>();
 	static {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_PROGRAM, createTester(JAVA_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_METHOD, createTester(JAVA_METHOD_BUILD_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.PYTHON_FUNCTION, createTester(PYTHON_FUNCTION_BUILD_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.RUBY_METHOD, createTester(RUBY_METHOD_BUILD_STEPS));
 	}
 }

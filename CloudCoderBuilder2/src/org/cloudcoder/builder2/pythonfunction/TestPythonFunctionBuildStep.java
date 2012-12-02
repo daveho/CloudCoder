@@ -41,6 +41,7 @@ import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.StringUtil;
+import org.cloudcoder.builder2.util.TestResultUtil;
 import org.python.core.PyException;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
@@ -62,14 +63,15 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 	public static final Logger logger=LoggerFactory.getLogger(TestPythonFunctionBuildStep.class);
 	public static final long TIMEOUT_LIMIT=2000;
 
-	static {
-		// So far the new system of extracting a PyFunction and passing
-		// that and the PythonInterpreter into the KillableThread seems to work.
-		// The main concern is that this requires removing any executable code that is
-		// not inside a method.
-		System.setSecurityManager(
-				new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
-	}
+	// FIXME: we need a different security manager for JRuby - how to allow? Can set per-thread?
+//	static {
+//		// So far the new system of extracting a PyFunction and passing
+//		// that and the PythonInterpreter into the KillableThread seems to work.
+//		// The main concern is that this requires removing any executable code that is
+//		// not inside a method.
+//		System.setSecurityManager(
+//				new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
+//	}
 
 	@Override
 	public void execute(BuilderSubmission submission) {
@@ -192,8 +194,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 					new KillableTaskManager.TimeoutHandler<TestResult>() {
 						@Override
 						public TestResult handleTimeout() {
-							return new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
-									"Took too long!  Check for infinite loops, or recursion without a proper base case");
+							return TestResultUtil.createResultForTimeout();
 						}
 					});
 

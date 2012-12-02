@@ -17,7 +17,6 @@
 
 package org.cloudcoder.builder2.util;
 
-
 import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
@@ -80,27 +79,6 @@ public class TestResultUtil {
 		return createTestResult(p, TestOutcome.FAILED_ASSERTION, testCase);
 	}
 
-	private static TestResult createTestResult(CommandResult p, TestOutcome outcome, TestCase testCase) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(outcome.getShortMessage());
-		
-		if (!testCase.isSecret()) {
-			buf.append(" for input (" + testCase.getInput() + ")");
-		}
-		if (outcome.isDisplayProcessStatus() &&
-				p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
-			// Process did not complete normally, so add the ProcessRunner's status message
-			buf.append(" - " + p.getStatusMessage());
-		}
-		
-		TestResult testResult = new TestResult(
-				outcome,
-		        buf.toString(),
-		        StringUtil.merge(p.getStdout()),
-		        StringUtil.merge(p.getStderr()));
-		return testResult;
-	}
-
 	/**
 	 * Create a TestResult to indicate that a TestCase couldn't be executed
 	 * because of an internal error.
@@ -138,5 +116,69 @@ public class TestResultUtil {
 		default:
 			throw new IllegalArgumentException("Invalid process status: " + p.getStatus());
 		}
+	}
+
+	/**
+	 * Create a generic {@link TestResult} for a passed test.
+	 * 
+	 * @param testCase the {@link TestCase}
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createResultForPassedTest(TestCase testCase) {
+		return createTestResult(null, TestOutcome.PASSED, testCase);
+	}
+
+	/**
+	 * Create a generic {@link TestResult} for a failed test.
+	 * 
+	 * @param testCase the {@link TestCase}
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createResultForFailedTest(TestCase testCase) {
+		return createTestResult(null, TestOutcome.FAILED_ASSERTION, testCase);
+	}
+
+	/**
+	 * Create a generic timeout {@link TestResult}.
+	 * 
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createResultForTimeout() {
+		return new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 
+				"Took too long!  Check for infinite loops, or recursion without a proper base case");
+	}
+
+	/**
+	 * Helper method to create a standard test result.
+	 * If a {@link CommandResult} is passed, its stdout/stderr will be
+	 * added to the test result.
+	 * 
+	 * @param p         the {@link CommandResult} (null if the test was not executed as a {@link Command})
+	 * @param outcome   the {@link TestOutcome}
+	 * @param testCase  the {@link TestCase}
+	 * @return the {@link TestResult}
+	 */
+	private static TestResult createTestResult(CommandResult p, TestOutcome outcome, TestCase testCase) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(outcome.getShortMessage());
+
+		if (!testCase.isSecret()) {
+			buf.append(" for input (" + testCase.getInput() + ")");
+		}
+
+		TestResult testResult = new TestResult(outcome, buf.toString());
+
+		if (p != null) {
+			if (outcome.isDisplayProcessStatus() &&
+					p.getStatusMessage() != null && !p.getStatusMessage().equals("")) {
+				// Process did not complete normally, so add the ProcessRunner's status message
+				buf.append(" - " + p.getStatusMessage());
+			}
+	
+			testResult.setStdout(StringUtil.merge(p.getStdout()));
+			testResult.setStderr(StringUtil.merge(p.getStderr()));
+		}
+
+		return testResult;
 	}
 }

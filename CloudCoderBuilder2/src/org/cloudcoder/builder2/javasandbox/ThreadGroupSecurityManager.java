@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Security Manager that we use for Java and Jython code.  
+ * Security Manager that we use for Java, Jython, and JRuby code.  
  * Each student test case is run in 
  * a separate thread, and all of those threads are part of the same ThreadGroup,
  * which is passed into the constructor of this class.
@@ -30,9 +30,12 @@ import org.slf4j.LoggerFactory;
  * Any thread in the checkedThreadGroup is heavily restricted as far as what 
  * it may do.  This security model is very simple but is effective so far.
  * 
+ * A subclass may override the {@link #check(Permission)} method to
+ * grant more permissions to the student code than are allowed by
+ * this base class.
  * 
- * @author jaimespacco
- *
+ * @author Jaime Spacco
+ * @author David Hovemeyer
  */
 public class ThreadGroupSecurityManager extends SecurityManager
 {
@@ -95,7 +98,17 @@ public class ThreadGroupSecurityManager extends SecurityManager
         return false;
     }
     
-    private void check(Permission perm) {
+    /**
+     * Check given permission.
+     * Throws {@link SecurityException} if the permission should not be
+     * granted to student code.  Subclasses may override this method,
+     * delegating to the base class implementation for permissions that
+     * they are not specifically trying to allow.
+     * 
+     * @param perm the {@link Permission} to check
+     * @throw {@link SecurityException} if the permission should not be granted to student code
+     */
+    protected void check(Permission perm) {
         // allow reading the line separator
         if (perm.getName().equals("line.separator") && perm.getActions().contains("read")) {
             return;
