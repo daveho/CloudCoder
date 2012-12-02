@@ -95,14 +95,14 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 		buf.append("end\n"); // end _test method
 		
 		String scaffoldedProgramText = buf.toString();
-		System.out.println(scaffoldedProgramText);
+		//System.out.println(scaffoldedProgramText);
 		
 		int scaffoldedNumLines = StringUtil.countLines(scaffoldedProgramText);
 		
 		int epilogueLength = scaffoldedNumLines - origNumLines;
 		
 		ProgramSource scaffoldedProgramSource = new ProgramSource(scaffoldedProgramText, 0, epilogueLength);
-		submission.addArtifact(scaffoldedProgramSource);
+		submission.addArtifact(new ProgramSource[]{scaffoldedProgramSource});
 	}
 
 }

@@ -25,6 +25,8 @@ import org.cloudcoder.builder2.javasandbox.IsolatedTask;
 import org.cloudcoder.builder2.util.TestResultUtil;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test a {@link ProblemType#RUBY_METHOD} submission on a given 
@@ -34,6 +36,8 @@ import org.jruby.embed.ScriptingContainer;
  * @author David Hovemeyer
  */
 public class RubyTester {
+	private static Logger logger = LoggerFactory.getLogger(RubyTester.class);
+	
 	/**
 	 * Execute the test and return the {@link TestResult} indicating whether the
 	 * test passed or failed.
@@ -46,6 +50,8 @@ public class RubyTester {
 		ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
 		
 		Object receiver = container.runScriptlet(testSource);
+		//System.out.println("testSource:");
+		//System.out.println(testSource);
 		
 		Object result_ = container.callMethod(receiver, "_test", testCase.getTestCaseName());
 		if (!(result_ instanceof Boolean)) {
