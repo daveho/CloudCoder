@@ -32,6 +32,8 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.ArrayUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.jruby.embed.LocalContextScope;
+import org.jruby.embed.ScriptingContainer;
 
 /**
  * Build step to test a {@link ProblemType#RUBY_METHOD} submission.
@@ -49,6 +51,14 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	// IsolatedTask.
 	static {
 		new RubyTester();
+		TestResultUtil.createResultForTimeout();
+		
+		// Compile and run a trivial ruby script, so that all needed JRuby classes are loaded
+		ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
+		Object result = container.runScriptlet("true");
+		if (!(result instanceof Boolean) || !(Boolean)result) {
+			throw new InternalBuilderException(TestRubyMethodBuildStep.class, "Failed to execute trivial Ruby script");
+		}
 	}
 
 	@Override
@@ -64,6 +74,7 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 		final String testSource = programSourceList[0].getProgramText();
 		
 		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
+		
 		if (testCaseList == null) {
 			throw new InternalBuilderException(this.getClass(), "No TestCase list");
 		}
@@ -94,6 +105,7 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 					}
 				}
 		);
+		pool.setThreadNamePrefix("RubyTest_"); // enable Ruby-specific security manager rules
 		pool.run();
 		
 		// merge outcomes with their buffered inputs for stdout/stderr

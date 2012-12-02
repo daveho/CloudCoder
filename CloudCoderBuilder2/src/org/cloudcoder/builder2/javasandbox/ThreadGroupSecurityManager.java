@@ -16,7 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package org.cloudcoder.builder2.javasandbox;
 
+import java.io.FilePermission;
 import java.security.Permission;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.PropertyPermission;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +50,7 @@ public class ThreadGroupSecurityManager extends SecurityManager
     
     public ThreadGroupSecurityManager(ThreadGroup threadGroup) {
         super();
+        logger.info("ThreadGroupSecurityManager created");
         this.checkedThreadGroup=threadGroup;
     }
     
@@ -78,6 +84,13 @@ public class ThreadGroupSecurityManager extends SecurityManager
     @Override
     public void checkCreateClassLoader() {
         if (isCheckedThreadGroup()) {
+        	String threadName = Thread.currentThread().getName();
+        	
+        	if (threadName.startsWith("RubyTest_")) {
+        		// FIXME: is this really necessary?
+        		return;
+        	}
+        	
             throw new SecurityException("Cannot create classloader");
         }
     }
@@ -98,17 +111,22 @@ public class ThreadGroupSecurityManager extends SecurityManager
         return false;
     }
     
-    /**
-     * Check given permission.
-     * Throws {@link SecurityException} if the permission should not be
-     * granted to student code.  Subclasses may override this method,
-     * delegating to the base class implementation for permissions that
-     * they are not specifically trying to allow.
-     * 
-     * @param perm the {@link Permission} to check
-     * @throw {@link SecurityException} if the permission should not be granted to student code
-     */
-    protected void check(Permission perm) {
+    private static Set<String> JRUBY_PERMS_ALLOW = new HashSet<String>();
+    static {
+    	// Various benign and scary permissions that are required to
+    	// execute code in JRuby
+    	// FIXME: is this necessary?
+    	JRUBY_PERMS_ALLOW.addAll(Arrays.asList(
+    			"os.name",
+    			"os.arch",
+    			"suppressAccessChecks",
+    			"java.util.logging.manager",
+    			"user.dir",
+    			"getProtectionDomain"
+    	));
+    }
+    
+    private void check(Permission perm) {
         // allow reading the line separator
         if (perm.getName().equals("line.separator") && perm.getActions().contains("read")) {
             return;
@@ -116,8 +134,26 @@ public class ThreadGroupSecurityManager extends SecurityManager
         if (perm.getName().equals("accessDeclaredMembers")) {
             return;
         }
+        
         if (isCheckedThreadGroup()) {
-            throw new SecurityException("Student code does not have permission to: " +perm.getName());
+            String threadName = Thread.currentThread().getName();
+    		if (threadName.startsWith("RubyTest_")) {
+    			// Ruby-specific access checks
+    	    	// FIXME: is this necessary?
+    			if (perm instanceof FilePermission && perm.getName().endsWith(".jar")) {
+    				return;
+    			}
+    			if (JRUBY_PERMS_ALLOW.contains(perm.getName())) {
+    				return;
+    			}
+    			if (perm instanceof PropertyPermission) {
+    				return;
+    			}
+            }
+
+            throw new SecurityException(
+            		"Student code does not have permission to: " +
+            		(perm.getClass().getSimpleName() + "/" + perm.getName()));
         }
         
     }

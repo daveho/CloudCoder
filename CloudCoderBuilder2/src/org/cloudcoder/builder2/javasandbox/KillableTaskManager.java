@@ -47,7 +47,10 @@ import org.slf4j.LoggerFactory;
  */
 public class KillableTaskManager<T>
 {
-    private static final Logger logger=LoggerFactory.getLogger(KillableTaskManager.class);
+
+	private static final Logger logger=LoggerFactory.getLogger(KillableTaskManager.class);
+	private static boolean securityManagerInstalled = false;
+	
     /** list of "isolated tasks" to be executed */
     private List<IsolatedTask<T>> tasks;
     /** List of Outcomes; essentially placeholders objects where tasks will put their results */
@@ -64,6 +67,7 @@ public class KillableTaskManager<T>
     /** All threads will be in a thread group of worker threads */
     public static final ThreadGroup WORKER_THREAD_GROUP=new ThreadGroup("WorkerThreads");
     public int numThreads=1;
+	private String threadNamePrefix;
 
     /**
      * Callback handler to create a new task outcome of type T
@@ -78,10 +82,24 @@ public class KillableTaskManager<T>
         public T handleTimeout();
     }
 
+    /**
+     * Constructor.
+     * Note that {@link #installSecurityManager()} must be called
+     * before instances of {@link KillableTaskManager} can be created.
+     * 
+     * @param tasks          tasks to run
+     * @param maxRunTime     maximum time to let any task run
+     * @param timeoutHandler callback to run if a timeout occurs
+     */
     public KillableTaskManager(List<IsolatedTask<T>> tasks, 
             long maxRunTime, 
             TimeoutHandler<T> timeoutHandler)
     {
+    	if (!securityManagerInstalled) {
+    		throw new IllegalStateException(
+    				"Must call KillableTaskManager.installSecurityManager() before creating instance");
+    	}
+    	
         this.tasks=tasks;
         this.maxRunTime=maxRunTime;
         this.timeoutHandler=timeoutHandler;
@@ -90,6 +108,19 @@ public class KillableTaskManager<T>
         for (int i=0; i<tasks.size(); i++) {
             results.add(new Outcome<T>());
         }
+        
+        this.threadNamePrefix = "Thread";
+    }
+    
+    /**
+     * Set the name prefix that will be used for the names of worker threads.
+     * Useful for allowing {@link ThreadGroupSecurityManager} to implement
+     * specialized rules for specific worker threads.
+     * 
+     * @param threadNamePrefix name prefix for names of worker threads
+     */
+    public void setThreadNamePrefix(String threadNamePrefix) {
+    	this.threadNamePrefix = threadNamePrefix;
     }
 
     public boolean isFinished(int x) {
@@ -216,7 +247,7 @@ public class KillableTaskManager<T>
          */
         public WorkerThread(IsolatedTask<E> task, Outcome<E> out)
         {
-            super(WORKER_THREAD_GROUP, "Thread"+(numThreads++));
+            super(WORKER_THREAD_GROUP, threadNamePrefix+(numThreads++));
             this.task=task;
             this.out=out;
         }
@@ -269,4 +300,19 @@ public class KillableTaskManager<T>
     public Map<Integer, String> getBufferedStderr() {
         return stdErrMap;
     }
+
+    /**
+     * Install the security manager needed by {@link KillableTaskManager}.
+     */
+	public static void installSecurityManager() {
+		if (!securityManagerInstalled) {
+			// So far the new system of extracting a PyFunction and passing
+			// that and the PythonInterpreter into the KillableThread seems to work.
+			// The main concern is that this requires removing any executable code that is
+			// not inside a method.
+			System.setSecurityManager(
+					new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
+			securityManagerInstalled  = true;
+		}
+	}
 }

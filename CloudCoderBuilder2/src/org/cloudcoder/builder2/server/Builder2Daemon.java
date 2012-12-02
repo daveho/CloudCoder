@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
 import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
@@ -107,6 +108,9 @@ public class Builder2Daemon implements IDaemon {
 			logger.error("Could not create WebappSocketFactory", e);
 			throw new IllegalStateException("Could not create WebappSocketFactory", e);
 		}
+		
+		// Install KillableTaskManager's security manager
+		KillableTaskManager.installSecurityManager();
 		
 		logger.info("Builder starting");
 		logger.info("appHost={}", options.getAppHost());

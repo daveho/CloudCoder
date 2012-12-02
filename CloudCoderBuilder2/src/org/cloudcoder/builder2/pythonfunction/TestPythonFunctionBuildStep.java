@@ -63,16 +63,6 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 	public static final Logger logger=LoggerFactory.getLogger(TestPythonFunctionBuildStep.class);
 	public static final long TIMEOUT_LIMIT=2000;
 
-	// FIXME: we need a different security manager for JRuby - how to allow? Can set per-thread?
-//	static {
-//		// So far the new system of extracting a PyFunction and passing
-//		// that and the PythonInterpreter into the KillableThread seems to work.
-//		// The main concern is that this requires removing any executable code that is
-//		// not inside a method.
-//		System.setSecurityManager(
-//				new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
-//	}
-
 	@Override
 	public void execute(BuilderSubmission submission) {
 		Tester tester = new Tester();
