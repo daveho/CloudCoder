@@ -16,6 +16,14 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 
+/**
+ * Convert a program to an AST and print it to a file format
+ * for a DOT file viewable with GraphViz.  This is primarily
+ * useful for testing and debugging.
+ * 
+ * @author jaimespacco
+ *
+ */
 public class ParseToDotFile extends ASTVisitor
 {
     private int nodes=0;
