@@ -163,6 +163,7 @@
         	<fileset dir="bin" includes="**"/>
         </delete>
     	<delete quiet="true" file="cloudcoderApp.jar"/>
+    	<delete file="dummy.properties"/>
     </target>
 	
 	<!-- Clean this target and all depended-on targets. -->
