@@ -63,10 +63,37 @@
 	</target>
 	
 	<!--
+		Determine which cloudcoder configuration properties should be included:
+		the real one (in the parent directory) or an automatically-generated dummy one
+		(used for distribution jarfiles.)
+	-->
+	<target name="whichCloudcoderProperties">
+		<condition property="cloudcoderProperties" value="dummy.properties" else="../cloudcoder.properties">
+			<isset property="distBuild"/>
+		</condition>
+	</target>
+	
+	<!--
+		Target to build a "distribution" jarfile containing a dummy cloudcoder.properties file. 
+	-->
+	<target name="distjar">
+		<!-- Set distBuild property. -->
+		<property name="distBuild" value="true"/>
+		
+		<!-- Ensure that the dummy properties file exists. -->
+		<propertyfile file="dummy.properties">
+			<entry key="dummy" value="true"/>
+		</propertyfile>
+		
+		<!-- Now we can call the normal jar target. -->
+		<antcall target="jar"/>
+	</target>
+	
+	<!--
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
 	-->
-	<target name="jar" depends="build,modelClasses,modelClassesPersistence,modelClassesJSON,webapp">
+	<target name="jar" depends="whichCloudcoderProperties,build,modelClasses,modelClassesPersistence,modelClassesJSON,webapp">
 		
 		<!--
 			Build single deployable jarfile containing our launcher code,
@@ -118,7 +145,7 @@
 			
 			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
 			<zipfileset
-				file="../cloudcoder.properties"
+				file="${cloudcoderProperties}"
 				fullpath="cloudcoder.properties"/>
 
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
