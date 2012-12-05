@@ -88,6 +88,16 @@ import org.eclipse.jdt.core.dom.WildcardType;
 
 public class FeatureVisitor extends ASTVisitor
 {
+    /*
+     * TODO
+     * Extract features from the AST using the visitor pattern.
+     * Probably need to create a list of features, and probably
+     * a feature class, and then have these visit methods create
+     * the features.
+     * 
+     * Not all of the visit methods will be necessary; for example,
+     * do we care about import statements or annotations?  Probably not.
+     */
 
     @Override
     public boolean visit(AnnotationTypeDeclaration node) {

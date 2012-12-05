@@ -23,15 +23,7 @@ public class ParseToDotFile extends ASTVisitor
     private Map<ASTNode,String> names=new HashMap<ASTNode,String>();
     private StringBuffer dotfile=new StringBuffer();
     
-    public static void main(String[] args) throws IOException
-    {
-        String filename="files/parser/MissingSemicolon.java";
-        //String filename="files/parser/A1.java";
-        //String filename="files/parser/Fragment.java";
-        String outfile="ast.dot";
-
-        parseToDotFile(filename, outfile);
-    }
+    
 
     private static String readFile(String filename) throws IOException 
     {
