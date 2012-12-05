@@ -26,6 +26,7 @@ public class RepoProblemTag {
 	private int userId;
 	private int repoProblemId;
 	private String name;
+	private int count; // note: transient, used only when returning aggregate tags with counts
 
 	/** {@link ModelObjectField} for user id. */
 	public static final ModelObjectField<RepoProblemTag, Integer> USER_ID = new ModelObjectField<RepoProblemTag, Integer>("user_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
@@ -43,7 +44,10 @@ public class RepoProblemTag {
 		public String get(RepoProblemTag obj) { return obj.getName(); }
 	};
 	
-	public static final ModelObjectSchema<RepoProblemTag> SCHEMA = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
+	/**
+	 * Description of fields (schema version 0).
+	 */
+	public static final ModelObjectSchema<RepoProblemTag> SCHEMA_V0 = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)
 			.add(NAME)
@@ -55,6 +59,11 @@ public class RepoProblemTag {
 					.addField(REPO_PROBLEM_ID)
 					.addField(NAME)
 					);
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<RepoProblemTag> SCHEMA = SCHEMA_V0;
 	
 	/**
 	 * Constructor.
@@ -108,5 +117,26 @@ public class RepoProblemTag {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Set the number of users who added this (aggregate) tag.
+	 * 
+	 * @param count the number of users who added this tag 
+	 */
+	public void setCount(int count) {
+		this.count = count;
+	}
+	
+	/**
+	 * Get the number of users who added this (aggregate) tag.
+	 * This is only valid for aggregate tags which summarize how many
+	 * users added a tag to a particular problem.
+	 * The getProblemTags() method in IDatabase returns aggregate tags.
+	 * 
+	 * @return the number of users who added this tag
+	 */
+	public int getCount() {
+		return count;
 	}
 }

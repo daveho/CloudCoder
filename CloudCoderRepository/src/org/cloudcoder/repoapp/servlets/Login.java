@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Login servlet.
@@ -34,11 +36,22 @@ import org.cloudcoder.app.shared.model.User;
  */
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Login.class);
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// Remove User object from session (if there is one).
 		ServletUtil.removeModelObject(req.getSession(), User.class);
+		
+		// Add redirectPath request attribute: specifies what page should
+		// be loaded on a successful login.
+		// Redirect to the original (referring) page, or "/index"
+		// if there was no referrer.
+		String referrer = req.getHeader("Referer"); // yes, it really is spelled "Referer"
+		String redirectPath = ServletUtil.getUrlPath(req, referrer, "/index");
+		req.setAttribute("redirectPath", redirectPath);
+		logger.info("Login: redirectPath={}", redirectPath);
 		
 		// Render the view (with the login form)
 		req.getRequestDispatcher("/_view/login.jsp").forward(req, resp);
@@ -55,13 +68,20 @@ public class Login extends HttpServlet {
 			if (user != null) {
 				ServletUtil.addModelObject(req.getSession(), user);
 				
-				// FIXME: should check to see if there is a request attribute specifying a redirect URI
-				ServletUtil.sendRedirect(getServletContext(), resp, "/index");
+				String redirectPath = req.getParameter("redirectPath");
+				if (redirectPath == null) {
+					// paranoia
+					redirectPath = "/index";
+				}
+				logger.info("Redirecting to {}", redirectPath);
+				
+				ServletUtil.sendRedirect(getServletContext(), resp, redirectPath);
 				return;
 			}
 			
 			// Authentication failure
 			req.setAttribute("username", username);
+			req.setAttribute("redirectPath", req.getParameter("redirectPath"));
 			req.setAttribute("error", "Username/password not found");
 		}
 

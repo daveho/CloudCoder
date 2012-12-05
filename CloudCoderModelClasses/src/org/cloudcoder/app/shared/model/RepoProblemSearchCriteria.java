@@ -27,7 +27,7 @@ import java.util.List;
  * @author David Hovemeyer
  */
 public class RepoProblemSearchCriteria {
-	private Language language;
+//	private Language language;
 	private List<String> tagList;
 	
 	/**
@@ -37,21 +37,21 @@ public class RepoProblemSearchCriteria {
 		tagList= new ArrayList<String>();
 	}
 
-	/**
-	 * Set the language to search for.
-	 * 
-	 * @param language the language to search for
-	 */
-	public void setLanguage(Language language) {
-		this.language = language;
-	}
-	
-	/**
-	 * @return the language to search for
-	 */
-	public Language getLanguage() {
-		return language;
-	}
+//	/**
+//	 * Set the language to search for.
+//	 * 
+//	 * @param language the language to search for
+//	 */
+//	public void setLanguage(Language language) {
+//		this.language = language;
+//	}
+//	
+//	/**
+//	 * @return the language to search for
+//	 */
+//	public Language getLanguage() {
+//		return language;
+//	}
 	
 	/**
 	 * Add a tag to search for.
@@ -78,6 +78,6 @@ public class RepoProblemSearchCriteria {
 	 * @return true if search criteria are empty, false otherwise
 	 */
 	public boolean isEmpty() {
-		return language == null && tagList.isEmpty();
+		return /*language == null &&*/ tagList.isEmpty();
 	}
 }

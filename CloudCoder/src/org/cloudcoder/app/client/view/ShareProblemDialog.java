@@ -20,19 +20,11 @@ package org.cloudcoder.app.client.view;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * Dialog for sharing an exercise to the exercise repository.
@@ -40,69 +32,30 @@ import com.google.gwt.user.client.ui.TextBox;
  * @author David Hovemeyer
  */
 public class ShareProblemDialog extends DialogBox {
-	private Label licenseNameLabel;
-	private Label licenseUrlLabel;
-	private Button shareButton;
-	private Button cancelButton;
-	private TextBox repoUsernameTextBox;
-	private PasswordTextBox repoPasswordTextBox;
-	private Label errorLabel;
-	
 	private ProblemAndTestCaseList exercise;
 	private ICallback<OperationResult> resultCallback;
+	private ShareProblemDialogPanel panel;
 	
 	public ShareProblemDialog() {
 		setTitle("Share problem");
 		setGlassEnabled(true);
+
+		this.panel = new ShareProblemDialogPanel();
+		add(panel);
 		
-		FlowPanel panel = new FlowPanel();
-		
-		HTML html = new HTML("Enter your exercise repository username and password. " +
-				"Then, click Share to upload this exercise to the exercise repository.");
-		html.setWidth("480px");
-		panel.add(html);
-		panel.add(new HTML("<br />"));
-		
-		// Labels for license name and URL
-		this.licenseNameLabel = new Label("");
-		this.licenseUrlLabel = new Label("");
-		panel.add(licenseNameLabel);
-		panel.add(licenseUrlLabel);
-		panel.add(new HTML("<br />"));
-		
-		// UI for entering repository username and password
-		panel.add(new InlineLabel("Repository username:"));
-		this.repoUsernameTextBox = new TextBox();
-		panel.add(repoUsernameTextBox);
-		panel.add(new HTML("<br />"));
-		
-		panel.add(new InlineLabel("Repository password:"));
-		this.repoPasswordTextBox = new PasswordTextBox();
-		panel.add(repoPasswordTextBox);
-		panel.add(new HTML("<br />"));
-		
-		this.errorLabel = new Label("");
-		panel.add(errorLabel);
-		
-		this.shareButton = new Button("Share!");
-		this.shareButton.addClickHandler(new ClickHandler() {
+		panel.setCancelButtonCallback(new Runnable() {
 			@Override
-			public void onClick(ClickEvent event) {
-				onClickShare();
-			}
-		});
-		this.cancelButton = new Button("Cancel");
-		this.cancelButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
+			public void run() {
 				hide();
 			}
 		});
 		
-		panel.add(shareButton);
-		panel.add(cancelButton);
-		
-		add(panel);
+		panel.setShareExerciseButtonCallback(new Runnable() {
+			@Override
+			public void run() {
+				onClickShare();
+			}
+		});
 	}
 	
 	/**
@@ -110,8 +63,9 @@ public class ShareProblemDialog extends DialogBox {
 	 */
 	public void setExercise(ProblemAndTestCaseList exercise) {
 		this.exercise = exercise;
-		licenseNameLabel.setText(exercise.getProblem().getLicense().getName());
-		licenseUrlLabel.setText(exercise.getProblem().getLicense().getUrl());
+		Problem problem = exercise.getProblem();
+		panel.setExerciseName(problem.getTestname() + " - " + problem.getBriefDescription());
+		panel.setExerciseLicense(problem.getLicense().getName());
 	}
 
 	/**
@@ -125,12 +79,12 @@ public class ShareProblemDialog extends DialogBox {
 	}
 
 	protected void onClickShare() {
-		String repoUsername = repoUsernameTextBox.getText();
-		String repoPassword = repoPasswordTextBox.getText();
+		String repoUsername = panel.getUsername();
+		String repoPassword = panel.getPassword();
 		
 		// Make sure that the repository username and password were entered correctly.
 		if (repoUsername.equals("") || repoPassword.equals("")) {
-			errorLabel.setText("Please enter your repository username and password");
+			panel.setErrorMessage("Please enter your repository username and password");
 			return;
 		}
 		

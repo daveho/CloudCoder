@@ -11,6 +11,7 @@ my @propertyNames = ();
 my %properties = ();
 my %prior = ();
 my $configRepoWebapp = 0;
+my $useDefaultKeystore = 0;
 
 if (scalar(@ARGV) >= 1) {
 	# If the "--repo" command-line argument is specified, then
@@ -86,14 +87,24 @@ askprop("What port will the CloudCoder webapp use to listen for connections from
 
 section("TLS/SSL (secure communication between webapp and builder(s)");
 
-askprop("What is the hostname of your institution?",
-	  "cloudcoder.submitsvc.ssl.cn", "None");
-askprop("What is the name of the keystore that will store your public/private keypair?\n" .
-	"(A new keystore will be created if it doesn't already exist)",
-	"cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
-askprop("What is the keystore/key password?",
-	"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
+my $useDefaultKeystoreYN = ask("Do you want to use the default keystore\n" .
+	"(Answer 'yes' for development, 'no' for production)", "no");
+print "\n";
+$useDefaultKeystore = (lc $useDefaultKeystoreYN) eq 'yes';
 
+if ($useDefaultKeystore) {
+	$properties{"cloudcoder.submitsvc.ssl.cn"} = 'None';
+	$properties{"cloudcoder.submitsvc.ssl.keystore"} = 'keystore.jks';
+	$properties{"cloudcoder.submitsvc.ssl.keystore.password"} = 'changeit';
+} else {
+	askprop("What is the hostname of your institution?",
+		  "cloudcoder.submitsvc.ssl.cn", "None");
+	askprop("What is the name of the keystore that will store your public/private keypair?\n" .
+		"(A new keystore will be created if it doesn't already exist)",
+		"cloudcoder.submitsvc.ssl.keystore", "keystore.jks");
+	askprop("What is the keystore/key password?",
+		"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
+}
 
 section("Web server properties (webapp)");
 
@@ -154,12 +165,17 @@ foreach my $property (@propertyNames) {
 $fh->close();
 print "Done!\n";
 
-# Create a keystore if it doesn't already exist.
-if (! -e $properties{'cloudcoder.submitsvc.ssl.keystore'}) {
-	run('./createKeystore.pl',
-		$properties{'cloudcoder.submitsvc.ssl.keystore'},
-		$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
-		$properties{'cloudcoder.submitsvc.ssl.cn'});
+if ($useDefaultKeystore) {
+	# Use the default keystore.
+	run("cp CloudCoderBuilder2/src/defaultkeystore.jks keystore.jks");
+} else {
+	# Create a keystore if it doesn't already exist.
+	if (! -e $properties{'cloudcoder.submitsvc.ssl.keystore'}) {
+		run('./createKeystore.pl',
+			$properties{'cloudcoder.submitsvc.ssl.keystore'},
+			$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
+			$properties{'cloudcoder.submitsvc.ssl.cn'});
+	}
 }
 
 sub section {

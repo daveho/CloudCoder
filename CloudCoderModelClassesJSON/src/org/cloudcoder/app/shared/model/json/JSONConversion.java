@@ -110,7 +110,7 @@ public class JSONConversion {
 	 * @param schema  the model object's schema
 	 * @return the object suitable for output as JSON
 	 */
-	public static<E> Object convertModelObjectToJSON(E obj, ModelObjectSchema<E> schema) {
+	public static<E> LinkedHashMap<String, Object> convertModelObjectToJSON(E obj, ModelObjectSchema<E> schema) {
 		LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
 		
 		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {

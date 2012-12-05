@@ -19,7 +19,6 @@ package org.cloudcoder.repoapp.servlets;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
@@ -85,16 +83,10 @@ public class Search extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setAttribute("problemTypes", ProblemType.values());
-
-		// Programming languages (for search by language)
-		req.setAttribute("languages", Language.values());
-		
-		// Javascript array mapping problem types to programming language names
+		// Javascript array mapping problem types to programming language names.
+		// This is needed so the view can report the language for each
+		// matched problem.
 		req.setAttribute("problemTypeToLanguage", PROBLEM_TYPE_TO_PROGRAMMING_LANGUAGE_MAP);
-		
-//		// Javascript array mapping problem type ordinals to problem type names
-//		req.setAttribute("problemTypeOrdinalToProblemTypeMap", PROBLEM_TYPE_ORDINAL_TO_PROBLEM_TYPE_MAP);
 		
 		req.getRequestDispatcher("/_view/search.jsp").forward(req, resp);
 	}
@@ -105,18 +97,7 @@ public class Search extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		
-		Language language = null;
-		String lang = req.getParameter("language");
-		if (lang != null && !lang.equals("ANY")) {
-			try {
-				language = Language.valueOf(lang);
-			} catch (NoSuchElementException e) {
-				// Hmm... 
-			}
-		}
-		
 		RepoProblemSearchCriteria searchCriteria = new RepoProblemSearchCriteria();
-		searchCriteria.setLanguage(language);
 		
 		// See if tags were specified
 		String selectedTags = req.getParameter("selectedTags");
@@ -126,7 +107,7 @@ public class Search extends HttpServlet {
 			// Split by whitespace
 			for (String rawTag : tags.split("\\s")) {
 				// Convert to lowercase and remove all non-alphanumeric characters
-				String normalizedTag = rawTag.toLowerCase().replaceAll("[^a-z0-9]", "");
+				String normalizedTag = ServletUtil.normalizeTag(rawTag);
 				searchCriteria.addTag(normalizedTag);
 				//System.out.println("Tag: " + normalizedTag);
 			}

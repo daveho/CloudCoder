@@ -22,12 +22,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.cloudcoder.app.shared.model.Language;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
@@ -39,127 +35,102 @@ import org.cloudcoder.app.shared.model.RepoProblemTag;
  * @author David Hovemeyer
  */
 public class RepoProblemSearch {
-	// Build a map of Languages to search clauses matching ProblemTypes
-	// using those languages.  The repository supports search by language
-	// rather than problem type (since that is probably more useful).
-	private static final Map<Language, String> LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP = new HashMap<Language, String>();
-	static {
-		for (ProblemType problemType : ProblemType.values()) {
-			Language language = problemType.getLanguage();
-			String clause = LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(language);
-			clause = (clause == null ? "" : clause + " or ") +
-					"rp." + RepoProblem.PROBLEM_TYPE.getName() + " = " + problemType.ordinal();
-			LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.put(language, clause);
-		}
-	}
-	
 	private RepoProblemSearchCriteria searchCriteria;
 	private List<RepoProblemSearchResult> searchResultList;
-	
+
+	/**
+	 * Constructor.
+	 */
 	public RepoProblemSearch() {
 		this.searchResultList = new ArrayList<RepoProblemSearchResult>();
 	}
-	
+
+	/**
+	 * Set the search criteria.
+	 * 
+	 * @param searchCriteria the {@link RepoProblemSearchCriteria}
+	 */
 	public void setSearchCriteria(RepoProblemSearchCriteria searchCriteria) {
 		this.searchCriteria = searchCriteria;
 	}
-	
+
+	/**
+	 * Execute the search.
+	 * 
+	 * @param conn        the database connection
+	 * @param dbRunnable  the {@link AbstractDatabaseRunnableNoAuthException} to use
+	 *                    to keep track of database resources
+	 * @throws SQLException
+	 */
 	public void execute(Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
-		// Special case: if neither language nor tags is specified,
+		// Special case: if no tags are specified,
 		// then the search criteria are invalid and we return no results.
 		// The client Javascript should refuse to submit such searches
 		// (and inform the user of the error).
 		if (searchCriteria.isEmpty()) {
 			return;
 		}
-		
-		if (searchCriteria.getTagList().isEmpty()) {
-			// Searching by language only
-			searchByLanguage(conn, dbRunnable);
-		} else {
-			// Search by tags and (maybe) language
-			StringBuilder sql = new StringBuilder()
-				.append("select rp.*, rpt.* ")
-				.append("  from ")
-				.append(RepoProblem.SCHEMA.getDbTableName())
-				.append(" as rp, ")
-				.append(RepoProblemTag.SCHEMA.getDbTableName())
-				.append(" as rpt ")
-				.append(" where rp.id = rpt.repo_problem_id and (");
-			
-			for (int i = 0; i < searchCriteria.getTagList().size(); i++) {
-				if (i > 0) {
-					sql.append(" or ");
-				}
-				sql.append("rpt.name = ?");
-			}
-			
-			sql.append(")");
-			
-			if (searchCriteria.getLanguage() != null) {
-				sql.append(" and (");
-				sql.append(LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
-				sql.append(")");
-			}
-			
-			sql.append(" order by rp." + RepoProblem.ID.getName() + " asc");
-			
-			String query = sql.toString();
-			System.out.println("query: " + query);
-			
-			PreparedStatement stmt = dbRunnable.prepareStatement(
-					conn,
-					query
-			);
 
-			int index = 1;
-			for (String tag : searchCriteria.getTagList()) {
-				stmt.setString(index++, tag);
+		// Search by tags and (maybe) language
+		StringBuilder sql = new StringBuilder()
+		.append("select rp.*, rpt.* ")
+		.append("  from ")
+		.append(RepoProblem.SCHEMA.getDbTableName())
+		.append(" as rp, ")
+		.append(RepoProblemTag.SCHEMA.getDbTableName())
+		.append(" as rpt ")
+		.append(" where rp.id = rpt.repo_problem_id and (");
+
+		for (int i = 0; i < searchCriteria.getTagList().size(); i++) {
+			if (i > 0) {
+				sql.append(" or ");
 			}
-			
-			ResultSet resultSet = dbRunnable.executeQuery(stmt);
-			
-			RepoProblemSearchResult curSearchResult = null;
-			
-			while (resultSet.next()) {
-				RepoProblem repoProblem = new RepoProblem();
-				DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
-				
-				if (curSearchResult == null || curSearchResult.getRepoProblem().getId() != repoProblem.getId()) {
-					curSearchResult = new RepoProblemSearchResult();
-					curSearchResult.setRepoProblem(repoProblem);
-					searchResultList.add(curSearchResult);
-				}
-				
-				RepoProblemTag repoProblemTag = new RepoProblemTag();
-				DBUtil.loadModelObjectFields(repoProblemTag, RepoProblemTag.SCHEMA, resultSet, RepoProblem.SCHEMA.getNumFields() + 1);
-				
-				curSearchResult.addMatchedTag(repoProblemTag.getName());
-				//System.out.println(curSearchResult.getRepoProblem().getTestname() + " => " + repoProblemTag.getName());
-			}
+			sql.append("rpt.name = ?");
 		}
-	}
 
-	protected void searchByLanguage(Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
-			throws SQLException {
+		sql.append(")");
+
+		sql.append(" order by rp." + RepoProblem.ID.getName() + " asc");
+
+		String query = sql.toString();
+		System.out.println("query: " + query);
+
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
-				" where " + LANGUAGE_TO_PROBLEM_TYPE_SEARCH_CLAUSE_MAP.get(searchCriteria.getLanguage()));
+				query
+				);
+
+		int index = 1;
+		for (String tag : searchCriteria.getTagList()) {
+			stmt.setString(index++, tag);
+		}
 
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+
+		RepoProblemSearchResult curSearchResult = null;
+
 		while (resultSet.next()) {
 			RepoProblem repoProblem = new RepoProblem();
 			DBUtil.loadModelObjectFields(repoProblem, RepoProblem.SCHEMA, resultSet);
-			
-			RepoProblemSearchResult searchResult = new RepoProblemSearchResult();
-			searchResult.setRepoProblem(repoProblem);
-			
-			searchResultList.add(searchResult);
+
+			if (curSearchResult == null || curSearchResult.getRepoProblem().getId() != repoProblem.getId()) {
+				curSearchResult = new RepoProblemSearchResult();
+				curSearchResult.setRepoProblem(repoProblem);
+				searchResultList.add(curSearchResult);
+			}
+
+			RepoProblemTag repoProblemTag = new RepoProblemTag();
+			DBUtil.loadModelObjectFields(repoProblemTag, RepoProblemTag.SCHEMA, resultSet, RepoProblem.SCHEMA.getNumFields() + 1);
+
+			curSearchResult.addMatchedTag(repoProblemTag.getName());
 		}
 	}
-	
+
+	/**
+	 * Get list of {@link RepoProblemSearchResult}s.
+	 * 
+	 * @return list of {@link RepoProblemSearchResult}s
+	 */
 	public List<RepoProblemSearchResult> getSearchResultList() {
 		return searchResultList;
 	}

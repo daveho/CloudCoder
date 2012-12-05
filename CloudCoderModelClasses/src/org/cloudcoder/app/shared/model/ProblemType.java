@@ -59,6 +59,10 @@ public enum ProblemType {
 	 */
 	JAVA_PROGRAM,
 	
+	/**
+	 * Problem involving writing a complete Ruby method.
+	 */
+	RUBY_METHOD,
 	;
 	
 	/**
@@ -77,6 +81,8 @@ public enum ProblemType {
 			return Language.C;
 		case C_PROGRAM:
 			return Language.C;
+		case RUBY_METHOD:
+			return Language.RUBY;
 		default:
 			throw new IllegalStateException("unknown ProblemType");
 		}

@@ -1,16 +1,36 @@
 <!DOCTYPE html>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="repo" %>
+<%@ taglib uri="/WEB-INF/repo.tld" prefix="repo" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 	<head>
 		<repo:headStuff title="Search the repository"></repo:headStuff>
-		<link rel="stylesheet" type="text/css" href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css"/>
-		<script type="text/javascript" src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="${pageContext.servletContext.contextPath}/css/jquery.dataTables.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css" />
+		<link
+			rel="stylesheet"
+			href="css/jquery.tagit.css"
+			type="text/css" />
+		<script
+			src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"
+			type="text/javascript"
+			charset="utf-8"></script>
+		<script
+			src="${pageContext.servletContext.contextPath}/js/tag-it.js"
+			type="text/javascript"
+			charset="utf-8"></script>
+		<script
+			type="text/javascript"
+			src="${pageContext.servletContext.contextPath}/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript">
 			var problemTypeToLanguage = ${problemTypeToLanguage};
-//			var problemTypeOrdinalToProblemTypeMap = ${problemTypeOrdinalToProblemTypeMap};
-			
+		
 			// How to format a raw RepoProblem JSON object as a tuple to be displayed in the
 			// search results DataTable.
 			var repoProblemConvertFields = [
@@ -26,8 +46,6 @@
 			
 			// Initiate an AJAX request to retrieve search results.
 			function onSubmit() {
-				var selectedLanguage = $("#selectedLanguage option:selected").attr('value');
-				
 				$("#status").attr('class', 'status-pending').text("Seaching...");
 				
 				var queryUri = "${pageContext.servletContext.contextPath}/search";
@@ -36,8 +54,7 @@
 					dataType: "json",
 					type: "post",
 					data: {
-						language: selectedLanguage,
-						selectedTags: $("#selectedTags").val()
+						selectedTags: $("#selectedTags").tagit("assignedTags").join(" ")
 					},
 					success: function(data, textStatus, jqXHR) {
 						// Result will be an array of JSON-encoded RepoProblemSearchResults
@@ -73,6 +90,26 @@
 		
 			$(document).ready(function() {
 				$("#searchButton").click(onSubmit);
+
+				// Use tag-it! on the selectedTags textbox.
+				// Ajax/autocomplete code shamelessly stolen from
+				// http://tag-it-autocomplete.heroku.com/
+				$("#selectedTags").tagit({
+				  tagSource: function(search, showChoices) {
+				    var that = this;
+				    $.ajax({
+				      url: "${pageContext.servletContext.contextPath}/suggestTags",
+				      data: {term: search.term},
+				      type: "GET",
+				      success: function(choices) {
+				        showChoices(that._subtractArray(choices, that.assignedTags()));
+				      }
+				    });
+				  }/*,
+				  show_tag_url: "/tags/",
+				  singleField: true,
+				  singleFieldNode: $('#submit_tag_names')*/
+				});
 				
 				// Enable DataTable on the search results table.
 				dataTable = $("#searchResultsTable").dataTable({
@@ -97,15 +134,7 @@
 		<repo:topBanner/>
 		<div id="content">
 			<h1>Search the exercise repository</h1>
-			<p>Select problem type and tags</p>
-			<p> Programming Language:
-			<select id="selectedLanguage">
-				<option value="ANY">Any Language</option>
-				<c:forEach var="language" items="${languages}">
-					<option value="${language}">${language.name}</option>
-				</c:forEach>
-			</select>
-			Tags:
+			<p> Enter tags (e.g., java, c, etc.):
 			<input id="selectedTags" type="text" size="60" />
 			</p>
 			

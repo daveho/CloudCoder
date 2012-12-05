@@ -33,6 +33,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
@@ -40,9 +41,9 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -55,6 +56,7 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -1251,6 +1253,14 @@ public class JDBCDatabase implements IDatabase {
 				ResultSet genKeys = getGeneratedKeys(stmt);
 				DBUtil.getModelObjectUniqueIds(exercise.getTestCaseData(), RepoTestCase.SCHEMA, genKeys);
 				
+				// Add a tag indicating the programming language
+				Language language = exercise.getProblem().getProblemType().getLanguage();
+				RepoProblemTag tag = new RepoProblemTag();
+				tag.setName(language.getTagName());
+				tag.setRepoProblemId(exercise.getProblem().getId());
+				tag.setUserId(user.getId());
+				doAddRepoProblemTag(conn, tag, this);
+				
 				return true;
 			}
 			@Override
@@ -1489,6 +1499,96 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " completing user registration request";
+			}
+		});
+	}
+	
+	@Override
+	public List<RepoProblemTag> getProblemTags(final int repoProblemId) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemTag>>() {
+			@Override
+			public List<RepoProblemTag> run(Connection conn) throws SQLException {
+				// Order the tags by decreasing order of popularity
+				// and (secondarily) ascending name order.
+				// Return at most 8 tags.
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select rpt.*, count(rpt." + RepoProblemTag.NAME.getName() + ") as count " +
+						"  from " + RepoProblemTag.SCHEMA.getDbTableName() + " as rpt " +
+						" where rpt." + RepoProblemTag.REPO_PROBLEM_ID.getName() + " = ? " +
+						" group by rpt." + RepoProblemTag.NAME.getName() + " " +
+						" order by count desc, rpt." + RepoProblemTag.NAME.getName() + " asc " +
+						" limit 8"
+						);
+				stmt.setInt(1, repoProblemId);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<RepoProblemTag> result = new ArrayList<RepoProblemTag>();
+				while (resultSet.next()) {
+					RepoProblemTag tag = new RepoProblemTag();
+					
+					loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
+					
+					// Because these tags are aggregated from (potentially) multiple
+					// records in the table, we set the user id to 0, so there is no
+					// confusion over whether the tag is linked to a specific user.
+					tag.setUserId(0);
+					
+					// Set the count (number of users who added this tag to this problem)
+					tag.setCount(resultSet.getInt(RepoProblemTag.SCHEMA.getNumFields() + 1));
+					
+					result.add(tag);
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " getting tags for repository exercise"; 
+			}
+		});
+	}
+	
+	@Override
+	public boolean addRepoProblemTag(final RepoProblemTag repoProblemTag) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				return doAddRepoProblemTag(conn, repoProblemTag, this);
+			}
+			
+			@Override
+			public String getDescription() {
+				return " adding tag to repository exercise";
+			}
+		});
+	}
+	
+	@Override
+	public List<String> suggestTagNames(final String term) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<String>>() {
+			@Override
+			public List<String> run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select distinct " + RepoProblemTag.NAME.getName() +
+						"  from " + RepoProblemTag.SCHEMA.getDbTableName() +
+						" where "+ RepoProblemTag.NAME.getName() + " like ? " +
+						" order by "+ RepoProblemTag.NAME.getName() + " asc"
+				);
+				stmt.setString(1, term + "%");
+				
+				List<String> result = new ArrayList<String>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					result.add(resultSet.getString(1));
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " suggesting tag names";
 			}
 		});
 	}
@@ -1929,6 +2029,44 @@ public class JDBCDatabase implements IDatabase {
 		CourseRegistration reg = new CourseRegistration();
 		DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
 		return reg;
+	}
+
+	/**
+	 * Add a {@link RepoProblemTag} to the database as part of a transaction.
+	 * 
+	 * @param conn             the database connection
+	 * @param repoProblemTag   the {@link RepoProblemTag} to add
+	 * @param databaseRunnable the transaction ({@link AbstractDatabaseRunnableNoAuthException})
+	 * @return true if the tag was added succesfully,
+	 *         false if the user has already added an identical tag
+	 * @throws SQLException
+	 */
+	protected Boolean doAddRepoProblemTag(
+			Connection conn,
+			RepoProblemTag repoProblemTag,
+			AbstractDatabaseRunnableNoAuthException<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
+				" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
+		);
+		
+		DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
+		
+		try {
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			if (e.getSQLState().equals("23000")) {
+				// failed due to duplicate key: this almost certainly means
+				// that the user has already added the same tag
+				return false;
+			} else {
+				// some other failure
+				throw e;
+			}
+		}
+		
+		return true;
 	}
 	
 	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {

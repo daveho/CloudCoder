@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<%@ taglib tagdir="/WEB-INF/tags" prefix="repo" %>
+<%@ taglib uri="/WEB-INF/repo.tld" prefix="repo" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
@@ -14,6 +14,7 @@
 	<body>
 		<repo:topBanner/>
 		<div id="content">
+			<h1>Log in to the CloudCoder exercise repository</h1>
 			<form action="${pageContext.servletContext.contextPath}/login" method="POST">
 				<table>
 					<tr>
@@ -24,8 +25,12 @@
 						<td>Password: </td>
 						<td><input name="password" type="password" size="20" /></td>
 					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="Log In!" /></td>
+					</tr>
 				</table>
-				<input type="submit" value="Log In!" />
+				<input type="hidden" name="redirectPath" value="${redirectPath}" />
 			</form>
 			<c:if test="${! empty error}">
 				<div class="error">${error}</div>

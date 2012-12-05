@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -362,5 +363,35 @@ public interface IDatabase {
 	public OperationResult completeRegistration(UserRegistrationRequest request);
 
 	public User getUserGivenId(int userId);
+
+	/**
+	 * Get the most popular tags for given {@link RepoProblem}.
+	 * Note that the tags returned are "aggregate" tags, meaning that
+	 * they represent all of the users who added a tag to a particular
+	 * problem.  As such, they contain a valid user count that can
+	 * be retrieved by calling {@link RepoProblemTag#getCount()}.
+	 * 
+	 * @param repoProblemId the unique id of the {@link RepoProblem}
+	 * @return the most popular tags
+	 */
+	public List<RepoProblemTag> getProblemTags(int repoProblemId);
+
+	/**
+	 * Add a {@link RepoProblemTag} which records a {@link User}'s tagging
+	 * of a repository exercise.
+	 * 
+	 * @param repoProblemTag the {@link RepoProblemTag} to add
+	 * @return true if adding the tag succeeded, false
+	 *         if the user has already added an identical tag
+	 */
+	public boolean addRepoProblemTag(RepoProblemTag repoProblemTag);
+
+	/**
+	 * Given a search term (partial tag name), suggest possible repository tag names.
+	 *  
+	 * @param term a search term (partial tag name)
+	 * @return list of possible tag names matching the search term
+	 */
+	public List<String> suggestTagNames(String term);
 
 }

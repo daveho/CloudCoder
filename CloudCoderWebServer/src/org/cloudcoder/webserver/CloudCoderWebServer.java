@@ -17,13 +17,7 @@
 
 package org.cloudcoder.webserver;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.cloudcoder.jetty.NestedJarClassLoader;
+import org.cloudcoder.jetty.WebServer;
 
 /**
  * Main entry point for the self-contained single-jar-file
@@ -31,36 +25,36 @@ import org.cloudcoder.jetty.NestedJarClassLoader;
  * 
  * @author David Hovemeyer
  */
-public class CloudCoderWebServer {
-	// Commands which invoke administrative programs.
-	private static final Map<String, String> programCommands = new HashMap<String, String>();
-	static {
-		programCommands.put("createdb", "org.cloudcoder.app.server.persist.CreateWebappDatabase");
-		programCommands.put("migratedb", "org.cloudcoder.app.server.persist.MigrateWebappDatabase");
-		programCommands.put("createcourse", "org.cloudcoder.app.server.persist.CreateCourse");
-		programCommands.put("registerstudents", "org.cloudcoder.app.server.persist.RegisterStudents");
-		programCommands.put("createuser", "org.cloudcoder.app.server.persist.CreateUser");
-		programCommands.put("configure", "org.cloudcoder.app.server.persist.ConfigureCloudCoder");
-		programCommands.put("listconfig", "org.cloudcoder.app.server.persist.ListCloudCoderProperties");
-		programCommands.put("help", "org.cloudcoder.app.server.persist.PrintHelp");
-		programCommands.put("-h", "org.cloudcoder.app.server.persist.PrintHelp");
-		programCommands.put("--help", "org.cloudcoder.app.server.persist.PrintHelp");
+public class CloudCoderWebServer extends WebServer {
+	
+	public CloudCoderWebServer() {
+		super(new CloudCoderDaemonController());
+
+		addAdminCommand("createdb", "org.cloudcoder.app.server.persist.CreateWebappDatabase",
+				"Create a fresh cloudcoder database using the current\n" +
+                "configuration settings in the jarfile that you are\n" +
+				"currently executing.  This should only be done once!");
+		addAdminCommand("migratedb", "org.cloudcoder.app.server.persist.MigrateWebappDatabase", 
+				"Update the currently existing database with any new\n" +
+				"tables or columns");
+		addAdminCommand("createcourse", "org.cloudcoder.app.server.persist.CreateCourse",
+				"Create a new course in the database of the CloudCoder\n" +
+				"installation");
+		addAdminCommand("registerstudents", "org.cloudcoder.app.server.persist.RegisterStudents",
+				"Register students defined in a a tab-delimited text file");
+		addAdminCommand("createuser", "org.cloudcoder.app.server.persist.CreateUser",
+				"Create a new user account in database of the CloudCoder\n" +
+				"installation");
+		addAdminCommand("configure", "org.cloudcoder.app.server.persist.ConfigureCloudCoder",
+				"Set new configuration parameters in the CloudCoder\n" +
+				"jarfile. Parameters can be read interactively or can\n" +
+				"be set in a properties file named cloudcoder.properties");
+		addAdminCommand("listconfig", "org.cloudcoder.app.server.persist.ListCloudCoderProperties",
+				"Lists configuration parameters set in the current\n" +
+				"CloudCoder jarfile");
 	}
 	
 	public static void main(String[] args) throws Exception {
-		if (args.length >= 1 && programCommands.containsKey(args[0])) {
-			// Collect command line arguments to send to the administrative program
-			List<String> cmdLineArgs = new LinkedList<String>(Arrays.asList(args));
-			cmdLineArgs.remove(0);
-			
-			// Run the administrative program.
-			NestedJarClassLoader.runMain(CloudCoderWebServer.class, programCommands.get(args[0]), cmdLineArgs);
-		} else {
-			// Otherwise, use the CloudCoderDaemonController to handle the command.
-			// CloudCoderDaemonController handles requests to start/control/shutdown
-			// the webapp (and its web server).
-			CloudCoderDaemonController controller = new CloudCoderDaemonController();
-			controller.exec(args);
-		}
+		new CloudCoderWebServer().handleCommand(args);
 	}
 }

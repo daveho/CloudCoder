@@ -3,6 +3,12 @@
 
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
+  
+  <!--
+    Fixes for Firefox layout bugs
+    (see http://code.google.com/p/google-web-toolkit/issues/detail?id=4348) 
+   -->
+  <inherits name='com.google.gwt.layout.Hajo2' />
 
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->

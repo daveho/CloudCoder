@@ -48,6 +48,7 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -98,12 +99,12 @@ public class EditProblemPage extends CloudCoderPage {
 			this.pageLabel = new Label("");
 			pageLabel.setStyleName("cc-courseLabel");
 			northPanel.add(pageLabel);
-			northPanel.setWidgetLeftRight(pageLabel, 0.0, Unit.PX, PageNavPanel.WIDTH, PageNavPanel.WIDTH_UNIT);
+			northPanel.setWidgetLeftRight(pageLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Style.Unit.PX);
 			northPanel.setWidgetTopBottom(pageLabel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.pageNavPanel = new PageNavPanel();
 			northPanel.add(pageNavPanel);
-			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH, Unit.PX);
+			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			northPanel.setWidgetTopBottom(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			Button saveButton = new Button("Save problem!");
@@ -118,7 +119,7 @@ public class EditProblemPage extends CloudCoderPage {
 			northPanel.setWidgetLeftWidth(saveButton, 0.0, Unit.PX, 140.0, Unit.PX);
 			northPanel.setWidgetBottomHeight(saveButton, 0.0, Unit.PX, SAVE_BUTTON_HEIGHT_PX, Unit.PX);
 			
-			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT + SAVE_BUTTON_HEIGHT_PX);
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + SAVE_BUTTON_HEIGHT_PX);
 			
 			// At bottom of page, show a StatusMessageView
 			this.statusMessageView = new StatusMessageView();
