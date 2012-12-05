@@ -8,7 +8,7 @@ public class TestParser
     @Test
     public void testFeatureExtract() throws Exception
     {
-        String filePath="files/parser/MissingSemicolon.java";
+        String filePath="testing/features/java/MissingSemicolon.java";
         FeatureVisitor visitor=new FeatureVisitor();
         visitor.extractFeatures(filePath);
     }
