@@ -77,8 +77,6 @@ my @deps = (
 	  [ "CloudCoderJetty/lib/jetty/jetty-websocket-7.4.4.v20110707.jar" ] ],
 	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-xml/7.4.4.v20110707/jetty-xml-7.4.4.v20110707.jar",
 	  [ "CloudCoderJetty/lib/jetty/jetty-xml-7.4.4.v20110707.jar" ] ],
-#	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/7.4.4.v20110707/servlet-api-2.5.jar",
-#	  [ "CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" ] ],
 	[ "http://repo1.maven.org/maven2/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar",
 	  [ "CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" ] ],
 	[ "http://download.eclipse.org/jetty/orbit/com.sun.el_1.0.0.v201004190952.jar",
