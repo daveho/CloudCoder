@@ -178,7 +178,7 @@ sub FetchAll {
 
 sub Download {
 	my ($jar, $toFile) = @_;
-	my $dir = Dir($jar);
+	my $dir = Dir($toFile);
 	if ($dir ne '' && (! -d $dir)) {
 		Run('mkdir', '-p', $dir);
 	}
