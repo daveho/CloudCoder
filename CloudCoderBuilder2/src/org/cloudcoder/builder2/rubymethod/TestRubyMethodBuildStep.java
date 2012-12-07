@@ -32,6 +32,7 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.ArrayUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.jruby.Ruby;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 
@@ -52,6 +53,9 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	static {
 		new RubyTester();
 		TestResultUtil.createResultForTimeout();
+		
+		// Let JRuby know that we'll be running with a security manager
+		Ruby.setSecurityRestricted(true);
 		
 		// Compile and run a trivial ruby script, so that all needed JRuby classes are loaded
 		ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
