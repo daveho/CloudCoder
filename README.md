@@ -1,3 +1,4 @@
-For more information about CloudCoder, see the website:
+CloudCoder is an open-source web-based programming exercise system.
 
-> <http://cloudcoder.org/>
+You can find more information on the [CloudCoder website](http://cloudcoder.org/)
+and on the [CloudCoder wiki](https://github.com/cloudcoderdotorg/CloudCoder/wiki).
