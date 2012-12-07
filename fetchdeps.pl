@@ -32,6 +32,69 @@ my @deps = (
 	    "CloudCoderBuilder/lib/daemon.jar" ] ],
 	[ "http://jruby.org.s3.amazonaws.com/downloads/1.7.0/jruby-complete-1.7.0.jar",
 	  [ "CloudCoderBuilder2/lib/jruby-complete-1.7.0.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-ajp/7.4.4.v20110707/jetty-ajp-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-ajp-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-annotations/7.4.4.v20110707/jetty-annotations-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-annotations-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-client/7.4.4.v20110707/jetty-client-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-client-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-continuation/7.4.4.v20110707/jetty-continuation-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-continuation-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-deploy/7.4.4.v20110707/jetty-deploy-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-deploy-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/7.4.4.v20110707/jetty-http-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-http-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/7.4.4.v20110707/jetty-io-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-io-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jmx/7.4.4.v20110707/jetty-jmx-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-jmx-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jndi/7.4.4.v20110707/jetty-jndi-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-jndi-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-overlay-deployer/7.4.4.v20110707/jetty-overlay-deployer-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-overlay-deployer-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-plus/7.4.4.v20110707/jetty-plus-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-plus-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-policy/7.4.4.v20110707/jetty-policy-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-policy-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-rewrite/7.4.4.v20110707/jetty-rewrite-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-rewrite-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/7.4.4.v20110707/jetty-security-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-security-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/7.4.4.v20110707/jetty-server-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-server-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlet/7.4.4.v20110707/jetty-servlet-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-servlet-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/7.4.4.v20110707/jetty-servlets-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-servlets-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/7.4.4.v20110707/jetty-util-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-util-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-webapp/7.4.4.v20110707/jetty-webapp-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-webapp-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-websocket/7.4.4.v20110707/jetty-websocket-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-websocket-7.4.4.v20110707.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-xml/7.4.4.v20110707/jetty-xml-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jetty-xml-7.4.4.v20110707.jar" ] ],
+#	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/7.4.4.v20110707/servlet-api-2.5.jar",
+#	  [ "CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" ] ],
+	[ "http://repo1.maven.org/maven2/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar",
+	  [ "CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/com.sun.el_1.0.0.v201004190952.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/com.sun.el_1.0.0.v201004190952.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/ecj-3.6.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/ecj-3.6.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/javax.el_2.1.0.v201004190952.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/javax.el_2.1.0.v201004190952.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/javax.servlet.jsp_2.1.0.v201004190952.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/javax.servlet.jsp_2.1.0.v201004190952.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/javax.servlet.jsp.jstl_1.2.0.v201004190952.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/javax.servlet.jsp.jstl_1.2.0.v201004190952.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/org.apache.jasper.glassfish_2.1.0.v201007080150.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/org.apache.jasper.glassfish_2.1.0.v201007080150.jar" ] ],
+	[ "http://download.eclipse.org/jetty/orbit/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar" ] ],
+	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jsp-2.1/7.4.4.v20110707/jetty-jsp-2.1-7.4.4.v20110707.jar",
+	  [ "CloudCoderJetty/lib/jetty/jsp/jetty-jsp-2.1-7.4.4.v20110707.jar" ] ],
+
 );
 
 my $delete = 0;
@@ -77,8 +140,12 @@ sub FetchAll {
 	
 		# If there are needed targets...
 		if (scalar(@neededTargets) > 0) {
-			# Download the jar
-			my $t = Download($download);
+			# Download the jar (if it's not already in the deps directory)
+			my $jar = File($download);
+			my $t = "deps/$jar";
+			if (! -e $t) {
+				Download($download, $t);
+			}
 			# Copy it to all needed targets
 			foreach my $neededTarget (@neededTargets) {
 				Copy($t, $neededTarget);
@@ -88,12 +155,14 @@ sub FetchAll {
 }
 
 sub Download {
-	my ($jar) = @_;
-	Run('mkdir', '-p', 'deps');
+	my ($jar, $toFile) = @_;
+	my $dir = Dir($jar);
+	if ($dir ne '' && (! -d $dir)) {
+		Run('mkdir', '-p', $dir);
+	}
 	my $file = File($jar);
 	print "Fetching $jar...\n";
-	Run('wget', $jar, "--output-document=deps/$file");
-	return "deps/$file";
+	Run('wget', $jar, "--output-document=$toFile");
 }
 
 sub Copy {
@@ -108,7 +177,15 @@ sub File {
 	return $1;
 }
 
+sub Dir {
+	my ($jar) = @_;
+	my $dir = ($jar =~ m,^(.*)/[^/]+$,) ? $1 : '';
+	return $1;
+}
+
 sub Run {
 	my @cmd = @_;
-	system(@cmd)/256 == 0 || die "Could not run command: " . join(@cmd, ' ') . "\n";
+	system(@cmd)/256 == 0 || die ("Could not run command: " . join(@cmd, ' ') . "\n");
 }
+
+# vim:ts=2:
