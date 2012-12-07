@@ -89,11 +89,11 @@ sub FetchAll {
 
 sub Download {
 	my ($jar) = @_;
-	Run('mkdir', '-p', 'tmp');
+	Run('mkdir', '-p', 'deps');
 	my $file = File($jar);
 	print "Fetching $jar...\n";
-	Run('wget', $jar, "--output-document=tmp/$file");
-	return "tmp/$file";
+	Run('wget', $jar, "--output-document=deps/$file");
+	return "deps/$file";
 }
 
 sub Copy {
