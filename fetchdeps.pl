@@ -97,10 +97,7 @@ sub FetchAll {
 
 sub Download {
 	my ($jar, $toFile) = @_;
-	my $dir = Dir($toFile);
-	if ($dir ne '' && (! -d $dir)) {
-		Run('mkdir', '-p', $dir);
-	}
+	EnsureDirExists($toFile);
 	my $file = File($jar);
 	print "Fetching $jar...\n";
 	Run('wget', $jar, "--output-document=$toFile");
@@ -109,6 +106,7 @@ sub Download {
 sub Copy {
 	my ($file, $target) = @_;
 	print "Copying $file to $target...\n";
+	EnsureDirExists($target);
 	Run('cp', $file, $target);
 }
 
@@ -176,6 +174,14 @@ sub ListTargets {
 		foreach my $target (@{$d->[1]}) {
 			print "$target\n";
 		}
+	}
+}
+
+sub EnsureDirExists {
+	my ($toFile) = @_;
+	my $dir = Dir($toFile);
+	if ($dir ne '' && (! -d $dir)) {
+		Run('mkdir', '-p', $dir);
 	}
 }
 
