@@ -21,13 +21,15 @@ use strict;
 
 # Handle command line options.
 my $depsFile = 'default.deps';
-my $delete = 0;
+my $mode = 'fetch';
 if (scalar(@ARGV) > 0) {
 	my $arg = shift @ARGV;
 	if ($arg =~ /^--deps=(.*)$/) {
 		$depsFile = $1;
 	} elsif ($arg eq '--delete') {
-		$delete = 1;
+		$mode = 'delete';
+	} elsif ($arg eq '--list-targets') {
+		$mode = 'list';
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -38,10 +40,12 @@ my @deps = ReadDeps($depsFile);
 #PrintDeps(@deps);
 #exit 0;
 
-if ($delete) {
-	DeleteTargets();
-} else {
+if ($mode eq 'fetch') {
 	FetchAll();
+} elsif ($mode eq 'delete') {
+	DeleteTargets();
+} elsif ($mode eq 'list') {
+	ListTargets(@deps);
 }
 
 sub DeleteTargets {
@@ -164,6 +168,15 @@ sub PrintDeps {
 		}
 	}
 	exit 0;
+}
+
+sub ListTargets {
+	my @deps = @_;
+	foreach my $d (@deps) {
+		foreach my $target (@{$d->[1]}) {
+			print "$target\n";
+		}
+	}
 }
 
 # vim:ts=2:
