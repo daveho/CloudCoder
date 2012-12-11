@@ -19,6 +19,7 @@ package org.cloudcoder.app.server.persist;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,8 +27,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -44,7 +48,12 @@ import java.util.zip.ZipOutputStream;
  */
 public class ConfigureCloudCoder
 {
-	private interface Condition {
+	private static final String CLOUDCODER_SUBMITSVC_SSL_KEYSTORE_PASSWORD = "cloudcoder.submitsvc.ssl.keystore.password";
+    private static final String CLOUDCODER_SUBMITSVC_SSL_CN = "cloudcoder.submitsvc.ssl.cn";
+    private static final String CLOUDCODER_SUBMITSVC_SSL_KEYSTORE = "cloudcoder.submitsvc.ssl.keystore";
+    private static final String KEYSTORE_PATH="war/WEB-INF/classes";
+
+    private interface Condition {
 		boolean evaluate();
 	}
 
@@ -135,14 +144,14 @@ public class ConfigureCloudCoder
 						"Builders?",
 						"cloudcoder.submitsvc.oop.port", "47374"),
 
-				section("TLS/SSL (secure communication between webapp and builder(s)"),
+				section("TLS/SSL (secure communication between webapp and builder(s))"),
 				askprop("What is the hostname of your institution?",
-						"cloudcoder.submitsvc.ssl.cn", "None"),
+						CLOUDCODER_SUBMITSVC_SSL_CN, "None"),
 				askprop("What is the name of the keystore that will store your public/private keypair?\n" +
 						"(A new keystore will be created if it doesn't already exist)",
-						"cloudcoder.submitsvc.ssl.keystore", "keystore.jks"),
+						CLOUDCODER_SUBMITSVC_SSL_KEYSTORE, "keystore.jks"),
 				askprop("What is the keystore/key password?",
-						"cloudcoder.submitsvc.ssl.keystore.password", "changeit"),
+						CLOUDCODER_SUBMITSVC_SSL_KEYSTORE_PASSWORD, "changeit"),
 
 				section("Web server properties (webapp)"),
 				askprop("What port will the CloudCoder web server listen on?",
@@ -228,7 +237,7 @@ public class ConfigureCloudCoder
 					continue;
 				}
 
-				String defval = origConfig.containsKey(setting.name) ? origConfig.getProperty(setting.name) : setting.defval;
+				String defval = origConfig!=null && origConfig.containsKey(setting.name) ? origConfig.getProperty(setting.name) : setting.defval;
 
 				String value;
 				if (defval != null) {
@@ -240,37 +249,67 @@ public class ConfigureCloudCoder
 				config.setProperty(setting.name, value);
 			}
 		}
-
+		
 		// Create the new configured jarfile
 		String jarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing all of the code for CloudCoder?", "cloudcoderApp.jar");
-		copyJarfileWithNewProperties(jarfileName, "cloudcoder.properties");
-		System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+jarfileName);
-
+		// Map from paths in the jarfile that are to be replaced, 
+		// and the local files that will replace them.
+		// So we may have "war/WEB-INF/classes/keystore.jks" mapped to the file "new-keystore.jks"
+		// which means that the bytes in new-keystore.jks will replace war/WEB-INF/classes/keystore.jks
+		Map<String,File> fileToUpdate=new HashMap<String,File>();
+		fileToUpdate.put("cloudcoder.properties", new File("cloudcoder.properties"));
+		
+		String createNewKeystore=ConfigurationUtil.ask(keyboard, "Would you like to create a new keystore?", "no");
+		if (ConfigurationUtil.YES.equals(createNewKeystore)) {
+		    // Create a new keystore!
+		    // First, get the name of the keystore
+		    String keystore=config.getProperty(CLOUDCODER_SUBMITSVC_SSL_KEYSTORE);
+		    if (new File(keystore).exists()) {
+		        String overwrite=ConfigurationUtil.ask(keyboard, 
+		                "The file "+keystore+" already exists.  Do you want to overwrite this file with a new keystore?",
+		                "no");
+		        if (ConfigurationUtil.YES.equals(overwrite)) {
+		            String commonName=config.getProperty(CLOUDCODER_SUBMITSVC_SSL_CN);
+		            String storePassword=config.getProperty(CLOUDCODER_SUBMITSVC_SSL_KEYSTORE_PASSWORD);
+		            KeystoreUtil.createKeyStore(commonName,storePassword,keystore);
+		            // add an entry to the map so that the keystore is replaced
+		            fileToUpdate.put(KEYSTORE_PATH+File.separator+keystore, new File(keystore));
+		        }
+		    }
+		}
+		updateJarfileWithNewData(jarfileName, fileToUpdate);
+        System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+jarfileName);
+		
+		
 		String configBuilder=ConfigurationUtil.ask(keyboard, "Would you like to set these configuration properties for your CloudCoder builder?",ConfigurationUtil.YES);
 		if (configBuilder.equals(ConfigurationUtil.YES)) {
 			String buildJarfileName=ConfigurationUtil.ask(keyboard, "What is the name of the jarfile containing the code for the CloudCoder builder?", "cloudcoderBuilder.jar");
-			copyJarfileWithNewProperties(buildJarfileName, "cloudcoder.properties");
+			updateJarfileWithNewData(buildJarfileName, fileToUpdate);
 			System.out.println("Wrote new configuration properties to cloudcoder.properties contained in jarfile "+buildJarfileName);
 		}
-
 	}
 
 	/**
 	 * copy input to output stream - available in several StreamUtils or Streams classes 
 	 */    
 	private void copy(InputStream input, OutputStream output)
-			throws IOException
-			{
+	throws IOException			
+	{
 		int bytesRead;
 		while ((bytesRead = input.read(BUFFER))!= -1) {
 			output.write(BUFFER, 0, bytesRead);
 		}
-			}
+		output.flush();
+	}
 	private final byte[] BUFFER = new byte[4096 * 1024];
 
-	private void copyJarfileWithNewProperties(String jarfileName, String propertiesFileName)
-			throws Exception
-			{
+	private void updateJarfileWithNewData(String jarfileName, 
+	    Map<String,File> filesToUpdate)
+	throws Exception
+	{
+	    // Update files if they already exist
+	    // otherwise adds new files to the jarfile
+	        
 		// read in jarfileName, and replace propertiesFileName with newProps
 		ZipFile jarfile = new ZipFile(jarfileName);
 		ByteArrayOutputStream bytes=new ByteArrayOutputStream();
@@ -283,6 +322,9 @@ public class ConfigureCloudCoder
 		// other folders.
 		Set<String> alreadySeen=new HashSet<String>();
 
+		Map<String,File> filesToUpdateCopy=new HashMap<String,File>();
+		filesToUpdateCopy.putAll(filesToUpdate);
+		
 		// first, copy contents from existing war
 		Enumeration<? extends ZipEntry> entries = jarfile.entries();
 		while (entries.hasMoreElements()) {
@@ -293,11 +335,12 @@ public class ConfigureCloudCoder
 			}
 			//System.out.println("copy: " + e.getName());
 
-			if (e.getName().equals(propertiesFileName)) {
+			if (filesToUpdateCopy.containsKey(e.getName())) {
 				// If we find the file we're interested in, copy it!
-				ZipEntry newEntry = new ZipEntry(propertiesFileName);
+				ZipEntry newEntry = new ZipEntry(e.getName());
 				newJarfileData.putNextEntry(newEntry);
 				config.store(newJarfileData, "");
+				filesToUpdateCopy.remove(e.getName());
 			} else {
 				newJarfileData.putNextEntry(e);
 				if (!e.isDirectory()) {
@@ -308,6 +351,14 @@ public class ConfigureCloudCoder
 			newJarfileData.closeEntry();
 		}
 
+		// Add new files
+		for (Entry<String,File> entry : filesToUpdateCopy.entrySet()) {
+		    ZipEntry e=new ZipEntry(entry.getKey());
+		    newJarfileData.putNextEntry(e);
+		    copy(new FileInputStream(entry.getValue()), newJarfileData);
+		    newJarfileData.closeEntry();
+		}
+		
 		// close
 		newJarfileData.close();
 		bytes.flush();
@@ -315,14 +366,15 @@ public class ConfigureCloudCoder
 		jarfile.close();
 
 		// copy over the file with new version we had just changed
-		FileOutputStream out=new FileOutputStream(jarfileName);
-		ByteArrayInputStream in=new ByteArrayInputStream(bytes.toByteArray());
-		copy(in, out);
+        FileOutputStream out=new FileOutputStream(jarfileName);
+        ByteArrayInputStream in=new ByteArrayInputStream(bytes.toByteArray());
+        copy(in, out);
 
-		out.close();
-			}
+        out.close();
+	}
 
 	public static void main(String[] args) throws Exception {
+	    System.setIn(new FileInputStream("inputs.txt"));
 		ConfigureCloudCoder configureCloudCoder = new ConfigureCloudCoder();
 		if (args.length == 1 && args[0].equals("--repo")) {
 			configureCloudCoder.configureRepository = true;
