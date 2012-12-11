@@ -1,138 +1,51 @@
-#! /usr/bin/perl
+#! /usr/bin/perl -w
 
-# Fetch all external jarfiles needed by CloudCoder and copy
-# them to the correct place.  We have some fairly heavy external
-# dependencies, and github has a limit on repository size.
+use FileHandle;
+use strict;
 
-# List of all external jarfiles and the targets (filenames to which
-# they should be copied.)
-my @deps = (
-	[ "http://mirrors.ibiblio.org/pub/mirrors/maven2/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar",
-	  [ "CloudCoderLogging/lib/jsr305.jar" ] ],
-	[ "http://search.maven.org/remotecontent?filepath=com/google/guava/guava/13.0.1/guava-13.0.1.jar",
-	  [ "CloudCoderLogging/lib/guava.jar" ] ],
-	[ "http://mirrors.ibiblio.org/maven2/log4j/log4j/1.2.16/log4j-1.2.16.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/log4j-1.2.16.jar",
-	    "CloudCoderLogging/lib/log4j-1.2.16.jar" ] ],
-	[ "http://owasp-java-html-sanitizer.googlecode.com/svn-history/r118/trunk/distrib/lib/owasp-java-html-sanitizer.jar",
-	  [ "CloudCoderLogging/lib/owasp-java-html-sanitizer.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.6.4/slf4j-api-1.6.4.jar",
-	  [ "CloudCoderLogging/lib/slf4j-api-1.6.4.jar",
-	    "CloudCoder/war/WEB-INF/lib/slf4j-api-1.6.4.jar" ] ],
-	[ "http://repo2.maven.org/maven2/org/slf4j/slf4j-log4j12/1.6.4/slf4j-log4j12-1.6.4.jar",
-	  [ "CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar",
-	    "CloudCoder/war/WEB-INF/lib/slf4j-log4j12-1.6.4.jar" ] ],
-	[ "http://repo1.maven.org/maven2/commons-io/commons-io/2.1/commons-io-2.1.jar",
-	  [ "CloudCoderBuilder/lib/commons-io-2.1.jar",
-	    "CloudCoderBuilder2/lib/commons-io-2.1.jar",
-	    "CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/python/jython-standalone/2.5.2/jython-standalone-2.5.2.jar",
-	  [ "CloudCoderBuilder/lib/jython.jar",
-	    "CloudCoderBuilder2/lib/jython.jar" ] ],
-	[ "https://github.com/downloads/daveho/Daemon/daemon-0.1.jar",
-	  [ "CloudCoderJetty/lib/daemon/daemon.jar",
-	    "CloudCoderBuilder2/lib/daemon.jar",
-	    "CloudCoderBuilder/lib/daemon.jar" ] ],
-	[ "http://jruby.org.s3.amazonaws.com/downloads/1.7.0/jruby-complete-1.7.0.jar",
-	  [ "CloudCoderBuilder2/lib/jruby-complete-1.7.0.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-ajp/7.4.4.v20110707/jetty-ajp-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-ajp-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-annotations/7.4.4.v20110707/jetty-annotations-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-annotations-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-client/7.4.4.v20110707/jetty-client-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-client-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-continuation/7.4.4.v20110707/jetty-continuation-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-continuation-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-deploy/7.4.4.v20110707/jetty-deploy-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-deploy-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/7.4.4.v20110707/jetty-http-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-http-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/7.4.4.v20110707/jetty-io-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-io-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jmx/7.4.4.v20110707/jetty-jmx-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-jmx-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jndi/7.4.4.v20110707/jetty-jndi-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-jndi-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-overlay-deployer/7.4.4.v20110707/jetty-overlay-deployer-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-overlay-deployer-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-plus/7.4.4.v20110707/jetty-plus-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-plus-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-policy/7.4.4.v20110707/jetty-policy-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-policy-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-rewrite/7.4.4.v20110707/jetty-rewrite-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-rewrite-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/7.4.4.v20110707/jetty-security-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-security-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/7.4.4.v20110707/jetty-server-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-server-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlet/7.4.4.v20110707/jetty-servlet-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-servlet-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/7.4.4.v20110707/jetty-servlets-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-servlets-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/7.4.4.v20110707/jetty-util-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-util-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-webapp/7.4.4.v20110707/jetty-webapp-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-webapp-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-websocket/7.4.4.v20110707/jetty-websocket-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-websocket-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-xml/7.4.4.v20110707/jetty-xml-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jetty-xml-7.4.4.v20110707.jar" ] ],
-	[ "http://repo1.maven.org/maven2/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar",
-	  [ "CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/com.sun.el_1.0.0.v201004190952.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/com.sun.el_1.0.0.v201004190952.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/ecj-3.6.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/ecj-3.6.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/javax.el_2.1.0.v201004190952.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/javax.el_2.1.0.v201004190952.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/javax.servlet.jsp_2.1.0.v201004190952.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/javax.servlet.jsp_2.1.0.v201004190952.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/javax.servlet.jsp.jstl_1.2.0.v201004190952.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/javax.servlet.jsp.jstl_1.2.0.v201004190952.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/org.apache.jasper.glassfish_2.1.0.v201007080150.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/org.apache.jasper.glassfish_2.1.0.v201007080150.jar" ] ],
-	[ "http://download.eclipse.org/jetty/orbit/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jsp-2.1/7.4.4.v20110707/jetty-jsp-2.1-7.4.4.v20110707.jar",
-	  [ "CloudCoderJetty/lib/jetty/jsp/jetty-jsp-2.1-7.4.4.v20110707.jar" ] ],
-	[ "http://json-simple.googlecode.com/files/json-simple-1.1.1.jar",
-	  [ "CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar",
-	  [ "CloudCoderRepository/war/WEB-INF/lib/mail.jar",
-	    "CloudCoder/war/WEB-INF/lib/mail.jar" ] ],
-	[ "http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar",
-	  [ "CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar",
-	    "CloudCoderRepository/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar",
-	    "CloudCoder/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar" ] ],
-	[ "http://repo1.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/commons-fileupload-1.2.2.jar" ] ],
-	[ "http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/commons-logging-1.1.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/dom4j-1.6.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.1/httpclient-4.2.1.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/httpclient-4.2.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.1/httpcore-4.2.1.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/httpcore-4.2.1.jar" ] ],
-	[ "http://repo1.maven.org/maven2/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar",
-	  [ "CloudCoder/war/WEB-INF/lib/opencsv-2.3.jar" ] ],
+# Fetch external dependencies and copy them to specified locations,
+# as specified by a deps file.
+#
+# The deps file should be a series of entries in the following form:
+#
+# http://something.com/blah/awesome-lib.jar
+#    dir1/awesome-lib.jar
+#    dir2/yeah/awesome-lib.jar
+#
+# Each file to download should be on a line with no leading spaces.
+# Each target (file to which the downloaded file should be copied)
+# should be on a line with at least one leading space.
+#
+# The default deps file is "default.deps", but can be overridden with
+# the --deps=filename option.
 
-);
-
-my $delete = 0;
+# Handle command line options.
+my $depsFile = 'default.deps';
+my $mode = 'fetch';
 if (scalar(@ARGV) > 0) {
 	my $arg = shift @ARGV;
-	if ($arg eq '--delete') {
-		$delete = 1;
+	if ($arg =~ /^--deps=(.*)$/) {
+		$depsFile = $1;
+	} elsif ($arg eq '--delete') {
+		$mode = 'delete';
+	} elsif ($arg eq '--list-targets') {
+		$mode = 'list';
 	} else {
 		die "Unknown option: $arg\n";
 	}
 }
 
-if ($delete) {
-	DeleteTargets();
-} else {
+# Read deps file.
+my @deps = ReadDeps($depsFile);
+#PrintDeps(@deps);
+#exit 0;
+
+if ($mode eq 'fetch') {
 	FetchAll();
+} elsif ($mode eq 'delete') {
+	DeleteTargets();
+} elsif ($mode eq 'list') {
+	ListTargets(@deps);
 }
 
 sub DeleteTargets {
@@ -148,6 +61,8 @@ sub DeleteTargets {
 }
 
 sub FetchAll {
+	my $downloaded = 0;
+	my $copied = 0;
 	foreach my $dep (@deps) {
 		my $download = $dep->[0];
 		my @targets = @{$dep->[1]};
@@ -167,21 +82,22 @@ sub FetchAll {
 			my $t = "deps/$jar";
 			if (! -e $t) {
 				Download($download, $t);
+				$downloaded++;
 			}
 			# Copy it to all needed targets
 			foreach my $neededTarget (@neededTargets) {
 				Copy($t, $neededTarget);
+				$copied++;
 			}
 		}
 	}
+	print "$downloaded file(s) downloaded\n";
+	print "$copied file(s) copied\n";
 }
 
 sub Download {
 	my ($jar, $toFile) = @_;
-	my $dir = Dir($toFile);
-	if ($dir ne '' && (! -d $dir)) {
-		Run('mkdir', '-p', $dir);
-	}
+	EnsureDirExists($toFile);
 	my $file = File($jar);
 	print "Fetching $jar...\n";
 	Run('wget', $jar, "--output-document=$toFile");
@@ -190,6 +106,7 @@ sub Download {
 sub Copy {
 	my ($file, $target) = @_;
 	print "Copying $file to $target...\n";
+	EnsureDirExists($target);
 	Run('cp', $file, $target);
 }
 
@@ -208,6 +125,64 @@ sub Dir {
 sub Run {
 	my @cmd = @_;
 	system(@cmd)/256 == 0 || die ("Could not run command: " . join(@cmd, ' ') . "\n");
+}
+
+sub ReadDeps {
+	my ($filename) = @_;
+	my @deps = ();
+	my $fh = new FileHandle("<$filename") || die "Couldn't open deps file $filename: $!\n";
+	my $download;
+	my $targets = [];
+	while (<$fh>) {
+		chomp;
+		if (/^\s*#/) {
+			# Comment: ignore
+		} elsif (/^(\S+)/) {
+			# Download
+			if (defined $download) {
+				# Push previous download/targets
+				push @deps, [ $download, $targets ];
+			}
+			# Start new download/targets
+			$download = $1;
+			$targets = [];
+		} elsif (/^\s+(.*)/) {
+			# Add target to current download
+			push @{$targets}, $1;
+		}
+	}
+	push @deps, [ $download, $targets ];
+	$fh->close();
+	return @deps;
+}
+
+sub PrintDeps {
+	my @deps = @_;
+	foreach my $d (@deps) {
+		print "download: ", $d->[0], "\n";
+		my @targets = @{$d->[1]};
+		foreach my $target (@targets) {
+			print "  target: $target\n";
+		}
+	}
+	exit 0;
+}
+
+sub ListTargets {
+	my @deps = @_;
+	foreach my $d (@deps) {
+		foreach my $target (@{$d->[1]}) {
+			print "$target\n";
+		}
+	}
+}
+
+sub EnsureDirExists {
+	my ($toFile) = @_;
+	my $dir = Dir($toFile);
+	if ($dir ne '' && (! -d $dir)) {
+		Run('mkdir', '-p', $dir);
+	}
 }
 
 # vim:ts=2:
