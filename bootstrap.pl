@@ -198,8 +198,8 @@ ENDPROPERTIES
 	# Create a keystore and add it to the app jarfile
 	# ----------------------------------------------------------------------
 	print "Generating a keystore for communication between webapp and builder...\n";
-	run('rm', '-f', 'keystore.jks');
-	run('keytool', '-genkey', '-noprompt',
+	Run('rm', '-f', 'keystore.jks');
+	Run('keytool', '-genkey', '-noprompt',
 		'-alias', 'cloudcoder',
 		'-storepass', 'changeit',
 		'-keystore', 'keystore.jks',
@@ -207,10 +207,10 @@ ENDPROPERTIES
 		'-keypass', 'changeit',
 		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
 	print "Adding keystore to $appJar...\n";
-	run("mkdir", "-d", "war/WEB-INF/classes");
-	run("mv", "keystore.jks", "war/WEB-INF/classes");
-	run("jar", "uf", $appJar, "war/WEB-INF/classes/keystore.jks");
-	run("rm", "-rf", "war");
+	Run("mkdir", "-d", "war/WEB-INF/classes");
+	Run("mv", "keystore.jks", "war/WEB-INF/classes");
+	Run("jar", "uf", $appJar, "war/WEB-INF/classes/keystore.jks");
+	Run("rm", "-rf", "war");
 
 	# ----------------------------------------------------------------------
 	# Create the cloudcoderdb database
@@ -265,7 +265,8 @@ sub RunAdmin {
 
 	my @sudo = ('sudo', '-p', 'sudo password>> ');
 	my @cmd;
-	if (exists $params{'asUser'}) {
+	my $asUser = exists $params{'asUser'};
+	if ($asUser) {
 		@cmd = (@sudo, '-u', $params{'asUser'}, @{$params{'cmd'}});
 	} else {
 		@cmd = (@sudo, @{$params{'cmd'}});
@@ -284,7 +285,10 @@ sub RunAdmin {
 		$ENV{$var} = $origEnv{$var};
 	}
 
-	die "Admin command $cmd[3] failed\n" if (!$result);
+	if (!$result) {
+		my $prog = $cmd[$asUser ? 5 : 3];
+		die "Admin command $prog failed\n";
+	}
 }
 
 sub Run {
