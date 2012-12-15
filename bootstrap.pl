@@ -140,13 +140,25 @@ sub Step2 {
 		print "$name=$props{$name}\n";
 	}
 
+	# Create webapp directory and change to it
+	Run("mkdir", "-p", "webapp");
+	chdir "webapp" || die "Couldn't change directory to webapp directory: $!\n";
+
+	# ----------------------------------------------------------------------
+	# Download webapp distribution jarfile
+	# ----------------------------------------------------------------------
 	# TODO: automatically determine latest version
-	section("Downloading CloudCoder webapp...");
 	my $appJar = "cloudcoderApp-v0.0.1.jar";
+	section("Downloading $appJar...");
 	my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
 	Run("wget", $appUrl);
 
+	# ----------------------------------------------------------------------
+	# Configure webapp distribution jarfile
+	# ----------------------------------------------------------------------
+	section("Configuring $appJar...");
 	# Generate cloudcoder.properties
+	print "Creating cloudcoder.properties...\n";
 	my $pfh = new FileHandle(">cloudcoder.properties");
 	print $pfh <<"ENDPROPERTIES";
 cloudcoder.db.user=cloudcoder
@@ -166,6 +178,22 @@ cloudcoder.webserver.contextpath=/cloudcoder
 cloudcoder.webserver.localhostonly=true
 ENDPROPERTIES
 	$pfh->close();
+
+	# Configure webapp jarfile to use the generated cloudcoder.properties
+	print "Configuring $appJar...\n";
+	Run("java", "-jar", $appJar, "configure",
+		"--useProperties=cloudcoder.properties",
+		"--editJar=$appJar",
+		"--noBuilder");
+
+	# ----------------------------------------------------------------------
+	# Create the cloudcoderdb database
+	# ----------------------------------------------------------------------
+	section("Creating cloudcoderdb database...");
+	# TODO
+
+	# At this point, it should be possible to start the webapp!
+	
 }
 
 sub ask {
