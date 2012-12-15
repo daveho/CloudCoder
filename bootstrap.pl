@@ -9,6 +9,8 @@ my $program = $0;
 #print "program=$program\n";
 #exit 0;
 
+my $dryRun = 1;
+
 my $mode = 'start';
 
 if (scalar(@ARGV) > 0) {
@@ -73,7 +75,6 @@ GREET
 	# will be required when installing packages.
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $ccMysqlRootPasswd");
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $ccMysqlRootPasswd");
-	exit 0;
 
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
@@ -153,9 +154,13 @@ sub RunAdmin {
 
 	my @cmd = ('sudo', '-p', 'sudo password>> ', @{$params{'cmd'}});
 
-	print "cmd: ", join(' ', @cmd), "\n";
-	#my $result = system(@cmd)/256 == 0;
-	my $result = 1;
+	my $result;
+	if ($dryRun) {
+		print "cmd: ", join(' ', @cmd), "\n";
+		$result = 1;
+	} else {
+		$result = system(@cmd)/256 == 0;
+	}
 
 	# Restore previous values
 	foreach my $var (keys %origEnv) {
@@ -166,8 +171,11 @@ sub RunAdmin {
 }
 
 sub Run {
-#	system(@_)/256 == 0 || die "Command $_[0] failed\n";
-	print "cmd: ", join(' ', @_), "\n";
+	if ($dryRun) {
+		print "cmd: ", join(' ', @_), "\n";
+	} else {
+		system(@_)/256 == 0 || die "Command $_[0] failed\n";
+	}
 }
 
 sub FindMysqlVersion {
@@ -175,7 +183,7 @@ sub FindMysqlVersion {
 	my $version;
 	while (<$fh>) {
 		chomp;
-		if (/^mysql-server-(\d+(\.\d+)?)\s/) {
+		if (/^mysql-server-(\d+(\.\d+)*)\s/) {
 			$version = $1;
 			last;
 		}
@@ -189,8 +197,11 @@ sub FindMysqlVersion {
 sub DebconfSetSelections {
 	my ($package, $prop, $value) = @_;
 	my $cmd = "echo '$package $prop $value' | sudo -p 'sudo password>> ' debconf-set-selections";
-	print "cmd: $cmd\n";
-	#system($cmd)/256 == 0 || die "Couldn't run debconf-set-selections\n";
+	if ($dryRun) {
+		print "cmd: $cmd\n";
+	} else {
+		system($cmd)/256 == 0 || die "Couldn't run debconf-set-selections\n";
+	}
 }
 
 # vim:ts=2:
