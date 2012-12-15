@@ -9,7 +9,12 @@ my $program = $0;
 #print "program=$program\n";
 #exit 0;
 
-my $dryRun = 1;
+my $dryRun = 0;
+if (scalar(@ARGV) > 0 && $ARGV[0] eq '-n') {
+	print ">>> Dry run <<<\n";
+	shift @ARGV;
+	$dryRun = 1;
+}
 
 my $mode = 'start';
 
@@ -135,7 +140,7 @@ sub Step2 {
 	chdir "/home/cloud" || die "Couldn't change directory to /home/cloud: $!\n";
 
 	# Get configuration properties passed from start step
-	my %props = split(/,|=/, @ARGV[0]);
+	my %props = split(/,|=/, $ARGV[0]);
 	foreach my $name (keys %props) {
 		print "$name=$props{$name}\n";
 	}
@@ -148,10 +153,11 @@ sub Step2 {
 	# Download webapp distribution jarfile
 	# ----------------------------------------------------------------------
 	# TODO: automatically determine latest version
-	my $appJar = "cloudcoderApp-v0.0.1.jar";
+	#my $appJar = "cloudcoderApp-v0.0.1.jar";
+	my $appJar = "cloudcoderApp.jar";
 	section("Downloading $appJar...");
-	my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
-	Run("wget", $appUrl);
+	#my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
+	#Run("wget", $appUrl);
 
 	# ----------------------------------------------------------------------
 	# Configure webapp distribution jarfile
@@ -160,9 +166,10 @@ sub Step2 {
 	# Generate cloudcoder.properties
 	print "Creating cloudcoder.properties...\n";
 	my $pfh = new FileHandle(">cloudcoder.properties");
+	my $ccMysqlCCPasswd = $props{ccMysqlCCPasswd};
 	print $pfh <<"ENDPROPERTIES";
 cloudcoder.db.user=cloudcoder
-cloudcoder.db.passwd=$props{ccMysqlCCPasswd}
+cloudcoder.db.passwd=$ccMysqlCCPasswd
 cloudcoder.db.databaseName=cloudcoderdb
 cloudcoder.db.host=localhost
 cloudcoder.db.portStr=
@@ -190,7 +197,7 @@ ENDPROPERTIES
 	# Create the cloudcoderdb database
 	# ----------------------------------------------------------------------
 	section("Creating cloudcoderdb database...");
-	# TODO
+	Run("java", "-jar", $appJar, "createdb", "--props=$ARGV[0],ccRepoUrl=https://cloudcoder.org/repo");
 
 	# At this point, it should be possible to start the webapp!
 	
