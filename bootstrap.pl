@@ -106,10 +106,21 @@ GREET
 
 	# Continue as the cloud user to complete the installation
 	# TODO
+	Run("cp", $0, "/tmp/bootstrap.pl");
+	Run("chmod", "a+x", "/tmp/bootstrap.pl");
+	RunAdmin(
+		asUser => 'cloud',
+		cmd => ["/tmp/bootstrap.pl", "step2",
+			"ccUser=$ccUser,ccPassword=$ccPasswd,ccFirstName=$ccFirstName," .
+			"ccLastName=$ccLastName,ccEmail=$ccEmail,ccWebsite=$ccWebsite," .
+			"ccMysqlCCPasswd=$ccMysqlCCPasswd,ccHostname=$ccHostname"]);
 }
 
 sub Step2 {
 	# Complete the installation running as the cloud user
+	my $whoami = `whoami`;
+	chomp $whoami;
+	print "Step2: running as $whoami\n";
 }
 
 sub ask {
@@ -152,7 +163,13 @@ sub RunAdmin {
 		}
 	}
 
-	my @cmd = ('sudo', '-p', 'sudo password>> ', @{$params{'cmd'}});
+	my @sudo = ('sudo', '-p', 'sudo password>> ');
+	my @cmd;
+	if (exists $params{'asUser'}) {
+		@cmd = (@sudo, '-u', $params{'asUser'}, @{$params{'cmd'}});
+	} else {
+		@cmd = (@sudo, @{$params{'cmd'}});
+	}
 
 	my $result;
 	if ($dryRun) {
