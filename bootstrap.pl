@@ -54,6 +54,7 @@ GREET
 	my $ccLastName = ask("What is your last name?");
 	my $ccEmail = ask("What is your email address?");
 	my $ccWebsite = ask("What is the URL of your personal website?");
+	my $ccInstitutionName = ask("What is the name of your institution?");
 	my $ccMysqlRootPasswd = ask("What password do you want for the MySQL root user?");
 	my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
 	my $ccHostname = ask("What is the hostname of this server?");
@@ -122,6 +123,7 @@ GREET
 		cmd => ["/tmp/bootstrap.pl", "step2",
 			"ccUser=$ccUser,ccPassword=$ccPasswd,ccFirstName=$ccFirstName," .
 			"ccLastName=$ccLastName,ccEmail=$ccEmail,ccWebsite=$ccWebsite," .
+			"ccInstitutionName=$ccInstitutionName," .
 			"ccMysqlCCPasswd=$ccMysqlCCPasswd,ccHostname=$ccHostname"]);
 }
 
