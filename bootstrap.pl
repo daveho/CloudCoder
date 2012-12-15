@@ -44,7 +44,9 @@ following prompt:
   sudo password>>
 
 then you will need to type the account password and press
-enter.
+enter.  On some Ubuntu systems, such as Ubuntu server on
+Amazon EC2, no password is required for sudo, so don't be
+concerned if you don't see it.
 GREET
 	
 	my $readyToStart = ask("\nReady to start? (yes/no)");
