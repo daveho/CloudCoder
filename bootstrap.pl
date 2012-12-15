@@ -209,7 +209,7 @@ ENDPROPERTIES
 		'-keypass', 'changeit',
 		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
 	print "Adding keystore to $appJar...\n";
-	Run("mkdir", "-d", "war/WEB-INF/classes");
+	Run("mkdir", "-p", "war/WEB-INF/classes");
 	Run("mv", "keystore.jks", "war/WEB-INF/classes");
 	Run("jar", "uf", $appJar, "war/WEB-INF/classes/keystore.jks");
 	Run("rm", "-rf", "war");
