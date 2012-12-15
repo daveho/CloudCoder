@@ -157,7 +157,8 @@ sub Step2 {
 	my $appJar = "cloudcoderApp.jar";
 	section("Downloading $appJar...");
 	#my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
-	#Run("wget", $appUrl);
+	my $appUrl = "http://faculty.ycp.edu/~dhovemey/$appJar";
+	Run("wget", $appUrl);
 
 	# ----------------------------------------------------------------------
 	# Configure webapp distribution jarfile
