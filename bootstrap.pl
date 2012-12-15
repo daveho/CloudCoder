@@ -5,7 +5,26 @@ use FileHandle;
 
 # Bootstrap CloudCoder on an Ubuntu server
 
-print <<"GREET";
+my $program = $0;
+#print "program=$program\n";
+#exit 0;
+
+my $mode = 'start';
+
+if (scalar(@ARGV) > 0) {
+	$mode = shift @ARGV;
+}
+
+if ($mode eq 'start') {
+	Start();
+} elsif ($mode eq 'step2') {
+	Step2();
+} else {
+	die "Unknown mode: $mode\n";
+}
+
+sub Start {
+	print <<"GREET";
 Welcome to the CloudCoder bootstrap script.
 
 By running this script, you will create a basic CloudCoder
@@ -20,48 +39,60 @@ following prompt:
 then you will need to type the account password and press
 enter.
 GREET
+	
+	my $readyToStart = ask("\nReady to start? (yes/no)");
+	exit 0 if ((lc $readyToStart) ne 'yes');
+	
+	print "\nFirst, please enter some configuration information...\n\n";
+	
+	# Get minimal required configuration information
+	my $ccUser = ask("What username do you want for your CloudCoder account?");
+	my $ccPasswd = ask("What password do you want for your CloudCoder account?");
+	my $ccFirstName = ask("What is your first name?");
+	my $ccLastName = ask("What is your last name?");
+	my $ccEmail = ask("What is your email address?");
+	my $ccWebsite = ask("What is the URL of your personal website?");
+	my $ccMysqlRootPasswd = ask("What password do you want for the MySQL root user?");
+	my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
+	my $ccHostname = ask("What is the hostname of this server?");
+	
+	# Install/configure required packages
+	print "\n";
+	section("Installing required packages");
+	RunAdmin(
+		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
+		cmd => ["apt-get", "update"]
+	);
+	RunAdmin(
+		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
+		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
+	);
+	RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
+	
+	# Configure MySQL
+	print "\n";
+	section("Configuring MySQL");
+	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
+		"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
+	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
+		"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
+	
+	# Create cloud user
+	RunAdmin(
+		cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
+	);
 
-my $readyToStart = ask("\nReady to start? (yes/no)");
-exit 0 if ((lc $readyToStart) ne 'yes');
+	# Configure apache2
+	RunAdmin(cmd => ['a2enmod', 'proxy']);
+	RunAdmin(cmd => ['a2enmod', 'proxy_http']);
 
-print "\nFirst, please enter some configuration information...\n\n";
+	# Continue as the cloud user to complete the installation
+	# TODO
+}
 
-# Get minimal required configuration information
-my $ccUser = ask("What username do you want for your CloudCoder account?");
-my $ccPasswd = ask("What password do you want for your CloudCoder account?");
-my $ccFirstName = ask("What is your first name?");
-my $ccLastName = ask("What is your last name?");
-my $ccEmail = ask("What is your email address?");
-my $ccWebsite = ask("What is the URL of your personal website?");
-my $ccMysqlRootPasswd = ask("What password do you want for the MySQL root user?");
-my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
-my $ccHostname = ask("What is the hostname of this server?");
-
-# Install/configure required packages
-print "\n";
-section("Installing required packages");
-RunAdmin(
-	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-	cmd => ["apt-get", "update"]
-);
-RunAdmin(
-	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-	cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
-);
-RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
-
-# Configure MySQL
-print "\n";
-section("Configuring MySQL");
-Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
-	"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
-Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
-	"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
-
-# Create cloud user
-RunAdmin(
-	cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
-);
+sub Step2 {
+	# Complete the installation running as the cloud user
+}
 
 sub ask {
 	my ($question, $defval) = @_;
@@ -118,5 +149,6 @@ sub RunAdmin {
 }
 
 sub Run {
-	system(@_)/256 == 0 || die "Command $_[0] failed\n";
+#	system(@_)/256 == 0 || die "Command $_[0] failed\n";
+	print "cmd: ", join(' ', @_), "\n";
 }
