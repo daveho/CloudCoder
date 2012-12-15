@@ -132,6 +132,40 @@ sub Step2 {
 	my $whoami = `whoami`;
 	chomp $whoami;
 	print "Step2: running as $whoami\n";
+	chdir "/home/cloud" || die "Couldn't change directory to /home/cloud: $!\n";
+
+	# Get configuration properties passed from start step
+	my %props = split(/,|=/, @ARGV[0]);
+	foreach my $name (keys %props) {
+		print "$name=$props{$name}\n";
+	}
+
+	# TODO: automatically determine latest version
+	section("Downloading CloudCoder webapp...");
+	my $appJar = "cloudcoderApp-v0.0.1.jar";
+	my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
+	Run("wget", $appUrl);
+
+	# Generate cloudcoder.properties
+	my $pfh = new FileHandle(">cloudcoder.properties");
+	print $pfh <<"ENDPROPERTIES";
+cloudcoder.db.user=cloudcoder
+cloudcoder.db.passwd=$props{ccMysqlCCPasswd}
+cloudcoder.db.databaseName=cloudcoderdb
+cloudcoder.db.host=localhost
+cloudcoder.db.portStr=
+cloudcoder.login.service=database
+cloudcoder.submitsvc.oop.host=localhost
+cloudcoder.submitsvc.oop.numThreads=2
+cloudcoder.submitsvc.oop.port=47374
+cloudcoder.submitsvc.ssl.cn=None
+cloudcoder.submitsvc.ssl.keystore=keystore.jks
+cloudcoder.submitsvc.ssl.keystore.password=changeit
+cloudcoder.webserver.port=8081
+cloudcoder.webserver.contextpath=/cloudcoder
+cloudcoder.webserver.localhostonly=true
+ENDPROPERTIES
+	$pfh->close();
 }
 
 sub ask {
