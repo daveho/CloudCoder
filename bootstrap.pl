@@ -34,18 +34,30 @@ my $ccLastName = ask("What is your last name?");
 my $ccEmail = ask("What is your email address?");
 my $ccWebsite = ask("What is the URL of your personal website?");
 my $ccMysqlRootPasswd = ask("What password do you want for the MySQL root user?");
-my $ccMysqlCCPasswrd = ask("What password do you want for the MySQL cloudcoder user?");
+my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
 my $ccHostname = ask("What is the hostname of this server?");
 
-# Install required packages
+# Install/configure required packages
+print "\n";
 section("Installing required packages");
 RunAdmin(
 	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-	cmd => ["apt-get", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
+	cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
 );
 RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
 
+# Configure MySQL
+print "\n";
+section("Configuring MySQL");
+Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
+	"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
+Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
+	"--execute=grant all on cloudcoderdb.* to 'cloudcoder'@'localhost'");
 
+# Create cloud user
+RunAdmin(
+	cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
+);
 
 sub ask {
 	my ($question, $defval) = @_;
@@ -98,5 +110,9 @@ sub RunAdmin {
 		$ENV{$var} = $origEnv{$var};
 	}
 
-	return $result;
+	die "Admin command $cmd[3] failed\n" if (!$result);
+}
+
+sub Run {
+	system(@_)/256 == 0 || die "Command $_[0] failed\n";
 }
