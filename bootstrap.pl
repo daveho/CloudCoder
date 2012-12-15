@@ -194,6 +194,24 @@ ENDPROPERTIES
 		"--noBuilder");
 
 	# ----------------------------------------------------------------------
+	# Create a keystore and add it to the app jarfile
+	# ----------------------------------------------------------------------
+	print "Generating a keystore for communication between webapp and builder...\n";
+	run('rm', '-f', 'keystore.jks');
+	run('keytool', '-genkey', '-noprompt',
+		'-alias', 'cloudcoder',
+		'-storepass', 'changeit',
+		'-keystore', 'keystore.jks',
+		'-validity', '3600',
+		'-keypass', 'changeit',
+		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
+	print "Adding keystore to $appJar...\n";
+	run("mkdir", "-d", "war/WEB-INF/classes");
+	run("mv", "keystore.jks", "war/WEB-INF/classes");
+	run("jar", "uf", $appJar, "war/WEB-INF/classes/keystore.jks");
+	run("rm", "-rf", "war");
+
+	# ----------------------------------------------------------------------
 	# Create the cloudcoderdb database
 	# ----------------------------------------------------------------------
 	section("Creating cloudcoderdb database...");
