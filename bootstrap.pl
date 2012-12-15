@@ -61,8 +61,7 @@ GREET
 	# ----------------------------------------------------------------------
 	# Install/configure required packages
 	# ----------------------------------------------------------------------
-	print "\n";
-	section("Installing required packages");
+	section("Installing required packages...");
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
 		cmd => ["apt-get", "update"]
@@ -78,34 +77,45 @@ GREET
 
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client-$mysqlVersion",
+		cmd => ["apt-get", "-y", "install", "openjdk-6-jre-headless", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	
 	# ----------------------------------------------------------------------
 	# Configure MySQL
 	# ----------------------------------------------------------------------
-	print "\n";
-	section("Configuring MySQL");
+	section("Configuring MySQL...");
+	print "Creating cloudcoder user...\n";
 	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
 		"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
+	print "Granting permissions on cloudcoderdb to cloudcoder...\n";
 	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
 		"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
 	
 	# ----------------------------------------------------------------------
 	# Create cloud user
 	# ----------------------------------------------------------------------
+	section("Creating cloud user account...");
 	RunAdmin(
 		cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
 	);
 
+	# ----------------------------------------------------------------------
 	# Configure apache2
+	# ----------------------------------------------------------------------
+	section("Configuring apache2...");
+	print "Generating SSL configuration...\n";
+	EditApache2DefaultSsl($ccHostname);
+	print "Enabling modules...\n";
 	RunAdmin(cmd => ['a2enmod', 'proxy']);
 	RunAdmin(cmd => ['a2enmod', 'proxy_http']);
+	RunAdmin(cmd => ['a2enmod', 'ssl']);
+	print "Restarting...\n";
+	RunAdmin(cmd => ['service', 'apache2', 'restart']);
 
 	# Continue as the cloud user to complete the installation
-	# TODO
-	Run("cp", $0, "/tmp/bootstrap.pl");
+	section("Continuing as cloud user...");
+	Run("cp", $program, "/tmp/bootstrap.pl");
 	Run("chmod", "a+x", "/tmp/bootstrap.pl");
 	RunAdmin(
 		asUser => 'cloud',
@@ -143,6 +153,7 @@ sub ask {
 
 sub section {
 	my ($name) = @_;
+	print "\n";
 	print "#" x 72, "\n";
 	print " >>> $name <<<\n";
 	print "#" x 72, "\n\n";
@@ -218,6 +229,60 @@ sub DebconfSetSelections {
 	} else {
 		system($cmd)/256 == 0 || die "Couldn't run debconf-set-selections\n";
 	}
+}
+
+sub EditApache2DefaultSsl {
+	my ($ccHostname) = @_;
+
+	# Edit /etc/apache2/sites-available/default-ssl to add hostname
+	# and transparent proxy support for CloudCoder webapp
+	my $in = new FileHandle("</etc/apache2/sites-available/default-ssl");
+	my $out = new FileHandle(">/tmp/default-ssl-modified");
+
+	my $alreadyModified = 0;
+	my $modCount = 0;
+
+	while (<$in>) {
+		chomp;
+		print $out "$_\n";
+		if (/^\s*<VirtualHost/) {
+			print $out <<"SERVERNAME";
+	# Modified by CloudCoder bootstrap.pl
+	ServerName $ccHostname
+SERVERNAME
+			$modCount++;
+		} elsif (/^\s*ServerAdmin/) {
+			print $out <<"ENDPROXY";
+	
+	# Transparently proxy requests for /cloudcoder to the
+	# CloudCoder Jetty server
+	ProxyPass /cloudcoder http://localhost:8081/cloudcoder
+	ProxyPassReverse /cloudcoder http://localhost:8081/cloudcoder
+	<Proxy http://localhost:8081/cloudcoder>
+		Order Allow,Deny
+		Allow from all
+	</Proxy>
+ENDPROXY
+			$modCount++;
+		} elsif (/^\s*# Modified by CloudCoder/) {
+			$alreadyModified = 1;
+		}
+	}
+	$in->close();
+	$out->close();
+
+	if ($alreadyModified) {
+		print "/etc/apache2/sites-available/default-ssl Already modified?\n";
+		return;
+	}
+
+	if ($modCount != 2) {
+		die "/etc/apache2/sites-available/default-ssl is not in expected format\n";
+	}
+
+	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified',
+		'/etc/apache2/sites-available/cloudcoder-ssl']);
+	RunAdmin(cmd => ['ln', '-s', '/etc/apache2/sites-available/cloudcoder-ssl', '/etc/apache2/sites-enabled/cloudcoder-ssl']);
 }
 
 # vim:ts=2:
