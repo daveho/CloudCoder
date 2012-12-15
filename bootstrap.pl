@@ -85,7 +85,7 @@ GREET
 
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jre-headless", "mysql-client-$mysqlVersion",
+		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	
