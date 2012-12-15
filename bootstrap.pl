@@ -42,6 +42,10 @@ print "\n";
 section("Installing required packages");
 RunAdmin(
 	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
+	cmd => ["apt-get", "update"]
+);
+RunAdmin(
+	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
 	cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
 );
 RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
