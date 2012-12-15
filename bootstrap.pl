@@ -317,10 +317,10 @@ sub EditApache2DefaultSsl {
 		chomp;
 		print $out "$_\n";
 		if (/^\s*<VirtualHost/) {
-			print $out <<"SERVERNAME";
+			print $out <<"ENDSERVERNAME";
 	# Modified by CloudCoder bootstrap.pl
 	ServerName $ccHostname
-SERVERNAME
+ENDSERVERNAME
 			$modCount++;
 		} elsif (/^\s*ServerAdmin/) {
 			print $out <<"ENDPROXY";
