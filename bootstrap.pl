@@ -52,7 +52,7 @@ section("Configuring MySQL");
 Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
 	"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
 Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
-	"--execute=grant all on cloudcoderdb.* to 'cloudcoder'@'localhost'");
+	"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
 
 # Create cloud user
 RunAdmin(
