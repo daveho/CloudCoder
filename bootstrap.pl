@@ -38,8 +38,12 @@ my $ccMysqlCCPasswrd = ask("What password do you want for the MySQL cloudcoder u
 my $ccHostname = ask("What is the hostname of this server?");
 
 # Install required packages
-
-
+section("Installing required packages");
+RunAdmin(
+	env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
+	cmd => ["apt-get", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
+);
+RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
 
 
 
@@ -60,4 +64,39 @@ sub ask {
 	}
 
 	return $value;
+}
+
+sub section {
+	my ($name) = @_;
+	print "#" x 72, "\n";
+	print " >>> $name <<<\n";
+	print "#" x 72, "\n\n";
+}
+
+sub RunAdmin {
+	my %params = @_;
+	die "RunAdmin with no command\n" if (! exists $params{'cmd'});
+
+	# Set environment variables (saving previous values)
+	my %origEnv = ();
+	if (exists $params{'env'}) {
+		foreach my $var (keys %{$params{'env'}}) {
+			my $val = $params{'env'}->{$var};
+			$origEnv{$var} = $val;
+			$ENV{$var} = $val;
+		}
+	}
+
+	my @cmd = ('sudo', '-p', 'sudo password>> ', @{$params{'cmd'}});
+
+	print "cmd: ", join(' ', @cmd), "\n";
+	#my $result = system(@cmd)/256 == 0;
+	my $result = 1;
+
+	# Restore previous values
+	foreach my $var (keys %origEnv) {
+		$ENV{$var} = $origEnv{$var};
+	}
+
+	return $result;
 }
