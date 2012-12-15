@@ -81,7 +81,6 @@ GREET
 		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
-	RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
 	
 	# ----------------------------------------------------------------------
 	# Configure MySQL
