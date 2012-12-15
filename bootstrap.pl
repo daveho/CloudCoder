@@ -56,20 +56,35 @@ GREET
 	my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
 	my $ccHostname = ask("What is the hostname of this server?");
 	
+	# ----------------------------------------------------------------------
 	# Install/configure required packages
+	# ----------------------------------------------------------------------
 	print "\n";
 	section("Installing required packages");
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
 		cmd => ["apt-get", "update"]
 	);
+	# Determine which mysql-server version we will use
+	my $mysqlVersion = FindMysqlVersion();
+	print "Mysql version is $mysqlVersion\n";
+
+	# Configure mysql root password so that no user interaction
+	# will be required when installing packages.
+	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $ccMysqlRootPasswd");
+	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $ccMysqlRootPasswd");
+	exit 0;
+
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client", "mysql-server", "apache2"]
+		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client-$mysqlVersion",
+			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	RunAdmin(cmd => ["mysqladmin", "-u", "root", "password", $ccMysqlRootPasswd]);
 	
+	# ----------------------------------------------------------------------
 	# Configure MySQL
+	# ----------------------------------------------------------------------
 	print "\n";
 	section("Configuring MySQL");
 	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
@@ -77,7 +92,9 @@ GREET
 	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
 		"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
 	
+	# ----------------------------------------------------------------------
 	# Create cloud user
+	# ----------------------------------------------------------------------
 	RunAdmin(
 		cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
 	);
@@ -152,3 +169,28 @@ sub Run {
 #	system(@_)/256 == 0 || die "Command $_[0] failed\n";
 	print "cmd: ", join(' ', @_), "\n";
 }
+
+sub FindMysqlVersion {
+	my $fh = new FileHandle("apt-cache search mysql-server|");
+	my $version;
+	while (<$fh>) {
+		chomp;
+		if (/^mysql-server-(\d+(\.\d+)?)\s/) {
+			$version = $1;
+			last;
+		}
+	}
+	$fh->close();
+
+	die "Couldn't not find mysql version\n" if (!defined $version);
+	return $version;
+}
+
+sub DebconfSetSelections {
+	my ($package, $prop, $value) = @_;
+	my $cmd = "echo '$package $prop $value' | sudo -p 'sudo password>> ' debconf-set-selections";
+	print "cmd: $cmd\n";
+	#system($cmd)/256 == 0 || die "Couldn't run debconf-set-selections\n";
+}
+
+# vim:ts=2:
