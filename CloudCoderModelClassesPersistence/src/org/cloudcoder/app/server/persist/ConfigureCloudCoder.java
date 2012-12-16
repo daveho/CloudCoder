@@ -17,24 +17,12 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Configure a CloudCoder executable jarfile, either by reading configuration
@@ -273,72 +261,12 @@ public class ConfigureCloudCoder
 
 	}
 
-	/**
-	 * copy input to output stream - available in several StreamUtils or Streams classes 
-	 */    
-	private void copy(InputStream input, OutputStream output)
-			throws IOException
-			{
-		int bytesRead;
-		while ((bytesRead = input.read(BUFFER))!= -1) {
-			output.write(BUFFER, 0, bytesRead);
-		}
-			}
-	private final byte[] BUFFER = new byte[4096 * 1024];
-
 	private void copyJarfileWithNewProperties(String jarfileName, String propertiesFileName)
-			throws Exception
-			{
-		// read in jarfileName, and replace propertiesFileName with newProps
-		ZipFile jarfile = new ZipFile(jarfileName);
-		ByteArrayOutputStream bytes=new ByteArrayOutputStream();
-		ZipOutputStream newJarfileData = new ZipOutputStream(bytes);
-
-		// XXX Hack: zipfiles and jarfiles can apparently have multiple copies
-		// of the SAME file.  The builder has many META-INF/LICENSE files
-		// This should be fixed somehow, probably in the build.xml
-		// by giving the licenses specific names or putting them into
-		// other folders.
-		Set<String> alreadySeen=new HashSet<String>();
-
-		// first, copy contents from existing war
-		Enumeration<? extends ZipEntry> entries = jarfile.entries();
-		while (entries.hasMoreElements()) {
-			ZipEntry e = entries.nextElement();
-			if (alreadySeen.contains(e.getName())) {
-				// skip filenames we've already added
-				continue;
-			}
-			//System.out.println("copy: " + e.getName());
-
-			if (e.getName().equals(propertiesFileName)) {
-				// If we find the file we're interested in, copy it!
-				ZipEntry newEntry = new ZipEntry(propertiesFileName);
-				newJarfileData.putNextEntry(newEntry);
-				config.store(newJarfileData, "");
-			} else {
-				newJarfileData.putNextEntry(e);
-				if (!e.isDirectory()) {
-					copy(jarfile.getInputStream(e), newJarfileData);
-				}
-			}
-			alreadySeen.add(e.getName());
-			newJarfileData.closeEntry();
-		}
-
-		// close
-		newJarfileData.close();
-		bytes.flush();
-		bytes.close();
-		jarfile.close();
-
-		// copy over the file with new version we had just changed
-		FileOutputStream out=new FileOutputStream(jarfileName);
-		ByteArrayInputStream in=new ByteArrayInputStream(bytes.toByteArray());
-		copy(in, out);
-
-		out.close();
-			}
+			throws Exception {
+		JarRewriter jarRewriter = new JarRewriter(jarfileName);
+		jarRewriter.replaceEntry(propertiesFileName, new JarRewriter.PropertiesEntryData(config));
+		jarRewriter.rewrite();
+	}
 
 	public static void main(String[] args) throws Exception {
 		ConfigureCloudCoder configureCloudCoder = new ConfigureCloudCoder();
