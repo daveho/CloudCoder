@@ -217,7 +217,28 @@ ENDPROPERTIES
 	section("Creating cloudcoderdb database...");
 	Run("java", "-jar", $appJar, "createdb", "--props=$ARGV[0],ccRepoUrl=https://cloudcoder.org/repo");
 
-	# At this point, it should be possible to start the webapp!
+	# ----------------------------------------------------------------------
+	# Start the webapp!
+	# ----------------------------------------------------------------------
+	section("Starting the CloudCoder web application");
+	Run("java", "-jar", $appJar, "start");
+
+	# ----------------------------------------------------------------------
+	# We're done!
+	# ----------------------------------------------------------------------
+	section("CloudCoder installation successful!");
+	my $ccHostname = $props{'ccHostname'};
+	print <<"SUCCESS";
+It looks like CloudCoder was installed successfully.
+
+You should be able to test your new installation by opening the
+following web page:
+
+  https://$ccHostname/cloudcoder
+
+Note that no builders are running, so you won't be able to
+test submissions yet.
+SUCCESS
 	
 }
 
