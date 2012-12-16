@@ -41,7 +41,7 @@ import java.util.zip.ZipOutputStream;
 import org.cloudcoder.daemon.IOUtil;
 
 /**
- * Rewrite a jar file by replacing specified files.
+ * Rewrite a jar file by replacing or adding specified files.
  * 
  * @author Jaime Spacco
  * @author David Hovemeyer
@@ -113,8 +113,10 @@ public class JarRewriter {
 
 	/**
 	 * Replace specified entry.
+	 * If the original jar file does not contain an entry
+	 * with the specified name, a new entry will be created.
 	 * 
-	 * @param entryName the name entry to replace
+	 * @param entryName the name entry to replace or add
 	 * @param data      the data to replace the entry with
 	 */
 	public void replaceEntry(String entryName, EntryData data) {
@@ -181,13 +183,33 @@ public class JarRewriter {
 						newJarfileData.putNextEntry(e);
 					}
 					if (!e.isDirectory()) {
-						copy(entryIn, newJarfileData);
+						try {
+							copy(entryIn, newJarfileData);
+						} finally {
+							entryIn.close();
+						}
 					}
 
 					// Make a note that this entry has been handled
 					alreadySeen.add(e.getName());
 
 					newJarfileData.closeEntry();
+				}
+				
+				// Special case: if any entries specified by replaceEntry weren't
+				// written (because there were no matching entries in the original
+				// jar file), then add them.
+				for (Map.Entry<String, EntryData> e : replace.entrySet()) {
+					if (!alreadySeen.contains(e.getKey())) {
+						ZipEntry newEntry = new ZipEntry(e.getKey());
+						InputStream entryIn = e.getValue().getInputStream();
+						newJarfileData.putNextEntry(newEntry);
+						try {
+							copy(entryIn, newJarfileData);
+						} finally {
+							entryIn.close();
+						}
+					}
 				}
 			} finally {
 				// Ensure open files are closed
