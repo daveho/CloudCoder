@@ -46,7 +46,7 @@ following prompt:
 then you will need to type the account password and press
 enter.  On some Ubuntu systems, such as Ubuntu server on
 Amazon EC2, no password is required for sudo, so don't be
-concerned if you don't see it.
+concerned if you don't see the prompt.
 GREET
 	
 	my $readyToStart = ask("\nReady to start? (yes/no)");
@@ -82,10 +82,12 @@ GREET
 	# will be required when installing packages.
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $ccMysqlRootPasswd");
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $ccMysqlRootPasswd");
-
+	# Install packages. Note that because cloudcoderApp.jar is self-configuring,
+	# we can install the JRE rather than the full JDK, as we won't need
+	# the jar tool.
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jdk", "mysql-client-$mysqlVersion",
+		cmd => ["apt-get", "-y", "install", "openjdk-6-jre-headless", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	
@@ -163,7 +165,8 @@ sub Step2 {
 	Run("wget", $appUrl);
 
 	# ----------------------------------------------------------------------
-	# Configure webapp distribution jarfile
+	# Configure webapp distribution jarfile with
+	# generated cloudcoder.properties and keystore
 	# ----------------------------------------------------------------------
 	section("Configuring $appJar...");
 	# Generate cloudcoder.properties
@@ -189,18 +192,8 @@ cloudcoder.webserver.localhostonly=true
 ENDPROPERTIES
 	$pfh->close();
 
-	# Configure webapp jarfile to use the generated cloudcoder.properties
-	print "Configuring $appJar...\n";
-	Run("java", "-jar", $appJar, "configure",
-		"--useProperties=cloudcoder.properties",
-		"--editJar=$appJar",
-		"--noBuilder");
-
-	# ----------------------------------------------------------------------
-	# Create a keystore and add it to the app jarfile
-	# ----------------------------------------------------------------------
-	print "Generating a keystore for communication between webapp and builder...\n";
-	Run('rm', '-f', 'keystore.jks');
+	# Create a keystore
+	print "Creating a keystore for communication between webapp and builder...\n";
 	Run('keytool', '-genkey', '-noprompt',
 		'-alias', 'cloudcoder',
 		'-storepass', 'changeit',
@@ -208,11 +201,15 @@ ENDPROPERTIES
 		'-validity', '3600',
 		'-keypass', 'changeit',
 		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
-	print "Adding keystore to $appJar...\n";
-	Run("mkdir", "-p", "war/WEB-INF/classes");
-	Run("mv", "keystore.jks", "war/WEB-INF/classes");
-	Run("jar", "uf", $appJar, "war/WEB-INF/classes/keystore.jks");
-	Run("rm", "-rf", "war");
+
+	# Configure webapp jarfile to use the generated cloudcoder.properties
+	# and keystore
+	print "Configuring $appJar...\n";
+	Run("java", "-jar", $appJar, "configure",
+		"--editJar=$appJar",
+		"--replace=cloudcoder.properties=cloudcoder.properties",
+		"--replace=war/WEB-INF/classes/keystore.jks=keystore.jks");
+	Run('rm', '-f', 'cloudcoder.properties', 'keystore.jks');
 
 	# ----------------------------------------------------------------------
 	# Create the cloudcoderdb database
