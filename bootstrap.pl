@@ -5,6 +5,9 @@ use FileHandle;
 
 # Bootstrap CloudCoder on an Ubuntu server
 
+# Download site
+my $DOWNLOAD_SITE = 'http://faculty.ycp.edu/~dhovemey'; # TODO: use S3 URL
+
 my $program = $0;
 #print "program=$program\n";
 #exit 0;
@@ -160,16 +163,16 @@ sub Step2 {
 	# ----------------------------------------------------------------------
 	# Download webapp and builder distribution jarfiles
 	# ----------------------------------------------------------------------
-	# TODO: automatically determine latest version
-	#my $appJar = "cloudcoderApp-v0.0.1.jar";
-	my $appJar = "cloudcoderApp.jar";
-	my $builderJar = "cloudcoderBuilder.jar";
+
+	# Find out what the most recent release version is
+	my $version = GetLatestVersion();
+	my $appJar = "cloudcoderApp-$version.jar";
+	my $builderJar = "cloudcoderBuilder-$version.jar";
+
+	# Download webapp and builder release jarfiles
 	section("Downloading $appJar and $builderJar...");
-	#my $appUrl = "https://s3.amazonaws.com/cloudcoder-binaries/$appJar";
-	my $appUrl = "http://faculty.ycp.edu/~dhovemey/$appJar";
-	my $builderUrl = "http://faculty.ycp.edu/~dhovemey/$builderJar";
-	Run("wget", $appUrl);
-	Run("wget", $builderUrl);
+	Run("wget", "$DOWNLOAD_SITE/$appJar");
+	Run("wget", "$DOWNLOAD_SITE/$builderJar");
 
 	# ----------------------------------------------------------------------
 	# Configure webapp distribution jarfile with
@@ -417,6 +420,20 @@ ENDPROXY
 	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified',
 		'/etc/apache2/sites-available/cloudcoder-ssl']);
 	RunAdmin(cmd => ['ln', '-s', '/etc/apache2/sites-available/cloudcoder-ssl', '/etc/apache2/sites-enabled/cloudcoder-ssl']);
+}
+
+sub GetLatestVersion {
+	my $fh = new FileHandle("wget --quiet --output-document=- $DOWNLOAD_SITE/LATEST|");
+	my $version;
+	while (<$fh>) {
+		if (/^\s*(\d+(\.\d+)*)\s*$/) {
+			$version = $1;
+			last;
+		}
+	}
+	$fh->close();
+	die "Could not determine latest CloudCoder release version\n" if (!defined $version);
+	return $version;
 }
 
 # vim:ts=2:
