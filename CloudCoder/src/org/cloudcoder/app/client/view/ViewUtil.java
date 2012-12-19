@@ -19,11 +19,13 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Date;
 
-import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.shared.model.Language;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.Image;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 
@@ -33,6 +35,9 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
  * @author David Hovemeyer
  */
 public class ViewUtil {
+    public static Image ajaxImage = new Image(GWT.getModuleBaseURL() + ViewUtil.LOADING_IMAGE);
+    public static final String LOADING_IMAGE="images/ajax-loader.gif";
+    
 	/**
 	 * Format a Date as a string.
 	 * 
@@ -66,4 +71,41 @@ public class ViewUtil {
 		// unknown Language
 		return null;
 	}
+
+	/**
+	 * Create a Grid instance with a "loading" animated gif
+	 * and the message "Loading..." for display with
+	 * waiting for asynchronous calls to complete.
+	 * 
+	 * The returned result can be added to a variety of
+	 * PopupPanels which will then be hidden.
+	 * 
+	 * @return
+	 */
+	public static Grid createLoadingGrid() {
+	    return createLoadingGrid("");
+	}
+	
+    /**
+     * Create a Grid instance with a "loading" animated gif and
+     * the message "Loading...", along with the supplied message.
+     * 
+     * @param message
+     * @return
+     */
+    public static Grid createLoadingGrid(String message)
+    {
+        Grid grid;
+        if (message.length()>0) {
+            grid=new Grid(2, 2);
+        } else {
+            grid=new Grid(1, 2);
+        }
+        grid.setWidget(0, 0, ViewUtil.ajaxImage);
+        grid.setText(0, 1, "Loading...");
+        if (message.length()>0) {
+            grid.setText(1, 0, message);
+        }
+        return grid;
+    }
 }

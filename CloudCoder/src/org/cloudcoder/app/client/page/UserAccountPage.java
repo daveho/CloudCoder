@@ -181,8 +181,6 @@ public class UserAccountPage extends CloudCoderPage
                
                vp.setWidth("600px");
                
-               //vp.setSize("600px", "400px");      
-
                vp.add(new HTML("Problem statistics for <b>"+
             		   			user.getFirstname()+" "+user.getLastname()+" ("+
             		   			user.getUsername()+")</b><br /><br />"));

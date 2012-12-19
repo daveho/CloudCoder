@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -710,11 +711,44 @@ public class DBUtil {
 			}
 		} else {
 			System.out.println("Warning: loading cloudcoder.properties from filesystem");
-			properties.load(new FileReader("../cloudcoder.properties"));
+			File cloudCoderProperties=findRecursively("cloudcoder.properties");
+			if (cloudCoderProperties==null) {
+			    throw new IOException("Cannot find cloudcoder.properties file in any directory "+
+			            "between the current dir and the root of the filesystem");
+			}
+			properties.load(new FileReader(cloudCoderProperties));
 		}
 		return properties;
 	}
 
+	/**
+	 * Search for the given filename between the current directory
+	 * where Java is running, and the root of the file-system.
+	 * 
+	 * TODO: Test on Windows
+	 * 
+	 * @param filename
+	 * @return The file if a file with the given name is found,
+	 *     null otherwise.
+	 * @throws IOException
+	 */
+	public static File findRecursively(String filename)
+	throws IOException
+	{
+	    File dir=new File(".").getAbsoluteFile();
+	    int i=0;
+	    File root=new File("/");
+	    while (!dir.getAbsoluteFile().equals(root) && i < 25) {
+	        File file=new File(dir, filename);
+	        if (file.exists()) {
+	            return file;
+	        }
+	        dir=dir.getParentFile();
+	        i++;
+	    }
+	    return null;
+	}
+	
 	/**
 	 * Create a database.
 	 * 

@@ -18,11 +18,13 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
 import org.cloudcoder.app.client.view.UserProgressListView;
+import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
@@ -45,6 +47,7 @@ import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -204,15 +207,15 @@ public class UserAdminPage extends CloudCoderPage
                     final Course course, final CourseRegistrationType originalType, final Session session)
             {
                super(true);
-               
+               setGlassEnabled(true);
+
                VerticalPanel vp = new VerticalPanel();
                
                setWidget(vp);
                
                vp.setWidth("600px");
                
-               //vp.setSize("600px", "400px");      
-
+               
                vp.add(new HTML("Problem statistics for <b>"+
             		   			user.getFirstname()+" "+user.getLastname()+" ("+
             		   			user.getUsername()+")</b><br /><br />"));
@@ -234,6 +237,7 @@ public class UserAdminPage extends CloudCoderPage
                // copy of the current instance (this)
                // to be used by inner classes
                final PopupPanel panelCopy=this;
+               panelCopy.setGlassEnabled(true);
                
                // We actually perform the submit asynchronously
                //form.setEncoding(FormPanel.ENCODING_MULTIPART);
@@ -350,13 +354,13 @@ public class UserAdminPage extends CloudCoderPage
                                GWT.log("Added "+user.getUsername()+" to course "+rawCourseTitle);
                                panelCopy.hide(true);
                                reloadUsers();
-                               Window.alert("Added "+user.getUsername()+" to course "+rawCourseTitle);
+                               getSession().add(StatusMessage.goodNews("Added "+user.getUsername()+" to course "+rawCourseTitle));
                            }
 
                            @Override
                            public void onFailure(Throwable caught) {
                                GWT.log("Failed to add student");
-                               Window.alert("Unable to add "+user.getUsername()+" to course");
+                               getSession().add(StatusMessage.error("Unable to add "+user.getUsername()+" to course"));
                            }
                        });
                    }
@@ -373,7 +377,7 @@ public class UserAdminPage extends CloudCoderPage
                     final Course course, final CourseRegistrationType originalType)
             {
                super(true);
-               
+               setGlassEnabled(true);
                VerticalPanel vp = new VerticalPanel();
 
                setWidget(vp);
@@ -452,7 +456,6 @@ public class UserAdminPage extends CloudCoderPage
                        //This is more like a fake form
                        //we're not submitting it to a server-side servlet
                        GWT.log("edit user submit clicked");
-                       //final User user=getSession().get(User.class);
                        final User user=userAdminUsersListView.getSelectedUser();
                        
                        //TODO add support for editing registration type
@@ -501,19 +504,19 @@ public class UserAdminPage extends CloudCoderPage
                                public void onSuccess(Boolean result) {
                                    GWT.log("Edited "+user.getUsername()+" in course "+rawCourseTitle);
                                    panelCopy.hide();
-                                   Window.alert("Successfully edited user record");
                                    reloadUsers();
+                                   getSession().add(StatusMessage.goodNews("Successfully edited user record"));
                                }
 
                                @Override
                                public void onFailure(Throwable caught) {
                                    GWT.log("Failed to edit student");
-                                   Window.alert("Unable to edit "+user.getUsername()+" in course "+rawCourseTitle);
+                                   getSession().add(StatusMessage.error("Unable to edit "+user.getUsername()+" in course "+rawCourseTitle));
                                }
                            });
                        } else {
                            panelCopy.hide();
-                           Window.alert("Nothing was changed");
+                           getSession().add(StatusMessage.information("Nothing was changed"));
                        }
                    }
                }));
@@ -526,8 +529,11 @@ public class UserAdminPage extends CloudCoderPage
             {
                super(true);
                
-               VerticalPanel vp = new VerticalPanel();
+               final VerticalPanel vp = new VerticalPanel();
                final PopupPanel panelCopy=this;
+               //final PopupPanel loadingPopupPanel=new LoadingPopupPanel();
+               
+               panelCopy.setGlassEnabled(true);
                setWidget(vp);
                
                final FormPanel form = new FormPanel();
@@ -542,8 +548,9 @@ public class UserAdminPage extends CloudCoderPage
                holder.add(new Hidden("courseId", Integer.toString(courseId)));
                holder.add(new Label("Choose a file"));
                holder.add(new HTML(new SafeHtmlBuilder().
-                       appendEscapedLines("File should be tab-delimited in format:\n" +
-                       		"username firstname lastname email password").toSafeHtml()));
+                       appendEscapedLines("File should be tab-delimited in format:\n").toSafeHtml()));
+               holder.add(new HTML(new SafeHtmlBuilder().appendHtmlConstant("<font face=courier>")
+                       .appendEscaped("username firstname lastname email password").appendHtmlConstant("</font>").toSafeHtml()));
                FileUpload fup=new FileUpload();
                fup.setName("fileupload");
                holder.add(fup);
@@ -557,15 +564,22 @@ public class UserAdminPage extends CloudCoderPage
                GWT.log("URL: "+GWT.getModuleBaseURL()+"registerStudents");
                form.add(holder);
                vp.add(form);
-               
+               form.addSubmitHandler(new FormPanel.SubmitHandler() {
+                   @Override
+                   public void onSubmit(SubmitEvent event) {
+                       GWT.log("pushing submit");
+                       vp.add(ViewUtil.createLoadingGrid(""));
+                       GWT.log("Loading...");
+                   }
+               });
                form.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
                    public void onSubmitComplete(SubmitCompleteEvent event) {
                        GWT.log("onSubmitComplete complete");
                        // now we can hide the panel
                        panelCopy.hide();
-                       Window.alert(event.getResults());
                        reloadUsers();
-                   }
+                       getSession().add(StatusMessage.goodNews(event.getResults()));
+                   }                   
                });
             }
         }
@@ -658,7 +672,6 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleUserProgress(ClickEvent event) {
             GWT.log("handle user progress");
-            //final User chosen = getSession().get(User.class);
             final User chosen = userAdminUsersListView.getSelectedUser();
             if (chosen==null) {
                 return;

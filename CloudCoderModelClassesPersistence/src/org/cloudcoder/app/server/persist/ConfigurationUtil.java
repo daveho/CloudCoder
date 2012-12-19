@@ -301,6 +301,7 @@ public class ConfigurationUtil
     {
         Scanner scan=new Scanner(in);
         int num=0;
+        long totalStart=System.currentTimeMillis();
         while (scan.hasNextLine()) {
             String line=scan.nextLine().replaceAll("#.*","").trim();
             if (line.equals("")) {
@@ -320,6 +321,7 @@ public class ConfigurationUtil
             }
             logger.info("Registering "+username+" for courseId "+courseId);
             // Look up the user to see if they already exist
+            long start=System.currentTimeMillis();
             int userId;
             User u=findUser(conn, username);
             if (u!=null) {
@@ -334,10 +336,15 @@ public class ConfigurationUtil
                         password,
                         website);
             }
+            long lookupCreate=System.currentTimeMillis()-start;
             if (registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section)) {
                 num++;
             }
+            long register=System.currentTimeMillis()-start;
+            logger.info(lookupCreate+" to lookup/create, "+register+" to regsiter, "+(lookupCreate+register)+" total");
         }
+        long totalTime=System.currentTimeMillis()-totalStart;
+        logger.warn("Total time to register "+num+" students was "+totalTime);
         return num;
     }
 

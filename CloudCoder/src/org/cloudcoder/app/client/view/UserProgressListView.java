@@ -18,14 +18,13 @@
 package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
+
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
-import org.cloudcoder.app.shared.model.Submission;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -36,7 +35,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ResizeComposite;
 
 /**
@@ -47,6 +47,8 @@ import com.google.gwt.user.client.ui.ResizeComposite;
 public class UserProgressListView extends ResizeComposite implements Subscriber, SessionObserver
 {
     private DataGrid<ProblemAndSubmissionReceipt> grid;
+    private Grid loadingImage;
+    private LayoutPanel panel;
     private Session session;
     private User user;
     private SubmissionReceipt[] submissionReceipts;
@@ -55,15 +57,26 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
      * Constructor.
      */
     public UserProgressListView(User myUser) {
-    	user = myUser;
-    	
-        grid = new DataGrid<ProblemAndSubmissionReceipt>();
+    	    user = myUser;
+
+    	    panel=new LayoutPanel();
+    	    loadingImage=ViewUtil.createLoadingGrid("results for "+user.getUsername());
+    	    loadingImage.setVisible(true);
+    	    panel.add(loadingImage);
+    	    panel.setVisible(true);
+    	    initWidget(panel);
+    }
+
+    /**
+     * 
+     */
+    private void createGridHeader() {
         TextColumn<ProblemAndSubmissionReceipt> colID = new TextColumn<ProblemAndSubmissionReceipt>() {
-            							@Override
-							            public String getValue(ProblemAndSubmissionReceipt problem) {
-							                return problem.getProblem().getProblemId()+"";
-							            }
-							        };
+            @Override
+            public String getValue(ProblemAndSubmissionReceipt problem) {
+                return problem.getProblem().getProblemId()+"";
+            }
+        };
         grid.addColumn(colID,"ID");
         grid.setColumnWidth(colID, "50px");
         grid.addColumn(new TextColumn<ProblemAndSubmissionReceipt>() {
@@ -88,8 +101,6 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
                 return problem.getProblem().getWhenDueAsDate().toString().substring(4,19);
             }
         }, "Due date");
-        
-        initWidget(grid);
     }
 
     /* (non-Javadoc)
@@ -98,17 +109,9 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
     @Override
     public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
     {
-    	this.session = session;
+    	    this.session = session;
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		
-		//ProblemAndSubmissionReceipt[] submissionReceipts = session.get(ProblemAndSubmissionReceipt[].class);
-		
-		
-		//if (submissionReceipts != null) {
-		//	displayProblems(submissionReceipts);
-		//} else {
 		loadProblems(session);
-		//}
     }
 
     /* (non-Javadoc)
@@ -117,18 +120,23 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
     @Override
     public void eventOccurred(Object key, Publisher publisher, Object hint) {
         if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
-            // load all the useres for the current course
+            // load all the users for the current course
             loadProblems(session);
         }
     }
     
     public void loadProblems(final Session session) {
         Course course=session.get(Course.class);
-
+        
         RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, user, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			@Override
 			public void onSuccess(ProblemAndSubmissionReceipt[] result) {
 				GWT.log("displaying problems for "+user.getUsername());
+
+				grid = new DataGrid<ProblemAndSubmissionReceipt>();
+		        createGridHeader();
+				panel.clear();
+				panel.add(grid);
 				displayProblems(result);
 			}
 			
@@ -140,12 +148,12 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
     }
     
     protected void displayProblems(ProblemAndSubmissionReceipt[] result) {
-    	if(result != null){
-	        grid.setRowCount(result.length);
-	        grid.setRowData(Arrays.asList(result));
-	        grid.setWidth("100%");
-	        grid.setHeight(result.length*50+"px");
-    	}
+        if(result != null){
+            grid.setRowCount(result.length);
+            grid.setRowData(Arrays.asList(result));
+            grid.setWidth("100%");
+            grid.setHeight(result.length*50+"px");
+        }
     }
 
 }
