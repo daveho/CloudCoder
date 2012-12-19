@@ -6,7 +6,7 @@ use FileHandle;
 # Bootstrap CloudCoder on an Ubuntu server
 
 # Download site
-my $DOWNLOAD_SITE = 'http://faculty.ycp.edu/~dhovemey'; # TODO: use S3 URL
+my $DOWNLOAD_SITE = 'https://s3.amazonaws.com/cloudcoder-binaries';
 
 my $program = $0;
 #print "program=$program\n";
@@ -69,6 +69,7 @@ GREET
 	my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
 	my $ccHostname = ask("What is the hostname of this server?");
 
+	print "\n";
 	my $startInstall = ask("Are you ready to start the installation? (yes/no)");
 	exit 0 if ((lc $startInstall) ne 'yes');
 	
