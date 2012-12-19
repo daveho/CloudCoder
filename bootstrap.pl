@@ -173,7 +173,7 @@ following web page:
 
 Note that no builders are running, so you won't be able to
 test submissions yet.  The builder jar file ($builderJar)
-is in the /home/cloud/webapp directory: you will need to copy
+is in the /home/$user directory: you will need to copy
 it to the server(s) which will be responsible for building
 and testing submissions.
 SUCCESS
