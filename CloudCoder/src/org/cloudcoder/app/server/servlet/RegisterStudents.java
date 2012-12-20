@@ -30,10 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.DefaultFileItemFactory;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -58,8 +55,13 @@ public class RegisterStudents extends HttpServlet
         try {
             conn=DBUtil.getConnection();
             
-            //TODO won't work on windows
-            DiskFileItemFactory factory=new DiskFileItemFactory(10*1024*1024, new File("/tmp"));
+            //Create a temporary file in a platform-independent manner
+            File tempFile = File.createTempFile("registerstudentsupload", ".tmp");
+            tempFile.delete();
+            tempFile.mkdirs();
+            tempFile.deleteOnExit();
+
+            DiskFileItemFactory factory=new DiskFileItemFactory(10*1024*1024, tempFile);
             ServletFileUpload upload = new ServletFileUpload(factory);
 
             int courseId=-1;

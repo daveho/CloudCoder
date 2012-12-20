@@ -3,8 +3,6 @@
 *~
 *.swp
 installations
-amazon
-local
-knox
-canisius
 /deps
+CloudCoderTools
+LATEST

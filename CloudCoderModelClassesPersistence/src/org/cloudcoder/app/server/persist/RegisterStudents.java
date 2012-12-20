@@ -42,6 +42,8 @@ public class RegisterStudents
                 "username\tfirstname\tlastname\temail\tpassword\tsection\n" +
                 "Usernames in the datbase will be re-used, but the names/email/password will not be updated," +
                 "and users will not be registered for a course if they are already registered");
+        System.out.println("Note that this may be a slow operation");
+        System.out.println("Some logging results will be appended to logs/cloudcoder.log rather than echoed to stdout");
         int num=ConfigurationUtil.registerStudentsForCourseId(new FileInputStream(filename), c.getId(), conn);
         System.out.println("Registered "+num+" students for "+c.getName());
     }
