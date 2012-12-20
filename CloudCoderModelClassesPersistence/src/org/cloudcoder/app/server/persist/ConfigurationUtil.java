@@ -22,8 +22,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -300,14 +304,15 @@ public class ConfigurationUtil
     public static int registerStudentsForCourseId(InputStream in, int courseId, Connection conn) throws SQLException
     {
         Scanner scan=new Scanner(in);
-        int num=0;
+        int numAdded=0;
+        int numProcessed=0;
         long totalStart=System.currentTimeMillis();
         while (scan.hasNextLine()) {
             String line=scan.nextLine().replaceAll("#.*","").trim();
             if (line.equals("")) {
                 continue;
             }
-            
+            numProcessed++;
             String[] tokens=line.split("\t");
             String username=tokens[0];
             String firstname=tokens[1];
@@ -336,16 +341,114 @@ public class ConfigurationUtil
                         password,
                         website);
             }
-            long lookupCreate=System.currentTimeMillis()-start;
             if (registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section)) {
-                num++;
+                numAdded++;
             }
             long register=System.currentTimeMillis()-start;
-            logger.info(lookupCreate+" to lookup/create, "+register+" to regsiter, "+(lookupCreate+register)+" total");
+            logger.info(register+" millis to regsiter "+username);
         }
         long totalTime=System.currentTimeMillis()-totalStart;
-        logger.warn("Total time to register "+num+" students was "+totalTime);
-        return num;
+        logger.warn("Total time to process "+numProcessed+" students was "+totalTime);
+        return numAdded;
+    }
+
+    public static int registerStudentsForCourseId2(InputStream in, int courseId, Connection conn) throws SQLException
+    {
+        Scanner scan=new Scanner(in);
+        Map<String,User> userMap=getAllUsers(conn);
+        Set<Integer> usersInCourse=getUsersInCourse(conn, courseId);
+        
+        int numAdded=0;
+        int numProcessed=0;
+        
+        long totalStart=System.currentTimeMillis();
+        while (scan.hasNextLine()) {
+            String line=scan.nextLine().replaceAll("#.*","").trim();
+            if (line.equals("")) {
+                continue;
+            }
+            numProcessed++;
+            String[] tokens=line.split("\t");
+            String username=tokens[0];
+            String firstname=tokens[1];
+            String lastname=tokens[2];
+            String email=tokens[3];
+            String password=tokens[4];
+            String website = ""; // We don't attempt to set a website URL for students
+            int section = 101; // The default section number
+            if (tokens.length > 5 && tokens[5] != null) {
+                section=Integer.parseInt(tokens[5]);
+            }
+            logger.info("Registering "+username+" for courseId "+courseId);
+            // Look up the user to see if they already exist
+            long start=System.currentTimeMillis();
+            int userId;
+            if (userMap.containsKey(username)) {
+                userId=userMap.get(username).getId();
+            } else {
+                // user doesn't already exist, so create a new one
+                userId=createOrUpdateUser(conn, 
+                        username,
+                        firstname,
+                        lastname,
+                        email,
+                        password,
+                        website);
+            }
+            if (!usersInCourse.contains(userId)) {
+                registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section);
+            }
+            long register=System.currentTimeMillis()-start;
+            logger.info(register+" millis to register "+username);
+        }
+        long totalTime=System.currentTimeMillis()-totalStart;
+        logger.warn("Total time to process "+numProcessed+" students was "+totalTime);
+        return numAdded;
+    }
+    
+    private static Set<Integer> getUsersInCourse(Connection conn, int courseId)
+    throws SQLException
+    {
+        PreparedStatement stmt = null;
+        ResultSet resultSet = null;
+        try {
+            stmt = conn.prepareStatement("select * from " + CourseRegistration.SCHEMA.getDbTableName()+
+                    " where courseId = ?");
+            stmt.setInt(1, courseId);
+            Set<Integer> users=new HashSet<Integer>();
+
+            resultSet= stmt.executeQuery();
+            while (resultSet.next()) {
+                User user=new User();
+                DBUtil.loadModelObjectFields(user, User.SCHEMA, resultSet);
+                users.add(user.getId());
+            }
+            return users;
+        } finally {
+            DBUtil.closeQuietly(resultSet);
+            DBUtil.closeQuietly(stmt);
+        }    }
+
+    private static Map<String, User> getAllUsers(Connection conn)
+    throws SQLException
+    {
+        PreparedStatement stmt = null;
+        ResultSet resultSet = null;
+        try {
+            stmt = conn.prepareStatement("select * from " + User.SCHEMA.getDbTableName());
+            Map<String, User> userMap=new HashMap<String,User>();
+
+            resultSet= stmt.executeQuery();
+            while (resultSet.next()) {
+                User user=new User();
+                DBUtil.loadModelObjectFields(user, User.SCHEMA, resultSet);
+                userMap.put(user.getUsername(), user);
+            }
+            return userMap;
+        } finally {
+            DBUtil.closeQuietly(resultSet);
+            DBUtil.closeQuietly(stmt);
+        }
     }
 
     static final String YES = "yes";
