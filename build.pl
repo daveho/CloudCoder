@@ -7,7 +7,7 @@ system("cd CloudCoderWebServer && ant clean && ant jar")/256 == 0
 	|| die "Couldn't build CloudCoderWebServer\n";
 
 print "==> Building CloudCoderBuilder...\n";
-system("cd CloudCoderBuilder && ant clean && ant jar")/256 == 0
+system("cd CloudCoderBuilder2 && ant clean && ant jar")/256 == 0
 	|| die "Couldn't build CloudCoderBuilder\n";
 
 print "==> Done!\n";
