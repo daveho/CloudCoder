@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -355,7 +356,14 @@ public class ProcessRunner {
 	 * @return the standard error written by the process as a List of strings
 	 */
 	public List<String> getStderrAsList() {
-		return stderrCollector.getCollectedOutput();
+		// Special case: if the process was killed because it exceeded
+		// a resource limit, its stderr is probably not useful.
+		ProcessStatus status = getStatus();
+		if (status == ProcessStatus.TIMED_OUT || status == ProcessStatus.FILE_SIZE_LIMIT_EXCEEDED) {
+			return Collections.emptyList();
+		} else {
+			return stderrCollector.getCollectedOutput();
+		}
 	}
 
 	/**
