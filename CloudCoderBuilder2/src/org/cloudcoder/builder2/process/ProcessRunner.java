@@ -304,10 +304,15 @@ public class ProcessRunner {
 	 * @return the {@link ProcessStatus}
 	 */
 	public ProcessStatus getStatus() {
-		// Special case: if the process was killed by signals 9 (KILL) or 24 (XCPU),
-		// treat as a timeout.
-		if (status == ProcessStatus.KILLED_BY_SIGNAL && (exitCode == 9 || exitCode == 24)) {
-			return ProcessStatus.TIMED_OUT;
+		if (status == ProcessStatus.KILLED_BY_SIGNAL) {
+			if (exitCode == 9 || exitCode == 24) {
+				// Special case: if the process was killed by signals 9 (KILL) or 24 (XCPU),
+				// treat as a timeout.
+				return ProcessStatus.TIMED_OUT;
+			} else if (exitCode == 25) {
+				// Special case: process killed with SIGXFSZ, file size limit exceeded.
+				return ProcessStatus.FILE_SIZE_LIMIT_EXCEEDED;
+			}
 		}
 		return status;
 	}

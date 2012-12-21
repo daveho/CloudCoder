@@ -37,4 +37,7 @@ public enum ProcessStatus {
 	
 	/** Process could not be started. */
 	COULD_NOT_START,
+	
+	/** File size limit exceeded. */
+	FILE_SIZE_LIMIT_EXCEEDED,
 }
