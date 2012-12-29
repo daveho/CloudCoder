@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
@@ -532,9 +533,6 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 
-	/**
-	 * Description
-	 */
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
 			final User user, final Course course) {
@@ -543,8 +541,15 @@ public class JDBCDatabase implements IDatabase {
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
-			public List<ProblemAndSubmissionReceipt> run(Connection conn)
-					throws SQLException {
+			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
+//				CourseRegistrationList reg = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
+//				if (reg.getList().isEmpty()) {
+//					// User is not registered for this course
+//					return Collections.emptyList();
+//				}
+//				
+//				return null;
+				
 				// Get all problems for this user/course
 				List<Problem> problemList = doGetProblemsInCourse(user, course, conn, this);
 				
@@ -590,6 +595,7 @@ public class JDBCDatabase implements IDatabase {
 				}
 				
 				return result;
+
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
@@ -1288,13 +1294,13 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public CourseRegistration findCourseRegistration(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistration>() {
+	public CourseRegistrationList findCourseRegistrations(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistrationList>() {
 			@Override
-			public CourseRegistration run(Connection conn) throws SQLException {
+			public CourseRegistrationList run(Connection conn) throws SQLException {
 				int userId = user.getId();
 				int courseId = course.getId();
-				return doGetCourseRegistration(conn, courseId, userId, this);
+				return doGetCourseRegistrations(conn, courseId, userId, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1383,8 +1389,8 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
 				// verify that the user is an instructor in the course
-				CourseRegistration courseReg = doGetCourseRegistration(conn, course.getId(), user.getId(), this);
-				if (courseReg == null || courseReg.getRegistrationType() != CourseRegistrationType.INSTRUCTOR) {
+				CourseRegistrationList courseReg = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
+				if (!courseReg.isInstructor()) {
 					throw new CloudCoderAuthenticationException("Only instructor can delete a problem");
 				}
 				
@@ -1413,6 +1419,23 @@ public class JDBCDatabase implements IDatabase {
 		});
 	}
 	
+	/**
+	 * Check whether at least one of the {@link CourseRegistration} objects
+	 * is an instructor registration.
+	 * 
+	 * @param courseReg list of {@link CourseRegistration} objects
+	 * @return true if at least one {@link CourseRegistration} is an instructor
+	 *         registration
+	 */
+	protected boolean isInstructor(List<CourseRegistration> courseReg) {
+		for (CourseRegistration reg : courseReg) {
+			if (reg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public OperationResult addUserRegistrationRequest(final UserRegistrationRequest request) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<OperationResult>() {
@@ -2006,7 +2029,7 @@ public class JDBCDatabase implements IDatabase {
 		}
 	}
 
-	protected CourseRegistration doGetCourseRegistration(
+	protected CourseRegistrationList doGetCourseRegistrations(
 			Connection conn,
 			int courseId,
 			int userId,
@@ -2022,13 +2045,15 @@ public class JDBCDatabase implements IDatabase {
 		
 		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
 		
-		if (!resultSet.next()) {
-			return null;
+		CourseRegistrationList result = new CourseRegistrationList();
+		
+		while (resultSet.next()) {
+			CourseRegistration reg = new CourseRegistration();
+			DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
+			result.getList().add(reg);
 		}
 		
-		CourseRegistration reg = new CourseRegistration();
-		DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
-		return reg;
+		return result;
 	}
 
 	/**

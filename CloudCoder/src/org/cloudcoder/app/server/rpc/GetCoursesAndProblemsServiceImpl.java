@@ -45,6 +45,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -288,8 +289,8 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		
 		// Find user's registration in the course: if user is not instructor,
 		// import is not allowed
-		CourseRegistration reg = Database.getInstance().findCourseRegistration(user, course);
-		if (reg.getRegistrationType().ordinal() < CourseRegistrationType.INSTRUCTOR.ordinal()) {
+		CourseRegistrationList reg = Database.getInstance().findCourseRegistrations(user, course);
+		if (!reg.isInstructor()) {
 			throw new CloudCoderAuthenticationException("Only an instructor can import a problem in a course");
 		}
 		

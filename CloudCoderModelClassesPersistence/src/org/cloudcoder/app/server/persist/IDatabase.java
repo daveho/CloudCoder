@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -245,13 +246,16 @@ public interface IDatabase {
 	public List<RepoProblemSearchResult> searchRepositoryExercises(RepoProblemSearchCriteria searchCriteria);
 
 	/**
-	 * Find {@link CourseRegistration} for given user in given course.
+	 * Find all {@link CourseRegistration}s for given user in given course.
+	 * There can be more than one: for example, if the user is an instructor
+	 * for multiple sections of the same course.
 	 * 
 	 * @param user    the user
 	 * @param course  the course
-	 * @return the {@link CourseRegistration}, or null if the user is not registered in the course
+	 * @return list of {@link CourseRegistration}s, which will be empty if
+	 *         the user is not registered for the course
 	 */
-	public CourseRegistration findCourseRegistration(User user, Course course);
+	public CourseRegistrationList findCourseRegistrations(User user, Course course);
 
     /**
      * Add a new user record to the database, and register that person
