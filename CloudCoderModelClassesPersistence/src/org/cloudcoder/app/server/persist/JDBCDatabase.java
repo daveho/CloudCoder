@@ -52,6 +52,7 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
@@ -542,36 +543,35 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
 				// See: https://gist.github.com/4408441
-				// FIXME: shouldn't hard-code field names 
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select p.*, sr.*, e.*, sr_ids.max_sr_event_id" +
-						"  from cc_problems as p" +
-						" join (select p.problem_id, sm.max_sr_event_id" +
-						"         from cc_problems as p" +
-						"       left join (select e.problem_id as problem_id, max(sr.event_id) as max_sr_event_id" +
-						"                    from cc_submission_receipts as sr, cc_events as e" +
-						"                  where e.id = sr.event_id" +
-						"                    and e.user_id = ?" +
-						"                  group by e.problem_id) as sm on p.problem_id = sm.problem_id" +
-						"        where p.course_id = ?" +
-						"        ) as sr_ids on sr_ids.problem_id = p.problem_id" +
-						" left join cc_submission_receipts as sr on sr.event_id = sr_ids.max_sr_event_id" +
-						" left join cc_events as e on e.id = sr_ids.max_sr_event_id" + 
-						" where p.deleted = 0" +
-						"   and p.problem_id in" +
-						"          (select p.problem_id from cc_problems as p" +
-						"             join cc_course_registrations as cr on cr.user_id = ? and cr.course_id = ?" +
-						"           where p.visible <> 0" +
-						"              or cr.registration_type >= ?" +
-						"              or p.problem_id in (select q.problem_id" +
-						"                                    from cc_quizzes as q, cc_course_registrations as cr" +
-						"                                   where cr.user_id = ?" +
-						"                                     and cr.course_id = ?" +
-						"                                     and q.course_id = cr.course_id" +
-						"                                  and q.section = cr.section" +
-						"                                  and q.start_time <= ?" +
-						"                                  and (q.end_time >= ? or q.end_time = 0)))"
+						"  from " + Problem.SCHEMA.getDbTableName() + " as p" +
+						" join (select p." + Problem.PROBLEM_ID.getName() + ", sm.max_sr_event_id" +
+						"         from " + Problem.SCHEMA.getDbTableName() + " as p" +
+						"       left join (select e." + Event.PROBLEM_ID.getName() + " as problem_id, max(sr." + SubmissionReceipt.EVENT_ID.getName() + ") as max_sr_event_id" +
+						"                    from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " + Event.SCHEMA.getDbTableName() + " as e" +
+						"                  where e." + Event.ID.getName() + " = sr." + SubmissionReceipt.EVENT_ID.getName() + "" +
+						"                    and e." + Event.USER_ID.getName() + " = ?" +
+						"                  group by e." + Event.PROBLEM_ID.getName() + ") as sm on p." + Problem.PROBLEM_ID.getName() + " = sm.problem_id" +
+						"        where p." + Problem.COURSE_ID.getName() + " = ?" +
+						"        ) as sr_ids on sr_ids.problem_id = p." + Problem.PROBLEM_ID.getName() + "" +
+						" left join " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr on sr." + SubmissionReceipt.EVENT_ID.getName() + " = sr_ids.max_sr_event_id" +
+						" left join " + Event.SCHEMA.getDbTableName() + " as e on e." + Event.ID.getName() + " = sr_ids.max_sr_event_id" + 
+						" where p." + Problem.DELETED.getName() + " = 0" +
+						"   and p." + Problem.PROBLEM_ID.getName() + " in" +
+						"          (select p." + Problem.PROBLEM_ID.getName() + " from " + Problem.SCHEMA.getDbTableName() + " as p" +
+						"             join " + CourseRegistration.SCHEMA.getDbTableName() + " as cr on cr." + CourseRegistration.USER_ID.getName() + " = ? and cr." + CourseRegistration.COURSE_ID.getName() + " = ?" +
+						"           where p." + Problem.VISIBLE.getName() + " <> 0" +
+						"              or cr." + CourseRegistration.REGISTRATION_TYPE.getName() + " >= ?" +
+						"              or p." + Problem.PROBLEM_ID.getName() + " in (select q." + Quiz.PROBLEM_ID.getName() + "" +
+						"                                    from " + Quiz.SCHEMA.getDbTableName() + " as q, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr" +
+						"                                   where cr." + CourseRegistration.USER_ID.getName() + " = ?" +
+						"                                     and cr." + CourseRegistration.COURSE_ID.getName() + " = ?" +
+						"                                     and q." + Quiz.COURSE_ID.getName() + " = cr." + CourseRegistration.COURSE_ID.getName() + "" +
+						"                                  and q." + Quiz.SECTION.getName() + " = cr." + CourseRegistration.SECTION.getName() +
+						"                                  and q." + Quiz.START_TIME.getName() + " <= ?" +
+						"                                  and (q." + Quiz.END_TIME.getName() + " >= ? or q." + Quiz.END_TIME.getName() + " = 0)))"
 				);
 				stmt.setInt(1, user.getId());
 				stmt.setInt(2, course.getId());
