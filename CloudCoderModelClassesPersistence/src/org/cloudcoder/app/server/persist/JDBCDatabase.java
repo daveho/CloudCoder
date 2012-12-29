@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 import org.cloudcoder.app.shared.model.Change;
@@ -542,60 +541,79 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
-//				CourseRegistrationList reg = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
-//				if (reg.getList().isEmpty()) {
-//					// User is not registered for this course
-//					return Collections.emptyList();
-//				}
-//				
-//				return null;
-				
-				// Get all problems for this user/course
-				List<Problem> problemList = doGetProblemsInCourse(user, course, conn, this);
-				
-				// Get all submission receipts for this user/course.
-				// Note that we join on course_registrations in order to ensure 
-				// that user is authorized to get information about the course.
-				// We also check for each problem that the user is either an instructor
-				// or that the problem is visible, since we don't want to show
-				// information for problems that the student shouldn't have
-				// access to.
+				// See: https://gist.github.com/4408441
+				// FIXME: shouldn't hard-code field names 
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Problem.SCHEMA.getDbTableName() + " as p, " + Event.SCHEMA.getDbTableName() + " as e, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
-						" where cr.user_id = ?" +
-						"   and cr.course_id = ? " +
-						"   and (cr.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
-						"   and p.course_id = cr.course_id " +
-						"   and e.problem_id = p.problem_id " +
-						"   and p." + Problem.DELETED.getName() + " = 0 " +
-						"   and e.user_id = cr.user_id " +
-						"   and r.event_id = e.id "
+						"select p.*, sr.*, e.*, sr_ids.max_sr_event_id" +
+						"  from cc_problems as p" +
+						" join (select p.problem_id, sm.max_sr_event_id" +
+						"         from cc_problems as p" +
+						"       left join (select e.problem_id as problem_id, max(sr.event_id) as max_sr_event_id" +
+						"                    from cc_submission_receipts as sr, cc_events as e" +
+						"                  where e.id = sr.event_id" +
+						"                    and e.user_id = ?" +
+						"                  group by e.problem_id) as sm on p.problem_id = sm.problem_id" +
+						"        where p.course_id = ?" +
+						"        ) as sr_ids on sr_ids.problem_id = p.problem_id" +
+						" left join cc_submission_receipts as sr on sr.event_id = sr_ids.max_sr_event_id" +
+						" left join cc_events as e on e.id = sr_ids.max_sr_event_id" + 
+						" where p.deleted = 0" +
+						"   and p.problem_id in" +
+						"          (select p.problem_id from cc_problems as p" +
+						"             join cc_course_registrations as cr on cr.user_id = ? and cr.course_id = ?" +
+						"           where p.visible <> 0" +
+						"              or cr.registration_type >= ?" +
+						"              or p.problem_id in (select q.problem_id" +
+						"                                    from cc_quizzes as q, cc_course_registrations as cr" +
+						"                                   where cr.user_id = ?" +
+						"                                     and cr.course_id = ?" +
+						"                                     and q.course_id = cr.course_id" +
+						"                                  and q.section = cr.section" +
+						"                                  and q.start_time <= ?" +
+						"                                  and (q.end_time >= ? or q.end_time = 0)))"
 				);
 				stmt.setInt(1, user.getId());
 				stmt.setInt(2, course.getId());
+				stmt.setInt(3, user.getId());
+				stmt.setInt(4, course.getId());
+				stmt.setInt(5, CourseRegistrationType.INSTRUCTOR.ordinal());
+				stmt.setInt(6, user.getId());
+				stmt.setInt(7, course.getId());
+				long currentTime = System.currentTimeMillis();
+				stmt.setLong(8, currentTime);
+				stmt.setLong(9, currentTime);
 				
-				// Map of problem ids to most recent submission receipt for problem
-				Map<Integer, SubmissionReceipt> problemIdToMostRecentSubmissionReceiptMap = new HashMap<Integer, SubmissionReceipt>();
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					SubmissionReceipt submissionReceipt = loadSubmissionReceiptAndEvent(resultSet);
-					SubmissionReceipt current = problemIdToMostRecentSubmissionReceiptMap.get(submissionReceipt.getEvent().getProblemId());
-					if (current == null || submissionReceipt.getEventId() > current.getEventId()) {
-						problemIdToMostRecentSubmissionReceiptMap.put(submissionReceipt.getEvent().getProblemId(), submissionReceipt);
-					}
-				}
-				
-				// Match up problems and corresponding submission receipts.
 				List<ProblemAndSubmissionReceipt> result = new ArrayList<ProblemAndSubmissionReceipt>();
-				for (Problem problem : problemList) {
-					SubmissionReceipt receipt = problemIdToMostRecentSubmissionReceiptMap.get(problem.getProblemId());
-					ProblemAndSubmissionReceipt problemAndSubscriptionReceipt = new ProblemAndSubmissionReceipt(problem, receipt);
-					result.add(problemAndSubscriptionReceipt);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				
+				while (resultSet.next()) {
+					Problem problem = new Problem();
+					int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
+					
+					// Is there a submission receipt?
+					SubmissionReceipt receipt;
+					if (resultSet.getObject(index) != null) {
+						// Yes
+						receipt = new SubmissionReceipt();
+						index = DBUtil.loadModelObjectFields(receipt, SubmissionReceipt.SCHEMA, resultSet, index);
+						Event event = new Event();
+						index = DBUtil.loadModelObjectFields(event, Event.SCHEMA, resultSet, index);
+						receipt.setEvent(event);
+					} else {
+						// No
+						receipt = null;
+					}
+					
+					ProblemAndSubmissionReceipt problemAndSubmissionReceipt = new ProblemAndSubmissionReceipt();
+					problemAndSubmissionReceipt.setProblem(problem);
+					problemAndSubmissionReceipt.setReceipt(receipt);
+					
+					result.add(problemAndSubmissionReceipt);
 				}
 				
 				return result;
-
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
