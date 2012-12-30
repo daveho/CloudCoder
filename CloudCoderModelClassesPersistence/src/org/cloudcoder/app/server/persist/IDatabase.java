@@ -78,6 +78,15 @@ public interface IDatabase {
 	 */
 	public User getUserWithoutAuthentication(String userName);
 	
+	/**
+	 * Get the {@link Problem} with given problem id.
+	 * Checks that the {@link User} has permission to see the problem.
+	 * 
+	 * @param user      the {@link User}
+	 * @param problemId the problem id
+	 * @return the {@link Problem}, or null if the problem doesn't exist, or the
+	 *         user does not have permission to see it
+	 */
 	public Problem getProblem(User user, int problemId);
 
 	/**
