@@ -302,14 +302,11 @@ public class JDBCDatabase implements IDatabase {
 			public Problem run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
+						"select p.*, r.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
 						" where p.problem_id = ? " +
 						"   and c.id = p.course_id " +
 						"   and r.course_id = c.id " +
-						"   and r.user_id = ?" +
-						//  An instructor can see any problem in a course.
-						//  A student can only see a problem if it is visible.
-						"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)"
+						"   and r.user_id = ?"
 				);
 				stmt.setInt(1, problemId);
 				stmt.setInt(2, user.getId());
@@ -317,12 +314,38 @@ public class JDBCDatabase implements IDatabase {
 				ResultSet resultSet = executeQuery(stmt);
 				
 				if (!resultSet.next()) {
-					// no such problem, or user is not authorized to see this problem
+					// no such problem, or user is not registered in the course
+					// in which the problem is assigned
 					return null;
 				}
 				
+				// Get Problem and CourseRegistration
 				Problem problem = new Problem();
-				load(problem, resultSet, 1);
+				CourseRegistration reg = new CourseRegistration();
+				
+				int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
+				index = DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet, index);
+				
+				// Check to see if user is authorized to see this problem
+				
+				// Instructors are always allowed to see problems, even if not visible
+				if (reg.getRegistrationType().isInstructor()) {
+					return problem;
+				}
+				
+				// Problem is visible?
+				if (problem.isVisible()) {
+					return problem;
+				}
+				
+				// See if there is an ongoing quiz
+				Quiz quiz = doFindQuiz(problem.getProblemId(), reg.getSection(), System.currentTimeMillis(), conn, this);
+				if (quiz != null) {
+					System.out.println("Found quiz for problem " + problem.getProblemId());
+					// TODO: return the Quiz, too
+					return problem;
+				}
+				
 				return problem;
 			}
 			
@@ -332,7 +355,7 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblem(int)
 	 */
@@ -2112,6 +2135,39 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		return true;
+	}
+
+	protected Quiz doFindQuiz(
+			int problemId,
+			int section,
+			long currentTimeMillis,
+			Connection conn,
+			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"select q.* from cc_quizzes as q " +
+				" where q.problem_id = ? " +
+				"   and q.section = ? " +
+				"   and q.start_time <= ? " +
+				"   and (q.end_time >= ? or q.end_time = 0)"
+		);
+		stmt.setInt(1, problemId);
+		stmt.setInt(2, section);
+		stmt.setLong(3, currentTimeMillis);
+		stmt.setLong(4, currentTimeMillis);
+		
+		Quiz result = null;
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		while (resultSet.next()) {
+			Quiz quiz = new Quiz();
+			DBUtil.loadModelObjectFields(quiz, Quiz.SCHEMA, resultSet);
+			if (result == null || quiz.getEndTime() > result.getEndTime()) {
+				result = quiz;
+			}
+		}
+
+		return result;
 	}
 	
 	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
