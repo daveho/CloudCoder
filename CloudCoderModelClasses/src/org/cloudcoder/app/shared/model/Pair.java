@@ -37,6 +37,17 @@ public class Pair<L, R> {
 	}
 	
 	/**
+	 * Constructor.
+	 * 
+	 * @param left   left value
+	 * @param right  right value
+	 */
+	public Pair(L left, R right) {
+		this.left = left;
+		this.right = right;
+	}
+	
+	/**
 	 * Set left value.
 	 * @param left left value
 	 */

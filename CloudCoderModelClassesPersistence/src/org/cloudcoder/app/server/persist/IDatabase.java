@@ -35,6 +35,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
@@ -81,13 +82,17 @@ public interface IDatabase {
 	/**
 	 * Get the {@link Problem} with given problem id.
 	 * Checks that the {@link User} has permission to see the problem.
+	 * Returns a {@link Pair} containing the problem, and if appropriate
+	 * a {@link Quiz}.  The quiz is returned only if the user has
+	 * permission to see the problem because of an ongoing quiz.
 	 * 
 	 * @param user      the {@link User}
 	 * @param problemId the problem id
-	 * @return the {@link Problem}, or null if the problem doesn't exist, or the
-	 *         user does not have permission to see it
+	 * @return the {@link Pair} containing the problem and (maybe) quiz;
+	 *         null if there is no such problem, or if the user is not
+	 *         permitted to see the problem
 	 */
-	public Problem getProblem(User user, int problemId);
+	public Pair<Problem, Quiz> getProblem(User user, int problemId);
 
 	/**
 	 * Get Problem with given problem id.

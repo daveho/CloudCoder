@@ -29,8 +29,10 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,20 +56,23 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
 		// Get the problem
-		Problem problem = Database.getInstance().getProblem(user, problemId);
-
-		if (problem != null) {
-			// Store the Problem in the HttpSession - that way, the servlets
-			// that depend on knowing the problem have access to a known-authentic
-			// problem. (I.e., we don't have to trust a problem id sent as
-			// an RPC parameter which might have been forged.)
-			getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.PROBLEM_KEY, problem);
-
-			// If appropriate, record that the user has started the problem
-			Database.getInstance().getOrAddLatestSubmissionReceipt(user, problem);
+		Pair<Problem, Quiz> pair = Database.getInstance().getProblem(user, problemId);
+		if (pair == null) {
+			return null;
 		}
 
-		return problem;
+		// Store the Problem and (if there is one) Quiz in the HttpSession -
+		// that way, the servlets that depend on knowing the problem/quiz
+		// have access to a known-authentic problem/quiz. (I.e., we don't have
+		// to trust a problem id sent as an RPC parameter which might have
+		// been forged.)
+		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.PROBLEM_KEY, pair.getLeft());
+		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.QUIZ_KEY, pair.getRight());
+
+		// If appropriate, record that the user has started the problem
+		Database.getInstance().getOrAddLatestSubmissionReceipt(user, pair.getLeft());
+		
+		return pair.getLeft();
 	}
 
     @Override

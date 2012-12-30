@@ -296,10 +296,10 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public Problem getProblem(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Problem>() {
+	public Pair<Problem, Quiz> getProblem(final User user, final int problemId) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Pair<Problem, Quiz>>() {
 			@Override
-			public Problem run(Connection conn) throws SQLException {
+			public Pair<Problem, Quiz> run(Connection conn) throws SQLException {
 				PreparedStatement stmt = prepareStatement(
 						conn,
 						"select p.*, r.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
@@ -330,23 +330,22 @@ public class JDBCDatabase implements IDatabase {
 				
 				// Instructors are always allowed to see problems, even if not visible
 				if (reg.getRegistrationType().isInstructor()) {
-					return problem;
+					return new Pair<Problem, Quiz>(problem, null);
 				}
 				
 				// Problem is visible?
 				if (problem.isVisible()) {
-					return problem;
+					return new Pair<Problem, Quiz>(problem, null);
 				}
 				
 				// See if there is an ongoing quiz
 				Quiz quiz = doFindQuiz(problem.getProblemId(), reg.getSection(), System.currentTimeMillis(), conn, this);
 				if (quiz != null) {
 					System.out.println("Found quiz for problem " + problem.getProblemId());
-					// TODO: return the Quiz, too
-					return problem;
+					return new Pair<Problem, Quiz>(problem, quiz);
 				}
 				
-				return problem;
+				return null;
 			}
 			
 			@Override
