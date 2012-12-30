@@ -561,17 +561,19 @@ public class JDBCDatabase implements IDatabase {
 						" where p.deleted = 0" +
 						"   and p.problem_id in" +
 						"          (select p.problem_id from cc_problems as p" +
-						"             join cc_course_registrations as cr on cr.user_id = ? and cr.course_id = ?" +
-						"           where p.visible <> 0" +
-						"              or cr.registration_type >= ?" +
-						"              or p.problem_id in (select q.problem_id" +
-						"                                    from cc_quizzes as q, cc_course_registrations as cr" +
-						"                                   where cr.user_id = ?" +
-						"                                     and cr.course_id = ?" +
-						"                                     and q.course_id = cr.course_id" +
-						"                                  and q.section = cr.section" +
-						"                                  and q.start_time <= ?" +
-						"                                  and (q.end_time >= ? or q.end_time = 0)))"
+						"          join cc_course_registrations as cr on cr.course_id = p.course_id and cr.user_id = ?" +
+						"          where" +
+						"             p.course_id = ?" +
+						"             and (   p.visible <> 0" +
+						"                  or cr.registration_type >= ?" +
+						"                  or p.problem_id in (select q.problem_id" +
+						"                                        from cc_quizzes as q, cc_course_registrations as cr" +
+						"                                       where cr.user_id = ?" +
+						"                                         and cr.course_id = ?" +
+						"                                         and q.course_id = cr.course_id" +
+						"                                         and q.section = cr.section" +
+						"                                         and q.start_time <= ?" +
+						"                                         and (q.end_time >= ? or q.end_time = 0))))"
 				);
 				stmt.setInt(1, user.getId());
 				stmt.setInt(2, course.getId());
