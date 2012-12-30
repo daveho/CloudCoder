@@ -33,6 +33,7 @@ import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,11 +160,24 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
 	@Override
-	public Boolean logChange(Change[] changeList, long clientSubmitTime) throws CloudCoderAuthenticationException {
+	public Boolean logChange(Change[] changeList, long clientSubmitTime)
+			throws CloudCoderAuthenticationException, QuizEndedException {
 		long serverSubmitTime = System.currentTimeMillis();
 
 		// make sure client is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		// if there is a quiz, check whether it has ended
+		Quiz quiz = (Quiz) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.QUIZ_KEY);
+		if (quiz != null) {
+			// User is working on a quiz.
+			if (quiz.getEndTime() > 0) { // end time of 0 means open-ended
+				long currentTime = System.currentTimeMillis();
+				if (currentTime > quiz.getEndTime()) {
+					throw new QuizEndedException();
+				}
+			}
+		}
 		
 		// Make sure all Changes have proper user id
 		for (Change change : changeList) {
