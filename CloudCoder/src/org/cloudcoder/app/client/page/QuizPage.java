@@ -51,6 +51,7 @@ public class QuizPage extends CloudCoderPage {
 		private ListBox sectionListBox;
 		private StatusMessageView statusMessageView;
 		private Button startQuizButton;
+		private Button endQuizButton;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -97,12 +98,23 @@ public class QuizPage extends CloudCoderPage {
 			this.startQuizButton = new Button("Start Quiz");
 			centerPanel.add(startQuizButton);
 			centerPanel.setWidgetLeftWidth(startQuizButton, 40, Unit.PX, 140, Unit.PX);
-			centerPanel.setWidgetTopHeight(startQuizButton, 86, Unit.PX, 32, Unit.PX);
+			centerPanel.setWidgetTopHeight(startQuizButton, 96, Unit.PX, 32, Unit.PX);
 			startQuizButton.setEnabled(false);
 			startQuizButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					doStartQuiz();
+				}
+			});
+			this.endQuizButton = new Button("End Quiz");
+			centerPanel.add(endQuizButton);
+			centerPanel.setWidgetLeftWidth(endQuizButton, 40, Unit.PX, 140, Unit.PX);
+			centerPanel.setWidgetTopHeight(endQuizButton, 156, Unit.PX, 32, Unit.PX);
+			endQuizButton.setEnabled(false);
+			endQuizButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					doEndQuiz();
 				}
 			});
 			
@@ -130,8 +142,14 @@ public class QuizPage extends CloudCoderPage {
 				public void onSuccess(Quiz result) {
 					getSession().add(result);
 					getSession().add(StatusMessage.goodNews("Quiz started"));
+					startQuizButton.setEnabled(false);
+					endQuizButton.setEnabled(true);
 				}
 			});
+		}
+		
+		private void doEndQuiz() {
+			GWT.log("End quiz...");
 		}
 
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
