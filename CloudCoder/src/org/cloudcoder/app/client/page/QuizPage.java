@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
@@ -29,6 +30,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
 
 /**
  * Page allowing an instructor to administer a quiz for a {@link Problem}.
@@ -38,6 +40,8 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 public class QuizPage extends CloudCoderPage {
 	
 	private class UI extends Composite {
+		private ListBox sectionListBox;
+
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
@@ -64,6 +68,16 @@ public class QuizPage extends CloudCoderPage {
 			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX);
 			
 			LayoutPanel centerPanel = new LayoutPanel();
+
+			Label sectionLabel = new Label("Choose section:");
+			centerPanel.add(sectionLabel);
+			centerPanel.setWidgetLeftWidth(sectionLabel, 40, Unit.PX, 180, Unit.PX);
+			centerPanel.setWidgetTopHeight(sectionLabel, 20, Unit.PX, 28, Unit.PX);
+			this.sectionListBox = new ListBox();
+			centerPanel.add(sectionListBox);
+			centerPanel.setWidgetLeftWidth(sectionListBox, 40, Unit.PX, 140, Unit.PX);
+			centerPanel.setWidgetTopHeight(sectionListBox, 52, Unit.PX, 28, Unit.PX);
+			
 			dockLayoutPanel.add(centerPanel);
 			
 			initWidget(dockLayoutPanel);
