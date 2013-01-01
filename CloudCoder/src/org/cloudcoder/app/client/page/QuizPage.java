@@ -47,7 +47,7 @@ public class QuizPage extends CloudCoderPage {
 				@Override
 				public void run() {
 					GWT.log("Going back to course admin page");
-					getSession().add(Session.Event.COURSE_ADMIN);
+					getSession().notifySubscribers(Session.Event.COURSE_ADMIN, null);
 				}
 			});
 			navPanel.setLogoutHandler(new LogoutHandler(getSession()));
