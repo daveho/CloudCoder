@@ -1683,6 +1683,15 @@ public class JDBCDatabase implements IDatabase {
 					throw new CloudCoderAuthenticationException("User is not an instructor in given course/section");
 				}
 				
+				// Delete previous quiz for this problem/section (if any)
+				PreparedStatement delOldQuiz = prepareStatement(
+						conn,
+						"delete from cc_quizzes where problem_id = ? and section = ?"
+				);
+				delOldQuiz.setInt(1, problem.getProblemId());
+				delOldQuiz.setInt(2, section);
+				delOldQuiz.executeUpdate();
+				
 				// Create the quiz record
 				Quiz quiz = new Quiz();
 				quiz.setProblemId(problem.getProblemId());

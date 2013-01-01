@@ -52,6 +52,7 @@ public class QuizPage extends CloudCoderPage {
 		private StatusMessageView statusMessageView;
 		private Button startQuizButton;
 		private Button endQuizButton;
+		private Label timeLabel;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -117,6 +118,11 @@ public class QuizPage extends CloudCoderPage {
 					doEndQuiz();
 				}
 			});
+			this.timeLabel = new Label("");
+			timeLabel.setStyleName("cc-quizTimer", true);
+			centerPanel.add(timeLabel);
+			centerPanel.setWidgetTopHeight(timeLabel, 96, Unit.PX, 100, Unit.PX);
+			centerPanel.setWidgetLeftWidth(timeLabel, 200, Unit.PX, 450, Unit.PX);
 			
 			dockLayoutPanel.add(centerPanel);
 			
@@ -144,6 +150,7 @@ public class QuizPage extends CloudCoderPage {
 					getSession().add(StatusMessage.goodNews("Quiz started"));
 					startQuizButton.setEnabled(false);
 					endQuizButton.setEnabled(true);
+					timeLabel.setText("0:00");
 				}
 			});
 		}

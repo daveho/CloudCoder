@@ -196,3 +196,10 @@
 }
 .cc-dialogTitle {
 }
+
+/* Timer in QuizPage. */
+.cc-quizTimer {
+	font-weight: bold;
+	font-size: 92px;
+	text-align: right;
+}
