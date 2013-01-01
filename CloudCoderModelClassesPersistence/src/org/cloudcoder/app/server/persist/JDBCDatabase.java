@@ -1657,6 +1657,64 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Quiz startQuiz(final User user, final Problem problem, final int section) throws CloudCoderAuthenticationException {
+		return databaseRunAuth(new AbstractDatabaseRunnable<Quiz>() {
+			@Override
+			public Quiz run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
+				// Find the user's course registration in the course/section
+				PreparedStatement findReg = prepareStatement(
+						conn,
+						"select cr.* from cc_course_registrations as cr " +
+						" where cr.user_id = ? " +
+						"   and cr.course_id = ? " +
+						"   and cr.section = ? " +
+						"   and cr.registration_type >= ?"
+				);
+				findReg.setInt(1, user.getId());
+				findReg.setInt(2, problem.getCourseId());
+				findReg.setInt(3, section);
+				findReg.setInt(4, CourseRegistrationType.INSTRUCTOR.ordinal());
+				
+				ResultSet resultSet = executeQuery(findReg);
+				
+				if (!resultSet.next()) {
+					throw new CloudCoderAuthenticationException("User is not an instructor in given course/section");
+				}
+				
+				// Create the quiz record
+				Quiz quiz = new Quiz();
+				quiz.setProblemId(problem.getProblemId());
+				quiz.setCourseId(problem.getCourseId());
+				quiz.setSection(section);
+				quiz.setStartTime(System.currentTimeMillis());
+				quiz.setEndTime(0L);
+				PreparedStatement insertQuiz = prepareStatement(
+						conn,
+						"insert into cc_quizzes values (" +
+						DBUtil.getInsertPlaceholdersNoId(Quiz.SCHEMA) +
+						")",
+						PreparedStatement.RETURN_GENERATED_KEYS
+				);
+				DBUtil.bindModelObjectValuesForInsert(quiz, Quiz.SCHEMA, insertQuiz);
+				
+				insertQuiz.executeUpdate();
+				
+				ResultSet generatedKey = getGeneratedKeys(insertQuiz);
+				if (!generatedKey.next()) {
+					throw new SQLException("Could not get generated key for inserted Quiz");
+				}
+				quiz.setId(generatedKey.getInt(1));
+				
+				return quiz;
+			}
+			@Override
+			public String getDescription() {
+				return " starting quiz";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

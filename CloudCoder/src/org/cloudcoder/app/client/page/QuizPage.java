@@ -18,11 +18,13 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.shared.GWT;
@@ -88,7 +90,7 @@ public class QuizPage extends CloudCoderPage {
 			centerPanel.add(sectionLabel);
 			centerPanel.setWidgetLeftWidth(sectionLabel, 40, Unit.PX, 180, Unit.PX);
 			centerPanel.setWidgetTopHeight(sectionLabel, 20, Unit.PX, 20, Unit.PX);
-			this.sectionListBox = new ListBox();
+			this.sectionListBox = new ListBox(false);
 			centerPanel.add(sectionListBox);
 			centerPanel.setWidgetLeftWidth(sectionListBox, 40, Unit.PX, 140, Unit.PX);
 			centerPanel.setWidgetTopHeight(sectionListBox, 44, Unit.PX, 28, Unit.PX);
@@ -110,7 +112,26 @@ public class QuizPage extends CloudCoderPage {
 		}
 
 		protected void doStartQuiz() {
-			// TODO
+			int index = sectionListBox.getSelectedIndex();
+			if (index < 0) {
+				getSession().add(StatusMessage.error("Please select a section"));
+			}
+			int section = Integer.parseInt(sectionListBox.getItemText(index));
+			
+			Problem problem = getSession().get(Problem.class);
+			
+			RPC.getCoursesAndProblemsService.startQuiz(problem, section, new AsyncCallback<Quiz>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Could not start quiz", caught));
+				}
+
+				@Override
+				public void onSuccess(Quiz result) {
+					getSession().add(result);
+					getSession().add(StatusMessage.goodNews("Quiz started"));
+				}
+			});
 		}
 
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {

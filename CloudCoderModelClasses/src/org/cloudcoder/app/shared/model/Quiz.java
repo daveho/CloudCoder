@@ -17,14 +17,17 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * An assigned quiz that allows students in a section of a {@link Course}
  * to work on a {@link Problem} for a limited amount of time.
  * 
  * @author David Hovemeyer
  */
-public class Quiz {
-	
+public class Quiz implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	/** {@link ModelObjectField} for unique id. */
 	public static final ModelObjectField<Quiz, Integer> ID = new ModelObjectField<Quiz, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 		public void set(Quiz obj, Integer value) { obj.setId(value); }

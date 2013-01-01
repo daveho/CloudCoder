@@ -412,4 +412,17 @@ public interface IDatabase {
 	 */
 	public List<String> suggestTagNames(String term);
 
+	/**
+	 * Start a {@link Quiz} for given {@link Problem} in given course section.
+	 * 
+	 * @param user    the authenticated {@link User), who must be an instructor
+	 *                in the course/section
+	 * @param problem the {@link Problem} to give as a quiz
+	 * @param section the course section
+	 * @return the {@link Quiz}
+	 * @throws CloudCoderAuthenticationException if the user is not authorized to give a quiz
+	 *         in the course/section
+	 */
+	public Quiz startQuiz(User user, Problem problem, int section) throws CloudCoderAuthenticationException;
+
 }

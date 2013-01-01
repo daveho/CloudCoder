@@ -24,6 +24,7 @@ import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -137,4 +138,15 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * The currently-authenticated user must be an instructor in the course.
 	 */
 	public OperationResult deleteProblem(Course course, Problem problem) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Start a quiz.
+	 * 
+	 * @param problem  the {@link Problem} to administer as a quiz
+	 * @param section  the section in which to administer the quiz
+	 * @return the {@link Quiz}
+	 * @throws CloudCoderAuthenticationException if the current user is not authorized
+	 *         to give a quiz for the {@link Problem}/section
+	 */
+	public Quiz startQuiz(Problem problem, int section) throws CloudCoderAuthenticationException;
 }
