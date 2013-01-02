@@ -1764,6 +1764,39 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Boolean endQuiz(final User user, final Quiz quiz) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"update cc_quizzes as q" +
+						"  join cc_course_registrations as cr on  cr.course_id = q.course_id" +
+						"                                     and cr.section = q.section" +
+						"                                     and cr.user_id = ?" +
+						"                                     and q.problem_id = ?" +
+						"                                     and q.section = ?" +
+						"                                     and q.course_id = ?" +
+						" set end_time = ?"
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, quiz.getProblemId());
+				stmt.setInt(3, quiz.getSection());
+				stmt.setInt(4, quiz.getCourseId());
+				long currentTime = System.currentTimeMillis();
+				stmt.setLong(5, currentTime);
+				
+				int updateCount = stmt.executeUpdate();
+				return updateCount > 0;
+			}
+			@Override
+			public String getDescription() {
+				return " ending quiz";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

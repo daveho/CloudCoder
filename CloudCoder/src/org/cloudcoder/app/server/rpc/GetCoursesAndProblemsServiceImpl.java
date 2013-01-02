@@ -387,4 +387,15 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		
 		return quiz;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#endQuiz(org.cloudcoder.app.shared.model.Quiz)
+	 */
+	@Override
+	public Boolean endQuiz(Quiz quiz) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		return Database.getInstance().endQuiz(user, quiz);
+	}
 }

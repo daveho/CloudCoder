@@ -64,4 +64,6 @@ public interface GetCoursesAndProblemsServiceAsync {
 
 	void findCurrentQuiz(Problem problem, AsyncCallback<Quiz> callback);
 
+	void endQuiz(Quiz quiz, AsyncCallback<Boolean> callback);
+
 }

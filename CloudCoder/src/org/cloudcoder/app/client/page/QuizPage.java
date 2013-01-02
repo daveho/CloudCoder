@@ -159,6 +159,26 @@ public class QuizPage extends CloudCoderPage {
 		
 		private void handleEndQuiz() {
 			GWT.log("End quiz...");
+			
+			Quiz quiz = getSession().get(Quiz.class);
+			
+			RPC.getCoursesAndProblemsService.endQuiz(quiz, new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Error trying to end quiz", caught));
+				}
+				
+				@Override
+				public void onSuccess(Boolean result) {
+					if (result) {
+						getSession().add(StatusMessage.goodNews("Quiz ended successfully"));
+						endQuizButton.setEnabled(false);
+						timer.cancel();
+					} else {
+						getSession().add(StatusMessage.error("Quiz could not be ended (doesn't exist?"));
+					}
+				}
+			});
 		}
 
 		public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar) {
@@ -173,9 +193,6 @@ public class QuizPage extends CloudCoderPage {
 					getSession().add(StatusMessage.error("Error checking for current quiz", caught));
 				}
 				
-				/* (non-Javadoc)
-				 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
-				 */
 				@Override
 				public void onSuccess(Quiz result) {
 					if (result == null) {
@@ -185,6 +202,7 @@ public class QuizPage extends CloudCoderPage {
 						loadCourseRegistrations();
 					} else {
 						// Resume current quiz
+						getSession().add(result);
 						sectionListBox.addItem(String.valueOf(result.getSection()));
 						duration = (int) ((result.getEndTime() - result.getStartTime()) / 1000);
 						doStartQuiz();

@@ -169,4 +169,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         the server-side session
 	 */
 	public Quiz findCurrentQuiz(Problem problem) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * End given {@link Quiz}.
+	 * 
+	 * @param quiz the {@link Quiz} to end
+	 * @return true if successful, false if not (for example, if there is no such quiz)
+	 * @throws CloudCoderAuthenticationException if there is no authenticated user in
+	 *         the server-side session 
+	 */
+	public Boolean endQuiz(Quiz quiz) throws CloudCoderAuthenticationException;
 }

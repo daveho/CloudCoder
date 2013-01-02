@@ -436,4 +436,14 @@ public interface IDatabase {
 	 */
 	public Quiz findCurrentQuiz(User user, Problem problem);
 
+	/**
+	 * End given quiz.
+	 * 
+	 * @param user  the authenticated {@link User}, who must be an instructor
+	 *              in the course/section in which the quiz is being administered
+	 * @param quiz  the {@link Quiz}
+	 * @return true if the quiz was successfully ended, false if not
+	 */
+	public Boolean endQuiz(User user, Quiz quiz);
+
 }
