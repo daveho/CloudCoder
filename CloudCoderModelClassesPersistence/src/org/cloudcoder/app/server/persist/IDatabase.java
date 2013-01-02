@@ -425,4 +425,15 @@ public interface IDatabase {
 	 */
 	public Quiz startQuiz(User user, Problem problem, int section) throws CloudCoderAuthenticationException;
 
+	/**
+	 * Find a current (ongoing) quiz being administed for the given
+	 * {@link Problem} in a course section in which the given {@link User}
+	 * is an instructor.
+	 * 
+	 * @param user     the {@link User}
+	 * @param problem  the {@link Problem}
+	 * @return the {@link Quiz}, or null if there is no such quiz
+	 */
+	public Quiz findCurrentQuiz(User user, Problem problem);
+
 }

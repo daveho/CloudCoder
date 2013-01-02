@@ -104,7 +104,7 @@ public class QuizPage extends CloudCoderPage {
 			startQuizButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					doStartQuiz();
+					handleStartQuiz();
 				}
 			});
 			this.endQuizButton = new Button("End Quiz");
@@ -115,7 +115,7 @@ public class QuizPage extends CloudCoderPage {
 			endQuizButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					doEndQuiz();
+					handleEndQuiz();
 				}
 			});
 			this.timeLabel = new Label("");
@@ -129,7 +129,7 @@ public class QuizPage extends CloudCoderPage {
 			initWidget(dockLayoutPanel);
 		}
 
-		protected void doStartQuiz() {
+		protected void handleStartQuiz() {
 			int index = sectionListBox.getSelectedIndex();
 			if (index < 0) {
 				getSession().add(StatusMessage.error("Please select a section"));
@@ -148,20 +148,46 @@ public class QuizPage extends CloudCoderPage {
 				public void onSuccess(Quiz result) {
 					getSession().add(result);
 					getSession().add(StatusMessage.goodNews("Quiz started"));
-					startQuizButton.setEnabled(false);
-					endQuizButton.setEnabled(true);
-					timeLabel.setText("0:00");
+					int duration = 0;
+					doStartQuiz(duration);
 				}
 			});
 		}
 		
-		private void doEndQuiz() {
+		private void handleEndQuiz() {
 			GWT.log("End quiz...");
 		}
 
-		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar) {
 			statusMessageView.activate(session, subscriptionRegistrar);
-			loadCourseRegistrations();
+			
+			final Problem problem = session.get(Problem.class);
+
+			// Find out if there is a quiz active already
+			RPC.getCoursesAndProblemsService.findCurrentQuiz(problem, new AsyncCallback<Quiz>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Error checking for current quiz", caught));
+				}
+				
+				/* (non-Javadoc)
+				 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
+				 */
+				@Override
+				public void onSuccess(Quiz result) {
+					if (result == null) {
+						// No current quiz, so load course registrations
+						// to see which section(s) the instructor is authorized
+						// to administer a quiz in
+						loadCourseRegistrations();
+					} else {
+						// Resume current quiz
+						sectionListBox.addItem(String.valueOf(result.getSection()));
+						int duration = (int) ((result.getEndTime() - result.getStartTime()) / 1000);
+						doStartQuiz(duration);
+					}
+				}
+			});
 		}
 
 		// Load user's course registrations so we know which sections he/she
@@ -190,6 +216,37 @@ public class QuizPage extends CloudCoderPage {
 				public void onFailure(Throwable caught) {
 				}
 			});
+		}
+		
+		private String formatDuration(int seconds) {
+			int s = seconds % 60;
+			seconds /= 60;
+			int m = seconds % 60;
+			seconds /= 60;
+			int h = seconds;
+			
+			StringBuilder buf = new StringBuilder();
+			if (h > 0) {
+				buf.append(String.valueOf(h));
+				buf.append(":");
+			}
+			buf.append(toS(m));
+			buf.append(":");
+			buf.append(toS(s));
+			
+			return buf.toString();
+		}
+		
+		private String toS(int t) {
+			String s = String.valueOf(t);
+			return t < 10 ? "0" + s : s;
+		}
+
+		private void doStartQuiz(int duration) {
+			sectionListBox.setEnabled(false);
+			startQuizButton.setEnabled(false);
+			endQuizButton.setEnabled(true);
+			timeLabel.setText(formatDuration(duration));
 		}
 	}
 

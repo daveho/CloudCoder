@@ -149,4 +149,24 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         to give a quiz for the {@link Problem}/section
 	 */
 	public Quiz startQuiz(Problem problem, int section) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Find out if there is a current (ongoing) {@link Quiz} for the
+	 * given {@link Problem} in a section for which the currently-authenticated
+	 * user is an instructor.  Note that there is an implicit assumption
+	 * that instructors of multiple sections will give a quiz in at most
+	 * one section at a time.
+	 * 
+	 * Note that the if a non-null value is returned, the end time field
+	 * of the returned quiz will contain the current server-side time: this
+	 * can be used to compute how long the quiz has been ongoing. 
+	 * 
+	 * @param problem the {@link Problem}
+	 * @return the current (ongoing) {@link Quiz}, or null if there is no
+	 *         quiz, or if the current user is not authorized to administer
+	 *         quizzes in the course
+	 * @throws CloudCoderAuthenticationException if there is no authenticated user in
+	 *         the server-side session
+	 */
+	public Quiz findCurrentQuiz(Problem problem) throws CloudCoderAuthenticationException;
 }

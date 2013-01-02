@@ -1724,6 +1724,46 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Quiz findCurrentQuiz(final User user, final Problem problem) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Quiz>() {
+			@Override
+			public Quiz run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select q.* from cc_quizzes as q, cc_course_registrations as cr " +
+						" where cr.user_id = ? " +
+						"   and cr.course_id = ? " +
+						"   and cr.registration_type >= ? " +
+						"   and q.course_id = cr.course_id " +
+						"   and q.problem_id = ? " +
+						"   and q.start_time <= ? " +
+						"   and (q.end_time >= ? or q.end_time = 0)"
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, problem.getCourseId());
+				stmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
+				stmt.setInt(4, problem.getProblemId());
+				long currentTime = System.currentTimeMillis();
+				stmt.setLong(5, currentTime);
+				stmt.setLong(6, currentTime);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return null;
+				}
+				
+				Quiz quiz = new Quiz();
+				DBUtil.loadModelObjectFields(quiz, Quiz.SCHEMA, resultSet);
+				return quiz;
+			}
+			@Override
+			public String getDescription() {
+				return " finding current quiz for problem";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
