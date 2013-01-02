@@ -31,6 +31,7 @@ import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -53,6 +54,8 @@ public class QuizPage extends CloudCoderPage {
 		private Button startQuizButton;
 		private Button endQuizButton;
 		private Label timeLabel;
+		private int duration;
+		private Timer timer;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -148,8 +151,8 @@ public class QuizPage extends CloudCoderPage {
 				public void onSuccess(Quiz result) {
 					getSession().add(result);
 					getSession().add(StatusMessage.goodNews("Quiz started"));
-					int duration = 0;
-					doStartQuiz(duration);
+					duration = 0;
+					doStartQuiz();
 				}
 			});
 		}
@@ -183,8 +186,8 @@ public class QuizPage extends CloudCoderPage {
 					} else {
 						// Resume current quiz
 						sectionListBox.addItem(String.valueOf(result.getSection()));
-						int duration = (int) ((result.getEndTime() - result.getStartTime()) / 1000);
-						doStartQuiz(duration);
+						duration = (int) ((result.getEndTime() - result.getStartTime()) / 1000);
+						doStartQuiz();
 					}
 				}
 			});
@@ -242,11 +245,26 @@ public class QuizPage extends CloudCoderPage {
 			return t < 10 ? "0" + s : s;
 		}
 
-		private void doStartQuiz(int duration) {
+		private void doStartQuiz() {
 			sectionListBox.setEnabled(false);
 			startQuizButton.setEnabled(false);
 			endQuizButton.setEnabled(true);
 			timeLabel.setText(formatDuration(duration));
+			
+			timer = new Timer() {
+				@Override
+				public void run() {
+					duration++;
+					timeLabel.setText(formatDuration(duration));
+				}
+			};
+			timer.scheduleRepeating(1000);
+		}
+
+		public void deactivate() {
+			if (timer != null) {
+				timer.cancel();
+			}
 		}
 	}
 
@@ -265,6 +283,7 @@ public class QuizPage extends CloudCoderPage {
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
+		ui.deactivate();
 	}
 
 	@Override
