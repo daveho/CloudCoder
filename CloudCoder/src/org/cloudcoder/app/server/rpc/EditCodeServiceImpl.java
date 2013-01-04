@@ -171,6 +171,15 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		Quiz quiz = (Quiz) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.QUIZ_KEY);
 		if (quiz != null) {
 			// User is working on a quiz.
+			
+			// Important: reload the object from the database.
+			// The instructor may have ended the quiz by changing the end time
+			// from 0.
+			if (!Database.getInstance().reloadModelObject(quiz)) {
+				logger.error("logChange: could not reload Quiz object");
+				return false;
+			}
+			
 			if (quiz.getEndTime() > 0) { // end time of 0 means open-ended
 				long currentTime = System.currentTimeMillis();
 				if (currentTime > quiz.getEndTime()) {

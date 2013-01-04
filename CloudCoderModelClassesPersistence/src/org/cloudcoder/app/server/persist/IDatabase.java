@@ -28,6 +28,7 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -445,5 +446,14 @@ public interface IDatabase {
 	 * @return true if the quiz was successfully ended, false if not
 	 */
 	public Boolean endQuiz(User user, Quiz quiz);
+
+	/**
+	 * Reload a model object's fields from the database
+	 * using its assigned unique id.
+	 * 
+	 * @param obj the model object to reload
+	 * @return true if successful, false if object could not be located by its unique id
+	 */
+	public<E extends IModelObject<E>> boolean reloadModelObject(E obj);
 
 }

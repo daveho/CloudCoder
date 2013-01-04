@@ -25,7 +25,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class Quiz implements Serializable {
+public class Quiz implements Serializable, IModelObject<Quiz> {
 	private static final long serialVersionUID = 1L;
 
 	/** {@link ModelObjectField} for unique id. */
@@ -101,6 +101,11 @@ public class Quiz implements Serializable {
 	 */
 	public Quiz() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<? super Quiz> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**

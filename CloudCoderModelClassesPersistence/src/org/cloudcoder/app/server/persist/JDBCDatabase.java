@@ -41,6 +41,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
@@ -1794,6 +1795,33 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " ending quiz";
+			}
+		});
+	}
+	
+	@Override
+	public <E extends IModelObject<E>> boolean reloadModelObject(final E obj) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
+			@Override
+			public Boolean run(Connection conn) throws SQLException {
+				ModelObjectField<? super E, ?> idField = obj.getSchema().getUniqueIdField();
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select * from " + obj.getSchema().getDbTableName() + " where " + idField.getName() + " = ?"
+				);
+				stmt.setObject(1, idField.get(obj));
+				
+				ResultSet resultSet = executeQuery(stmt);
+				if (!resultSet.next()) {
+					return false;
+				}
+				
+				DBUtil.loadModelObjectFields(obj, obj.getSchema(), resultSet);
+				return true;
+			}
+			@Override
+			public String getDescription() {
+				return " reloading model object";
 			}
 		});
 	}
