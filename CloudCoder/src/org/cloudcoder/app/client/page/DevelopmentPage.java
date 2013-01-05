@@ -255,6 +255,10 @@ public class DevelopmentPage extends CloudCoderPage {
 			devActionsPanel.setSubmitHandler(new Runnable() {
 				@Override
 				public void run() {
+					if (mode == Mode.PREVENT_EDITS) {
+						// Submitting is prevented if edits are prevented
+						return;
+					}
 					runWhenClean(new Runnable() {
 						@Override
 						public void run() {
@@ -381,6 +385,9 @@ public class DevelopmentPage extends CloudCoderPage {
 								doSubmitRPC(problem, text);
 							}
 						});
+					} else if (caught instanceof QuizEndedException) {
+						// Quiz ended
+						doEndQuiz();
 					} else {
 					    //TODO: Is this where a better message should come if we can't
 					    // find a C/C++ compiler?
