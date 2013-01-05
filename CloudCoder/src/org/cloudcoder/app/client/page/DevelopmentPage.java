@@ -179,11 +179,11 @@ public class DevelopmentPage extends CloudCoderPage {
 			this.statusMessageView = new StatusMessageView();
 			southLayoutPanel.add(statusMessageView);
 			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX, Unit.PX);
+			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + 16.0, Unit.PX);
 			this.quizIndicatorView = new QuizIndicatorView();
 			southLayoutPanel.add(quizIndicatorView);
 			southLayoutPanel.setWidgetTopHeight(quizIndicatorView, 0.0, Unit.PX, QuizIndicatorView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetRightWidth(quizIndicatorView, TestOutcomeSummaryView.WIDTH_PX, Unit.PX, QuizIndicatorView.WIDTH_PX, Unit.PX);
+			southLayoutPanel.setWidgetRightWidth(quizIndicatorView, TestOutcomeSummaryView.WIDTH_PX + 8.0, Unit.PX, QuizIndicatorView.WIDTH_PX, Unit.PX);
 			this.testOutcomeSummaryView = new TestOutcomeSummaryView();
 			southLayoutPanel.add(testOutcomeSummaryView);
 			southLayoutPanel.setWidgetTopHeight(testOutcomeSummaryView, 2.0, Unit.PX, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX);
