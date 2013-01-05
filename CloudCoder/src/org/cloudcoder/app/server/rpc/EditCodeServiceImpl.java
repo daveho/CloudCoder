@@ -91,6 +91,12 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 
     	ProblemText text = doLoadCurrentText(user, problem);
     	
+    	// Check to see if current problem is a quiz
+    	Quiz quiz = (Quiz) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.QUIZ_KEY);
+    	if (quiz != null) {
+    		text.setQuiz(true);
+    	}
+    	
     	if (DEBUG_CODE_DELTAS) {
 	    	// Keep a TextDocument in the session for debugging code deltas
 	    	TextDocument doc = new TextDocument();
