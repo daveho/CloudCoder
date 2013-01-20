@@ -36,6 +36,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private boolean visible;
 	private ProblemAuthorship problemAuthorship;
 	private boolean deleted;
+	private int moduleId;
 	
 	/** {@link ModelObjectField} for problem id. */
 	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
@@ -82,6 +83,12 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 				public Boolean get(IProblem obj) { return obj.isDeleted(); }
 			};
 	
+	/** {@link ModelObjectField} for module id. */
+	public static final ModelObjectField<IProblem, Integer> MODULE_ID = new ModelObjectField<IProblem, Integer>("module_id", Integer.class, 0) {
+		public void set(IProblem obj, Integer value) { obj.setModuleId(value); }
+		public Integer get(IProblem obj) { return obj.getModuleId(); }
+	};
+	
 	/**
 	 * Description of fields (schema version 0).
 	 */
@@ -120,9 +127,21 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 			.finishDelta();
 	
 	/**
+	 * Description of fields (schema version 4).
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V4 =
+			ModelObjectSchema.basedOn(SCHEMA_V3)
+			// Note: the default value of the module_id field is 0, which
+			// is the default "Uncategorized" module.  This object is guaranteed
+			// to exist because it is persisted by version 0 of the
+			// Module schema.
+			.addAfter(DELETED, MODULE_ID)
+			.finishDelta();
+	
+	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V3;
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V4;
 	
 	/**
 	 * Number of fields.
@@ -255,6 +274,14 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	public boolean isDeleted() {
 		return deleted;
 	}
+	
+	public void setModuleId(int moduleId) {
+		this.moduleId = moduleId;
+	}
+	
+	public int getModuleId() {
+		return moduleId;
+	}
 
 	@Override
 	public String toString() {
@@ -281,6 +308,8 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		this.whenDue = other.whenDue;
 		this.visible = other.visible;
 		this.problemAuthorship = other.problemAuthorship;
+		this.deleted = other.deleted;
+		this.moduleId = other.moduleId;
 	}
 	
 	@Override
@@ -296,7 +325,8 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 				&& this.whenDue == other.whenDue
 				&& this.visible == other.visible
 				&& this.problemAuthorship == other.problemAuthorship
-				&& this.deleted == other.deleted;
+				&& this.deleted == other.deleted
+				&& this.moduleId == other.moduleId;
 	}
 
 	/*

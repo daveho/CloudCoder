@@ -6,7 +6,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class Module {
+public class Module implements IModelObject<Module> {
 	private int id;
 	private String name;
 	private int courseId;
@@ -19,10 +19,12 @@ public class Module {
 		public void set(Module obj, String value) { obj.setName(value); }
 		public String get(Module obj) { return obj.getName(); }
 	};
-	public static ModelObjectField<Module, Integer> COURSE_ID = new ModelObjectField<Module, Integer>("course_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-		public void set(Module obj, Integer value) { obj.setCourseId(value); }
-		public Integer get(Module obj) { return obj.getCourseId(); }
-	};
+	
+	public static final Module DEFAULT_MODULE = new Module();
+	static {
+		DEFAULT_MODULE.setId(0);
+		DEFAULT_MODULE.setName("Uncategorized");
+	}
 	
 	/**
 	 * Model object schema (version 0).
@@ -30,7 +32,7 @@ public class Module {
 	public static ModelObjectSchema<Module> SCHEMA_V0 = new ModelObjectSchema<Module>("module")
 			.add(ID)
 			.add(NAME)
-			.add(COURSE_ID);
+			.addPersistedModelObject(DEFAULT_MODULE);
 	
 	/**
 	 * Model object schema (current version).
@@ -42,6 +44,11 @@ public class Module {
 	 */
 	public Module() {
 		
+	}
+	
+	@Override
+	public ModelObjectSchema<? super Module> getSchema() {
+		return SCHEMA;
 	}
 	
 	/**
