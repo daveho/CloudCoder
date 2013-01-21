@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
 
+import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -158,7 +159,8 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			displayProblems(problemAndSubmissionReceiptList);
 		} else {
 			GWT.log("No problems in session...loading...");
-			Course course = session.get(Course.class);
+			CourseSelection courseSelection = session.get(CourseSelection.class);
+			Course course = courseSelection.getCourse();
 			loadProblems(session, course);
 		}
 	}
@@ -200,12 +202,14 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	 */
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
+		if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
 			// Course selected, load its problems.
 			// Note that this isn't really needed by CourseAdminPage (because there
 			// is only one Course which is pre-selected), but if this view is
 			// reused in another page at some point, this might be useful.
-			loadProblems(session, (Course)hint);
+			CourseSelection courseSelection = (CourseSelection) hint;
+			Course course = courseSelection.getCourse();
+			loadProblems(session, course);
 		} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof ProblemAndSubmissionReceipt[])) {
 			// This can happen when these is an explicit reload of problems
 			displayProblems((ProblemAndSubmissionReceipt[]) hint);

@@ -164,7 +164,7 @@ public class EditProblemPage extends CloudCoderPage {
 			
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			saveProblem(problemAndTestCaseList, course);
 		}
 
@@ -269,7 +269,7 @@ public class EditProblemPage extends CloudCoderPage {
 			problemAndTestCaseListOrig.copyFrom(problemAndTestCaseList);
 			
 			// Activate views
-			final Course course = session.get(Course.class);
+			final Course course = getCurrentCourse();
 			pageLabel.setText(
 					(problemAndTestCaseList.getProblem().getProblemId()== null ? "Create new" : "Edit") +
 					" problem in " + course.toString());

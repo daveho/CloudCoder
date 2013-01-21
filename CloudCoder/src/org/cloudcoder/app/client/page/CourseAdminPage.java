@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -209,7 +209,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doChangeVisibility(final boolean visible) {
 			Problem chosen = getSession().get(Problem.class);
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			
 			getSession().add(StatusMessage.pending("Changing visibility of problem..."));
 			
@@ -271,7 +271,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doImportProblem() {
 			ImportProblemDialog dialog = new ImportProblemDialog();
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			dialog.setCourse(course);
 			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
 				@Override
@@ -304,7 +304,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		
 		private void handleDeleteProblem() {
 			final Problem chosen = getSession().get(Problem.class);
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			
 			// Only invisible problems may be deleted
 			if (chosen.isVisible()) {
@@ -402,7 +402,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			problem.setAuthorWebsite(user.getWebsite());
 			
 			// Set course id
-			problem.setCourseId(getSession().get(Course.class).getId());
+			problem.setCourseId(getCurrentCourse().getId());
 			
 			// Initially there are no test cases
 			TestCase[] testCaseList= new TestCase[0];
@@ -437,7 +437,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a course
-			Course course = session.get(Course.class);
+			Course course = getCurrentCourse();
 			courseLabel.setText(course.getName() + " - " + course.getTitle());
 		}
 
