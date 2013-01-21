@@ -334,9 +334,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
 					@Override
 					public void onSelectionChange(SelectionChangeEvent event) {
-						Course course = termAndCourseTreeView.getSelectedCourse();
-						if (course != null) {
-							getSession().add(new CourseSelection(course, null));
+						CourseSelection courseSelection = termAndCourseTreeView.getSelectedCourseAndModule();
+						if (courseSelection != null) {
+							getSession().add(courseSelection);
 						}
 					}
 				});

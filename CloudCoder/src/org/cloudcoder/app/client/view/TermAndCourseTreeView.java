@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -57,7 +58,7 @@ public class TermAndCourseTreeView extends Composite {
 	private class Model implements TreeViewModel {
 		private List<TermAndYear> termAndYearList;
 		private Map<TermAndYear, Course[]> termAndYearToCourseList;
-		private Map<Course, ListDataProvider<Module>> courseToDataProvider;
+		private Map<Course, ListDataProvider<CourseSelection>> courseToDataProvider;
 		private Map<Course, Boolean> courseModulesLoaded;
 		
 		private SingleSelectionModel<Object> selectionModel;
@@ -66,14 +67,14 @@ public class TermAndCourseTreeView extends Composite {
 			termAndYearList = new ArrayList<TermAndYear>();
 			termAndYearToCourseList = new HashMap<TermAndYear, Course[]>();
 			
-			courseToDataProvider = new HashMap<Course, ListDataProvider<Module>>();
+			courseToDataProvider = new HashMap<Course, ListDataProvider<CourseSelection>>();
 			courseModulesLoaded = new HashMap<Course, Boolean>();
 			
 			// Mark all courses as having not yet loaded their modules
 			for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
 				Course course = courseAndReg.getCourse();
 				if (!courseToDataProvider.containsKey(course)) {
-					ListDataProvider<Module> dataProvider = new ListDataProvider<Module>(new ArrayList<Module>());
+					ListDataProvider<CourseSelection> dataProvider = new ListDataProvider<CourseSelection>(new ArrayList<CourseSelection>());
 					courseToDataProvider.put(course, dataProvider);
 					courseModulesLoaded.put(course, false);
 				}
@@ -116,28 +117,29 @@ public class TermAndCourseTreeView extends Composite {
 				@Override
 				public void onSelectionChange(SelectionChangeEvent event) {
 					Object selected = selectionModel.getSelectedObject();
+					
 					if (selected instanceof Course) {
 						final Course course = (Course)selected;
 						if (!courseModulesLoaded.get(course)) {
 							courseModulesLoaded.put(course, true);
-							//RPC.getCoursesAndProblemsService.getModulesInCourse
 
-							// FIXME: hardcoded for just default "Uncategorized" Module - should load modules via RPC
-//							Module defaultModule = new Module();
-//							defaultModule.setId(1);
-//							defaultModule.setName("Uncategorized");
-//							Module[] moduleList = new Module[]{ defaultModule };
-//							courseToDataProvider.get(course).getList().addAll(Arrays.asList(moduleList));
+							// Load modules for course via RPC
 							RPC.getCoursesAndProblemsService.getModulesForCourse(course, new AsyncCallback<Module[]>() {
 								@Override
 								public void onSuccess(Module[] result) {
-									courseToDataProvider.get(course).getList().addAll(Arrays.asList(result));
-									// TODO: expand course node?
+									for (Module module : result) {
+										courseToDataProvider.get(course).getList().add(new CourseSelection(course, module));
+									}
+
+									// Select the course node
+									selectionModel.setSelected(course, true);
 								}
 								
 								@Override
 								public void onFailure(Throwable caught) {
 									session.add(StatusMessage.error("Error getting modules for course", caught));
+									// This error isn't really a huge problem: the
+									// user can still see all problems for the overall course
 								}
 							});
 						}
@@ -188,18 +190,18 @@ public class TermAndCourseTreeView extends Composite {
 				};
 				return new DefaultNodeInfo<Course>(dataProvider, cell, selectionModel, null);
 			} else if (value instanceof Course) {
-				Cell<Module> cell = new AbstractCell<Module>() {
+				Cell<CourseSelection> cell = new AbstractCell<CourseSelection>() {
 					/* (non-Javadoc)
 					 * @see com.google.gwt.cell.client.AbstractCell#render(com.google.gwt.cell.client.Cell.Context, java.lang.Object, com.google.gwt.safehtml.shared.SafeHtmlBuilder)
 					 */
 					@Override
 					public void render(
 							com.google.gwt.cell.client.Cell.Context context,
-							Module value, SafeHtmlBuilder sb) {
-						sb.appendEscaped(value.getName());
+							CourseSelection value, SafeHtmlBuilder sb) {
+						sb.appendEscaped(value.getModule().getName());
 					}
 				};
-				return new DefaultNodeInfo<Module>(courseToDataProvider.get((Course)value), cell, selectionModel, null);
+				return new DefaultNodeInfo<CourseSelection>(courseToDataProvider.get((Course)value), cell, selectionModel, null);
 			} else {
 				throw new IllegalStateException();
 			}
@@ -210,7 +212,7 @@ public class TermAndCourseTreeView extends Composite {
 		 */
 		@Override
 		public boolean isLeaf(Object value) {
-			if (value instanceof Module) {
+			if (value instanceof CourseSelection) {
 				return true;
 			}
 			if (value instanceof Course) {
@@ -235,7 +237,7 @@ public class TermAndCourseTreeView extends Composite {
 			cellTree.getRootTreeNode().setChildOpen(0, true);
 		}
 	}
-	
+
 	/**
 	 * Add Handler for selection change events.
 	 * 
@@ -244,16 +246,17 @@ public class TermAndCourseTreeView extends Composite {
 	public void addSelectionHandler(Handler h) {
 		selectionChangeHandler = h;
 	}
-
+	
 	/**
-	 * @return the currently selected course
+	 * @return the current {@link CourseSelection} (course and module selected)
 	 */
-	public Course getSelectedCourse() {
+	public CourseSelection getSelectedCourseAndModule() {
 		Object obj = model.selectionModel.getSelectedObject();
 		if (obj instanceof Course) {
-			return (Course) obj;
+			return new CourseSelection((Course)obj, null);
+		} else if (obj instanceof CourseSelection) {
+			return (CourseSelection) obj;
 		} else {
-			// TODO: should return the Course if a Module is selected
 			return null;
 		}
 	}
