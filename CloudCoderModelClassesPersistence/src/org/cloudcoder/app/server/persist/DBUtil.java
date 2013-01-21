@@ -44,7 +44,6 @@ import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.Delta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.PersistModelObjectDelta;
-import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,6 +216,12 @@ public class DBUtil {
 			
 			sql.append(field.isAllowNull() ? " NULL" : " NOT NULL");
 			
+			String defaultValue = field.getDefaultValue();
+			if (defaultValue != null) {
+				sql.append(" DEFAULT ");
+				sql.append(defaultValue);
+			}
+			
 			if (schema.getIndexType(field) == ModelObjectIndexType.IDENTITY) {
 				sql.append(" AUTO_INCREMENT");
 			}
@@ -252,6 +257,9 @@ public class DBUtil {
 				sql.append("` (`");
 				sql.append(field.getName());
 				sql.append("`)");
+				break;
+				
+			case NONE:
 				break;
 			}
 			

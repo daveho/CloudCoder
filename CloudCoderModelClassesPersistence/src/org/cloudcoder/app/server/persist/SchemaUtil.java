@@ -237,6 +237,11 @@ public class SchemaUtil {
 				if (!delta.getField().isAllowNull()) {
 					buf.append(" NOT NULL");
 				}
+				String defaultValue = delta.getField().getDefaultValue();
+				if (defaultValue != null) {
+					buf.append(" DEFAULT ");
+					buf.append(defaultValue);
+				}
 				buf.append(" after ");
 				buf.append(delta.getPreviousField().getName());
 				

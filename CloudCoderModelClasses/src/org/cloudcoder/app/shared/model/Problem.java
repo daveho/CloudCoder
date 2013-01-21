@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -83,8 +83,11 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 				public Boolean get(IProblem obj) { return obj.isDeleted(); }
 			};
 	
-	/** {@link ModelObjectField} for module id. */
-	public static final ModelObjectField<IProblem, Integer> MODULE_ID = new ModelObjectField<IProblem, Integer>("module_id", Integer.class, 0) {
+	/**
+	 * {@link ModelObjectField} for module id. Note that default value is "1",
+	 * which is the id of the "Uncategorized" module. 
+	 */
+	public static final ModelObjectField<IProblem, Integer> MODULE_ID = new ModelObjectField<IProblem, Integer>("module_id", Integer.class, 0, ModelObjectIndexType.NONE, 0, "1") {
 		public void set(IProblem obj, Integer value) { obj.setModuleId(value); }
 		public Integer get(IProblem obj) { return obj.getModuleId(); }
 	};
@@ -131,7 +134,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V4 =
 			ModelObjectSchema.basedOn(SCHEMA_V3)
-			// Note: the default value of the module_id field is 0, which
+			// Note: the default value of the module_id field is 1, which
 			// is the default "Uncategorized" module.  This object is guaranteed
 			// to exist because it is persisted by version 0 of the
 			// Module schema.
@@ -152,7 +155,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	 * Constructor.
 	 */
 	public Problem() {
-		
+		moduleId = 1; // id of the "Uncategorized" module
 	}
 	
 	@Override
@@ -343,6 +346,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		empty.setVisible(false);
 		empty.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
 		empty.setDeleted(false);
+		empty.setModuleId(1); // the id of the "Uncategorized" module
 		ProblemData.initEmpty(empty);
 	}
 }
