@@ -24,15 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.TermAndYear;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTree;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
@@ -112,17 +117,29 @@ public class TermAndCourseTreeView extends Composite {
 				public void onSelectionChange(SelectionChangeEvent event) {
 					Object selected = selectionModel.getSelectedObject();
 					if (selected instanceof Course) {
-						Course course = (Course)selected;
+						final Course course = (Course)selected;
 						if (!courseModulesLoaded.get(course)) {
 							courseModulesLoaded.put(course, true);
 							//RPC.getCoursesAndProblemsService.getModulesInCourse
 
 							// FIXME: hardcoded for just default "Uncategorized" Module - should load modules via RPC
-							Module defaultModule = new Module();
-							defaultModule.setId(1);
-							defaultModule.setName("Uncategorized");
-							Module[] moduleList = new Module[]{ defaultModule };
-							courseToDataProvider.get(course).getList().addAll(Arrays.asList(moduleList));
+//							Module defaultModule = new Module();
+//							defaultModule.setId(1);
+//							defaultModule.setName("Uncategorized");
+//							Module[] moduleList = new Module[]{ defaultModule };
+//							courseToDataProvider.get(course).getList().addAll(Arrays.asList(moduleList));
+							RPC.getCoursesAndProblemsService.getModulesForCourse(course, new AsyncCallback<Module[]>() {
+								@Override
+								public void onSuccess(Module[] result) {
+									courseToDataProvider.get(course).getList().addAll(Arrays.asList(result));
+									// TODO: expand course node?
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									session.add(StatusMessage.error("Error getting modules for course", caught));
+								}
+							});
 						}
 					}
 					
@@ -197,8 +214,7 @@ public class TermAndCourseTreeView extends Composite {
 				return true;
 			}
 			if (value instanceof Course) {
-				Boolean modulesLoaded = courseModulesLoaded.get(value);
-				return modulesLoaded == null || !modulesLoaded;
+				return !courseModulesLoaded.get(value);
 			}
 			return false;
 		}
@@ -207,6 +223,7 @@ public class TermAndCourseTreeView extends Composite {
 	private CellTree cellTree;
 	private Model model;
 	private Handler selectionChangeHandler;
+	private Session session;
 	
 	public TermAndCourseTreeView(CourseAndCourseRegistration[] courseList) {
 		model = new Model(courseList);
@@ -239,5 +256,9 @@ public class TermAndCourseTreeView extends Composite {
 			// TODO: should return the Course if a Module is selected
 			return null;
 		}
+	}
+	
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		this.session = session;
 	}
 }

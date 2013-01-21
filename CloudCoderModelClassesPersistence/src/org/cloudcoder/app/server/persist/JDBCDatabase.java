@@ -45,6 +45,7 @@ import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -1822,6 +1823,41 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " reloading model object";
+			}
+		});
+	}
+	
+	@Override
+	public Module[] getModulesForCourse(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Module[]>() {
+			@Override
+			public Module[] run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select m.* from cc_modules as m " +
+						" where m.id in " +
+						"   (select p.module_id from cc_problems as p, cc_course_registrations as cr " +
+						"     where p.course_id = cr.course_id " +
+						"       and cr.course_id = ? " +
+						"       and cr.user_id = ?) " +
+						" order by m.name"
+				);
+				stmt.setInt(1, course.getId());
+				stmt.setInt(2, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<Module> result = new ArrayList<Module>();
+				while (resultSet.next()) {
+					Module module = new Module();
+					DBUtil.loadModelObjectFields(module, Module.SCHEMA, resultSet);
+					result.add(module);
+				}
+				
+				return result.toArray(new Module[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return " getting modules in course";
 			}
 		});
 	}

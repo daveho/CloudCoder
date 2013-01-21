@@ -17,13 +17,17 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * A module is a category containing related {@link Problem}s
  * in a {@link Course}. 
  * 
  * @author David Hovemeyer
  */
-public class Module implements IModelObject<Module> {
+public class Module implements IModelObject<Module>, Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	private int id;
 	private String name;
 	private int courseId;

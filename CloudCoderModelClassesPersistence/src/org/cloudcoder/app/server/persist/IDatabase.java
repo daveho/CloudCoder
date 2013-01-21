@@ -29,6 +29,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.IModelObject;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -455,5 +456,17 @@ public interface IDatabase {
 	 * @return true if successful, false if object could not be located by its unique id
 	 */
 	public<E extends IModelObject<E>> boolean reloadModelObject(E obj);
+
+	/**
+	 * Get all of the {@link Module}s of the {@link Problem}s that are assigned
+	 * in the given {@link Course}.  Only returns modules if the user is confirmed
+	 * to be registered in the given course.  Note that modules of non-visible
+	 * problems <em>will</em> be returned. 
+	 * 
+	 * @param user    the authenticated user
+	 * @param course  the course
+	 * @return the modules in the course
+	 */
+	public Module[] getModulesForCourse(User user, Course course);
 
 }

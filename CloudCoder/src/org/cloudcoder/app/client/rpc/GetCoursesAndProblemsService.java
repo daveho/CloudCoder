@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -179,4 +180,13 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         the server-side session 
 	 */
 	public Boolean endQuiz(Quiz quiz) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get all {@link Module}s used to tag the {@link Problem}s in given {@link Course}.
+	 * 
+	 * @param course the course
+	 * @return all of the modules in the course
+	 * @throws CloudCoderAuthenticationException 
+	 */
+	public Module[] getModulesForCourse(Course course) throws CloudCoderAuthenticationException;
 }
