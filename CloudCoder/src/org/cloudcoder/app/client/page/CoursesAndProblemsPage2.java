@@ -335,7 +335,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 					@Override
 					public void onSelectionChange(SelectionChangeEvent event) {
 						Course course = termAndCourseTreeView.getSelectedCourse();
-						getSession().add(new CourseSelection(course, null));
+						if (course != null) {
+							getSession().add(new CourseSelection(course, null));
+						}
 					}
 				});
 			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {

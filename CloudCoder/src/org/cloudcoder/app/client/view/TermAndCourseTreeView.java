@@ -26,6 +26,7 @@ import java.util.TreeSet;
 
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.TermAndYear;
 
 import com.google.gwt.cell.client.AbstractCell;
@@ -50,8 +51,9 @@ public class TermAndCourseTreeView extends Composite {
 	private class Model implements TreeViewModel {
 		private List<TermAndYear> termAndYearList;
 		private Map<TermAndYear, Course[]> termAndYearToCourseList;
+		private Map<Course, ListDataProvider<Module>> courseToDataProvider;
 		
-		private SingleSelectionModel<Course> selectionModel;
+		private SingleSelectionModel<Object> selectionModel;
 		
 		public Model(CourseAndCourseRegistration[] courseAndRegList) {
 			// Build sorted collection of TermAndYear objects
@@ -84,9 +86,10 @@ public class TermAndCourseTreeView extends Composite {
 						courseListForTermAndYear.toArray(new Course[courseListForTermAndYear.size()]));
 			}
 			
-			// Selection model: for now, just single selection for Courses only
-			// TODO: multiple selection, all nodes should be eligible
-			selectionModel = new SingleSelectionModel<Course>();
+			courseToDataProvider = new HashMap<Course, ListDataProvider<Module>>();
+			
+			// Selection model: Courses and Modules can be selected
+			selectionModel = new SingleSelectionModel<Object>();
 		}
 
 		/* (non-Javadoc)
@@ -126,6 +129,25 @@ public class TermAndCourseTreeView extends Composite {
 					}
 				};
 				return new DefaultNodeInfo<Course>(dataProvider, cell, selectionModel, null);
+			} else if (value instanceof Course) {
+				// FIXME: hardcoded for just default "Uncategorized" Module
+				Module defaultModule = new Module();
+				defaultModule.setId(1);
+				defaultModule.setName("Uncategorized");
+				Module[] moduleList = new Module[]{ defaultModule };
+				ListDataProvider<Module> dataProvider = new ListDataProvider<Module>(Arrays.asList(moduleList));
+				Cell<Module> cell = new AbstractCell<Module>() {
+					/* (non-Javadoc)
+					 * @see com.google.gwt.cell.client.AbstractCell#render(com.google.gwt.cell.client.Cell.Context, java.lang.Object, com.google.gwt.safehtml.shared.SafeHtmlBuilder)
+					 */
+					@Override
+					public void render(
+							com.google.gwt.cell.client.Cell.Context context,
+							Module value, SafeHtmlBuilder sb) {
+						sb.appendEscaped(value.getName());
+					}
+				};
+				return new DefaultNodeInfo<Module>(dataProvider, cell, selectionModel, null);
 			} else {
 				throw new IllegalStateException();
 			}
@@ -136,7 +158,7 @@ public class TermAndCourseTreeView extends Composite {
 		 */
 		@Override
 		public boolean isLeaf(Object value) {
-			return value instanceof Course;
+			return value instanceof Module;
 		}
 
 		/**
@@ -176,6 +198,12 @@ public class TermAndCourseTreeView extends Composite {
 	 * @return the currently selected course
 	 */
 	public Course getSelectedCourse() {
-		return model.selectionModel.getSelectedObject();
+		Object obj = model.selectionModel.getSelectedObject();
+		if (obj instanceof Course) {
+			return (Course) obj;
+		} else {
+			// TODO: should return the Course if a Module is selected
+			return null;
+		}
 	}
 }
