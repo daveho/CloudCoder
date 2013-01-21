@@ -150,19 +150,14 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			}
 		});
 		grid.setSelectionModel(selectionModel);
-		
-		// If the session contains a list of ProblemAndSubmissionReceipts, display the problems.
-		// Otherwise, initiate loading of problems for course.
-		ProblemAndSubmissionReceipt[] problemAndSubmissionReceiptList = session.get(ProblemAndSubmissionReceipt[].class);
-		if (problemAndSubmissionReceiptList != null) {
-			GWT.log("Session contains " + problemAndSubmissionReceiptList.length + " problems");
-			displayProblems(problemAndSubmissionReceiptList);
-		} else {
-			GWT.log("No problems in session...loading...");
-			CourseSelection courseSelection = session.get(CourseSelection.class);
-			Course course = courseSelection.getCourse();
-			loadProblems(session, course);
-		}
+
+		// Force loading of problems in course.
+		// This avoids the problem that if a module in a course was selected
+		// in the courses/problems page, some of the problems may not be
+		// in the session (because they weren't in the selected module).
+		CourseSelection courseSelection = session.get(CourseSelection.class);
+		Course course = courseSelection.getCourse();
+		loadProblems(session, course);
 	}
 	
 	/**
