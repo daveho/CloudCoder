@@ -70,17 +70,18 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException;
 	
 	/**
-	 * Get {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
+	 * Get {@link ProblemAndSubmissionReceipt}s for given {@link Course} and {@link Module}.
 	 * This allows the client to get not only the Problems in the Course,
 	 * but also the most recent {@link SubmissionReceipt} for each Problem.
 	 * The client must be registered in the Course.
 	 * 
 	 * @param course the Course
+	 * @param module the Module: if null, then all problems and submission receipts in course are returned
 	 * @return the ProblemAndSubmissionReceipts for the client's work in the Course
 	 * @throws CloudCoderAuthenticationException if the client is not authenticated,
 	 *         or is not regsitered in the course 
 	 */
-	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course) throws CloudCoderAuthenticationException;
+	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, Module module) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * @param course

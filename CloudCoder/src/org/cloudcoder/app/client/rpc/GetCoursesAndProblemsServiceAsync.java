@@ -39,7 +39,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 
 	void getProblems(Course course, AsyncCallback<Problem[]> callback);
 
-	void getProblemAndSubscriptionReceipts(Course course,
+	void getProblemAndSubscriptionReceipts(Course course, Module module,
 			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
 
 	void getProblemAndSubscriptionReceipts(Course course, User user,

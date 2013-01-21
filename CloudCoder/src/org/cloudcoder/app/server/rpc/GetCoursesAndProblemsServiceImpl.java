@@ -158,13 +158,13 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	 */
 	@Override
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
-			Course course) throws CloudCoderAuthenticationException {
+			Course course, Module module) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
 		logger.info("getting submission receipts for authenticated user "+user.getUsername());
 		
-		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course);
+		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course, module);
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
 	}
 	

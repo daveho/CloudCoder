@@ -559,7 +559,7 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
-			final User user, final Course course) {
+			final User user, final Course course, final Module module) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
@@ -617,6 +617,11 @@ public class JDBCDatabase implements IDatabase {
 				while (resultSet.next()) {
 					Problem problem = new Problem();
 					int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
+					
+					// If a module was specified, only return problems in that module
+					if (module != null && problem.getModuleId() != module.getId()) {
+						continue;
+					}
 					
 					// Is there a submission receipt?
 					SubmissionReceipt receipt;
