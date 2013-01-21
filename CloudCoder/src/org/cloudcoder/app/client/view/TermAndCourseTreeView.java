@@ -35,12 +35,13 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
 
 /**
- * Tree view for terms and courses.
+ * Tree view for terms, courses, and modules.
  * 
  * @author David Hovemeyer
  */
@@ -52,10 +53,27 @@ public class TermAndCourseTreeView extends Composite {
 		private List<TermAndYear> termAndYearList;
 		private Map<TermAndYear, Course[]> termAndYearToCourseList;
 		private Map<Course, ListDataProvider<Module>> courseToDataProvider;
+		private Map<Course, Boolean> courseModulesLoaded;
 		
 		private SingleSelectionModel<Object> selectionModel;
 		
 		public Model(CourseAndCourseRegistration[] courseAndRegList) {
+			termAndYearList = new ArrayList<TermAndYear>();
+			termAndYearToCourseList = new HashMap<TermAndYear, Course[]>();
+			
+			courseToDataProvider = new HashMap<Course, ListDataProvider<Module>>();
+			courseModulesLoaded = new HashMap<Course, Boolean>();
+			
+			// Mark all courses as having not yet loaded their modules
+			for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+				Course course = courseAndReg.getCourse();
+				if (!courseToDataProvider.containsKey(course)) {
+					ListDataProvider<Module> dataProvider = new ListDataProvider<Module>(new ArrayList<Module>());
+					courseToDataProvider.put(course, dataProvider);
+					courseModulesLoaded.put(course, false);
+				}
+			}
+
 			// Build sorted collection of TermAndYear objects
 			TreeSet<TermAndYear> termAndYearSet = new TreeSet<TermAndYear>();
 			for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
@@ -63,9 +81,6 @@ public class TermAndCourseTreeView extends Composite {
 				termAndYearSet.add(course.getTermAndYear());
 			}
 			
-			termAndYearList = new ArrayList<TermAndYear>();
-			termAndYearToCourseList = new HashMap<TermAndYear, Course[]>();
-
 			// Build list of TermAndYears, in reverse chronological order.
 			// For each TermAndYear, map it to an array of Courses.
 			for (TermAndYear termAndYear : termAndYearSet) {
@@ -86,10 +101,36 @@ public class TermAndCourseTreeView extends Composite {
 						courseListForTermAndYear.toArray(new Course[courseListForTermAndYear.size()]));
 			}
 			
-			courseToDataProvider = new HashMap<Course, ListDataProvider<Module>>();
-			
 			// Selection model: Courses and Modules can be selected
 			selectionModel = new SingleSelectionModel<Object>();
+
+			// Handle selection change events by:
+			//   - Loading modules for course (if not yet loaded)
+			//   - Invoking view's selection change handler (if there is one)
+			selectionModel.addSelectionChangeHandler(new Handler() {
+				@Override
+				public void onSelectionChange(SelectionChangeEvent event) {
+					Object selected = selectionModel.getSelectedObject();
+					if (selected instanceof Course) {
+						Course course = (Course)selected;
+						if (!courseModulesLoaded.get(course)) {
+							courseModulesLoaded.put(course, true);
+							//RPC.getCoursesAndProblemsService.getModulesInCourse
+
+							// FIXME: hardcoded for just default "Uncategorized" Module - should load modules via RPC
+							Module defaultModule = new Module();
+							defaultModule.setId(1);
+							defaultModule.setName("Uncategorized");
+							Module[] moduleList = new Module[]{ defaultModule };
+							courseToDataProvider.get(course).getList().addAll(Arrays.asList(moduleList));
+						}
+					}
+					
+					if (selectionChangeHandler != null) {
+						selectionChangeHandler.onSelectionChange(event);
+					}
+				}
+			});
 		}
 
 		/* (non-Javadoc)
@@ -130,12 +171,6 @@ public class TermAndCourseTreeView extends Composite {
 				};
 				return new DefaultNodeInfo<Course>(dataProvider, cell, selectionModel, null);
 			} else if (value instanceof Course) {
-				// FIXME: hardcoded for just default "Uncategorized" Module
-				Module defaultModule = new Module();
-				defaultModule.setId(1);
-				defaultModule.setName("Uncategorized");
-				Module[] moduleList = new Module[]{ defaultModule };
-				ListDataProvider<Module> dataProvider = new ListDataProvider<Module>(Arrays.asList(moduleList));
 				Cell<Module> cell = new AbstractCell<Module>() {
 					/* (non-Javadoc)
 					 * @see com.google.gwt.cell.client.AbstractCell#render(com.google.gwt.cell.client.Cell.Context, java.lang.Object, com.google.gwt.safehtml.shared.SafeHtmlBuilder)
@@ -147,7 +182,7 @@ public class TermAndCourseTreeView extends Composite {
 						sb.appendEscaped(value.getName());
 					}
 				};
-				return new DefaultNodeInfo<Module>(dataProvider, cell, selectionModel, null);
+				return new DefaultNodeInfo<Module>(courseToDataProvider.get((Course)value), cell, selectionModel, null);
 			} else {
 				throw new IllegalStateException();
 			}
@@ -158,21 +193,20 @@ public class TermAndCourseTreeView extends Composite {
 		 */
 		@Override
 		public boolean isLeaf(Object value) {
-			return value instanceof Module;
-		}
-
-		/**
-		 * Add Handler for selection change events.
-		 * 
-		 * @param h the Handler to add
-		 */
-		public void addSelectionChangeHandler(Handler h) {
-			selectionModel.addSelectionChangeHandler(h);
+			if (value instanceof Module) {
+				return true;
+			}
+			if (value instanceof Course) {
+				Boolean modulesLoaded = courseModulesLoaded.get(value);
+				return modulesLoaded == null || !modulesLoaded;
+			}
+			return false;
 		}
 	}
 	
 	private CellTree cellTree;
 	private Model model;
+	private Handler selectionChangeHandler;
 	
 	public TermAndCourseTreeView(CourseAndCourseRegistration[] courseList) {
 		model = new Model(courseList);
@@ -191,7 +225,7 @@ public class TermAndCourseTreeView extends Composite {
 	 * @param h the Handler to add
 	 */
 	public void addSelectionHandler(Handler h) {
-		model.addSelectionChangeHandler(h);
+		selectionChangeHandler = h;
 	}
 
 	/**
