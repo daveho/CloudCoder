@@ -2106,7 +2106,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   this.parse_XQuery = function()
   {
     eventHandler.startNonterminal("XQuery", e0);
-    lookahead1W(267);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(267);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Module();
     shift(25);                      // EOF
@@ -2129,7 +2129,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
       parse_VersionDecl();
     }
-    lookahead1W(267);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(267);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     switch (l1)
     {
     case 182:                       // 'module'
@@ -2197,7 +2197,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(182);                     // 'module'
     lookahead1W(61);                // S^WS | '(:' | 'namespace'
     shift(184);                     // 'namespace'
-    lookahead1W(250);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(250);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_NCName();
     lookahead1W(29);                // S^WS | '(:' | '='
@@ -2215,11 +2215,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     eventHandler.startNonterminal("Prolog", e0);
     for (;;)
     {
-      lookahead1W(267);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(267);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 108:                     // 'declare'
-        lookahead2W(213);           // S^WS | EOF | '!' | '!=' | '#' | '%' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' |
+        lookahead2W(213);           // S^WS | EOF | '!' | '!=' | '#' | '%' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' |
         break;
       case 153:                     // 'import'
         lookahead2W(201);           // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' | '//' |
@@ -2301,7 +2301,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     for (;;)
     {
-      lookahead1W(267);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(267);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 108:                     // 'declare'
@@ -2620,7 +2620,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 106:                       // 'decimal-format'
       shift(106);                   // 'decimal-format'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_EQName();
       break;
@@ -2748,7 +2748,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 184:                       // 'namespace'
       shift(184);                   // 'namespace'
-      lookahead1W(250);             // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(250);             // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NCName();
       lookahead1W(29);              // S^WS | '(:' | '='
@@ -2774,7 +2774,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 184)                  // 'namespace'
     {
       shift(184);                   // 'namespace'
-      lookahead1W(250);             // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(250);             // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NCName();
       lookahead1W(29);              // S^WS | '(:' | '='
@@ -2809,7 +2809,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(108);                     // 'declare'
     lookahead1W(61);                // S^WS | '(:' | 'namespace'
     shift(184);                     // 'namespace'
-    lookahead1W(250);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(250);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_NCName();
     lookahead1W(29);                // S^WS | '(:' | '='
@@ -2932,7 +2932,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("Annotation", e0);
     shift(32);                      // '%'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(171);               // S^WS | '%' | '(' | '(:' | 'collection' | 'function' | 'index' | 'integrity' |
@@ -2962,7 +2962,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_Annotation()
   {
     shiftT(32);                     // '%'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_EQName();
     lookahead1W(171);               // S^WS | '%' | '(' | '(:' | 'collection' | 'function' | 'index' | 'integrity' |
     if (l1 == 34)                   // '('
@@ -2991,7 +2991,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(262);                     // 'variable'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(147);               // S^WS | '(:' | ':=' | 'as' | 'external'
@@ -3005,7 +3005,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 52:                        // ':='
       shift(52);                    // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_VarValue();
       break;
@@ -3015,7 +3015,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 52)                 // ':='
       {
         shift(52);                  // ':='
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_VarDefaultValue();
       }
@@ -3049,7 +3049,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 79)                   // 'as'
     {
       shift(79);                    // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_ItemType();
     }
@@ -3058,7 +3058,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 52:                        // ':='
       shift(52);                    // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_VarValue();
       break;
@@ -3068,7 +3068,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 52)                 // ':='
       {
         shift(52);                  // ':='
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_VarDefaultValue();
       }
@@ -3115,7 +3115,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("Param", e0);
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(143);               // S^WS | '(:' | ')' | ',' | 'as'
@@ -3130,7 +3130,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_Param()
   {
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_EQName();
     lookahead1W(143);               // S^WS | '(:' | ')' | ',' | 'as'
     if (l1 == 79)                   // 'as'
@@ -3155,7 +3155,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("EnclosedExpr", e0);
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -3165,7 +3165,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_EnclosedExpr()
   {
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -3176,7 +3176,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(108);                     // 'declare'
     lookahead1W(66);                // S^WS | '(:' | 'option'
     shift(199);                     // 'option'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(17);                // StringLiteral | S^WS | '(:'
@@ -3195,7 +3195,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(41);                    // ','
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
@@ -3212,7 +3212,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(41);                   // ','
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
   }
@@ -3387,7 +3387,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ForBinding", e0);
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(164);               // S^WS | '(:' | 'allowing' | 'as' | 'at' | 'in' | 'score'
@@ -3416,7 +3416,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shift(154);                     // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("ForBinding", e0);
@@ -3425,7 +3425,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ForBinding()
   {
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(164);               // S^WS | '(:' | 'allowing' | 'as' | 'at' | 'in' | 'score'
     if (l1 == 79)                   // 'as'
@@ -3449,7 +3449,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shiftT(154);                    // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -3475,7 +3475,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(81);                      // 'at'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     eventHandler.endNonterminal("PositionalVar", e0);
@@ -3486,7 +3486,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(81);                     // 'at'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
   }
 
@@ -3496,7 +3496,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(228);                     // 'score'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     eventHandler.endNonterminal("FTScoreVar", e0);
@@ -3507,7 +3507,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(228);                    // 'score'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
   }
 
@@ -3556,7 +3556,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 31:                        // '$'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(105);             // S^WS | '(:' | ':=' | 'as'
@@ -3571,7 +3571,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(27);                // S^WS | '(:' | ':='
     shift(52);                      // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("LetBinding", e0);
@@ -3583,7 +3583,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 31:                        // '$'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(105);             // S^WS | '(:' | ':=' | 'as'
       if (l1 == 79)                 // 'as'
@@ -3596,7 +3596,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(27);                // S^WS | '(:' | ':='
     shiftT(52);                     // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -3640,7 +3640,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(269);                     // 'window'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
@@ -3651,7 +3651,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shift(154);                     // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     whitespace();
@@ -3672,7 +3672,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(269);                    // 'window'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
     if (l1 == 79)                   // 'as'
@@ -3681,7 +3681,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shiftT(154);                    // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     try_WindowStartCondition();
     if (l1 == 126                   // 'end'
@@ -3699,7 +3699,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(269);                     // 'window'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
@@ -3710,7 +3710,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shift(154);                     // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     whitespace();
@@ -3727,7 +3727,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(269);                    // 'window'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
     if (l1 == 79)                   // 'as'
@@ -3736,7 +3736,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shiftT(154);                    // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     try_WindowStartCondition();
     try_WindowEndCondition();
@@ -3751,7 +3751,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_WindowVars();
     lookahead1W(83);                // S^WS | '(:' | 'when'
     shift(265);                     // 'when'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("WindowStartCondition", e0);
@@ -3764,7 +3764,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     try_WindowVars();
     lookahead1W(83);                // S^WS | '(:' | 'when'
     shiftT(265);                    // 'when'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -3782,7 +3782,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_WindowVars();
     lookahead1W(83);                // S^WS | '(:' | 'when'
     shift(265);                     // 'when'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("WindowEndCondition", e0);
@@ -3800,7 +3800,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     try_WindowVars();
     lookahead1W(83);                // S^WS | '(:' | 'when'
     shiftT(265);                    // 'when'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -3810,7 +3810,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_CurrentItem();
     }
@@ -3826,7 +3826,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(215);                   // 'previous'
       lookahead1W(21);              // S^WS | '$' | '(:'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_PreviousItem();
     }
@@ -3836,7 +3836,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(187);                   // 'next'
       lookahead1W(21);              // S^WS | '$' | '(:'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NextItem();
     }
@@ -3848,7 +3848,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_CurrentItem();
     }
     lookahead1W(159);               // S^WS | '(:' | 'at' | 'next' | 'previous' | 'when'
@@ -3862,7 +3862,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(215);                  // 'previous'
       lookahead1W(21);              // S^WS | '$' | '(:'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_PreviousItem();
     }
     lookahead1W(127);               // S^WS | '(:' | 'next' | 'when'
@@ -3871,7 +3871,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(187);                  // 'next'
       lookahead1W(21);              // S^WS | '$' | '(:'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_NextItem();
     }
   }
@@ -3918,7 +3918,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(105);                     // 'count'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     eventHandler.endNonterminal("CountClause", e0);
@@ -3929,7 +3929,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(105);                    // 'count'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
   }
 
@@ -3937,7 +3937,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("WhereClause", e0);
     shift(266);                     // 'where'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("WhereClause", e0);
@@ -3946,7 +3946,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_WhereClause()
   {
     shiftT(266);                    // 'where'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4010,7 +4010,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("GroupingSpec", e0);
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(183);               // S^WS | '(:' | ',' | ':=' | 'as' | 'collation' | 'count' | 'for' | 'group' |
@@ -4024,7 +4024,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
       lookahead1W(27);              // S^WS | '(:' | ':='
       shift(52);                    // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
@@ -4040,7 +4040,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_GroupingSpec()
   {
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(183);               // S^WS | '(:' | ',' | ':=' | 'as' | 'collation' | 'count' | 'for' | 'group' |
     if (l1 == 52                    // ':='
@@ -4052,7 +4052,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
       lookahead1W(27);              // S^WS | '(:' | ':='
       shiftT(52);                   // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
     if (l1 == 94)                   // 'collation'
@@ -4080,7 +4080,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       lookahead1W(34);              // S^WS | '(:' | 'by'
       shift(87);                    // 'by'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_OrderSpecList();
     eventHandler.endNonterminal("OrderByClause", e0);
@@ -4102,7 +4102,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       lookahead1W(34);              // S^WS | '(:' | 'by'
       shiftT(87);                   // 'by'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_OrderSpecList();
   }
 
@@ -4118,7 +4118,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(41);                    // ','
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_OrderSpec();
     }
@@ -4136,7 +4136,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(41);                   // ','
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_OrderSpec();
     }
   }
@@ -4236,7 +4236,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ReturnClause", e0);
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("ReturnClause", e0);
@@ -4245,7 +4245,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ReturnClause()
   {
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4262,7 +4262,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
@@ -4273,7 +4273,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shift(154);                     // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     for (;;)
@@ -4285,7 +4285,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(41);                    // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(110);             // S^WS | '(:' | 'as' | 'in'
@@ -4296,12 +4296,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
       lookahead1W(53);              // S^WS | '(:' | 'in'
       shift(154);                   // 'in'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
     shift(224);                     // 'satisfies'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("QuantifiedExpr", e0);
@@ -4319,7 +4319,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(110);               // S^WS | '(:' | 'as' | 'in'
     if (l1 == 79)                   // 'as'
@@ -4328,7 +4328,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(53);                // S^WS | '(:' | 'in'
     shiftT(154);                    // 'in'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     for (;;)
     {
@@ -4339,7 +4339,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(41);                   // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(110);             // S^WS | '(:' | 'as' | 'in'
       if (l1 == 79)                 // 'as'
@@ -4348,11 +4348,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
       lookahead1W(53);              // S^WS | '(:' | 'in'
       shiftT(154);                  // 'in'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
     shiftT(224);                    // 'satisfies'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4362,7 +4362,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(243);                     // 'switch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
@@ -4379,7 +4379,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(109);                     // 'default'
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("SwitchExpr", e0);
@@ -4390,7 +4390,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(243);                    // 'switch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     for (;;)
@@ -4405,7 +4405,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(109);                    // 'default'
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4415,7 +4415,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     for (;;)
     {
       shift(88);                    // 'case'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_SwitchCaseOperand();
       if (l1 != 88)                 // 'case'
@@ -4424,7 +4424,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("SwitchCaseClause", e0);
@@ -4435,7 +4435,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     for (;;)
     {
       shiftT(88);                   // 'case'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_SwitchCaseOperand();
       if (l1 != 88)                 // 'case'
       {
@@ -4443,7 +4443,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4465,7 +4465,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(253);                     // 'typeswitch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
@@ -4484,13 +4484,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
     }
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("TypeswitchExpr", e0);
@@ -4501,7 +4501,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(253);                    // 'typeswitch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     for (;;)
@@ -4518,12 +4518,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
     }
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4531,21 +4531,21 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CaseClause", e0);
     shift(88);                      // 'case'
-    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
+    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
     if (l1 == 31)                   // '$'
     {
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shift(79);                    // 'as'
     }
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_SequenceTypeUnion();
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("CaseClause", e0);
@@ -4554,19 +4554,19 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CaseClause()
   {
     shiftT(88);                     // 'case'
-    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
+    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
     if (l1 == 31)                   // '$'
     {
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shiftT(79);                   // 'as'
     }
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_SequenceTypeUnion();
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4582,7 +4582,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(279);                   // '|'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SequenceType();
     }
@@ -4600,7 +4600,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(279);                  // '|'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SequenceType();
     }
   }
@@ -4611,17 +4611,17 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(152);                     // 'if'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
     lookahead1W(77);                // S^WS | '(:' | 'then'
     shift(245);                     // 'then'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(122);                     // 'else'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("IfExpr", e0);
@@ -4632,15 +4632,15 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(152);                    // 'if'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     lookahead1W(77);                // S^WS | '(:' | 'then'
     shiftT(245);                    // 'then'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(122);                    // 'else'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -4683,7 +4683,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(250);                     // 'try'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_TryTargetExpr();
     shift(282);                     // '}'
@@ -4695,7 +4695,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(250);                    // 'try'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_TryTargetExpr();
     shiftT(282);                    // '}'
   }
@@ -4716,11 +4716,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CatchClause", e0);
     shift(91);                      // 'catch'
-    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_CatchErrorList();
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -4730,10 +4730,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CatchClause()
   {
     shiftT(91);                     // 'catch'
-    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_CatchErrorList();
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -4750,7 +4750,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(279);                   // '|'
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NameTest();
     }
@@ -4768,7 +4768,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(279);                  // '|'
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_NameTest();
     }
   }
@@ -4784,7 +4784,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(200);                   // 'or'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_AndExpr();
     }
@@ -4801,7 +4801,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(200);                  // 'or'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_AndExpr();
     }
   }
@@ -4817,7 +4817,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(75);                    // 'and'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ComparisonExpr();
     }
@@ -4834,7 +4834,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(75);                   // 'and'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ComparisonExpr();
     }
   }
@@ -4880,7 +4880,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         whitespace();
         parse_GeneralComp();
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_FTContainsExpr();
     }
@@ -4924,7 +4924,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         try_GeneralComp();
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_FTContainsExpr();
     }
   }
@@ -4978,7 +4978,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(280);                   // '||'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_RangeExpr();
     }
@@ -4995,7 +4995,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(280);                  // '||'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_RangeExpr();
     }
   }
@@ -5007,7 +5007,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 248)                  // 'to'
     {
       shift(248);                   // 'to'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_AdditiveExpr();
     }
@@ -5020,7 +5020,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 248)                  // 'to'
     {
       shiftT(248);                  // 'to'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_AdditiveExpr();
     }
   }
@@ -5044,7 +5044,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shift(42);                  // '-'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_MultiplicativeExpr();
     }
@@ -5069,7 +5069,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shiftT(42);                 // '-'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_MultiplicativeExpr();
     }
   }
@@ -5101,7 +5101,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shift(180);                 // 'mod'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_UnionExpr();
     }
@@ -5134,7 +5134,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shiftT(180);                // 'mod'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_UnionExpr();
     }
   }
@@ -5158,7 +5158,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shift(279);                 // '|'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_IntersectExceptExpr();
     }
@@ -5183,7 +5183,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shiftT(279);                // '|'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_IntersectExceptExpr();
     }
   }
@@ -5194,7 +5194,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_InstanceofExpr();
     for (;;)
     {
-      lookahead1W(222);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+      lookahead1W(222);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
       if (l1 != 131                 // 'except'
        && l1 != 162)                // 'intersect'
       {
@@ -5208,7 +5208,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shift(131);                 // 'except'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_InstanceofExpr();
     }
@@ -5220,7 +5220,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     try_InstanceofExpr();
     for (;;)
     {
-      lookahead1W(222);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+      lookahead1W(222);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
       if (l1 != 131                 // 'except'
        && l1 != 162)                // 'intersect'
       {
@@ -5234,7 +5234,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shiftT(131);                // 'except'
       }
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_InstanceofExpr();
     }
   }
@@ -5243,13 +5243,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("InstanceofExpr", e0);
     parse_TreatExpr();
-    lookahead1W(223);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(223);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 160)                  // 'instance'
     {
       shift(160);                   // 'instance'
       lookahead1W(64);              // S^WS | '(:' | 'of'
       shift(196);                   // 'of'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SequenceType();
     }
@@ -5259,13 +5259,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_InstanceofExpr()
   {
     try_TreatExpr();
-    lookahead1W(223);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(223);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 160)                  // 'instance'
     {
       shiftT(160);                  // 'instance'
       lookahead1W(64);              // S^WS | '(:' | 'of'
       shiftT(196);                  // 'of'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SequenceType();
     }
   }
@@ -5274,13 +5274,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("TreatExpr", e0);
     parse_CastableExpr();
-    lookahead1W(224);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(224);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 249)                  // 'treat'
     {
       shift(249);                   // 'treat'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shift(79);                    // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SequenceType();
     }
@@ -5290,13 +5290,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_TreatExpr()
   {
     try_CastableExpr();
-    lookahead1W(224);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(224);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 249)                  // 'treat'
     {
       shiftT(249);                  // 'treat'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shiftT(79);                   // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SequenceType();
     }
   }
@@ -5305,13 +5305,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CastableExpr", e0);
     parse_CastExpr();
-    lookahead1W(225);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(225);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 90)                   // 'castable'
     {
       shift(90);                    // 'castable'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shift(79);                    // 'as'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SingleType();
     }
@@ -5321,13 +5321,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CastableExpr()
   {
     try_CastExpr();
-    lookahead1W(225);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(225);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 90)                   // 'castable'
     {
       shiftT(90);                   // 'castable'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shiftT(79);                   // 'as'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SingleType();
     }
   }
@@ -5336,13 +5336,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CastExpr", e0);
     parse_UnaryExpr();
-    lookahead1W(227);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(227);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 89)                   // 'cast'
     {
       shift(89);                    // 'cast'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shift(79);                    // 'as'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SingleType();
     }
@@ -5352,13 +5352,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CastExpr()
   {
     try_UnaryExpr();
-    lookahead1W(227);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(227);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 89)                   // 'cast'
     {
       shiftT(89);                   // 'cast'
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shiftT(79);                   // 'as'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SingleType();
     }
   }
@@ -5368,7 +5368,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     eventHandler.startNonterminal("UnaryExpr", e0);
     for (;;)
     {
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       if (l1 != 40                  // '+'
        && l1 != 42)                 // '-'
       {
@@ -5392,7 +5392,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     for (;;)
     {
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       if (l1 != 40                  // '+'
        && l1 != 42)                 // '-'
       {
@@ -5416,7 +5416,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 260:                       // 'validate'
-      lookahead2W(246);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(246);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -5443,7 +5443,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 260:                       // 'validate'
-      lookahead2W(246);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(246);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -5475,7 +5475,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(26);                    // '!'
-      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_PathExpr();
     }
@@ -5492,7 +5492,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shiftT(26);                   // '!'
-      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_PathExpr();
     }
   }
@@ -5640,7 +5640,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       {
       case 252:                     // 'type'
         shift(252);                 // 'type'
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         whitespace();
         parse_TypeName();
         break;
@@ -5651,7 +5651,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -5668,7 +5668,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       {
       case 252:                     // 'type'
         shiftT(252);                // 'type'
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         try_TypeName();
         break;
       default:
@@ -5677,7 +5677,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -5722,7 +5722,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shift(276);                     // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       whitespace();
@@ -5744,7 +5744,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shiftT(276);                    // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       try_Expr();
@@ -5756,7 +5756,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("Pragma", e0);
     shift(35);                      // '(#'
-    lookahead1(248);                // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
+    lookahead1(248);                // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
     if (l1 == 21)                   // S
     {
       shift(21);                    // S
@@ -5777,7 +5777,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_Pragma()
   {
     shiftT(35);                     // '(#'
-    lookahead1(248);                // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
+    lookahead1(248);                // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
     if (l1 == 21)                   // S
     {
       shiftT(21);                   // S
@@ -5801,7 +5801,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 46:                        // '/'
       shift(46);                    // '/'
-      lookahead1W(283);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(283);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 25:                      // EOF
@@ -5839,7 +5839,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     case 47:                        // '//'
       shift(47);                    // '//'
-      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_RelativePathExpr();
       break;
@@ -5855,7 +5855,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 46:                        // '/'
       shiftT(46);                   // '/'
-      lookahead1W(283);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(283);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 25:                      // EOF
@@ -5892,7 +5892,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     case 47:                        // '//'
       shiftT(47);                   // '//'
-      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_RelativePathExpr();
       break;
     default:
@@ -5909,7 +5909,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       switch (l1)
       {
       case 26:                      // '!'
-        lookahead2W(264);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(264);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       default:
         lk = l1;
@@ -6011,7 +6011,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
             default:
               shiftT(26);           // '!'
             }
-            lookahead1W(263);       // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+            lookahead1W(263);       // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
             try_StepExpr();
             lk = -1;
           }
@@ -6042,7 +6042,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shift(26);                  // '!'
       }
-      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_StepExpr();
     }
@@ -6057,7 +6057,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       switch (l1)
       {
       case 26:                      // '!'
-        lookahead2W(264);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(264);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       default:
         lk = l1;
@@ -6159,7 +6159,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
             default:
               shiftT(26);           // '!'
             }
-            lookahead1W(263);       // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+            lookahead1W(263);       // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
             try_StepExpr();
             lk = -1;
           }
@@ -6190,7 +6190,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       default:
         shiftT(26);                 // '!'
       }
-      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(263);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_StepExpr();
     }
   }
@@ -6201,28 +6201,28 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 82:                        // 'attribute'
-      lookahead2W(282);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(282);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 121:                       // 'element'
-      lookahead2W(279);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(279);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 184:                       // 'namespace'
     case 216:                       // 'processing-instruction'
-      lookahead2W(280);             // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(280);             // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 96:                        // 'comment'
     case 119:                       // 'document'
     case 202:                       // 'ordered'
     case 244:                       // 'text'
     case 256:                       // 'unordered'
-      lookahead2W(245);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(245);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 124:                       // 'empty-sequence'
     case 152:                       // 'if'
     case 165:                       // 'item'
     case 243:                       // 'switch'
     case 253:                       // 'typeswitch'
-      lookahead2W(238);             // S^WS | EOF | '!' | '!=' | '#' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(238);             // S^WS | EOF | '!' | '!=' | '#' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     case 73:                        // 'ancestor'
     case 74:                        // 'ancestor-or-self'
@@ -6235,7 +6235,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 212:                       // 'preceding'
     case 213:                       // 'preceding-sibling'
     case 229:                       // 'self'
-      lookahead2W(244);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(244);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 6:                         // EQName^Token
     case 70:                        // 'after'
@@ -6341,7 +6341,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 267:                       // 'while'
     case 270:                       // 'with'
     case 274:                       // 'xquery'
-      lookahead2W(242);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(242);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -7166,28 +7166,28 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 82:                        // 'attribute'
-      lookahead2W(282);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(282);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 121:                       // 'element'
-      lookahead2W(279);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(279);             // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 184:                       // 'namespace'
     case 216:                       // 'processing-instruction'
-      lookahead2W(280);             // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
+      lookahead2W(280);             // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' |
       break;
     case 96:                        // 'comment'
     case 119:                       // 'document'
     case 202:                       // 'ordered'
     case 244:                       // 'text'
     case 256:                       // 'unordered'
-      lookahead2W(245);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(245);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 124:                       // 'empty-sequence'
     case 152:                       // 'if'
     case 165:                       // 'item'
     case 243:                       // 'switch'
     case 253:                       // 'typeswitch'
-      lookahead2W(238);             // S^WS | EOF | '!' | '!=' | '#' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(238);             // S^WS | EOF | '!' | '!=' | '#' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     case 73:                        // 'ancestor'
     case 74:                        // 'ancestor-or-self'
@@ -7200,7 +7200,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 212:                       // 'preceding'
     case 213:                       // 'preceding-sibling'
     case 229:                       // 'self'
-      lookahead2W(244);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(244);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 6:                         // EQName^Token
     case 70:                        // 'after'
@@ -7306,7 +7306,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 267:                       // 'while'
     case 270:                       // 'with'
     case 274:                       // 'xquery'
-      lookahead2W(242);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(242);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -8135,7 +8135,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 206:                       // 'parent'
     case 212:                       // 'preceding'
     case 213:                       // 'preceding-sibling'
-      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       break;
     default:
       lk = l1;
@@ -8153,7 +8153,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       parse_ForwardStep();
     }
-    lookahead1W(236);               // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+    lookahead1W(236);               // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
     whitespace();
     parse_PredicateList();
     eventHandler.endNonterminal("AxisStep", e0);
@@ -8168,7 +8168,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 206:                       // 'parent'
     case 212:                       // 'preceding'
     case 213:                       // 'preceding-sibling'
-      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       break;
     default:
       lk = l1;
@@ -8186,7 +8186,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       try_ForwardStep();
     }
-    lookahead1W(236);               // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+    lookahead1W(236);               // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
     try_PredicateList();
   }
 
@@ -8196,7 +8196,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 82:                        // 'attribute'
-      lookahead2W(243);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(243);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     case 93:                        // 'child'
     case 111:                       // 'descendant'
@@ -8204,7 +8204,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 135:                       // 'following'
     case 136:                       // 'following-sibling'
     case 229:                       // 'self'
-      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       break;
     default:
       lk = l1;
@@ -8219,7 +8219,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 26248:                     // 'following-sibling' '::'
     case 26341:                     // 'self' '::'
       parse_ForwardAxis();
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NodeTest();
       break;
@@ -8234,7 +8234,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 82:                        // 'attribute'
-      lookahead2W(243);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(243);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     case 93:                        // 'child'
     case 111:                       // 'descendant'
@@ -8242,7 +8242,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 135:                       // 'following'
     case 136:                       // 'following-sibling'
     case 229:                       // 'self'
-      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead2W(240);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       break;
     default:
       lk = l1;
@@ -8257,7 +8257,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 26248:                     // 'following-sibling' '::'
     case 26341:                     // 'self' '::'
       try_ForwardAxis();
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_NodeTest();
       break;
     default:
@@ -8356,7 +8356,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
       shift(66);                    // '@'
     }
-    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_NodeTest();
     eventHandler.endNonterminal("AbbrevForwardStep", e0);
@@ -8368,7 +8368,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
       shiftT(66);                   // '@'
     }
-    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(251);               // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_NodeTest();
   }
 
@@ -8382,7 +8382,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       parse_ReverseAxis();
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_NodeTest();
     }
@@ -8398,7 +8398,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       try_ReverseAxis();
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_NodeTest();
     }
   }
@@ -8494,7 +8494,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 226:                       // 'schema-attribute'
     case 227:                       // 'schema-element'
     case 244:                       // 'text'
-      lookahead2W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     default:
       lk = l1;
@@ -8533,7 +8533,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 226:                       // 'schema-attribute'
     case 227:                       // 'schema-element'
     case 244:                       // 'text'
-      lookahead2W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead2W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       break;
     default:
       lk = l1;
@@ -8589,7 +8589,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_PrimaryExpr();
     for (;;)
     {
-      lookahead1W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead1W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       if (l1 != 34                  // '('
        && l1 != 68)                 // '['
       {
@@ -8614,7 +8614,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     try_PrimaryExpr();
     for (;;)
     {
-      lookahead1W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
+      lookahead1W(239);             // S^WS | EOF | '!' | '!=' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' |
       if (l1 != 34                  // '('
        && l1 != 68)                 // '['
       {
@@ -8635,7 +8635,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ArgumentList", e0);
     shift(34);                      // '('
-    lookahead1W(274);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(274);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 37)                   // ')'
     {
       whitespace();
@@ -8648,7 +8648,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shift(41);                  // ','
-        lookahead1W(269);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(269);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_Argument();
       }
@@ -8660,7 +8660,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ArgumentList()
   {
     shiftT(34);                     // '('
-    lookahead1W(274);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(274);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 37)                   // ')'
     {
       try_Argument();
@@ -8672,7 +8672,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shiftT(41);                 // ','
-        lookahead1W(269);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(269);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         try_Argument();
       }
     }
@@ -8684,7 +8684,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     eventHandler.startNonterminal("PredicateList", e0);
     for (;;)
     {
-      lookahead1W(236);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead1W(236);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       if (l1 != 68)                 // '['
       {
         break;
@@ -8699,7 +8699,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     for (;;)
     {
-      lookahead1W(236);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
+      lookahead1W(236);             // S^WS | EOF | '!' | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' | '//' | ':' |
       if (l1 != 68)                 // '['
       {
         break;
@@ -8712,7 +8712,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("Predicate", e0);
     shift(68);                      // '['
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(69);                      // ']'
@@ -8722,7 +8722,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_Predicate()
   {
     shiftT(68);                     // '['
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(69);                     // ']'
   }
@@ -8789,7 +8789,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("VarRef", e0);
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     eventHandler.endNonterminal("VarRef", e0);
@@ -8798,7 +8798,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_VarRef()
   {
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
   }
 
@@ -8818,7 +8818,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ParenthesizedExpr", e0);
     shift(34);                      // '('
-    lookahead1W(268);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(268);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 37)                   // ')'
     {
       whitespace();
@@ -8831,7 +8831,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ParenthesizedExpr()
   {
     shiftT(34);                     // '('
-    lookahead1W(268);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(268);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 37)                   // ')'
     {
       try_Expr();
@@ -8857,7 +8857,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(202);                     // 'ordered'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -8869,7 +8869,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(202);                    // 'ordered'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -8880,7 +8880,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(256);                     // 'unordered'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -8892,7 +8892,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(256);                    // 'unordered'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -9454,12 +9454,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CompElemConstructor", e0);
     shift(121);                     // 'element'
-    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shift(276);                   // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_Expr();
       shift(282);                   // '}'
@@ -9470,7 +9470,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       whitespace();
@@ -9483,12 +9483,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CompElemConstructor()
   {
     shiftT(121);                    // 'element'
-    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shiftT(276);                  // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_Expr();
       shiftT(282);                  // '}'
       break;
@@ -9497,7 +9497,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       try_ContentExpr();
@@ -9509,12 +9509,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CompNamespaceConstructor", e0);
     shift(184);                     // 'namespace'
-    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shift(276);                   // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_PrefixExpr();
       shift(282);                   // '}'
@@ -9525,7 +9525,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_URIExpr();
     shift(282);                     // '}'
@@ -9535,12 +9535,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CompNamespaceConstructor()
   {
     shiftT(184);                    // 'namespace'
-    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shiftT(276);                  // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_PrefixExpr();
       shiftT(282);                  // '}'
       break;
@@ -9549,7 +9549,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_URIExpr();
     shiftT(282);                    // '}'
   }
@@ -9681,7 +9681,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 79)                   // 'as'
     {
       shift(79);                    // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SequenceType();
     }
@@ -9715,7 +9715,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 79)                   // 'as'
     {
       shiftT(79);                   // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_SequenceType();
     }
     lookahead1W(87);                // S^WS | '(:' | '{'
@@ -9726,7 +9726,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("SingleType", e0);
     parse_SimpleTypeName();
-    lookahead1W(226);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(226);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 64)                   // '?'
     {
       shift(64);                    // '?'
@@ -9737,7 +9737,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_SingleType()
   {
     try_SimpleTypeName();
-    lookahead1W(226);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
+    lookahead1W(226);               // S^WS | EOF | '!=' | '(:' | ')' | '*' | '+' | ',' | '-' | ':' | ';' | '<' | '<<' |
     if (l1 == 64)                   // '?'
     {
       shiftT(64);                   // '?'
@@ -9748,7 +9748,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("TypeDeclaration", e0);
     shift(79);                      // 'as'
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_SequenceType();
     eventHandler.endNonterminal("TypeDeclaration", e0);
@@ -9757,7 +9757,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_TypeDeclaration()
   {
     shiftT(79);                     // 'as'
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_SequenceType();
   }
 
@@ -9767,7 +9767,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 124:                       // 'empty-sequence'
-      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
+      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
       break;
     default:
       lk = l1;
@@ -9783,7 +9783,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       parse_ItemType();
-      lookahead1W(237);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' | ';' |
+      lookahead1W(237);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' | ';' |
       switch (l1)
       {
       case 39:                      // '*'
@@ -9804,7 +9804,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 124:                       // 'empty-sequence'
-      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
+      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
       break;
     default:
       lk = l1;
@@ -9820,7 +9820,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       try_ItemType();
-      lookahead1W(237);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' | ';' |
+      lookahead1W(237);             // S^WS | EOF | '!=' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' | ';' |
       switch (l1)
       {
       case 39:                      // '*'
@@ -9883,7 +9883,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 226:                       // 'schema-attribute'
     case 227:                       // 'schema-element'
     case 244:                       // 'text'
-      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
+      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
       break;
     default:
       lk = l1;
@@ -9946,7 +9946,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     case 226:                       // 'schema-attribute'
     case 227:                       // 'schema-element'
     case 244:                       // 'text'
-      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
+      lookahead2W(241);             // S^WS | EOF | '!=' | '(' | '(:' | ')' | '*' | '*' | '+' | ',' | '-' | ':' | ':=' |
       break;
     default:
       lk = l1;
@@ -10322,7 +10322,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(216);                     // 'processing-instruction'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(256);               // StringLiteral | NCName^Token | S^WS | '(:' | ')' | 'after' | 'allowing' |
+    lookahead1W(256);               // StringLiteral | NCName^Token | S^WS | '(:' | ')' | 'after' | 'allowing' |
     if (l1 != 37)                   // ')'
     {
       switch (l1)
@@ -10345,7 +10345,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(216);                    // 'processing-instruction'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(256);               // StringLiteral | NCName^Token | S^WS | '(:' | ')' | 'after' | 'allowing' |
+    lookahead1W(256);               // StringLiteral | NCName^Token | S^WS | '(:' | ')' | 'after' | 'allowing' |
     if (l1 != 37)                   // ')'
     {
       switch (l1)
@@ -10367,7 +10367,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(82);                      // 'attribute'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
     if (l1 != 37)                   // ')'
     {
       whitespace();
@@ -10376,7 +10376,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 41)                 // ','
       {
         shift(41);                  // ','
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         whitespace();
         parse_TypeName();
       }
@@ -10391,7 +10391,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(82);                     // 'attribute'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
     if (l1 != 37)                   // ')'
     {
       try_AttribNameOrWildcard();
@@ -10399,7 +10399,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 41)                 // ','
       {
         shiftT(41);                 // ','
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         try_TypeName();
       }
     }
@@ -10439,7 +10439,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(226);                     // 'schema-attribute'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_AttributeDeclaration();
     lookahead1W(23);                // S^WS | '(:' | ')'
@@ -10452,7 +10452,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(226);                    // 'schema-attribute'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_AttributeDeclaration();
     lookahead1W(23);                // S^WS | '(:' | ')'
     shiftT(37);                     // ')'
@@ -10476,7 +10476,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(121);                     // 'element'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
     if (l1 != 37)                   // ')'
     {
       whitespace();
@@ -10485,7 +10485,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 41)                 // ','
       {
         shift(41);                  // ','
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         whitespace();
         parse_TypeName();
         lookahead1W(102);           // S^WS | '(:' | ')' | '?'
@@ -10505,7 +10505,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(121);                    // 'element'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(255);               // EQName^Token | S^WS | '(:' | ')' | '*' | 'after' | 'allowing' | 'ancestor' |
     if (l1 != 37)                   // ')'
     {
       try_ElementNameOrWildcard();
@@ -10513,7 +10513,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 41)                 // ','
       {
         shiftT(41);                 // ','
-        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         try_TypeName();
         lookahead1W(102);           // S^WS | '(:' | ')' | '?'
         if (l1 == 64)               // '?'
@@ -10558,7 +10558,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(227);                     // 'schema-element'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_ElementDeclaration();
     lookahead1W(23);                // S^WS | '(:' | ')'
@@ -10571,7 +10571,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(227);                    // 'schema-element'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_ElementDeclaration();
     lookahead1W(23);                // S^WS | '(:' | ')'
     shiftT(37);                     // ')'
@@ -10770,7 +10770,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(145);                     // 'function'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(261);               // EQName^Token | S^WS | '%' | '(' | '(:' | ')' | 'after' | 'allowing' |
+    lookahead1W(261);               // EQName^Token | S^WS | '%' | '(' | '(:' | ')' | 'after' | 'allowing' |
     if (l1 != 37)                   // ')'
     {
       whitespace();
@@ -10783,7 +10783,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shift(41);                  // ','
-        lookahead1W(259);           // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(259);           // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
         whitespace();
         parse_SequenceType();
       }
@@ -10791,7 +10791,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(37);                      // ')'
     lookahead1W(30);                // S^WS | '(:' | 'as'
     shift(79);                      // 'as'
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_SequenceType();
     eventHandler.endNonterminal("TypedFunctionTest", e0);
@@ -10802,7 +10802,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(145);                    // 'function'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(261);               // EQName^Token | S^WS | '%' | '(' | '(:' | ')' | 'after' | 'allowing' |
+    lookahead1W(261);               // EQName^Token | S^WS | '%' | '(' | '(:' | ')' | 'after' | 'allowing' |
     if (l1 != 37)                   // ')'
     {
       try_SequenceType();
@@ -10814,14 +10814,14 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shiftT(41);                 // ','
-        lookahead1W(259);           // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead1W(259);           // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
         try_SequenceType();
       }
     }
     shiftT(37);                     // ')'
     lookahead1W(30);                // S^WS | '(:' | 'as'
     shiftT(79);                     // 'as'
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_SequenceType();
   }
 
@@ -10829,7 +10829,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ParenthesizedItemType", e0);
     shift(34);                      // '('
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_ItemType();
     lookahead1W(23);                // S^WS | '(:' | ')'
@@ -10840,7 +10840,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ParenthesizedItemType()
   {
     shiftT(34);                     // '('
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_ItemType();
     lookahead1W(23);                // S^WS | '(:' | ')'
     shiftT(37);                     // ')'
@@ -10940,12 +10940,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       shift(192);                   // 'nodes'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_SourceExpr();
     whitespace();
     parse_InsertExprTargetChoice();
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_TargetExpr();
     eventHandler.endNonterminal("InsertExpr", e0);
@@ -10963,10 +10963,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       shiftT(192);                  // 'nodes'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_SourceExpr();
     try_InsertExprTargetChoice();
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_TargetExpr();
   }
 
@@ -10983,7 +10983,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       shift(192);                   // 'nodes'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_TargetExpr();
     eventHandler.endNonterminal("DeleteExpr", e0);
@@ -11001,7 +11001,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     default:
       shiftT(192);                  // 'nodes'
     }
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_TargetExpr();
   }
 
@@ -11018,11 +11018,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(62);                // S^WS | '(:' | 'node'
     shift(191);                     // 'node'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_TargetExpr();
     shift(270);                     // 'with'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("ReplaceExpr", e0);
@@ -11040,10 +11040,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     }
     lookahead1W(62);                // S^WS | '(:' | 'node'
     shiftT(191);                    // 'node'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_TargetExpr();
     shiftT(270);                    // 'with'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -11053,11 +11053,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(218);                     // 'rename'
     lookahead1W(62);                // S^WS | '(:' | 'node'
     shift(191);                     // 'node'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_TargetExpr();
     shift(79);                      // 'as'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_NewNameExpr();
     eventHandler.endNonterminal("RenameExpr", e0);
@@ -11068,10 +11068,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(218);                    // 'rename'
     lookahead1W(62);                // S^WS | '(:' | 'node'
     shiftT(191);                    // 'node'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_TargetExpr();
     shiftT(79);                     // 'as'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_NewNameExpr();
   }
 
@@ -11117,12 +11117,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(103);                     // 'copy'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(27);                // S^WS | '(:' | ':='
     shift(52);                      // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     for (;;)
@@ -11134,21 +11134,21 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(41);                    // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(27);              // S^WS | '(:' | ':='
       shift(52);                    // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
     shift(181);                     // 'modify'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("TransformExpr", e0);
@@ -11159,11 +11159,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(103);                    // 'copy'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(27);                // S^WS | '(:' | ':='
     shiftT(52);                     // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     for (;;)
     {
@@ -11174,18 +11174,18 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(41);                   // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(27);              // S^WS | '(:' | ':='
       shiftT(52);                   // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
     shiftT(181);                    // 'modify'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -11256,7 +11256,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(264);                     // 'weight'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shift(276);                     // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(282);                     // '}'
@@ -11268,7 +11268,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(264);                    // 'weight'
     lookahead1W(87);                // S^WS | '(:' | '{'
     shiftT(276);                    // '{'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(282);                    // '}'
   }
@@ -11345,7 +11345,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_FTUnaryNot();
     for (;;)
     {
-      lookahead1W(212);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(212);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 != 193)                // 'not'
       {
         break;
@@ -11365,7 +11365,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     try_FTUnaryNot();
     for (;;)
     {
-      lookahead1W(212);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(212);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 != 193)                // 'not'
       {
         break;
@@ -11405,7 +11405,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("FTPrimaryWithOptions", e0);
     parse_FTPrimary();
-    lookahead1W(214);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(214);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 259)                  // 'using'
     {
       whitespace();
@@ -11422,7 +11422,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_FTPrimaryWithOptions()
   {
     try_FTPrimary();
-    lookahead1W(214);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(214);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 259)                  // 'using'
     {
       try_FTMatchOptions();
@@ -11450,7 +11450,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       parse_FTWords();
-      lookahead1W(215);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(215);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 195)                // 'occurs'
       {
         whitespace();
@@ -11475,7 +11475,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       try_FTWords();
-      lookahead1W(215);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(215);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 195)                // 'occurs'
       {
         try_FTTimes();
@@ -11487,7 +11487,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("FTWords", e0);
     parse_FTWordsValue();
-    lookahead1W(221);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(221);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 71                    // 'all'
      || l1 == 76                    // 'any'
      || l1 == 210)                  // 'phrase'
@@ -11501,7 +11501,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_FTWords()
   {
     try_FTWordsValue();
-    lookahead1W(221);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(221);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 71                    // 'all'
      || l1 == 76                    // 'any'
      || l1 == 210)                  // 'phrase'
@@ -11520,7 +11520,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       shift(276);                   // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_Expr();
       shift(282);                   // '}'
@@ -11537,7 +11537,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     default:
       shiftT(276);                  // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_Expr();
       shiftT(282);                  // '}'
     }
@@ -11594,7 +11594,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 76:                        // 'any'
       shift(76);                    // 'any'
-      lookahead1W(218);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(218);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 272)                // 'word'
       {
         shift(272);                 // 'word'
@@ -11602,7 +11602,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     case 71:                        // 'all'
       shift(71);                    // 'all'
-      lookahead1W(219);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(219);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 273)                // 'words'
       {
         shift(273);                 // 'words'
@@ -11620,7 +11620,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 76:                        // 'any'
       shiftT(76);                   // 'any'
-      lookahead1W(218);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(218);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 272)                // 'word'
       {
         shiftT(272);                // 'word'
@@ -11628,7 +11628,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       break;
     case 71:                        // 'all'
       shiftT(71);                   // 'all'
-      lookahead1W(219);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(219);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 == 273)                // 'words'
       {
         shiftT(273);                // 'words'
@@ -11665,7 +11665,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 130:                       // 'exactly'
       shift(130);                   // 'exactly'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_AdditiveExpr();
       break;
@@ -11676,24 +11676,24 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       {
       case 173:                     // 'least'
         shift(173);                 // 'least'
-        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_AdditiveExpr();
         break;
       default:
         shift(183);                 // 'most'
-        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_AdditiveExpr();
       }
       break;
     default:
       shift(140);                   // 'from'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_AdditiveExpr();
       shift(248);                   // 'to'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_AdditiveExpr();
     }
@@ -11706,7 +11706,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 130:                       // 'exactly'
       shiftT(130);                  // 'exactly'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_AdditiveExpr();
       break;
     case 81:                        // 'at'
@@ -11716,21 +11716,21 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       {
       case 173:                     // 'least'
         shiftT(173);                // 'least'
-        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         try_AdditiveExpr();
         break;
       default:
         shiftT(183);                // 'most'
-        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         try_AdditiveExpr();
       }
       break;
     default:
       shiftT(140);                  // 'from'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_AdditiveExpr();
       shiftT(248);                  // 'to'
-      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(265);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_AdditiveExpr();
     }
   }
@@ -11797,7 +11797,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("FTWindow", e0);
     shift(269);                     // 'window'
-    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_AdditiveExpr();
     whitespace();
@@ -11808,7 +11808,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_FTWindow()
   {
     shiftT(269);                    // 'window'
-    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_AdditiveExpr();
     try_FTUnit();
   }
@@ -11979,7 +11979,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       lookahead1W(182);             // S^WS | '(:' | 'case' | 'diacritics' | 'language' | 'lowercase' | 'no' |
       whitespace();
       parse_FTMatchOption();
-      lookahead1W(214);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(214);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 != 259)                // 'using'
       {
         break;
@@ -11995,7 +11995,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(259);                  // 'using'
       lookahead1W(182);             // S^WS | '(:' | 'case' | 'diacritics' | 'language' | 'lowercase' | 'no' |
       try_FTMatchOption();
-      lookahead1W(214);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+      lookahead1W(214);             // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
       if (l1 != 259)                // 'using'
       {
         break;
@@ -12304,14 +12304,14 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(81);                      // 'at'
     lookahead1W(15);                // URILiteral | S^WS | '(:'
     shift(7);                       // URILiteral
-    lookahead1W(220);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(220);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 217)                  // 'relationship'
     {
       shift(217);                   // 'relationship'
       lookahead1W(17);              // StringLiteral | S^WS | '(:'
       shift(11);                    // StringLiteral
     }
-    lookahead1W(216);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(216);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     switch (l1)
     {
     case 81:                        // 'at'
@@ -12338,14 +12338,14 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(81);                     // 'at'
     lookahead1W(15);                // URILiteral | S^WS | '(:'
     shiftT(7);                      // URILiteral
-    lookahead1W(220);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(220);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     if (l1 == 217)                  // 'relationship'
     {
       shiftT(217);                  // 'relationship'
       lookahead1W(17);              // StringLiteral | S^WS | '(:'
       shiftT(11);                   // StringLiteral
     }
-    lookahead1W(216);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+    lookahead1W(216);               // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
     switch (l1)
     {
     case 81:                        // 'at'
@@ -12455,7 +12455,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         shift(109);                 // 'default'
         for (;;)
         {
-          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
           if (l1 != 131             // 'except'
            && l1 != 254)            // 'union'
           {
@@ -12470,7 +12470,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         parse_FTStopWords();
         for (;;)
         {
-          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
           if (l1 != 131             // 'except'
            && l1 != 254)            // 'union'
           {
@@ -12506,7 +12506,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         shiftT(109);                // 'default'
         for (;;)
         {
-          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
           if (l1 != 131             // 'except'
            && l1 != 254)            // 'union'
           {
@@ -12519,7 +12519,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         try_FTStopWords();
         for (;;)
         {
-          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
+          lookahead1W(217);         // S^WS | EOF | '!=' | '(:' | ')' | ',' | ':' | ';' | '<' | '<<' | '<=' | '=' |
           if (l1 != 131             // 'except'
            && l1 != 254)            // 'union'
           {
@@ -12677,7 +12677,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("FTExtensionOption", e0);
     shift(199);                     // 'option'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(17);                // StringLiteral | S^WS | '(:'
@@ -12688,7 +12688,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_FTExtensionOption()
   {
     shiftT(199);                    // 'option'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_EQName();
     lookahead1W(17);                // StringLiteral | S^WS | '(:'
     shiftT(11);                     // StringLiteral
@@ -12700,7 +12700,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(271);                     // 'without'
     lookahead1W(42);                // S^WS | '(:' | 'content'
     shift(100);                     // 'content'
-    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_UnionExpr();
     eventHandler.endNonterminal("FTIgnoreOption", e0);
@@ -12711,7 +12711,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(271);                    // 'without'
     lookahead1W(42);                // S^WS | '(:' | 'content'
     shiftT(100);                    // 'content'
-    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(265);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_UnionExpr();
   }
 
@@ -12719,7 +12719,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CollectionDecl", e0);
     shift(95);                      // 'collection'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(107);               // S^WS | '(:' | ';' | 'as'
@@ -12790,7 +12790,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("IndexKeyTypeDecl", e0);
     shift(79);                      // 'as'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_AtomicType();
     lookahead1W(169);               // S^WS | '(:' | '*' | '+' | ',' | ';' | '?' | 'collation'
@@ -12824,18 +12824,18 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("IndexDecl", e0);
     shift(155);                     // 'index'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_IndexName();
     lookahead1W(65);                // S^WS | '(:' | 'on'
     shift(197);                     // 'on'
     lookahead1W(63);                // S^WS | '(:' | 'nodes'
     shift(192);                     // 'nodes'
-    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_IndexDomainExpr();
     shift(87);                      // 'by'
-    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_IndexKeySpec();
     for (;;)
@@ -12846,7 +12846,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       }
       shift(41);                    // ','
-      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(264);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_IndexKeySpec();
     }
@@ -12859,7 +12859,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(161);                     // 'integrity'
     lookahead1W(40);                // S^WS | '(:' | 'constraint'
     shift(97);                      // 'constraint'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(120);               // S^WS | '(:' | 'foreign' | 'on'
@@ -12882,7 +12882,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(197);                     // 'on'
     lookahead1W(39);                // S^WS | '(:' | 'collection'
     shift(95);                      // 'collection'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(140);               // S^WS | '$' | '(:' | 'foreach' | 'node'
@@ -12909,7 +12909,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_VarRef();
     lookahead1W(37);                // S^WS | '(:' | 'check'
     shift(92);                      // 'check'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("ICCollSequence", e0);
@@ -12928,7 +12928,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(255);                     // 'unique'
     lookahead1W(57);                // S^WS | '(:' | 'key'
     shift(168);                     // 'key'
-    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_PathExpr();
     eventHandler.endNonterminal("ICCollSequenceUnique", e0);
@@ -12945,7 +12945,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_VarRef();
     lookahead1W(37);                // S^WS | '(:' | 'check'
     shift(92);                      // 'check'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("ICCollNode", e0);
@@ -12989,7 +12989,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ICForeignKeyValues", e0);
     shift(95);                      // 'collection'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(62);                // S^WS | '(:' | 'node'
@@ -12999,7 +12999,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     parse_VarRef();
     lookahead1W(57);                // S^WS | '(:' | 'key'
     shift(168);                     // 'key'
-    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(264);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_PathExpr();
     eventHandler.endNonterminal("ICForeignKeyValues", e0);
@@ -13042,7 +13042,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function parse_EQName()
   {
     eventHandler.startNonterminal("EQName", e0);
-    lookahead1(247);                // EQName^Token | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' | 'and' |
+    lookahead1(247);                // EQName^Token | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' | 'and' |
     switch (l1)
     {
     case 82:                        // 'attribute'
@@ -13101,7 +13101,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
 
   function try_EQName()
   {
-    lookahead1(247);                // EQName^Token | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' | 'and' |
+    lookahead1(247);                // EQName^Token | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' | 'and' |
     switch (l1)
     {
     case 82:                        // 'attribute'
@@ -14658,20 +14658,20 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     eventHandler.startNonterminal("Statements", e0);
     for (;;)
     {
-      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 34:                      // '('
-        lookahead2W(268);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(268);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 35:                      // '(#'
-        lookahead2(248);            // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
+        lookahead2(248);            // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
         break;
       case 46:                      // '/'
-        lookahead2W(281);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(281);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 47:                      // '//'
-        lookahead2W(263);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(263);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 54:                      // '<'
         lookahead2(4);              // QName
@@ -14683,19 +14683,19 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         lookahead2(3);              // PITarget
         break;
       case 66:                      // '@'
-        lookahead2W(251);           // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead2W(251);           // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         break;
       case 68:                      // '['
-        lookahead2W(270);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(270);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 77:                      // 'append'
         lookahead2W(56);            // S^WS | '(:' | 'json'
         break;
       case 82:                      // 'attribute'
-        lookahead2W(278);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(278);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 121:                     // 'element'
-        lookahead2W(276);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(276);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 132:                     // 'exit'
         lookahead2W(202);           // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' | '//' |
@@ -14716,10 +14716,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         lookahead2W(209);           // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' | '//' |
         break;
       case 276:                     // '{'
-        lookahead2W(272);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(272);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 278:                     // '{|'
-        lookahead2W(271);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(271);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 5:                       // Wildcard
       case 45:                      // '..'
@@ -14727,11 +14727,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       case 31:                      // '$'
       case 32:                      // '%'
-        lookahead2W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead2W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         break;
       case 40:                      // '+'
       case 42:                      // '-'
-        lookahead2W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 86:                      // 'break'
       case 102:                     // 'continue'
@@ -14747,7 +14747,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       case 184:                     // 'namespace'
       case 216:                     // 'processing-instruction'
-        lookahead2W(277);           // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(277);           // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 103:                     // 'copy'
       case 129:                     // 'every'
@@ -15611,20 +15611,20 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     for (;;)
     {
-      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 34:                      // '('
-        lookahead2W(268);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(268);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 35:                      // '(#'
-        lookahead2(248);            // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
+        lookahead2(248);            // EQName^Token | S | 'after' | 'allowing' | 'ancestor' | 'ancestor-or-self' |
         break;
       case 46:                      // '/'
-        lookahead2W(281);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(281);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 47:                      // '//'
-        lookahead2W(263);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(263);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 54:                      // '<'
         lookahead2(4);              // QName
@@ -15636,19 +15636,19 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         lookahead2(3);              // PITarget
         break;
       case 66:                      // '@'
-        lookahead2W(251);           // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead2W(251);           // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         break;
       case 68:                      // '['
-        lookahead2W(270);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(270);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 77:                      // 'append'
         lookahead2W(56);            // S^WS | '(:' | 'json'
         break;
       case 82:                      // 'attribute'
-        lookahead2W(278);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(278);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 121:                     // 'element'
-        lookahead2W(276);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(276);           // EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 132:                     // 'exit'
         lookahead2W(202);           // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' | '//' |
@@ -15669,10 +15669,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         lookahead2W(209);           // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' | '-' | '/' | '//' |
         break;
       case 276:                     // '{'
-        lookahead2W(272);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(272);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 278:                     // '{|'
-        lookahead2W(271);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(271);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 5:                       // Wildcard
       case 45:                      // '..'
@@ -15680,11 +15680,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       case 31:                      // '$'
       case 32:                      // '%'
-        lookahead2W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+        lookahead2W(249);           // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
         break;
       case 40:                      // '+'
       case 42:                      // '-'
-        lookahead2W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead2W(265);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         break;
       case 86:                      // 'break'
       case 102:                     // 'continue'
@@ -15700,7 +15700,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
         break;
       case 184:                     // 'namespace'
       case 216:                     // 'processing-instruction'
-        lookahead2W(277);           // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
+        lookahead2W(277);           // NCName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' | '+' | ',' |
         break;
       case 103:                     // 'copy'
       case 129:                     // 'every'
@@ -16617,11 +16617,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       lookahead2W(187);             // S^WS | '!' | '!=' | '#' | '$' | '(' | '(:' | '*' | '+' | '-' | '/' | '//' | ';' |
       break;
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     case 31:                        // '$'
     case 32:                        // '%'
-      lookahead2W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 86:                        // 'break'
     case 102:                       // 'continue'
@@ -17172,11 +17172,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       lookahead2W(187);             // S^WS | '!' | '!=' | '#' | '$' | '(' | '(:' | '*' | '+' | '-' | '/' | '//' | ';' |
       break;
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     case 31:                        // '$'
     case 32:                        // '%'
-      lookahead2W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 86:                        // 'break'
     case 102:                       // 'continue'
@@ -17724,12 +17724,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("AssignStatement", e0);
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(27);                // S^WS | '(:' | ':='
     shift(52);                      // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(53);                      // ';'
@@ -17739,11 +17739,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_AssignStatement()
   {
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(27);                // S^WS | '(:' | ':='
     shiftT(52);                     // ':='
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(53);                     // ';'
   }
@@ -17752,7 +17752,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("BlockStatement", e0);
     shift(276);                     // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statements();
     shift(282);                     // '}'
@@ -17762,7 +17762,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_BlockStatement()
   {
     shiftT(276);                    // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statements();
     shiftT(282);                    // '}'
   }
@@ -17813,7 +17813,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(132);                     // 'exit'
     lookahead1W(71);                // S^WS | '(:' | 'returning'
     shift(221);                     // 'returning'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(53);                      // ';'
@@ -17825,7 +17825,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(132);                    // 'exit'
     lookahead1W(71);                // S^WS | '(:' | 'returning'
     shiftT(221);                    // 'returning'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(53);                     // ';'
   }
@@ -17868,7 +17868,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ReturnStatement", e0);
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("ReturnStatement", e0);
@@ -17877,7 +17877,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ReturnStatement()
   {
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -17887,18 +17887,18 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(152);                     // 'if'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
     lookahead1W(77);                // S^WS | '(:' | 'then'
     shift(245);                     // 'then'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     lookahead1W(48);                // S^WS | '(:' | 'else'
     shift(122);                     // 'else'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("IfStatement", e0);
@@ -17909,16 +17909,16 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(152);                    // 'if'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     lookahead1W(77);                // S^WS | '(:' | 'then'
     shiftT(245);                    // 'then'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
     lookahead1W(48);                // S^WS | '(:' | 'else'
     shiftT(122);                    // 'else'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -17928,7 +17928,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(243);                     // 'switch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
@@ -17946,7 +17946,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(109);                     // 'default'
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("SwitchStatement", e0);
@@ -17957,7 +17957,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(243);                    // 'switch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     for (;;)
@@ -17973,7 +17973,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(109);                    // 'default'
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -17983,7 +17983,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     for (;;)
     {
       shift(88);                    // 'case'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_SwitchCaseOperand();
       if (l1 != 88)                 // 'case'
@@ -17992,7 +17992,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("SwitchCaseStatement", e0);
@@ -18003,7 +18003,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     for (;;)
     {
       shiftT(88);                   // 'case'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_SwitchCaseOperand();
       if (l1 != 88)                 // 'case'
       {
@@ -18011,7 +18011,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       }
     }
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -18026,16 +18026,16 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
       lookahead1W(36);              // S^WS | '(:' | 'catch'
       shift(91);                    // 'catch'
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_CatchErrorList();
       whitespace();
       parse_BlockStatement();
-      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 91:                      // 'catch'
-        lookahead2W(275);           // Wildcard | EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' |
+        lookahead2W(275);           // Wildcard | EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' |
         break;
       default:
         lk = l1;
@@ -18071,7 +18071,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           {
             lookahead1W(36);        // S^WS | '(:' | 'catch'
             shiftT(91);             // 'catch'
-            lookahead1W(251);       // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+            lookahead1W(251);       // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
             try_CatchErrorList();
             try_BlockStatement();
             lk = -1;
@@ -18213,14 +18213,14 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
       lookahead1W(36);              // S^WS | '(:' | 'catch'
       shiftT(91);                   // 'catch'
-      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(251);             // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_CatchErrorList();
       try_BlockStatement();
-      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(273);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       switch (l1)
       {
       case 91:                      // 'catch'
-        lookahead2W(275);           // Wildcard | EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' |
+        lookahead2W(275);           // Wildcard | EQName^Token | S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | '*' |
         break;
       default:
         lk = l1;
@@ -18256,7 +18256,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           {
             lookahead1W(36);        // S^WS | '(:' | 'catch'
             shiftT(91);             // 'catch'
-            lookahead1W(251);       // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+            lookahead1W(251);       // Wildcard | EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
             try_CatchErrorList();
             try_BlockStatement();
             lk = -1;
@@ -18394,7 +18394,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(253);                     // 'typeswitch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
@@ -18414,13 +18414,13 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
     }
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("TypeswitchStatement", e0);
@@ -18431,7 +18431,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(253);                    // 'typeswitch'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
     for (;;)
@@ -18449,12 +18449,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 31)                   // '$'
     {
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
     }
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -18462,22 +18462,22 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CaseStatement", e0);
     shift(88);                      // 'case'
-    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
+    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
     if (l1 == 31)                   // '$'
     {
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shift(79);                    // 'as'
     }
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_SequenceType();
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shift(220);                     // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("CaseStatement", e0);
@@ -18486,20 +18486,20 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CaseStatement()
   {
     shiftT(88);                     // 'case'
-    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
+    lookahead1W(260);               // EQName^Token | S^WS | '$' | '%' | '(' | '(:' | 'after' | 'allowing' |
     if (l1 == 31)                   // '$'
     {
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(30);              // S^WS | '(:' | 'as'
       shiftT(79);                   // 'as'
     }
-    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(259);               // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_SequenceType();
     lookahead1W(70);                // S^WS | '(:' | 'return'
     shiftT(220);                    // 'return'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -18519,7 +18519,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(262);                     // 'variable'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shift(31);                      // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_VarName();
     lookahead1W(157);               // S^WS | '(:' | ',' | ':=' | ';' | 'as'
@@ -18532,7 +18532,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 52)                   // ':='
     {
       shift(52);                    // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
@@ -18545,7 +18545,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(41);                    // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shift(31);                    // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_VarName();
       lookahead1W(157);             // S^WS | '(:' | ',' | ':=' | ';' | 'as'
@@ -18558,7 +18558,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 52)                 // ':='
       {
         shift(52);                  // ':='
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_ExprSingle();
       }
@@ -18581,7 +18581,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(262);                    // 'variable'
     lookahead1W(21);                // S^WS | '$' | '(:'
     shiftT(31);                     // '$'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     try_VarName();
     lookahead1W(157);               // S^WS | '(:' | ',' | ':=' | ';' | 'as'
     if (l1 == 79)                   // 'as'
@@ -18592,7 +18592,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 52)                   // ':='
     {
       shiftT(52);                   // ':='
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
     for (;;)
@@ -18604,7 +18604,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(41);                   // ','
       lookahead1W(21);              // S^WS | '$' | '(:'
       shiftT(31);                   // '$'
-      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(249);             // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
       try_VarName();
       lookahead1W(157);             // S^WS | '(:' | ',' | ':=' | ';' | 'as'
       if (l1 == 79)                 // 'as'
@@ -18615,7 +18615,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       if (l1 == 52)                 // ':='
       {
         shiftT(52);                 // ':='
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         try_ExprSingle();
       }
     }
@@ -18628,11 +18628,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(267);                     // 'while'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shift(34);                      // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Expr();
     shift(37);                      // ')'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_Statement();
     eventHandler.endNonterminal("WhileStatement", e0);
@@ -18643,10 +18643,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(267);                    // 'while'
     lookahead1W(22);                // S^WS | '(' | '(:'
     shiftT(34);                     // '('
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Expr();
     shiftT(37);                     // ')'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_Statement();
   }
 
@@ -18656,18 +18656,18 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 137:                       // 'for'
-      lookahead2W(233);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(233);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     case 174:                       // 'let'
-      lookahead2W(231);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(231);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     case 250:                       // 'try'
-      lookahead2W(230);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(230);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 152:                       // 'if'
     case 243:                       // 'switch'
     case 253:                       // 'typeswitch'
-      lookahead2W(228);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(228);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -18704,18 +18704,18 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 137:                       // 'for'
-      lookahead2W(233);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(233);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     case 174:                       // 'let'
-      lookahead2W(231);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(231);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     case 250:                       // 'try'
-      lookahead2W(230);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(230);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 152:                       // 'if'
     case 243:                       // 'switch'
     case 253:                       // 'typeswitch'
-      lookahead2W(228);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(228);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     default:
       lk = l1;
@@ -18752,19 +18752,19 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 218:                       // 'rename'
-      lookahead2W(232);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(232);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 219:                       // 'replace'
-      lookahead2W(235);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(235);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 110:                       // 'delete'
     case 159:                       // 'insert'
-      lookahead2W(234);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(234);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 103:                       // 'copy'
     case 129:                       // 'every'
     case 235:                       // 'some'
-      lookahead2W(229);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(229);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     default:
       lk = l1;
@@ -18819,19 +18819,19 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 218:                       // 'rename'
-      lookahead2W(232);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(232);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 219:                       // 'replace'
-      lookahead2W(235);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(235);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 110:                       // 'delete'
     case 159:                       // 'insert'
-      lookahead2W(234);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
+      lookahead2W(234);             // S^WS | EOF | '!' | '!=' | '#' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' | '/' |
       break;
     case 103:                       // 'copy'
     case 129:                       // 'every'
     case 235:                       // 'some'
-      lookahead2W(229);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
+      lookahead2W(229);             // S^WS | EOF | '!' | '!=' | '#' | '$' | '(' | '(:' | ')' | '*' | '+' | ',' | '-' |
       break;
     default:
       lk = l1;
@@ -18886,7 +18886,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(110);                     // 'delete'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shift(166);                     // 'json'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     whitespace();
     parse_PostfixExpr();
     eventHandler.endNonterminal("JSONDeleteExpr", e0);
@@ -18897,7 +18897,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(110);                    // 'delete'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shiftT(166);                    // 'json'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     try_PostfixExpr();
   }
 
@@ -18907,11 +18907,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(159);                     // 'insert'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shift(166);                     // 'json'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(163);                     // 'into'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     switch (l1)
@@ -18935,7 +18935,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           shiftT(81);               // 'at'
           lookahead1W(69);          // S^WS | '(:' | 'position'
           shiftT(211);              // 'position'
-          lookahead1W(266);         // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+          lookahead1W(266);         // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
           try_ExprSingle();
           lk = -1;
         }
@@ -18954,7 +18954,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shift(81);                    // 'at'
       lookahead1W(69);              // S^WS | '(:' | 'position'
       shift(211);                   // 'position'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_ExprSingle();
     }
@@ -18966,10 +18966,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(159);                    // 'insert'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shiftT(166);                    // 'json'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(163);                    // 'into'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     switch (l1)
     {
@@ -18992,7 +18992,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           shiftT(81);               // 'at'
           lookahead1W(69);          // S^WS | '(:' | 'position'
           shiftT(211);              // 'position'
-          lookahead1W(266);         // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+          lookahead1W(266);         // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
           try_ExprSingle();
           lk = -1;
         }
@@ -19011,7 +19011,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
       shiftT(81);                   // 'at'
       lookahead1W(69);              // S^WS | '(:' | 'position'
       shiftT(211);                  // 'position'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_ExprSingle();
     }
   }
@@ -19022,11 +19022,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(218);                     // 'rename'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shift(166);                     // 'json'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     whitespace();
     parse_PostfixExpr();
     shift(79);                      // 'as'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("JSONRenameExpr", e0);
@@ -19037,10 +19037,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(218);                    // 'rename'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shiftT(166);                    // 'json'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     try_PostfixExpr();
     shiftT(79);                     // 'as'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -19054,11 +19054,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(261);                     // 'value'
     lookahead1W(64);                // S^WS | '(:' | 'of'
     shift(196);                     // 'of'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     whitespace();
     parse_PostfixExpr();
     shift(270);                     // 'with'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("JSONReplaceExpr", e0);
@@ -19073,10 +19073,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(261);                    // 'value'
     lookahead1W(64);                // S^WS | '(:' | 'of'
     shiftT(196);                    // 'of'
-    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
+    lookahead1W(262);               // EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral | StringLiteral |
     try_PostfixExpr();
     shiftT(270);                    // 'with'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -19086,11 +19086,11 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shift(77);                      // 'append'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shift(166);                     // 'json'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     shift(163);                     // 'into'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("JSONAppendExpr", e0);
@@ -19101,10 +19101,10 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     shiftT(77);                     // 'append'
     lookahead1W(56);                // S^WS | '(:' | 'json'
     shiftT(166);                    // 'json'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
     shiftT(163);                    // 'into'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -19185,12 +19185,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CompAttrConstructor", e0);
     shift(82);                      // 'attribute'
-    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shift(276);                   // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_Expr();
       shift(282);                   // '}'
@@ -19203,7 +19203,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     default:
       lk = l1;
@@ -19250,12 +19250,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CompAttrConstructor()
   {
     shiftT(82);                     // 'attribute'
-    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(252);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shiftT(276);                  // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_Expr();
       shiftT(282);                  // '}'
       break;
@@ -19266,7 +19266,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     default:
       lk = l1;
@@ -19312,12 +19312,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("CompPIConstructor", e0);
     shift(216);                     // 'processing-instruction'
-    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shift(276);                   // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_Expr();
       shift(282);                   // '}'
@@ -19330,7 +19330,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     default:
       lk = l1;
@@ -19377,12 +19377,12 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_CompPIConstructor()
   {
     shiftT(216);                    // 'processing-instruction'
-    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(253);               // NCName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     switch (l1)
     {
     case 276:                       // '{'
       shiftT(276);                  // '{'
-      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(266);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       try_Expr();
       shiftT(282);                  // '}'
       break;
@@ -19393,7 +19393,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     default:
       lk = l1;
@@ -19475,17 +19475,17 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 184:                       // 'namespace'
-      lookahead2W(258);             // NCName^Token | S^WS | '#' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(258);             // NCName^Token | S^WS | '#' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 216:                       // 'processing-instruction'
-      lookahead2W(257);             // NCName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(257);             // NCName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     case 82:                        // 'attribute'
     case 121:                       // 'element'
-      lookahead2W(254);             // EQName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(254);             // EQName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 96:                        // 'comment'
     case 244:                       // 'text'
@@ -20078,17 +20078,17 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     switch (l1)
     {
     case 184:                       // 'namespace'
-      lookahead2W(258);             // NCName^Token | S^WS | '#' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(258);             // NCName^Token | S^WS | '#' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 216:                       // 'processing-instruction'
-      lookahead2W(257);             // NCName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(257);             // NCName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 276:                       // '{'
-      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead2W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       break;
     case 82:                        // 'attribute'
     case 121:                       // 'element'
-      lookahead2W(254);             // EQName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead2W(254);             // EQName^Token | S^WS | '#' | '(:' | 'after' | 'allowing' | 'ancestor' |
       break;
     case 96:                        // 'comment'
     case 244:                       // 'text'
@@ -20679,7 +20679,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("JSONSimpleObjectUnion", e0);
     shift(278);                     // '{|'
-    lookahead1W(271);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(271);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 281)                  // '|}'
     {
       whitespace();
@@ -20692,7 +20692,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_JSONSimpleObjectUnion()
   {
     shiftT(278);                    // '{|'
-    lookahead1W(271);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(271);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 281)                  // '|}'
     {
       try_Expr();
@@ -20704,7 +20704,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ObjectConstructor", e0);
     shift(276);                     // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       whitespace();
@@ -20716,7 +20716,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shift(41);                  // ','
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         whitespace();
         parse_PairConstructor();
       }
@@ -20728,7 +20728,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ObjectConstructor()
   {
     shiftT(276);                    // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 282)                  // '}'
     {
       try_PairConstructor();
@@ -20739,7 +20739,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
           break;
         }
         shiftT(41);                 // ','
-        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+        lookahead1W(266);           // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
         try_PairConstructor();
       }
     }
@@ -20751,7 +20751,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     eventHandler.startNonterminal("PairConstructor", e0);
     parse_ExprSingle();
     shift(49);                      // ':'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_ExprSingle();
     eventHandler.endNonterminal("PairConstructor", e0);
@@ -20761,7 +20761,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     try_ExprSingle();
     shiftT(49);                     // ':'
-    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(266);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_ExprSingle();
   }
 
@@ -20769,7 +20769,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("ArrayConstructor", e0);
     shift(68);                      // '['
-    lookahead1W(270);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(270);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 69)                   // ']'
     {
       whitespace();
@@ -20782,7 +20782,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_ArrayConstructor()
   {
     shiftT(68);                     // '['
-    lookahead1W(270);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(270);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     if (l1 != 69)                   // ']'
     {
       try_Expr();
@@ -20794,7 +20794,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("BlockExpr", e0);
     shift(276);                     // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     whitespace();
     parse_StatementsAndOptionalExpr();
     shift(282);                     // '}'
@@ -20804,7 +20804,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   function try_BlockExpr()
   {
     shiftT(276);                    // '{'
-    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+    lookahead1W(272);               // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
     try_StatementsAndOptionalExpr();
     shiftT(282);                    // '}'
   }
@@ -20813,7 +20813,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
   {
     eventHandler.startNonterminal("FunctionDecl", e0);
     shift(145);                     // 'function'
-    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
+    lookahead1W(249);               // EQName^Token | S^WS | '(:' | 'after' | 'allowing' | 'ancestor' |
     whitespace();
     parse_EQName();
     lookahead1W(22);                // S^WS | '(' | '(:'
@@ -20829,7 +20829,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     if (l1 == 79)                   // 'as'
     {
       shift(79);                    // 'as'
-      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
+      lookahead1W(259);             // EQName^Token | S^WS | '%' | '(' | '(:' | 'after' | 'allowing' | 'ancestor' |
       whitespace();
       parse_SequenceType();
     }
@@ -20838,7 +20838,7 @@ var XQueryParser = exports.XQueryParser = function XQueryParser(string, parsingE
     {
     case 276:                       // '{'
       shift(276);                   // '{'
-      lookahead1W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
+      lookahead1W(272);             // Wildcard | EQName^Token | IntegerLiteral | DecimalLiteral | DoubleLiteral |
       whitespace();
       parse_StatementsAndOptionalExpr();
       shift(282);                   // '}'
