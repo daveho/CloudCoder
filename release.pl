@@ -78,9 +78,10 @@ print "Done creating LATEST\n";
 
 # upload files to S3
 print "Uploading to S3\n";
-Run("$aws", 'put', "$bucket/cloudcoderApp-$version.jar", "$webapp");
-Run("$aws", 'put', "$bucket/cloudcoderBuilder-$version.jar", "$builder");
-Run("$aws", 'put', "$bucket/LATEST", "LATEST");
+Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderApp-$version.jar", "$webapp");
+Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderBuilder-$version.jar", "$builder");
+Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/LATEST", "LATEST");
+Run("$aws", 'put', '"x-amz-acl: public-read"', '$bucket/bootstrap.pl', 'bootstrap.pl');
 print "Done uploading to S3\n";
 
 # update the Downloads.md file

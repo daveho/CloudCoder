@@ -2,6 +2,7 @@ package org.cloudcoder.app.server.rpc;
 
 import java.util.Properties;
 
+import javax.mail.Store;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -50,11 +51,12 @@ public class ServletUtil {
             // create the Session
             javax.mail.Session session = javax.mail.Session.getInstance(props);
             // and create the store..
-            javax.mail.Store store = session.getStore(new 
-                    javax.mail.URLName(url));
+            Store store=session.getStore("imaps");
+            //javax.mail.Store store = session.getStore(new 
+                    //javax.mail.URLName(url));
                     //javax.mail.URLName("imap://mailtest:mailtest@localhost/"));
             // and connect.
-            store.connect(username, password);
+            store.connect(props.getProperty(LoginServiceImpl.LOGIN_HOST), username, password);
             return true;
         } catch (Exception e) {
             logger.error(username+ " unable to connect to "+url, e);

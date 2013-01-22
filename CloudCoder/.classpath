@@ -8,7 +8,6 @@
 			<attribute name="javadoc_location" value="http://commons.apache.org/io/api-release"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/imap.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/httpclient-4.2.1.jar">
 		<attributes>

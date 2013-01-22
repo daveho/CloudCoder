@@ -315,7 +315,6 @@ public class FeatureVisitor extends ASTVisitor
 
     @Override
     public boolean visit(ForStatement node) {
-        
         return true;
     }
 
