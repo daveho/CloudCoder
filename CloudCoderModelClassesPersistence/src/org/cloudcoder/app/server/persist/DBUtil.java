@@ -540,7 +540,7 @@ public class DBUtil {
 		ResultSet genKeys = null;
 		
 		try {
-			stmt = conn.prepareStatement(insertSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+			stmt = conn.prepareStatement(insertSql, (!exact && schema.hasUniqueId()) ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
 			
 			// Bind model object field values
 			bindModelObjectValuesForInsert(bean, schema, stmt);
@@ -549,7 +549,8 @@ public class DBUtil {
 			stmt.executeUpdate();
 
 			// Store back the unique id to the model object
-			if (schema.hasUniqueId()) {
+			// (if there is a possibility that a unique id was auto-generated)
+			if (!exact && schema.hasUniqueId()) {
 				genKeys = stmt.getGeneratedKeys();
 				List<E> beans = new ArrayList<E>();
 				beans.add(bean);

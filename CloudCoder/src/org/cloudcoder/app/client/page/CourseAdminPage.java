@@ -32,8 +32,10 @@ import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndModule;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -162,6 +164,22 @@ public class CourseAdminPage extends CloudCoderPage {
 			// Create a center panel with problems list.
 			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
 			dockLayoutPanel.add(courseAdminProblemListView);
+			// Handle edits to the module name.
+			courseAdminProblemListView.setEditModuleNameCallback(new ICallback<ProblemAndModule>() {
+				public void call(ProblemAndModule value) {
+					RPC.getCoursesAndProblemsService.setModule(value.getProblem(), value.getModule().getName(), new AsyncCallback<Module>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							getSession().add(StatusMessage.error("Could not set module for exercise", caught));
+						}
+
+						@Override
+						public void onSuccess(Module result) {
+							getSession().add(StatusMessage.goodNews("Successfully changed module for exercise"));
+						}
+					});
+				}
+			});
 			
 			initWidget(dockLayoutPanel);
 		}

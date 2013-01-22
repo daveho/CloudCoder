@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -190,4 +190,17 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws CloudCoderAuthenticationException 
 	 */
 	public Module[] getModulesForCourse(Course course) throws CloudCoderAuthenticationException;
+
+	/**
+	 * Set the {@link Module} in which a {@link Problem} is categorized.
+	 * If no module currently exists with the given name, a new one is
+	 * created.  The currently-authenticated user must be an instructor
+	 * in the course in which the problem is assigned.
+	 * 
+	 * @param problem     the {@link Problem}
+	 * @param moduleName  the new module name
+	 * @return the {@link Module} in which the {@link Problem} is now categorized
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public Module setModule(Problem problem, String moduleName) throws CloudCoderAuthenticationException;
 }

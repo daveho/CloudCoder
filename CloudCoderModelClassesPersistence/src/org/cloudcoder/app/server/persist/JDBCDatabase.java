@@ -1871,6 +1871,60 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Module setModule(final User user, final Problem problem, final String moduleName) throws CloudCoderAuthenticationException {
+		return databaseRunAuth(new AbstractDatabaseRunnable<Module>() {
+			@Override
+			public Module run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
+				// Verify that user is an instructor in the course
+				// (throwing CloudCoderAuthenticationException if not)
+				PreparedStatement verifyInstructorStmt = prepareStatement(
+						conn,
+						"select cr.id from cc_course_registrations as cr " +
+						" where cr.user_id = ? " +
+						"   and cr.course_id = ? " +
+						"   and cr.registration_type >= ?"
+				);
+				verifyInstructorStmt.setInt(1, user.getId());
+				verifyInstructorStmt.setInt(2, problem.getProblemId());
+				verifyInstructorStmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
+				
+				ResultSet verifyInstructorResultSet = executeQuery(verifyInstructorStmt);
+				if (!verifyInstructorResultSet.next()) {
+					throw new CloudCoderAuthenticationException("Only an instructor can set the module for an exerise");
+				}
+				
+				// See if the module exists already
+				PreparedStatement findExisting = prepareStatement(
+						conn,
+						"select m.* from cc_modules as m where m.name = ?"
+				);
+				findExisting.setString(1, moduleName);
+				
+				Module module = new Module();
+				ResultSet findExistingResultSet = executeQuery(findExisting);
+				if (findExistingResultSet.next()) {
+					// Use existing module
+					DBUtil.loadModelObjectFields(module, Module.SCHEMA, findExistingResultSet);
+				} else {
+					// Module doesn't exist, so add it
+					module.setName(moduleName);
+					DBUtil.storeModelObject(conn, module);
+				}
+				
+				// Update the problem to use the new module
+				problem.setModuleId(module.getId());
+				DBUtil.updateModelObject(conn, problem, Problem.SCHEMA);
+				
+				return module;
+			}
+			@Override
+			public String getDescription() {
+				return " setting module for problem";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

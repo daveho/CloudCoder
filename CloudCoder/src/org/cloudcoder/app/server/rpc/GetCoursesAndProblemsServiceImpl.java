@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -410,5 +410,16 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
 		return Database.getInstance().getModulesForCourse(user, course);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#setModuleName(org.cloudcoder.app.shared.model.Problem, java.lang.String)
+	 */
+	@Override
+	public Module setModule(Problem problem, String moduleName) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+
+		return Database.getInstance().setModule(user, problem, moduleName);
 	}
 }

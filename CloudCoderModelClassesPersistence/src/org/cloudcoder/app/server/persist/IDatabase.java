@@ -470,4 +470,17 @@ public interface IDatabase {
 	 */
 	public Module[] getModulesForCourse(User user, Course course);
 
+	/**
+	 * Set the {@link Module} in which the given {@link Problem} is categorized.
+	 * The {@link User} must be an instructor in the course in which the
+	 * problem is assigned.
+	 * 
+	 * @param user        the authenticated {@link User}
+	 * @param problem     the {@link Problem}
+	 * @param moduleName  the name of the {@link Module} in which the problem should
+	 *                    be categorized
+	 * @return
+	 */
+	public Module setModule(User user, Problem problem, String moduleName) throws CloudCoderAuthenticationException;
+
 }

@@ -30,13 +30,12 @@ public class Module implements IModelObject<Module>, Serializable {
 	
 	private int id;
 	private String name;
-	private int courseId;
 	
 	public static ModelObjectField<Module, Integer> ID = new ModelObjectField<Module, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 		public void set(Module obj, Integer value) { obj.setId(value); }
 		public Integer get(Module obj) { return obj.getId(); }
 	};
-	public static ModelObjectField<Module, String> NAME = new ModelObjectField<Module, String>("name", String.class, 40) {
+	public static ModelObjectField<Module, String> NAME = new ModelObjectField<Module, String>("name", String.class, 60, ModelObjectIndexType.UNIQUE) {
 		public void set(Module obj, String value) { obj.setName(value); }
 		public String get(Module obj) { return obj.getName(); }
 	};
@@ -103,20 +102,5 @@ public class Module implements IModelObject<Module>, Serializable {
 	 */
 	public String getName() {
 		return name;
-	}
-	
-	/**
-	 * Set the course id.
-	 * @param courseId the course id to set
-	 */
-	public void setCourseId(int courseId) {
-		this.courseId = courseId;
-	}
-	
-	/**
-	 * @return the course id
-	 */
-	public int getCourseId() {
-		return courseId;
 	}
 }

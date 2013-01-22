@@ -27,6 +27,7 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndModule;
@@ -35,6 +36,9 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.cell.client.EditTextCell;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -53,6 +57,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	private DataGrid<ProblemAndModule> grid;
 	private Session session;
 	private SingleSelectionModel<ProblemAndModule> selectionModel;
+	private ICallback<ProblemAndModule> editModuleNameCallback;
 	
 	/**
 	 * Constructor.
@@ -66,8 +71,30 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.addColumn(new ProblemWhenAssignedColumn(), "Assigned");
 		grid.addColumn(new ProblemWhenDueColumn(), "Due");
 		grid.addColumn(new ProblemVisibleColumn(), "Visible");
-		grid.addColumn(new ProblemModuleNameColumn(), "Module");
+		
+		// The column displaying the module name allows editing, and invokes
+		// a callback when the module name changes.
+		ProblemModuleNameColumn moduleNameColumn = new ProblemModuleNameColumn();
+		grid.addColumn(moduleNameColumn, "Module (click to edit)");
+		moduleNameColumn.setFieldUpdater(new FieldUpdater<ProblemAndModule, String>() {
+			@Override
+			public void update(int index, ProblemAndModule object, String value) {
+				object.getModule().setName(value);
+				if (editModuleNameCallback != null) {
+					editModuleNameCallback.call(object);
+				}
+			}
+		});
 		initWidget(grid);
+	}
+	
+	/**
+	 * Set a callback to be invoked when the module name of a problem is changed.
+	 * 
+	 * @param callback callback invoked when the module name of a problem is changed
+	 */
+	public void setEditModuleNameCallback(ICallback<ProblemAndModule> callback) {
+		this.editModuleNameCallback = callback;
 	}
 	
 	private static class ProblemNameColumn extends TextColumn<ProblemAndModule> {
@@ -130,7 +157,21 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		}
 	}
 	
-	private static class ProblemModuleNameColumn extends TextColumn<ProblemAndModule> {
+//	private static class ProblemModuleNameColumn extends TextColumn<ProblemAndModule> {
+//		@Override
+//		public String getValue(ProblemAndModule object) {
+//			return object.getModule().getName();
+//		}
+//	}
+	
+	private static class ProblemModuleNameColumn extends Column<ProblemAndModule, String> {
+		public ProblemModuleNameColumn() {
+			super(new EditTextCell());
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+		 */
 		@Override
 		public String getValue(ProblemAndModule object) {
 			return object.getModule().getName();
