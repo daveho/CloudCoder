@@ -1881,9 +1881,10 @@ public class JDBCDatabase implements IDatabase {
 				// (throwing CloudCoderAuthenticationException if not)
 				PreparedStatement verifyInstructorStmt = prepareStatement(
 						conn,
-						"select cr.id from cc_course_registrations as cr " +
+						"select cr.id from cc_course_registrations as cr, cc_problems as p " +
 						" where cr.user_id = ? " +
-						"   and cr.course_id = ? " +
+						"   and p.problem_id = ? " +
+						"   and cr.course_id = p.course_id " +
 						"   and cr.registration_type >= ?"
 				);
 				verifyInstructorStmt.setInt(1, user.getId());
