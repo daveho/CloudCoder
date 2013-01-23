@@ -1892,7 +1892,11 @@ public class JDBCDatabase implements IDatabase {
 				
 				ResultSet verifyInstructorResultSet = executeQuery(verifyInstructorStmt);
 				if (!verifyInstructorResultSet.next()) {
-					throw new CloudCoderAuthenticationException("Only an instructor can set the module for an exerise");
+					logger.info(
+							"Attempt by user {} to set module for problem {} without instructor permission",
+							user.getId(),
+							problem.getProblemId());
+					throw new CloudCoderAuthenticationException("Only an instructor can set the module for an exercise");
 				}
 				
 				// See if the module exists already
