@@ -61,6 +61,7 @@ import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
+import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
@@ -1927,6 +1928,49 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " setting module for problem";
+			}
+		});
+	}
+	
+	@Override
+	public StartedQuiz startOrContinueQuiz(final User user, final Quiz quiz) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
+			@Override
+			public StartedQuiz run(Connection conn) throws SQLException {
+				PreparedStatement query = prepareStatement(
+						conn,
+						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
+						" where sq.user_id = ? " +
+						"   and sq.quiz_id = ? " +
+						"   and q.id = sq.quiz_id " +
+						"   and q.start_time <= ? " +
+						"   and (q.end_time = 0 or q.end_time > ?)"
+				);
+				query.setInt(1, user.getId());
+				query.setInt(2, quiz.getId());
+				long currentTime = System.currentTimeMillis();
+				query.setLong(3, currentTime);
+				query.setLong(4, currentTime);
+				
+				StartedQuiz startedQuiz = new StartedQuiz();
+				ResultSet queryResult = executeQuery(query);
+				if (queryResult.next()) {
+					// Found the StartedQuiz
+					DBUtil.loadModelObjectFields(startedQuiz, StartedQuiz.SCHEMA, queryResult);
+				} else {
+					// StartedQuiz doesn't exist yet, so create it
+					startedQuiz.setQuizId(quiz.getId());
+					startedQuiz.setUserId(user.getId());
+					startedQuiz.setStartTime(currentTime);
+					DBUtil.storeModelObject(conn, startedQuiz);
+				}
+				
+				return startedQuiz;
+			}
+			
+			@Override
+			public String getDescription() {
+				return " checking for started quiz";
 			}
 		});
 	}

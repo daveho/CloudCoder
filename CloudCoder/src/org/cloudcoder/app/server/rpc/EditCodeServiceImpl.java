@@ -34,6 +34,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.QuizEndedException;
+import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,16 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// been forged.)
 		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.PROBLEM_KEY, pair.getLeft());
 		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.QUIZ_KEY, pair.getRight());
+		
+		// If the user is working on a quiz, make sure a StartedQuiz object
+		// has been recorded.  The existence of a StartedQuiz for an ongoing
+		// quiz locks a student out of access to other problems.
+		// (This prevents students cheating by examing the solutions to previous
+		// problems while working on the current quiz.)  The lockout ends
+		// when the quiz ends.
+		if (pair.getRight() != null) {
+			Database.getInstance().startOrContinueQuiz(user, pair.getRight());
+		}
 
 		// If appropriate, record that the user has started the problem
 		Database.getInstance().getOrAddLatestSubmissionReceipt(user, pair.getLeft());

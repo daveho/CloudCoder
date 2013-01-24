@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -482,5 +483,16 @@ public interface IDatabase {
 	 * @return
 	 */
 	public Module setModule(User user, Problem problem, String moduleName) throws CloudCoderAuthenticationException;
+
+	/**
+	 * Start or continue a user's work on a quiz.
+	 * Ensures that a {@link StartedQuiz} object exists for the user/quiz.
+	 * 
+	 * @param user     the {@link User}
+	 * @param quiz     the {@link Quiz}
+	 * @return the {@link StartedQuiz} that indicates that the user has started
+	 *         the quiz
+	 */
+	public StartedQuiz startOrContinueQuiz(User user, Quiz quiz);
 
 }
