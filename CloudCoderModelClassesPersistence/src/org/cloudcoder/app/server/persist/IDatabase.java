@@ -418,7 +418,7 @@ public interface IDatabase {
 	/**
 	 * Start a {@link Quiz} for given {@link Problem} in given course section.
 	 * 
-	 * @param user    the authenticated {@link User), who must be an instructor
+	 * @param user    the authenticated {@link User}, who must be an instructor
 	 *                in the course/section
 	 * @param problem the {@link Problem} to give as a quiz
 	 * @param section the course section
