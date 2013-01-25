@@ -495,4 +495,14 @@ public interface IDatabase {
 	 */
 	public StartedQuiz startOrContinueQuiz(User user, Quiz quiz);
 
+	/**
+	 * Find out whether the given {@link User} has started a {@link Quiz},
+	 * but has not finished it.
+	 * 
+	 * @param user the {@link User}
+	 * @return the {@link StartedQuiz} object specifying the unfinished quiz,
+	 *         or null if there is no unfinished quiz for this user
+	 */
+	public StartedQuiz findUnfinishedQuiz(User user);
+
 }

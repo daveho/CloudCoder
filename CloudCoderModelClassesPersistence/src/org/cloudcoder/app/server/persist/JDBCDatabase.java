@@ -1974,6 +1974,42 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public StartedQuiz findUnfinishedQuiz(final User user) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
+			@Override
+			public StartedQuiz run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
+						" where sq.quiz_id = q.id " +
+						"   and sq.user_id = ? " +
+						"   and q.start_time < ? " +
+						"   and (q.end_time = 0 or q.end_time > ?)"
+				);
+				stmt.setInt(1, user.getId());
+				
+				long currentTime = System.currentTimeMillis();
+				stmt.setLong(2, currentTime);
+				stmt.setLong(3, currentTime);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				StartedQuiz result = null;
+				if (resultSet.next()) {
+					result = new StartedQuiz();
+					DBUtil.loadModelObjectFields(result, StartedQuiz.SCHEMA, resultSet);
+					return result;
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " finding unfinished quiz for user";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
