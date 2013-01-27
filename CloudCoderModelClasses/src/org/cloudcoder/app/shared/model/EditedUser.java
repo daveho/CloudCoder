@@ -1,12 +1,16 @@
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * Data about a {@link User} that is being edited in the context
  * of a {@link Course}.
  * 
  * @author David Hovemeyer
  */
-public class EditedUser {
+public class EditedUser implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	private User user;
 	private String currentPassword;
 	private String password;

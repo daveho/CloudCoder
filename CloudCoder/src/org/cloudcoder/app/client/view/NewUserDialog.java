@@ -85,4 +85,13 @@ public class NewUserDialog extends DialogBox {
 	public void setAddUserCallback(ICallback<EditedUser> addUserCallback) {
 		this.addUserCallback = addUserCallback;
 	}
+
+	/**
+	 * Return the {@link EditedUser}.
+	 * 
+	 * @return the {@link EditedUser}
+	 */
+	public EditedUser getData() {
+		return editUserView.getData();
+	}
 }
