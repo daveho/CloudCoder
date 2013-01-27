@@ -21,6 +21,7 @@ import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.NewUserDialog;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
@@ -28,6 +29,8 @@ import org.cloudcoder.app.client.view.UserProgressListView;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -653,12 +656,23 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleNewUser(ClickEvent event) {
             GWT.log("handle new user");
-            
+            /*
             Widget w = (Widget)event.getSource();
             AddUserPopupPanel pop = new AddUserPopupPanel(w, courseId);
             pop.center();
             pop.setGlassEnabled(true);
             pop.show();
+            */
+            
+            final NewUserDialog dialog = new NewUserDialog();
+            dialog.setAddUserCallback(new ICallback<EditedUser>() {
+				@Override
+				public void call(EditedUser value) {
+					getSession().add(StatusMessage.information("Should be adding the user"));
+					dialog.hide();
+				}
+			});
+            dialog.center();
 
         }
         
