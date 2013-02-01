@@ -2064,16 +2064,21 @@ public class JDBCDatabase implements IDatabase {
 					//   See: http://www.softwareprojects.com/resources/programming/t-mysql-innodb-deadlocks-and-duplicate-key-errors-12-1970.html
 					// Workaround is to retry the transaction.
 					logger.info("MySQL deadlock detected (sqlState=" + sqlState + ")", e);
+				} else {
+					// Some other kind of transaction failure.
+					logger.error("Transaction failed with SQLException", e);
+					throw new PersistenceException("SQLException", e);
+				}
+			} finally {
+				// If the transaction didn't succeed, roll back
+				if (!successfulCommit) {
 					try {
 						conn.rollback();
 					} catch (SQLException ex) {
 						throw new PersistenceException("SQLException (on rollback)", ex);
 					}
-				} else {
-					// Some other kind of transaction failure.
-					throw new PersistenceException("SQLException", e);
 				}
-			} finally {
+				
 				// Restore the original autocommit value and release the connection.
 				try {
 					conn.setAutoCommit(origAutocommit);
