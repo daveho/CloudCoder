@@ -30,6 +30,10 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -58,6 +62,7 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 		grid.addColumn(new LastnameColumn(), "Last name");
 		grid.addColumn(new StartedColumn(), "Started");
 		grid.addColumn(new BestScoreColumn(), "Best score");
+		grid.addColumn(new BestScoreBarColumn(), "Best score bar");
 		
 		initWidget(grid);
 	}
@@ -105,6 +110,53 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 				buf.append(testCaseList.length);
 			}
 			return buf.toString();
+		}
+	}
+	
+	private class BestScoreBarCell extends AbstractCell<Integer> {
+		@Override
+		public void render(com.google.gwt.cell.client.Cell.Context context, Integer value, SafeHtmlBuilder sb) {
+			if (value == null) {
+				appendNoInfoBar(sb);
+				return;
+			}
+			
+			// If we don't know the total number of test cases, don't display anything
+			if (testCaseList == null || testCaseList.length == 0) {
+				appendNoInfoBar(sb);
+				return;
+			}
+			
+			StringBuilder buf = new StringBuilder();
+			buf.append("<div class=\"cc-barOuter\"><div class=\"cc-barInner\" style=\"width: ");
+			int pct = (value * 10000) / (testCaseList.length * 100);
+			buf.append(pct);
+			buf.append("%\"></div></div>");
+			
+			String s= buf.toString();
+			
+			sb.append(SafeHtmlUtils.fromSafeConstant(s));
+		}
+
+		/**
+		 * @param sb
+		 */
+		private void appendNoInfoBar(SafeHtmlBuilder sb) {
+			sb.append(SafeHtmlUtils.fromSafeConstant("<div class=\"cc-barNoInfo\"></div>"));
+		}
+	}
+	
+	private class BestScoreBarColumn extends Column<UserAndSubmissionReceipt, Integer> {
+		public BestScoreBarColumn() {
+			super(new BestScoreBarCell());
+		}
+		
+		@Override
+		public Integer getValue(UserAndSubmissionReceipt object) {
+			if (object.getSubmissionReceipt() == null) {
+				return 0;
+			}
+			return object.getSubmissionReceipt().getNumTestsPassed();
 		}
 	}
 	
