@@ -329,10 +329,10 @@ public interface IDatabase {
 	 * instructor in the course.
 	 * 
 	 * @param course   the {@link Course}
-	 * @param problemId  the problem id
+	 * @param problem  the {@link Problem}
 	 * @return list of {@link UserAndSubmissionReceipt} objects
 	 */
-	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int problemId);
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, Problem problem);
 
 	/**
 	 * Get best submission receipts for given {@link Problem}.

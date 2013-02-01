@@ -41,6 +41,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.EventType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
@@ -1347,12 +1348,12 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
-			final Course unused, final int problemId) {
+			final Course unused, final Problem problem) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
-				return doGetBestSubmissionReceipts(conn, problemId, this);
+				return doGetBestSubmissionReceipts(conn, problem, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1372,7 +1373,7 @@ public class JDBCDatabase implements IDatabase {
 					return new ArrayList<UserAndSubmissionReceipt>();
 				}
 
-				return doGetBestSubmissionReceipts(conn, problem.getProblemId(), this);
+				return doGetBestSubmissionReceipts(conn, problem, this);
 			}
 			@Override
 			public String getDescription() {
@@ -2498,42 +2499,52 @@ public class JDBCDatabase implements IDatabase {
 	
 	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
 			Connection conn,
-			int problemId,
+			final Problem problem,
 			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+		
 		// Clearly, my SQL is either amazing or appalling.
 		// Probably the latter.
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select u.*, e.*, sr.* " +
-				"  from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
-				"  (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
-				"    from cc_users as i_u," +
-				"         cc_events as i_e," +
-				"         cc_submission_receipts as i_sr," +
-				"         (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
-				"            from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
-				"           where ii_u.id = ii_e.user_id " +
-				"             and ii_e.id = ii_sr.event_id " +
-				"             and ii_e.problem_id = ?" +
-				"          group by ii_u.id) as best" +
+				
+				"select uu.*, best.* from cc_users as uu " +
+				"  left join " +
+				"         (select u.id as the_user_id, e.*, sr.* " +
+				"           from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
+				"           (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
+				"             from cc_users as i_u," +
+				"                  cc_events as i_e," +
+				"                  cc_submission_receipts as i_sr," +
+				"                  (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
+				"                     from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
+				"                    where ii_u.id = ii_e.user_id " +
+				"                      and ii_e.id = ii_sr.event_id " +
+				"                      and ii_e.problem_id = ?" +
+				"                   group by ii_u.id) as best" +
 				"" +
-				"    where i_u.id = i_e.user_id" +
-				"      and i_e.id = i_sr.event_id" +
-				"      and i_e.problem_id = ?" +
-				"      and i_u.id = best.user_id" +
-				"      and i_sr.num_tests_passed = best.max_tests_passed" +
-				"      group by i_u.id, best.max_tests_passed) as earliest_and_best" +
+				"             where i_u.id = i_e.user_id" +
+				"               and i_e.id = i_sr.event_id" +
+				"               and i_e.problem_id = ?" +
+				"               and i_u.id = best.user_id" +
+				"               and i_sr.num_tests_passed = best.max_tests_passed" +
+				"               group by i_u.id, best.max_tests_passed) as earliest_and_best" +
 				"" +
-				" where u.id = e.user_id" +
-				"     and e.id = sr.event_id" +
-				"     and e.problem_id = ?" +
-				"     and u.id = earliest_and_best.user_id" +
-				"     and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
-				"     and e.timestamp = earliest_and_best.timestamp"
+				"          where u.id = e.user_id" +
+				"              and e.id = sr.event_id" +
+				"              and e.problem_id = ?" +
+				"              and u.id = earliest_and_best.user_id" +
+				"              and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
+				"              and e.timestamp = earliest_and_best.timestamp) as best " +
+				"          on uu.id = best.the_user_id " +
+				"" +
+				" where uu.id in (select distinct xu.id from cc_users as xu, cc_course_registrations as xcr "+
+				"                  where xu.id = xcr.user_id and xcr.course_id = ?)"
 		);
+		int problemId = problem.getProblemId();
 		stmt.setInt(1, problemId);
 		stmt.setInt(2, problemId);
 		stmt.setInt(3, problemId);
+		stmt.setInt(4, problem.getCourseId());
 		
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
@@ -2542,12 +2553,25 @@ public class JDBCDatabase implements IDatabase {
 			int index = 1;
 			User user = new User();
 			index = loadGeneric(user, resultSet, index, User.SCHEMA);
-			Event event = new Event();
-			index = loadGeneric(event, resultSet, index, Event.SCHEMA);
-			SubmissionReceipt receipt = new SubmissionReceipt();
-			loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+
+			SubmissionReceipt receipt;
 			
-			receipt.setEvent(event);
+			// Is there a best submission receipt?
+			if (resultSet.getObject(index) != null) {
+				// Found a best submission receipt
+
+				index++; // skip best.the_user_id column
+				
+				Event event = new Event();
+				index = loadGeneric(event, resultSet, index, Event.SCHEMA);
+				receipt = new SubmissionReceipt();
+				loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+				
+				receipt.setEvent(event);
+			} else {
+				// No best submission receipt
+				receipt = null;
+			}
 			
 			UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
 			pair.setUser(user);

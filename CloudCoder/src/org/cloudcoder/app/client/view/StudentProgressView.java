@@ -24,7 +24,6 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -87,15 +86,20 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 	private class StartedColumn extends TextColumn<UserAndSubmissionReceipt> {
 		@Override
 		public String getValue(UserAndSubmissionReceipt object) {
-			return object.getSubmissionReceipt().getStatus() != SubmissionStatus.NOT_STARTED ? "true" : "false";
+			return object.getSubmissionReceipt() == null ? "false" : "true";
 		}
 	}
 	
 	private class BestScoreColumn extends TextColumn<UserAndSubmissionReceipt> {
 		public String getValue(UserAndSubmissionReceipt object) {
-			//return "" + object.getSubmissionReceipt().getNumTestsPassed() + "/" + object.getSubmissionReceipt().
 			StringBuilder buf = new StringBuilder();
-			buf.append(object.getSubmissionReceipt().getNumTestsPassed());
+
+			if (object.getSubmissionReceipt() != null) {
+				buf.append(object.getSubmissionReceipt().getNumTestsPassed());
+			} else {
+				buf.append(0);
+			}
+			
 			if (testCaseList != null) {
 				buf.append("/");
 				buf.append(testCaseList.length);

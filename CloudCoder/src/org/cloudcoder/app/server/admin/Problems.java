@@ -68,11 +68,14 @@ public class Problems extends HttpServlet {
 		User user = (User) req.getAttribute(RequestAttributeKeys.USER_KEY);
 		Course course = (Course) req.getAttribute(RequestAttributeKeys.COURSE_KEY);
 		
+		Problem problem = new Problem();
+		problem.setProblemId(problemURLInfo.getProblemId());
+		Database.getInstance().reloadModelObject(problem);
+		
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
 		} else {
-			int problemId = problemURLInfo.getProblemId();
-			summarizeStudentWorkOnProblem(user, course, problemId, resp);
+			summarizeStudentWorkOnProblem(user, course, problem, resp);
 		}
 	}
 	
@@ -120,21 +123,21 @@ public class Problems extends HttpServlet {
 	 * 
 	 * @param user        authenticated user
 	 * @param course      the course
-	 * @param problemId   the problem id
+	 * @param problem     the problem
 	 * @param resp        the HttpServletResponse to write to
 	 * @throws ServletException 
 	 * @throws IOException 
 	 */
-	private void summarizeStudentWorkOnProblem(User user, Course course, int problemId, HttpServletResponse resp) throws ServletException, IOException {
+	private void summarizeStudentWorkOnProblem(User user, Course course, Problem problem, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/csv");
-		resp.addHeader("Content-disposition", "attachment;filename=course" + course.getId() + "Problem" + problemId + ".csv");
+		resp.addHeader("Content-disposition", "attachment;filename=course" + course.getId() + "Problem" + problem.getProblemId() + ".csv");
 
-		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problemId);
+		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problem);
 		
 		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
-		String problemName = Database.getInstance().getProblem(problemId).getBriefDescription();
-		int numTests = Database.getInstance().getTestCasesForProblem(problemId).size();
+		String problemName = Database.getInstance().getProblem(problem.getProblemId()).getBriefDescription();
+		int numTests = Database.getInstance().getTestCasesForProblem(problem.getProblemId()).size();
 		
 		writer.writeNext(new String[]{course.getName()+" - \""+problemName+"\""});
 		writer.writeNext(new String[]{});

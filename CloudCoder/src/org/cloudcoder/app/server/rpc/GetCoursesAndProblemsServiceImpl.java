@@ -181,7 +181,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		List<ProblemAndSubmissionReceipt> resultList = new LinkedList<ProblemAndSubmissionReceipt>();
 		ProblemList problems = Database.getInstance().getProblemsInCourse(user, course);
 		for(Problem p : problems.getProblemList()){
-			List<UserAndSubmissionReceipt> e = Database.getInstance().getBestSubmissionReceipts(course, p.getProblemId());
+			List<UserAndSubmissionReceipt> e = Database.getInstance().getBestSubmissionReceipts(course, p);
 			for(UserAndSubmissionReceipt pair : e){
 				if(pair.getUser().getId() == user.getId()){
 					// FIXME: is it a problem that we're not including Modules in the ProblemAndSubmissionReceipts?
