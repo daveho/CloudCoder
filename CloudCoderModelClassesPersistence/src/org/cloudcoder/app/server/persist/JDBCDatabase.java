@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -2024,30 +2024,73 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
-		try {
-			Connection conn = null;
-			boolean committed = false;
+		int attempts = 0;
+		
+		boolean successfulCommit = false;
+		E result = null;
+
+		// Attempt the transaction until a maximum number of attempts is reached.
+		while (!successfulCommit && attempts < 20) {
+			attempts++;
+			
+			Connection conn;
+			boolean origAutocommit;
+			
+			// Attempt to get a connection
 			try {
 				conn = getConnection();
+				origAutocommit = conn.getAutoCommit();
+			} catch (SQLException e) {
+				throw new PersistenceException("SQLException", e);
+			}
+			
+			// Attempt the execute the transaction.
+			// If the transaction is not successful (throws SQLException),
+			// determine if it is because of a deadlock or other recoverable
+			// error, and if so, retry.
+			try {
 				conn.setAutoCommit(false);
-				// FIXME: should retry if deadlock is detected
-				E result = databaseRunnable.run(conn);
+				result = databaseRunnable.run(conn);
 				conn.commit();
-				committed = true;
-				return result;
-			} finally {
-				if (conn != null) {
-					if (!committed) {
+				successfulCommit = true; // Hooray!
+			} catch (SQLException e) {
+				String sqlState = e.getSQLState();
+				if (sqlState != null && (sqlState.equals("40001") || sqlState.equals("41000") || sqlState.equals("23000"))) {
+					// Deadlock detected: retry transaction
+					// NOTE: I have also included duplicate key errors (23000).
+					// There is evidence that a MySQL bug can cause spurious
+					// duplicate key errors on auto increment fields, which I *think*
+					// I have actually seen in CloudCoder error logs.
+					//   See: http://www.softwareprojects.com/resources/programming/t-mysql-innodb-deadlocks-and-duplicate-key-errors-12-1970.html
+					// Workaround is to retry the transaction.
+					logger.info("MySQL deadlock detected (sqlState=" + sqlState + ")", e);
+					try {
 						conn.rollback();
+					} catch (SQLException ex) {
+						throw new PersistenceException("SQLException (on rollback)", ex);
 					}
-					databaseRunnable.cleanup();
-					conn.setAutoCommit(true);
+				} else {
+					// Some other kind of transaction failure.
+					throw new PersistenceException("SQLException", e);
+				}
+			} finally {
+				// Restore the original autocommit value and release the connection.
+				try {
+					conn.setAutoCommit(origAutocommit);
 					releaseConnection();
+				} catch (SQLException e) {
+					throw new PersistenceException("SQLException (releasing connection)", e);
 				}
 			}
-		} catch (SQLException e) {
-			throw new PersistenceException("SQLException", e);
 		}
+		
+		// If the transaction was never executed successfully, throw a PersistenceException
+		if (!successfulCommit) {
+			throw new PersistenceException("Could not complete transaction (gave up after " + attempts + " attempts)");
+		}
+		
+		// Success!
+		return result;
 	}
 	
 	/**
