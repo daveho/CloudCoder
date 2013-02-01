@@ -28,12 +28,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemSummaryList;
-import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.slf4j.Logger;
@@ -97,6 +95,7 @@ public class Problems extends HttpServlet {
 			problemSummaryList.add(problemSummary);
 		}
 
+		@SuppressWarnings("resource")
 		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
 		writer.writeNext(PROBLEMS_HEADER);
@@ -134,6 +133,7 @@ public class Problems extends HttpServlet {
 
 		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problem);
 		
+		@SuppressWarnings("resource")
 		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
 		String problemName = Database.getInstance().getProblem(problem.getProblemId()).getBriefDescription();
@@ -146,7 +146,10 @@ public class Problems extends HttpServlet {
 		for (UserAndSubmissionReceipt pair : bestSubmissions) {
 			List<String> entry = new ArrayList<String>();
 			entry.add(pair.getUser().getUsername());
-			entry.add(String.valueOf(pair.getSubmissionReceipt().getNumTestsPassed()+" out of "+numTests));
+			
+			int numPassed = (pair.getSubmissionReceipt() != null) ? pair.getSubmissionReceipt().getNumTestsPassed() : 0;
+			
+			entry.add(String.valueOf(numPassed+" out of "+numTests));
 			writer.writeNext(entry.toArray(new String[entry.size()]));
 		}
 	}
