@@ -35,6 +35,7 @@ import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemSummaryList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +129,7 @@ public class Problems extends HttpServlet {
 		resp.setContentType("text/csv");
 		resp.addHeader("Content-disposition", "attachment;filename=course" + course.getId() + "Problem" + problemId + ".csv");
 
-		List<Pair<User, SubmissionReceipt>> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problemId);
+		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problemId);
 		
 		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
@@ -139,10 +140,10 @@ public class Problems extends HttpServlet {
 		writer.writeNext(new String[]{});
 		writer.writeNext(BEST_SUBMISSION_HEADER);
 		
-		for (Pair<User, SubmissionReceipt> pair : bestSubmissions) {
+		for (UserAndSubmissionReceipt pair : bestSubmissions) {
 			List<String> entry = new ArrayList<String>();
-			entry.add(pair.getLeft().getUsername());
-			entry.add(String.valueOf(pair.getRight().getNumTestsPassed()+" out of "+numTests));
+			entry.add(pair.getUser().getUsername());
+			entry.add(String.valueOf(pair.getSubmissionReceipt().getNumTestsPassed()+" out of "+numTests));
 			writer.writeNext(entry.toArray(new String[entry.size()]));
 		}
 	}

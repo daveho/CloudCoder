@@ -60,6 +60,7 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 import org.slf4j.Logger;
@@ -180,11 +181,11 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		List<ProblemAndSubmissionReceipt> resultList = new LinkedList<ProblemAndSubmissionReceipt>();
 		ProblemList problems = Database.getInstance().getProblemsInCourse(user, course);
 		for(Problem p : problems.getProblemList()){
-			List<Pair<User, SubmissionReceipt>> e = Database.getInstance().getBestSubmissionReceipts(course, p.getProblemId());
-			for(Pair<User,SubmissionReceipt> pair : e){
-				if(pair.getLeft().getId() == user.getId()){
+			List<UserAndSubmissionReceipt> e = Database.getInstance().getBestSubmissionReceipts(course, p.getProblemId());
+			for(UserAndSubmissionReceipt pair : e){
+				if(pair.getUser().getId() == user.getId()){
 					// FIXME: is it a problem that we're not including Modules in the ProblemAndSubmissionReceipts?
-					resultList.add(new ProblemAndSubmissionReceipt(p,pair.getRight(),null));
+					resultList.add(new ProblemAndSubmissionReceipt(p,pair.getSubmissionReceipt(),null));
 				}
 			}
 		}

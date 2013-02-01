@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -41,12 +42,15 @@ public class StatisticsPage extends CloudCoderPage {
 	private class UI extends Composite implements Subscriber {
 		private PageNavPanel pageNavPanel;
 		private Label problemLabel;
+		private StatusMessageView statusMessageView;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
-			
+
+			// North panel: problem label, page nav panel, stats options (TODO)
 			LayoutPanel northPanel = new LayoutPanel();
 			
+			// page nav panel
 			this.pageNavPanel = new PageNavPanel();
 			northPanel.add(pageNavPanel);
 			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
@@ -58,6 +62,14 @@ public class StatisticsPage extends CloudCoderPage {
 			northPanel.add(problemLabel);
 			northPanel.setWidgetLeftRight(problemLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			northPanel.setWidgetTopHeight(problemLabel, 0.0, Unit.PX, 22.0, Unit.PX);
+			
+			// TODO: stats options (choose section, sorting)
+			
+			// South panel: just a status message view
+			statusMessageView = new StatusMessageView();
+			dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
+			
+			// Center panel: stats view
 			
 			initWidget(dockLayoutPanel);
 		}

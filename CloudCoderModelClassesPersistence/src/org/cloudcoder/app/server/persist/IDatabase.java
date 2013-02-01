@@ -50,6 +50,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 
 /**
@@ -327,9 +328,9 @@ public interface IDatabase {
 	 * 
 	 * @param course   the {@link Course}
 	 * @param problemId  the problem id
-	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+	 * @return list of {@link UserAndSubmissionReceipt} objects
 	 */
-	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int problemId);
 
 	/**
 	 * Delete a problem (and its test cases).

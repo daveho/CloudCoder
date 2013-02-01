@@ -69,6 +69,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.slf4j.Logger;
@@ -1345,11 +1346,11 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<Pair<User, SubmissionReceipt>> getBestSubmissionReceipts(
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
 			final Course course, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Pair<User, SubmissionReceipt>>>() {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
-			public List<Pair<User, SubmissionReceipt>> run(Connection conn)
+			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
 
 				// Clearly, my SQL is either amazing or appalling.
@@ -1388,7 +1389,7 @@ public class JDBCDatabase implements IDatabase {
 				stmt.setInt(3, problemId);
 				
 				ResultSet resultSet = executeQuery(stmt);
-				List<Pair<User, SubmissionReceipt>> result = new ArrayList<Pair<User,SubmissionReceipt>>();
+				List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
 				
 				while (resultSet.next()) {
 					int index = 1;
@@ -1401,9 +1402,9 @@ public class JDBCDatabase implements IDatabase {
 					
 					receipt.setEvent(event);
 					
-					Pair<User, SubmissionReceipt> pair = new Pair<User, SubmissionReceipt>();
-					pair.setLeft(user);
-					pair.setRight(receipt);
+					UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
+					pair.setUser(user);
+					pair.setSubmissionReceipt(receipt);
 					
 					result.add(pair);
 				}
