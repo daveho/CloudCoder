@@ -325,12 +325,25 @@ public interface IDatabase {
 	
 	/**
 	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+	 * Should not be called unless the currently-authenticated user is an
+	 * instructor in the course.
 	 * 
 	 * @param course   the {@link Course}
 	 * @param problemId  the problem id
 	 * @return list of {@link UserAndSubmissionReceipt} objects
 	 */
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int problemId);
+
+	/**
+	 * Get best submission receipts for given {@link Problem}.
+	 * Returns empty list if the authenticated user is not an instructor
+	 * in the course in which the problem is assigned.
+	 * 
+	 * @param problem           the {@link Problem}
+	 * @param authenticatedUser the authenticated {@link User}
+	 * @return list of best submission receipts for each user in course
+	 */
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Problem problem, User authenticatedUser);
 
 	/**
 	 * Delete a problem (and its test cases).

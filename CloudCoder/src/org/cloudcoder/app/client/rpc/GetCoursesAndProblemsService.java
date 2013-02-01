@@ -29,6 +29,7 @@ import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -90,6 +91,16 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws NetCoderAuthenticationException
 	 */
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get the best submission receipts for each {@link User} on a specific {@link Problem}.
+	 * Currently-authenticated user must be an instructor in the course.
+	 * 
+	 * @param problem the {@link Problem}
+	 * @return the {@link UserAndSubmissionReceipt}s with best submission receipt for each user
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.

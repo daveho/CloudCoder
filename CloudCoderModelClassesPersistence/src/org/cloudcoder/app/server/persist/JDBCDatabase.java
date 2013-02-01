@@ -1347,73 +1347,36 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
-			final Course course, final int problemId) {
+			final Course unused, final int problemId) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
-
-				// Clearly, my SQL is either amazing or appalling.
-				// Probably the latter.
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select u.*, e.*, sr.* " +
-						"  from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
-						"  (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
-						"    from cc_users as i_u," +
-						"         cc_events as i_e," +
-						"         cc_submission_receipts as i_sr," +
-						"         (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
-						"            from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
-						"           where ii_u.id = ii_e.user_id " +
-						"             and ii_e.id = ii_sr.event_id " +
-						"             and ii_e.problem_id = ?" +
-						"          group by ii_u.id) as best" +
-						"" +
-						"    where i_u.id = i_e.user_id" +
-						"      and i_e.id = i_sr.event_id" +
-						"      and i_e.problem_id = ?" +
-						"      and i_u.id = best.user_id" +
-						"      and i_sr.num_tests_passed = best.max_tests_passed" +
-						"      group by i_u.id, best.max_tests_passed) as earliest_and_best" +
-						"" +
-						" where u.id = e.user_id" +
-						"     and e.id = sr.event_id" +
-						"     and e.problem_id = ?" +
-						"     and u.id = earliest_and_best.user_id" +
-						"     and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
-						"     and e.timestamp = earliest_and_best.timestamp"
-				);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, problemId);
-				stmt.setInt(3, problemId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
-				
-				while (resultSet.next()) {
-					int index = 1;
-					User user = new User();
-					index = loadGeneric(user, resultSet, index, User.SCHEMA);
-					Event event = new Event();
-					index = loadGeneric(event, resultSet, index, Event.SCHEMA);
-					SubmissionReceipt receipt = new SubmissionReceipt();
-					loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
-					
-					receipt.setEvent(event);
-					
-					UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
-					pair.setUser(user);
-					pair.setSubmissionReceipt(receipt);
-					
-					result.add(pair);
-				}
-				
-				return result;
+				return doGetBestSubmissionReceipts(conn, problemId, this);
 			}
 			@Override
 			public String getDescription() {
 				return " getting best submission receipts for problem/course";
+			}
+		});
+	}
+
+	@Override
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(final Problem problem, final User authenticatedUser) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
+			@Override
+			public List<UserAndSubmissionReceipt> run(Connection conn) throws SQLException {
+				CourseRegistrationList regList = doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				if (!regList.isInstructor()) {
+					// user is not an instructor
+					return new ArrayList<UserAndSubmissionReceipt>();
+				}
+
+				return doGetBestSubmissionReceipts(conn, problem.getProblemId(), this);
+			}
+			@Override
+			public String getDescription() {
+				return " getting best submission receipts for problem";
 			}
 		});
 	}
@@ -2530,6 +2493,69 @@ public class JDBCDatabase implements IDatabase {
 			}
 		}
 
+		return result;
+	}
+	
+	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
+			Connection conn,
+			int problemId,
+			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+		// Clearly, my SQL is either amazing or appalling.
+		// Probably the latter.
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"select u.*, e.*, sr.* " +
+				"  from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
+				"  (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
+				"    from cc_users as i_u," +
+				"         cc_events as i_e," +
+				"         cc_submission_receipts as i_sr," +
+				"         (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
+				"            from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
+				"           where ii_u.id = ii_e.user_id " +
+				"             and ii_e.id = ii_sr.event_id " +
+				"             and ii_e.problem_id = ?" +
+				"          group by ii_u.id) as best" +
+				"" +
+				"    where i_u.id = i_e.user_id" +
+				"      and i_e.id = i_sr.event_id" +
+				"      and i_e.problem_id = ?" +
+				"      and i_u.id = best.user_id" +
+				"      and i_sr.num_tests_passed = best.max_tests_passed" +
+				"      group by i_u.id, best.max_tests_passed) as earliest_and_best" +
+				"" +
+				" where u.id = e.user_id" +
+				"     and e.id = sr.event_id" +
+				"     and e.problem_id = ?" +
+				"     and u.id = earliest_and_best.user_id" +
+				"     and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
+				"     and e.timestamp = earliest_and_best.timestamp"
+		);
+		stmt.setInt(1, problemId);
+		stmt.setInt(2, problemId);
+		stmt.setInt(3, problemId);
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
+		
+		while (resultSet.next()) {
+			int index = 1;
+			User user = new User();
+			index = loadGeneric(user, resultSet, index, User.SCHEMA);
+			Event event = new Event();
+			index = loadGeneric(event, resultSet, index, Event.SCHEMA);
+			SubmissionReceipt receipt = new SubmissionReceipt();
+			loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+			
+			receipt.setEvent(event);
+			
+			UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
+			pair.setUser(user);
+			pair.setSubmissionReceipt(receipt);
+			
+			result.add(pair);
+		}
+		
 		return result;
 	}
 	

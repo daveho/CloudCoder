@@ -195,6 +195,19 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getBestSubmissionReceipts(org.cloudcoder.app.shared.model.Problem)
+	 */
+	@Override
+	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		// Return best submission receipts for each user in course
+		List<UserAndSubmissionReceipt> result = Database.getInstance().getBestSubmissionReceipts(problem, user);
+		return result.toArray(new UserAndSubmissionReceipt[result.size()]);
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getTestCasesForProblem(int)
 	 */
 	@Override

@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * Aggregate of {@link User} and {@link SubmissionReceipt}.
  * Useful for pairing a user with a specific SubmissionReceipt (for example,
@@ -24,7 +26,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class UserAndSubmissionReceipt {
+public class UserAndSubmissionReceipt implements Serializable {
 	private User user;
 	private SubmissionReceipt submissionReceipt;
 	

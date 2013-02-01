@@ -20,6 +20,8 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
+import org.cloudcoder.app.client.view.StudentProgressView;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -43,6 +45,7 @@ public class StatisticsPage extends CloudCoderPage {
 		private PageNavPanel pageNavPanel;
 		private Label problemLabel;
 		private StatusMessageView statusMessageView;
+		private StudentProgressView studentProgressView;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -65,21 +68,36 @@ public class StatisticsPage extends CloudCoderPage {
 			
 			// TODO: stats options (choose section, sorting)
 			
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX);
+			
 			// South panel: just a status message view
 			statusMessageView = new StatusMessageView();
 			dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
 			
 			// Center panel: stats view
+			LayoutPanel centerPanel = new LayoutPanel();
+			this.studentProgressView = new StudentProgressView();
+			centerPanel.add(studentProgressView);
+			centerPanel.setWidgetLeftRight(studentProgressView, 0.0, Unit.PX, 0.0, Unit.PX);
+			centerPanel.setWidgetTopBottom(studentProgressView, 10.0, Unit.PX, 10.0, Unit.PX);
+			dockLayoutPanel.add(centerPanel);
 			
 			initWidget(dockLayoutPanel);
 		}
 
-		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			// Activate views
-			
+			statusMessageView.activate(session, subscriptionRegistrar);
+			studentProgressView.activate(session, subscriptionRegistrar);
 			
 			// Set back/logout handlers
-			pageNavPanel.setBackHandler(new BackHomeHandler(session));
+			pageNavPanel.setBackHandler(new Runnable() {
+				@Override
+				public void run() {
+					// Go back to course admin page
+					session.notifySubscribers(Session.Event.COURSE_ADMIN, session.get(Course.class));
+				}
+			});
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 		}
 		
