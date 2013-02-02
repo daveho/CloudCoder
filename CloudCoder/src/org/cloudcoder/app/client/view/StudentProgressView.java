@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -113,23 +114,27 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 		}
 	}
 	
-	private class BestScoreBarCell extends AbstractCell<Integer> {
+	private class BestScoreBarCell extends AbstractCell<SubmissionReceipt> {
 		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context, Integer value, SafeHtmlBuilder sb) {
+		public void render(com.google.gwt.cell.client.Cell.Context context, SubmissionReceipt value, SafeHtmlBuilder sb) {
 			if (value == null) {
+				// Data not available, or student did not attempt this problem
 				appendNoInfoBar(sb);
 				return;
 			}
 			
 			// If we don't know the total number of test cases, don't display anything
-			if (testCaseList == null || testCaseList.length == 0) {
+			int numTests = testCaseList.length;
+			if (testCaseList == null || numTests == 0) {
 				appendNoInfoBar(sb);
 				return;
 			}
 			
+			int numPassed = value.getNumTestsPassed();
+			
 			StringBuilder buf = new StringBuilder();
 			buf.append("<div class=\"cc-barOuter\"><div class=\"cc-barInner\" style=\"width: ");
-			int pct = (value * 10000) / (testCaseList.length * 100);
+			int pct = (numPassed * 10000) / (numTests * 100);
 			buf.append(pct);
 			buf.append("%\"></div></div>");
 			
@@ -146,17 +151,14 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 		}
 	}
 	
-	private class BestScoreBarColumn extends Column<UserAndSubmissionReceipt, Integer> {
+	private class BestScoreBarColumn extends Column<UserAndSubmissionReceipt, SubmissionReceipt> {
 		public BestScoreBarColumn() {
 			super(new BestScoreBarCell());
 		}
 		
 		@Override
-		public Integer getValue(UserAndSubmissionReceipt object) {
-			if (object.getSubmissionReceipt() == null) {
-				return 0;
-			}
-			return object.getSubmissionReceipt().getNumTestsPassed();
+		public SubmissionReceipt getValue(UserAndSubmissionReceipt object) {
+			return object.getSubmissionReceipt();
 		}
 	}
 	
