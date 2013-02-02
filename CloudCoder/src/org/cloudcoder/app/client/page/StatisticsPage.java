@@ -31,13 +31,18 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -58,6 +63,7 @@ public class StatisticsPage extends CloudCoderPage {
 		private Label problemLabel;
 		private StatusMessageView statusMessageView;
 		private StudentProgressView studentProgressView;
+		private Button downloadCsvButton;
 		private ListBox chooseSectionBox;
 
 		public UI() {
@@ -92,6 +98,19 @@ public class StatisticsPage extends CloudCoderPage {
 				}
 			});
 			statsOptionPanel.add(chooseSectionBox);
+			statsOptionPanel.add(new InlineHTML(" "));
+			this.downloadCsvButton = new Button("Download");
+			downloadCsvButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					handleDownloadCsv();
+				}
+			});
+			statsOptionPanel.add(downloadCsvButton);
+			
+			// Create a hidden iframe element for the CSV download
+			InlineHTML iframe = new InlineHTML("<iframe id=\"ccCsvDownload\" style=\"height: 1px; width: 1px; display: none;\"></iframe>");
+			statsOptionPanel.add(iframe);
 			
 			northPanel.add(statsOptionPanel);
 			northPanel.setWidgetLeftRight(statsOptionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
@@ -130,6 +149,21 @@ public class StatisticsPage extends CloudCoderPage {
 				}
 			}
 		}
+
+		protected void handleDownloadCsv() {
+			// Redirect to the /admin/problems servlet with the chosen
+			// course/problem/section
+			// TODO: handle section
+			Problem problem = getSession().get(Problem.class);
+			String url = GWT.getHostPageBaseURL() + "admin/problems/" + problem.getCourseId() + "/" + problem.getProblemId();
+			GWT.log("Redirecting iframe to " + url);
+			doDownloadCsv(url);
+		}
+		
+		private native void doDownloadCsv(String url) /*-{
+			var elt = $doc.getElementById("ccCsvDownload");
+			elt.src = url;
+		}-*/;
 
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			// Initially, results for all sections are shown
