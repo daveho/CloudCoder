@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.CourseSelection;
+import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -31,6 +32,8 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -82,6 +85,12 @@ public class StatisticsPage extends CloudCoderPage {
 			statsOptionPanel.add(chooseSectionLabel);
 			this.chooseSectionBox = new ListBox();
 			chooseSectionBox.setWidth("80px");
+			chooseSectionBox.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					handleSectionChange();
+				}
+			});
 			statsOptionPanel.add(chooseSectionBox);
 			
 			northPanel.add(statsOptionPanel);
@@ -105,7 +114,27 @@ public class StatisticsPage extends CloudCoderPage {
 			initWidget(dockLayoutPanel);
 		}
 
+		protected void handleSectionChange() {
+			int selected = chooseSectionBox.getSelectedIndex();
+			if (selected >= 0) {
+				String choice = chooseSectionBox.getItemText(selected);
+				
+				// Add a Section object to the session.
+				// The StudentProgressView listens for these events,
+				// and updates the results appropriately.
+				if (choice.equals("All")) {
+					getSession().add(new Section()); // all sections
+				} else {
+					int section = Integer.parseInt(choice);
+					getSession().add(new Section(section));
+				}
+			}
+		}
+
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			// Initially, results for all sections are shown
+			session.add(new Section());
+			
 			// Activate views
 			statusMessageView.activate(session, subscriptionRegistrar);
 			studentProgressView.activate(session, subscriptionRegistrar);

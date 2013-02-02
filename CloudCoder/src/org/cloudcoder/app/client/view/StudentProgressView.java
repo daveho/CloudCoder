@@ -19,6 +19,8 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
 
+import org.cloudcoder.app.client.model.CourseSelection;
+import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
@@ -53,6 +55,7 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 	private Problem problem;
 	private TestCase[] testCaseList;
 	private UserAndSubmissionReceipt[] data;
+	private Session session;
 	
 	public StudentProgressView() {
 		data = new UserAndSubmissionReceipt[0];
@@ -164,6 +167,8 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 	
 	@Override
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+		this.session = session;
+		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 		problem = session.get(Problem.class);
 		
@@ -182,7 +187,13 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 		});
 		
 		// Get best submission receipts for each user
-		RPC.getCoursesAndProblemsService.getBestSubmissionReceipts(problem, new AsyncCallback<UserAndSubmissionReceipt[]>() {
+		getBestSubmissions();
+	}
+
+	private void getBestSubmissions() {
+		Section choice = session.get(Section.class);
+		
+		RPC.getCoursesAndProblemsService.getBestSubmissionReceipts(problem, choice.getNumber(), new AsyncCallback<UserAndSubmissionReceipt[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				session.add(StatusMessage.error("Could not get submission receipts for problem", caught));
@@ -207,6 +218,9 @@ public class StudentProgressView extends Composite implements Subscriber, Sessio
 		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof UserAndSubmissionReceipt[]) {
 			data = (UserAndSubmissionReceipt[]) hint;
 			refreshView();
+		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof Section) {
+			// Section number choice changed
+			getBestSubmissions();
 		}
 	}
 

@@ -340,10 +340,11 @@ public interface IDatabase {
 	 * in the course in which the problem is assigned.
 	 * 
 	 * @param problem           the {@link Problem}
+	 * @param section           the section number (0 for all sections)
 	 * @param authenticatedUser the authenticated {@link User}
 	 * @return list of best submission receipts for each user in course
 	 */
-	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Problem problem, User authenticatedUser);
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Problem problem, int section, User authenticatedUser);
 
 	/**
 	 * Delete a problem (and its test cases).

@@ -46,7 +46,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void getProblemAndSubscriptionReceipts(Course course, User user,
 			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
 
-	void getBestSubmissionReceipts(Problem problem,
+	void getBestSubmissionReceipts(Problem problem, int section,
 			AsyncCallback<UserAndSubmissionReceipt[]> callback);
 	
 	void getTestCasesForProblem(int problemId,

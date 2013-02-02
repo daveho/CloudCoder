@@ -97,10 +97,11 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * Currently-authenticated user must be an instructor in the course.
 	 * 
 	 * @param problem the {@link Problem}
+	 * @param section the section (0 for all sections)
 	 * @return the {@link UserAndSubmissionReceipt}s with best submission receipt for each user
 	 * @throws CloudCoderAuthenticationException
 	 */
-	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem) throws CloudCoderAuthenticationException;
+	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem, int section) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get the list of {@link TestCase}s for a {@link Problem}.

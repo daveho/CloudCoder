@@ -41,7 +41,6 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
-import org.cloudcoder.app.shared.model.EventType;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
@@ -1353,7 +1352,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
-				return doGetBestSubmissionReceipts(conn, problem, this);
+				return doGetBestSubmissionReceipts(conn, problem, 0, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1363,7 +1362,7 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	@Override
-	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(final Problem problem, final User authenticatedUser) {
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(final Problem problem, final int section, final User authenticatedUser) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn) throws SQLException {
@@ -1373,7 +1372,7 @@ public class JDBCDatabase implements IDatabase {
 					return new ArrayList<UserAndSubmissionReceipt>();
 				}
 
-				return doGetBestSubmissionReceipts(conn, problem, this);
+				return doGetBestSubmissionReceipts(conn, problem, section, this);
 			}
 			@Override
 			public String getDescription() {
@@ -2252,19 +2251,6 @@ public class JDBCDatabase implements IDatabase {
 		
 		return resultSet.getInt(1);
 	}
-
-//	private int doInsertOrUpdateUser(User user, 
-//	    Connection conn,
-//	    AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException
-//	{
-//	    return ConfigurationUtil.createOrUpdateUser(conn, 
-//	            user.getUsername(), 
-//	            user.getFirstname(), 
-//	            user.getLastname(), 
-//	            user.getEmail(), 
-//	            user.getPasswordHash(),
-//	            user.getWebsite());
-//    }
 	
 	private List<? extends Object[]> doGetCoursesForUser(
 			final User user,
@@ -2534,6 +2520,7 @@ public class JDBCDatabase implements IDatabase {
 	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
 			Connection conn,
 			final Problem problem,
+			final int section,
 			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
 		
 		// Clearly, my SQL is either amazing or appalling.
@@ -2572,13 +2559,17 @@ public class JDBCDatabase implements IDatabase {
 				"          on uu.id = best.the_user_id " +
 				"" +
 				" where uu.id in (select distinct xu.id from cc_users as xu, cc_course_registrations as xcr "+
-				"                  where xu.id = xcr.user_id and xcr.course_id = ?)"
+				"                  where xu.id = xcr.user_id " +
+				"                    and xcr.course_id = ? " +
+				"                    and (? = 0 or xcr.section = ?)) "
 		);
 		int problemId = problem.getProblemId();
 		stmt.setInt(1, problemId);
 		stmt.setInt(2, problemId);
 		stmt.setInt(3, problemId);
 		stmt.setInt(4, problem.getCourseId());
+		stmt.setInt(5, section); // if section is 0, all sections will be included
+		stmt.setInt(6, section);
 		
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
