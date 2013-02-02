@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -89,6 +90,11 @@ public class StatisticsPage extends CloudCoderPage {
 			// Activate views
 			statusMessageView.activate(session, subscriptionRegistrar);
 			studentProgressView.activate(session, subscriptionRegistrar);
+			
+			// Set title
+			Problem problem = session.get(Problem.class);
+			CourseSelection courseSelection = session.get(CourseSelection.class);
+			problemLabel.setText("Statistics for " + problem.toNiceString() + " in " + courseSelection.getCourse().getName());
 			
 			// Set back/logout handlers
 			pageNavPanel.setBackHandler(new Runnable() {
