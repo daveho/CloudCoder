@@ -19,6 +19,8 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.StudentProgressView;
@@ -29,11 +31,15 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
 
 /**
  * Page for displaying statistics for a given {@link Problem}.
@@ -43,10 +49,13 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 public class StatisticsPage extends CloudCoderPage {
 	
 	private class UI extends Composite implements Subscriber {
+		private static final double STATS_OPTION_PANEL_HEIGHT_PX = 28.0;
+
 		private PageNavPanel pageNavPanel;
 		private Label problemLabel;
 		private StatusMessageView statusMessageView;
 		private StudentProgressView studentProgressView;
+		private ListBox chooseSectionBox;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -67,9 +76,19 @@ public class StatisticsPage extends CloudCoderPage {
 			northPanel.setWidgetLeftRight(problemLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			northPanel.setWidgetTopHeight(problemLabel, 0.0, Unit.PX, 22.0, Unit.PX);
 			
-			// TODO: stats options (choose section, sorting)
+			// stats options (choose section, sorting, download CSV)
+			FlowPanel statsOptionPanel = new FlowPanel();
+			InlineLabel chooseSectionLabel = new InlineLabel("Section: ");
+			statsOptionPanel.add(chooseSectionLabel);
+			this.chooseSectionBox = new ListBox();
+			chooseSectionBox.setWidth("80px");
+			statsOptionPanel.add(chooseSectionBox);
 			
-			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX);
+			northPanel.add(statsOptionPanel);
+			northPanel.setWidgetLeftRight(statsOptionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			northPanel.setWidgetBottomHeight(statsOptionPanel, 0.0, Unit.PX, STATS_OPTION_PANEL_HEIGHT_PX, Unit.PX);
+			
+			dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + STATS_OPTION_PANEL_HEIGHT_PX);
 			
 			// South panel: just a status message view
 			statusMessageView = new StatusMessageView();
@@ -95,6 +114,22 @@ public class StatisticsPage extends CloudCoderPage {
 			Problem problem = session.get(Problem.class);
 			CourseSelection courseSelection = session.get(CourseSelection.class);
 			problemLabel.setText("Statistics for " + problem.toNiceString() + " in " + courseSelection.getCourse().getName());
+			
+			// Set section numbers
+			chooseSectionBox.addItem("All");
+			RPC.getCoursesAndProblemsService.getSectionsForCourse(courseSelection.getCourse(), new AsyncCallback<Integer[]>() {
+				@Override
+				public void onSuccess(Integer[] result) {
+					for (Integer section : result) {
+						chooseSectionBox.addItem(section.toString());
+					}
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					session.add(StatusMessage.error("Couldn't get section numbers for course", caught));
+				}
+			});
 			
 			// Set back/logout handlers
 			pageNavPanel.setBackHandler(new Runnable() {

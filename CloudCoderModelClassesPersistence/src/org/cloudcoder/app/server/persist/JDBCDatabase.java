@@ -1956,6 +1956,40 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Integer[] getSectionsForCourse(final Course course, final User authenticatedUser) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Integer[]>() {
+			@Override
+			public Integer[] run(Connection conn) throws SQLException {
+				// Make sure user is an instructor in the course
+				CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), authenticatedUser.getId(), this);
+				if (!regList.isInstructor()) {
+					return new Integer[0];
+				}
+				
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select distinct cr.section from cc_course_registrations as cr " +
+						" where cr.course_id = ? " +
+						" order by cr.section asc"
+				);
+				stmt.setInt(1, course.getId());
+				
+				List<Integer> result = new ArrayList<Integer>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					result.add(resultSet.getInt(1));
+				}
+				
+				return result.toArray(new Integer[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return " getting sections for course";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

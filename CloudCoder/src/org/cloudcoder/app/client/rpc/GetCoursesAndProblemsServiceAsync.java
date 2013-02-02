@@ -76,4 +76,6 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void setModule(Problem problem, String moduleName,
 			AsyncCallback<Module> callback);
 
+	void getSectionsForCourse(Course course, AsyncCallback<Integer[]> callback);
+
 }

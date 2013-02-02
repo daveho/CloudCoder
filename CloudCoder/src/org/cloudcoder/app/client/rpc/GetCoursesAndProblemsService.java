@@ -214,4 +214,13 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws CloudCoderAuthenticationException
 	 */
 	public Module setModule(Problem problem, String moduleName) throws CloudCoderAuthenticationException;
+
+	/**
+	 * Get all section numbers for the given {@link Course}.
+	 * 
+	 * @param course the course
+	 * @return array containing all of the section numbers for the course
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException;
 }

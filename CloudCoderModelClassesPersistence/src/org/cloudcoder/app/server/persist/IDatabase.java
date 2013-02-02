@@ -522,4 +522,14 @@ public interface IDatabase {
 	 */
 	public StartedQuiz findUnfinishedQuiz(User user);
 
+	/**
+	 * Get all sections for given {@link Course}.
+	 * 
+	 * @param course            the course
+	 * @param authenticatedUser the authenticated {@link User}, who must be
+	 *                          an instructor in the course
+	 * @return the sections, or an empty array if the user is not an instructor in the course
+	 */
+	public Integer[] getSectionsForCourse(Course course, User authenticatedUser);
+
 }

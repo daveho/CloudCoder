@@ -49,14 +49,12 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
-import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.Quiz;
-import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -435,5 +433,13 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
 		return Database.getInstance().setModule(user, problem, moduleName);
+	}
+	
+	@Override
+	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+
+		return Database.getInstance().getSectionsForCourse(course, user);
 	}
 }
