@@ -69,7 +69,7 @@ public class StatisticsPage extends CloudCoderPage {
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 
-			// North panel: problem label, page nav panel, stats options (TODO)
+			// North panel: problem label, page nav panel, stats options
 			LayoutPanel northPanel = new LayoutPanel();
 			
 			// page nav panel
@@ -133,11 +133,14 @@ public class StatisticsPage extends CloudCoderPage {
 			initWidget(dockLayoutPanel);
 		}
 
-		protected void handleSectionChange() {
+		private String getSectionChoice() {
 			int selected = chooseSectionBox.getSelectedIndex();
-			if (selected >= 0) {
-				String choice = chooseSectionBox.getItemText(selected);
-				
+			return selected < 0 ? null : chooseSectionBox.getItemText(selected);
+		}
+
+		protected void handleSectionChange() {
+			String choice = getSectionChoice();
+			if (choice != null) {
 				// Add a Section object to the session.
 				// The StudentProgressView listens for these events,
 				// and updates the results appropriately.
@@ -153,9 +156,25 @@ public class StatisticsPage extends CloudCoderPage {
 		protected void handleDownloadCsv() {
 			// Redirect to the /admin/problems servlet with the chosen
 			// course/problem/section
-			// TODO: handle section
+
 			Problem problem = getSession().get(Problem.class);
-			String url = GWT.getHostPageBaseURL() + "admin/problems/" + problem.getCourseId() + "/" + problem.getProblemId();
+			
+			// Build the path info string for the request, which specifies
+			// course id and problem id, and (optionally) section number
+			StringBuilder pathInfo = new StringBuilder();
+			pathInfo.append(problem.getCourseId());
+			String sectionChoice = getSectionChoice();
+			if (sectionChoice != null && !sectionChoice.equals("All")) {
+				pathInfo.append("-");
+				pathInfo.append(sectionChoice);
+			}
+			pathInfo.append("/");
+			pathInfo.append(problem.getProblemId());
+			
+			// Build the full URL
+			String url = GWT.getHostPageBaseURL() + "admin/problems/" + pathInfo.toString();
+			
+			// Set the src attribute in the hidden download iframe
 			GWT.log("Redirecting iframe to " + url);
 			doDownloadCsv(url);
 		}
