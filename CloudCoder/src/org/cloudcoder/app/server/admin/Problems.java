@@ -155,7 +155,7 @@ public class Problems extends HttpServlet {
 			
 			entry.add(String.valueOf(numPassed));
 			entry.add(String.valueOf(numTests));
-			double percent = numTests > 0 ? ((double)numPassed / (double)numTests) : 0.0;
+			double percent = (numTests > 0 ? ((double)numPassed / (double)numTests) : 0.0) * 100.0;
 			entry.add(String.format("%.2f", percent));
 			
 			writer.writeNext(entry.toArray(new String[entry.size()]));
