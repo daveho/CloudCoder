@@ -61,12 +61,12 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  */
 public class CourseAdminPage extends CloudCoderPage {
 	private enum ProblemAction implements IButtonPanelAction {
-		NEW("New exercise", "Create a new exercise"),
-		EDIT("Edit exercise", "Edit the selected exercise"),
-		DELETE("Delete exercise", "Delete the selected exercise"),
+		NEW("New", "Create a new exercise"),
+		EDIT("Edit", "Edit the selected exercise"),
+		DELETE("Delete", "Delete the selected exercise"),
 		STATISTICS("Statistics", "See statistics on selected exercise"),
-		IMPORT("Import exercise", "Import an exercise from the CloudCoder exercise repository"),
-		SHARE("Share exercise", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
+		IMPORT("Import", "Import an exercise from the CloudCoder exercise repository"),
+		SHARE("Share", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
 		MAKE_VISIBLE("Make visible", "Make selected exerise visible to students"),
 		MAKE_INVISIBLE("Make invisible", "Make selected exercise invisible to students"),
 		QUIZ("Quiz", "Give selected exercise as a quiz");
@@ -375,9 +375,10 @@ public class CourseAdminPage extends CloudCoderPage {
 		private void handleStatistics() {
 			// Get the selected problem
 			final Problem chosen = getSession().get(Problem.class);
-			
-			String URL = GWT.getHostPageBaseURL()+"/admin/problems/"+chosen.getCourseId()+"/"+chosen.getProblemId();			
-			com.google.gwt.user.client.Window.open(URL, "_blank", "");
+//			
+//			String URL = GWT.getHostPageBaseURL()+"/admin/problems/"+chosen.getCourseId()+"/"+chosen.getProblemId();			
+//			com.google.gwt.user.client.Window.open(URL, "_blank", "");
+			getSession().notifySubscribers(Session.Event.STATISTICS, chosen);
 		}
 
 		/**
