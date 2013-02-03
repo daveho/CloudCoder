@@ -114,7 +114,7 @@ public class Problems extends HttpServlet {
 	}
 	
 	private static final String[] BEST_SUBMISSION_HEADER = new String[]{
-		"Username","Passed/Total"
+		"Username","Passed/Total", "Passed", "Total", "Percent",
 	};
 
 	/**
@@ -141,7 +141,7 @@ public class Problems extends HttpServlet {
 		String problemName = Database.getInstance().getProblem(problem.getProblemId()).getBriefDescription();
 		int numTests = Database.getInstance().getTestCasesForProblem(problem.getProblemId()).size();
 		
-		writer.writeNext(new String[]{course.getName()+" - \""+problemName+"\""});
+		writer.writeNext(new String[]{course.getName(), problemName});
 		writer.writeNext(new String[]{});
 		writer.writeNext(BEST_SUBMISSION_HEADER);
 		
@@ -152,6 +152,12 @@ public class Problems extends HttpServlet {
 			int numPassed = (pair.getSubmissionReceipt() != null) ? pair.getSubmissionReceipt().getNumTestsPassed() : 0;
 			
 			entry.add(String.valueOf(numPassed+" out of "+numTests));
+			
+			entry.add(String.valueOf(numPassed));
+			entry.add(String.valueOf(numTests));
+			double percent = numTests > 0 ? ((double)numPassed / (double)numTests) : 0.0;
+			entry.add(String.format("%.2f", percent));
+			
 			writer.writeNext(entry.toArray(new String[entry.size()]));
 		}
 	}
