@@ -21,6 +21,7 @@ import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.IButtonPanelAction;
 import org.cloudcoder.app.client.view.NewUserDialog;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -75,18 +76,20 @@ public class UserAdminPage extends CloudCoderPage
 {
     private static final long serialVersionUID = 1L;
     
-    private enum ButtonPanelAction {
-        NEW("Add new user"),
-        EDIT("Edit user"),
-        DELETE("Delete user"),
-        REGISTER_USERS("Register users"),
-        VIEW_ALL_PROGRESS("View All Progress"),
-        VIEW_USER_PROGRESS("View User Progress");
+    private enum UserAction implements IButtonPanelAction {
+        NEW("Add user", "Add a new user to course"),
+        EDIT("Edit user", "Edit user information"),
+        DELETE("Delete user", "Delete user from course"),
+        REGISTER_USERS("Register users", "Register multiple users for course"),
+        //VIEW_ALL_PROGRESS("View All Progress"),
+        VIEW_USER_PROGRESS("User progress", "View progress of user in course");
         
         private String name;
+        private String tooltip;
         
-        private ButtonPanelAction(String name) {
+        private UserAction(String name, String tooltip) {
             this.name = name;
+            this.tooltip = tooltip;
         }
         
         /**
@@ -97,8 +100,16 @@ public class UserAdminPage extends CloudCoderPage
         }
         
         public boolean isEnabledByDefault() {
-            return this == NEW || this == REGISTER_USERS || this == VIEW_ALL_PROGRESS;
+            return this == NEW || this == REGISTER_USERS/* || this == VIEW_ALL_PROGRESS*/;
         }
+
+		/* (non-Javadoc)
+		 * @see org.cloudcoder.app.client.view.IButtonPanelAction#getTooltip()
+		 */
+		@Override
+		public String getTooltip() {
+			return tooltip;
+		}
     }
     private class UI extends Composite implements SessionObserver, Subscriber {
         private static final double USERS_BUTTON_BAR_HEIGHT_PX = 28.0;
@@ -138,9 +149,9 @@ public class UserAdminPage extends CloudCoderPage
             // Create a button panel with buttons for problem-related actions
             // (new problem, edit problem, make visible, make invisible, quiz, share)
             FlowPanel userButtonPanel = new FlowPanel();
-            ButtonPanelAction[] actions = ButtonPanelAction.values();
+            UserAction[] actions = UserAction.values();
             userManagementButtons = new Button[actions.length];
-            for (final ButtonPanelAction action : actions) {
+            for (final UserAction action : actions) {
                 final Button button = new Button(action.getName());
                 userManagementButtons[action.ordinal()] = button;
                 button.addClickHandler(new ClickHandler() {
@@ -163,9 +174,9 @@ public class UserAdminPage extends CloudCoderPage
                             handleDeleteUser();
                             break;
                             
-                        case VIEW_ALL_PROGRESS:
-                            handleDeleteUser();
-                            break;
+//                        case VIEW_ALL_PROGRESS:
+//                            handleDeleteUser();
+//                            break;
                             
                         case VIEW_USER_PROGRESS:
                             handleUserProgress(event);
@@ -173,6 +184,7 @@ public class UserAdminPage extends CloudCoderPage
                         }                    }
                 });
                 button.setEnabled(action.isEnabledByDefault());
+                button.setTitle(action.getTooltip());
                 userButtonPanel.add(button);
             }
             
@@ -479,12 +491,12 @@ public class UserAdminPage extends CloudCoderPage
         
         private void onSelectUser(User user) {
             // Problem selected: enable/disable buttons appropriately
-            userManagementButtons[ButtonPanelAction.EDIT.ordinal()].setEnabled(true);
-            userManagementButtons[ButtonPanelAction.NEW.ordinal()].setEnabled(true);
-            userManagementButtons[ButtonPanelAction.DELETE.ordinal()].setEnabled(true);
-            userManagementButtons[ButtonPanelAction.REGISTER_USERS.ordinal()].setEnabled(true);
-            userManagementButtons[ButtonPanelAction.VIEW_ALL_PROGRESS.ordinal()].setEnabled(true);
-            userManagementButtons[ButtonPanelAction.VIEW_USER_PROGRESS.ordinal()].setEnabled(true);
+            userManagementButtons[UserAction.EDIT.ordinal()].setEnabled(true);
+            userManagementButtons[UserAction.NEW.ordinal()].setEnabled(true);
+            userManagementButtons[UserAction.DELETE.ordinal()].setEnabled(true);
+            userManagementButtons[UserAction.REGISTER_USERS.ordinal()].setEnabled(true);
+//            userManagementButtons[UserAction.VIEW_ALL_PROGRESS.ordinal()].setEnabled(true);
+            userManagementButtons[UserAction.VIEW_USER_PROGRESS.ordinal()].setEnabled(true);
         }
         
         private void handleEditUser(ClickEvent event) {
