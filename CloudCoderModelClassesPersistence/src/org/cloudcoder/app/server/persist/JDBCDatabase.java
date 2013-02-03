@@ -1347,12 +1347,12 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
-			final Course unused, final Problem problem) {
+			final Course unused, final int section, final Problem problem) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
-				return doGetBestSubmissionReceipts(conn, problem, 0, this);
+				return doGetBestSubmissionReceipts(conn, problem, section, this);
 			}
 			@Override
 			public String getDescription() {

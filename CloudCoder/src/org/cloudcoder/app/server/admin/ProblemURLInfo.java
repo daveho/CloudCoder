@@ -57,7 +57,7 @@ public class ProblemURLInfo {
 	}
 	
 	/**
-	 * @return the section (-1 if a section was not specified)
+	 * @return the section (0 if a section was not specified)
 	 */
 	public int getSection() {
 		return section;
@@ -116,7 +116,7 @@ public class ProblemURLInfo {
 		}
 		
 		int courseId;
-		int section = -1;
+		int section = 0;
 		int problemId = -1;
 		int userId = -1;
 		

@@ -73,7 +73,7 @@ public class Problems extends HttpServlet {
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
 		} else {
-			summarizeStudentWorkOnProblem(user, course, problem, resp);
+			summarizeStudentWorkOnProblem(user, course, problemURLInfo.getSection(), problem, resp);
 		}
 	}
 	
@@ -122,16 +122,18 @@ public class Problems extends HttpServlet {
 	 * 
 	 * @param user        authenticated user
 	 * @param course      the course
+	 * @param section     the section of the course
 	 * @param problem     the problem
 	 * @param resp        the HttpServletResponse to write to
 	 * @throws ServletException 
 	 * @throws IOException 
 	 */
-	private void summarizeStudentWorkOnProblem(User user, Course course, Problem problem, HttpServletResponse resp) throws ServletException, IOException {
+	private void summarizeStudentWorkOnProblem(User user, Course course, int section, Problem problem, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/csv");
-		resp.addHeader("Content-disposition", "attachment;filename=course" + course.getId() + "Problem" + problem.getProblemId() + ".csv");
+		String fileName = "course" + course.getId() + (section != 0 ? ("Section" + section) : "") + "Problem" + problem.getProblemId() + ".csv";
+		resp.addHeader("Content-disposition", "attachment;filename=" + fileName);
 
-		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, problem);
+		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, section, problem);
 		
 		@SuppressWarnings("resource")
 		CSVWriter writer = new CSVWriter(resp.getWriter());
