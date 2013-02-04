@@ -113,11 +113,9 @@ public class UserAdminPage extends CloudCoderPage
         private String rawCourseTitle;
         private Label courseLabel;
         private int courseId;
-        //private Button[] userManagementButtons;
         private ButtonPanel<UserAction> userManagementButtonPanel;
         private UserAdminUsersListView userAdminUsersListView;
         private StatusMessageView statusMessageView;
-//        private AddUserPopupPanel popupPanel;
         
         public UI() {
             DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -141,50 +139,6 @@ public class UserAdminPage extends CloudCoderPage
             // registered for the given course.
             // Can eventually put other stuff here too.
             LayoutPanel centerPanel = new LayoutPanel();
-
-            /*
-            // Create a button panel with buttons for problem-related actions
-            // (new problem, edit problem, make visible, make invisible, quiz, share)
-            FlowPanel userButtonPanel = new FlowPanel();
-            UserAction[] actions = UserAction.values();
-            userManagementButtons = new Button[actions.length];
-            for (final UserAction action : actions) {
-                final Button button = new Button(action.getName());
-                userManagementButtons[action.ordinal()] = button;
-                button.addClickHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        switch (action) {
-                        case NEW:
-                            handleNewUser(event);
-                            break;
-
-                        case EDIT:
-                            handleEditUser(event);
-                            break;
-                            
-                        case REGISTER_USERS:
-                            handleRegisterNewUsers(event);
-                            break;
-                            
-                        case DELETE:
-                            handleDeleteUser();
-                            break;
-                            
-//                        case VIEW_ALL_PROGRESS:
-//                            handleDeleteUser();
-//                            break;
-                            
-                        case VIEW_USER_PROGRESS:
-                            handleUserProgress(event);
-                            break;
-                        }                    }
-                });
-                button.setEnabled(action.isEnabledByDefault());
-                button.setTitle(action.getTooltip());
-                userButtonPanel.add(button);
-            }
-            */
             userManagementButtonPanel = new ButtonPanel<UserAction>(UserAction.values()) {
             	/* (non-Javadoc)
             	 * @see org.cloudcoder.app.client.view.ButtonPanel#isEnabled(org.cloudcoder.app.client.view.IButtonPanelAction)
@@ -223,11 +177,6 @@ public class UserAdminPage extends CloudCoderPage
             	}
 			};
 
-			/*
-            centerPanel.add(userButtonPanel);
-            centerPanel.setWidgetTopHeight(userButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
-            centerPanel.setWidgetLeftRight(userButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-            */
 			centerPanel.add(userManagementButtonPanel);
             centerPanel.setWidgetTopHeight(userManagementButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
             centerPanel.setWidgetLeftRight(userManagementButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
@@ -521,30 +470,11 @@ public class UserAdminPage extends CloudCoderPage
         	if (key == Session.Event.ADDED_OBJECT && hint instanceof SelectedUser) {
         		userManagementButtonPanel.updateButtonEnablement();
         	}
-        	/*
-            if (key == Session.Event.ADDED_OBJECT && (hint instanceof User)) {
-                onSelectUser((User) hint);
-            } else if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
-                
-            }
-            */
         }
         
         private void reloadUsers() {
             userAdminUsersListView.loadUsers(getSession());
         }
-
-        /*
-        private void onSelectUser(User user) {
-            // Problem selected: enable/disable buttons appropriately
-            userManagementButtons[UserAction.EDIT.ordinal()].setEnabled(true);
-            userManagementButtons[UserAction.NEW.ordinal()].setEnabled(true);
-            userManagementButtons[UserAction.DELETE.ordinal()].setEnabled(true);
-            userManagementButtons[UserAction.REGISTER_USERS.ordinal()].setEnabled(true);
-//            userManagementButtons[UserAction.VIEW_ALL_PROGRESS.ordinal()].setEnabled(true);
-            userManagementButtons[UserAction.VIEW_USER_PROGRESS.ordinal()].setEnabled(true);
-        }
-        */
         
         private void handleEditUser() {
             GWT.log("handle edit user");
