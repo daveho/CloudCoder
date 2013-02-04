@@ -20,7 +20,7 @@ package org.cloudcoder.app.client;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.client.page.CourseAdminPage;
+import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
@@ -139,8 +139,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			return new CoursesAndProblemsPage2();
 		} else if (name.equals(DevelopmentPage.class.getName())) {
 			return new DevelopmentPage();
-		} else if (name.equals(CourseAdminPage.class.getName())) {
-			return new CourseAdminPage();
+		} else if (name.equals(ProblemAdminPage.class.getName())) {
+			return new ProblemAdminPage();
 		} else if (name.equals(EditProblemPage.class.getName())) {
 			return new EditProblemPage();
 		} else if (name.equals(QuizPage.class.getName())) {
@@ -227,7 +227,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		} else if (key == Session.Event.PROBLEM_CHOSEN) {
 			changePage(new DevelopmentPage());
 		} else if (key == Session.Event.COURSE_ADMIN) {
-		    changePage(new CourseAdminPage());
+		    changePage(new ProblemAdminPage());
 		} else if (key == Session.Event.USER_ADMIN) {
 		    changePage(new UserAdminPage());
 		} else if (key == Session.Event.LOGOUT) {
