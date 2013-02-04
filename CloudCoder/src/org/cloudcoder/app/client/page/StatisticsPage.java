@@ -27,7 +27,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
-import org.cloudcoder.app.client.view.StudentProgressView;
+import org.cloudcoder.app.client.view.ProblemProgressView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -65,7 +65,7 @@ public class StatisticsPage extends CloudCoderPage {
 		private PageNavPanel pageNavPanel;
 		private Label problemLabel;
 		private StatusMessageView statusMessageView;
-		private StudentProgressView studentProgressView;
+		private ProblemProgressView studentProgressView;
 		private Button downloadCsvButton;
 		private List<String> sectionList;
 		private ListBox chooseSectionBox;
@@ -129,7 +129,7 @@ public class StatisticsPage extends CloudCoderPage {
 			
 			// Center panel: stats view
 			LayoutPanel centerPanel = new LayoutPanel();
-			this.studentProgressView = new StudentProgressView();
+			this.studentProgressView = new ProblemProgressView();
 			centerPanel.add(studentProgressView);
 			centerPanel.setWidgetLeftRight(studentProgressView, 0.0, Unit.PX, 0.0, Unit.PX);
 			centerPanel.setWidgetTopBottom(studentProgressView, 10.0, Unit.PX, 10.0, Unit.PX);
