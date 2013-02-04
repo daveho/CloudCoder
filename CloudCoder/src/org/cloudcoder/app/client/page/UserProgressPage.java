@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.CourseSelection;
+import org.cloudcoder.app.client.model.SelectedUser;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -28,6 +30,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
@@ -39,6 +42,7 @@ public class UserProgressPage extends CloudCoderPage {
 	
 	private class UI extends Composite implements SessionObserver {
 		
+		private Label topLabel;
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
 
@@ -46,6 +50,12 @@ public class UserProgressPage extends CloudCoderPage {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
 			
 			LayoutPanel northPanel = new LayoutPanel();
+			
+			this.topLabel = new Label();
+			topLabel.setStyleName("cc-problemName", true);
+			northPanel.add(topLabel);
+			northPanel.setWidgetTopHeight(topLabel, 0.0, Unit.PX, 22.0, Unit.PX);
+			northPanel.setWidgetLeftRight(topLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			
 			this.pageNavPanel = new PageNavPanel();
 			northPanel.add(pageNavPanel);
@@ -68,6 +78,17 @@ public class UserProgressPage extends CloudCoderPage {
 		
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			
+			SelectedUser selectedUser = session.get(SelectedUser.class);
+			CourseSelection courseSelection = session.get(CourseSelection.class);
+			
+			// Display top label (username and course)
+			StringBuilder buf = new StringBuilder();
+			buf.append("Progress for ");
+			buf.append(selectedUser.getUser().getUsername());
+			buf.append(" in ");
+			buf.append(courseSelection.getCourse().getName());
+			topLabel.setText(buf.toString());
 			
 			// Add back/logout handlers
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
