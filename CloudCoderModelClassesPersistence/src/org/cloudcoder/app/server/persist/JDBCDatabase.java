@@ -562,13 +562,25 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
-			final User user, final Course course, final Module module) {
+			final User user, final Course course, final User forUser, final Module module) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
+				
+				// Users can get their own problems/submission receipts,
+				// but must be registered an an instructor to see another user's.
+				if (user.getId() != forUser.getId()) {
+					CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
+					if (!regList.isInstructor()) {
+						logger.warn("Attempt by user {} to get problems/subscription receipts for user {}",
+								user.getId(), forUser.getId());
+						return new ArrayList<ProblemAndSubmissionReceipt>();
+					}
+				}
+				
 				// See: https://gist.github.com/4408441
 				PreparedStatement stmt = prepareStatement(
 						conn,
@@ -603,12 +615,12 @@ public class JDBCDatabase implements IDatabase {
 						"                                         and q.start_time <= ?" +
 						"                                         and (q.end_time >= ? or q.end_time = 0))))"
 				);
-				stmt.setInt(1, user.getId());
+				stmt.setInt(1, forUser.getId());
 				stmt.setInt(2, course.getId());
-				stmt.setInt(3, user.getId());
+				stmt.setInt(3, forUser.getId());
 				stmt.setInt(4, course.getId());
 				stmt.setInt(5, CourseRegistrationType.INSTRUCTOR.ordinal());
-				stmt.setInt(6, user.getId());
+				stmt.setInt(6, forUser.getId());
 				stmt.setInt(7, course.getId());
 				long currentTime = System.currentTimeMillis();
 				stmt.setLong(8, currentTime);

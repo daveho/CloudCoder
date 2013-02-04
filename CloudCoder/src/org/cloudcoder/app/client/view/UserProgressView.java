@@ -151,7 +151,7 @@ public class UserProgressView extends Composite implements SessionObserver {
 		session.add(StatusMessage.pending("Loading data for " + userSelection.getUser().getUsername() + "..."));
 		
 		// Load data
-		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(courseSelection.getCourse(), userSelection.getUser(), new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
+		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(courseSelection.getCourse(), userSelection.getUser(), null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			@Override
 			public void onSuccess(ProblemAndSubmissionReceipt[] result) {
 				data = result;
