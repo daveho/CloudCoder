@@ -17,6 +17,9 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
@@ -64,6 +67,7 @@ public class StatisticsPage extends CloudCoderPage {
 		private StatusMessageView statusMessageView;
 		private StudentProgressView studentProgressView;
 		private Button downloadCsvButton;
+		private List<String> sectionList;
 		private ListBox chooseSectionBox;
 
 		public UI() {
@@ -89,6 +93,7 @@ public class StatisticsPage extends CloudCoderPage {
 			FlowPanel statsOptionPanel = new FlowPanel();
 			InlineLabel chooseSectionLabel = new InlineLabel("Section: ");
 			statsOptionPanel.add(chooseSectionLabel);
+			sectionList = new ArrayList<String>();
 			this.chooseSectionBox = new ListBox();
 			chooseSectionBox.setWidth("80px");
 			chooseSectionBox.addChangeHandler(new ChangeHandler() {
@@ -185,8 +190,13 @@ public class StatisticsPage extends CloudCoderPage {
 		}-*/;
 
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
-			// Initially, results for all sections are shown
-			session.add(new Section());
+			// Use existing Section object if there is one.
+			// Otherwise, create a new default one that will show
+			// results for all sections.
+			final Section section = session.get(Section.class);
+			if (section == null) {
+				session.add(new Section());
+			}
 			
 			// Activate views
 			statusMessageView.activate(session, subscriptionRegistrar);
@@ -198,13 +208,20 @@ public class StatisticsPage extends CloudCoderPage {
 			problemLabel.setText("Statistics for " + problem.toNiceString() + " in " + courseSelection.getCourse().getName());
 			
 			// Set section numbers
-			chooseSectionBox.addItem("All");
+			sectionList.add("All");
 			RPC.getCoursesAndProblemsService.getSectionsForCourse(courseSelection.getCourse(), new AsyncCallback<Integer[]>() {
 				@Override
 				public void onSuccess(Integer[] result) {
 					for (Integer section : result) {
-						chooseSectionBox.addItem(section.toString());
+						sectionList.add(section.toString());
 					}
+					
+					for (String item : sectionList) {
+						chooseSectionBox.addItem(item);
+					}
+					
+					int selectedIndex = sectionList.indexOf(section.toString());
+					chooseSectionBox.setSelectedIndex(selectedIndex);
 				}
 				
 				@Override
