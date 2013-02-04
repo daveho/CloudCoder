@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
+import org.cloudcoder.app.client.view.UserProgressView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -45,6 +46,7 @@ public class UserProgressPage extends CloudCoderPage {
 		private Label topLabel;
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
+		private UserProgressView userProgressView;
 
 		public UI() {
 			DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -73,6 +75,9 @@ public class UserProgressPage extends CloudCoderPage {
 			
 			dockLayoutPanel.addSouth(southPanel, StatusMessageView.HEIGHT_PX);
 			
+			this.userProgressView = new UserProgressView();
+			dockLayoutPanel.add(userProgressView);
+			
 			initWidget(dockLayoutPanel);
 		}
 		
@@ -81,6 +86,10 @@ public class UserProgressPage extends CloudCoderPage {
 			
 			UserSelection selectedUser = session.get(UserSelection.class);
 			CourseSelection courseSelection = session.get(CourseSelection.class);
+			
+			// activate views
+			statusMessageView.activate(session, subscriptionRegistrar);
+			userProgressView.activate(session, subscriptionRegistrar);
 			
 			// Display top label (username and course)
 			StringBuilder buf = new StringBuilder();
