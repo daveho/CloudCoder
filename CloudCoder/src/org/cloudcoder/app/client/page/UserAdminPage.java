@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.CourseSelection;
 import org.cloudcoder.app.client.model.SelectedUser;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -538,24 +539,11 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleUserProgress() {
             GWT.log("handle user progress");
-            final User chosen = userAdminUsersListView.getSelectedUser();
-            if (chosen==null) {
-                return;
+            SelectedUser selectedUser = getSession().get(SelectedUser.class);
+            if (selectedUser == null) {
+            	return;
             }
-            final Course course = getCurrentCourse();
-            
-            GWT.log("handling user "+chosen.getUsername());
-            //TODO get the course type?
-            //TODO wtf is the in the user record and how does it get there?
-            CourseRegistrationType type=null;
-            UserProgressPopupPanel pop = new UserProgressPopupPanel( 
-                    chosen, 
-                    course,
-                    type,
-                    getSession());
-            pop.center();
-            pop.setGlassEnabled(true);
-            pop.show();
+            getSession().notifySubscribers(Session.Event.USER_PROGRESS, null);
         }
     }
     
