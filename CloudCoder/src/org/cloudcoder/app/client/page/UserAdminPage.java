@@ -18,7 +18,7 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.CourseSelection;
-import org.cloudcoder.app.client.model.SelectedUser;
+import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -468,7 +468,7 @@ public class UserAdminPage extends CloudCoderPage
         
         @Override
         public void eventOccurred(Object key, Publisher publisher, Object hint) {
-        	if (key == Session.Event.ADDED_OBJECT && hint instanceof SelectedUser) {
+        	if (key == Session.Event.ADDED_OBJECT && hint instanceof UserSelection) {
         		userManagementButtonPanel.updateButtonEnablement();
         	}
         }
@@ -539,7 +539,7 @@ public class UserAdminPage extends CloudCoderPage
         
         private void handleUserProgress() {
             GWT.log("handle user progress");
-            SelectedUser selectedUser = getSession().get(SelectedUser.class);
+            UserSelection selectedUser = getSession().get(UserSelection.class);
             if (selectedUser == null) {
             	return;
             }

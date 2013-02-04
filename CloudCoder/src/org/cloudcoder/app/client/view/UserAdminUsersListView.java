@@ -20,7 +20,7 @@ package org.cloudcoder.app.client.view;
 import java.util.Arrays;
 
 import org.cloudcoder.app.client.model.CourseSelection;
-import org.cloudcoder.app.client.model.SelectedUser;
+import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
@@ -104,7 +104,7 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
             public void onSelectionChange(SelectionChangeEvent event) {
                 selected = selectionModel.getSelectedObject();
                 //session.add(loggedUser);
-                session.add(new SelectedUser(selected));
+                session.add(new UserSelection(selected));
             }
         });
         grid.setSelectionModel(selectionModel);

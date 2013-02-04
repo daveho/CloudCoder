@@ -24,7 +24,7 @@ import org.cloudcoder.app.shared.model.User;
  * 
  * @author David Hovemeyer
  */
-public class SelectedUser {
+public class UserSelection {
 	private final User user;
 
 	/**
@@ -32,7 +32,7 @@ public class SelectedUser {
 	 * 
 	 * @param user the selected user
 	 */
-	public SelectedUser(User user) {
+	public UserSelection(User user) {
 		this.user = user;
 	}
 	

@@ -18,7 +18,7 @@
 package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.CourseSelection;
-import org.cloudcoder.app.client.model.SelectedUser;
+import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -79,7 +79,7 @@ public class UserProgressPage extends CloudCoderPage {
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			
-			SelectedUser selectedUser = session.get(SelectedUser.class);
+			UserSelection selectedUser = session.get(UserSelection.class);
 			CourseSelection courseSelection = session.get(CourseSelection.class);
 			
 			// Display top label (username and course)
