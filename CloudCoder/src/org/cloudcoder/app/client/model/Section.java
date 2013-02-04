@@ -52,4 +52,9 @@ public class Section {
 	public int getNumber() {
 		return number;
 	}
+	
+	@Override
+	public String toString() {
+		return number == 0 ? "All" : String.valueOf(number);
+	}
 }
