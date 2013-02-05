@@ -562,7 +562,7 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
-			final User user, final Course course, final User forUser, final Module module) {
+			final User requestingUser, final Course course, final User forUser, final Module module) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
@@ -572,11 +572,11 @@ public class JDBCDatabase implements IDatabase {
 				
 				// Users can get their own problems/submission receipts,
 				// but must be registered an an instructor to see another user's.
-				if (user.getId() != forUser.getId()) {
-					CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
+				if (requestingUser.getId() != forUser.getId()) {
+					CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), requestingUser.getId(), this);
 					if (!regList.isInstructor()) {
 						logger.warn("Attempt by user {} to get problems/subscription receipts for user {}",
-								user.getId(), forUser.getId());
+								requestingUser.getId(), forUser.getId());
 						return new ArrayList<ProblemAndSubmissionReceipt>();
 					}
 				}
@@ -617,7 +617,7 @@ public class JDBCDatabase implements IDatabase {
 				);
 				stmt.setInt(1, forUser.getId());
 				stmt.setInt(2, course.getId());
-				stmt.setInt(3, forUser.getId());
+				stmt.setInt(3, requestingUser.getId());
 				stmt.setInt(4, course.getId());
 				stmt.setInt(5, CourseRegistrationType.INSTRUCTOR.ordinal());
 				stmt.setInt(6, forUser.getId());
