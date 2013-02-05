@@ -17,10 +17,12 @@
 
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.model.CourseSelection;
-import org.cloudcoder.app.client.model.UserSelection;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ButtonPanel;
 import org.cloudcoder.app.client.view.IButtonPanelAction;
@@ -54,11 +56,14 @@ import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -109,19 +114,23 @@ public class UserAdminPage extends CloudCoderPage
     }
     private class UI extends Composite implements SessionObserver, Subscriber {
         private static final double USERS_BUTTON_BAR_HEIGHT_PX = 28.0;
+		private static final double SECTION_SELECTION_PANEL_HEIGHT_PX = 28.0;
 
         private PageNavPanel pageNavPanel;
+        private List<String> sectionList;
+		private ListBox chooseSectionBox;
         private String rawCourseTitle;
         private Label courseLabel;
         private int courseId;
         private ButtonPanel<UserAction> userManagementButtonPanel;
         private UserAdminUsersListView userAdminUsersListView;
         private StatusMessageView statusMessageView;
+
         
         public UI() {
             DockLayoutPanel dockLayoutPanel = new DockLayoutPanel(Unit.PX);
             
-            // Create a north panel with course info and a PageNavPanel
+            // Create a north panel with course info and PageNavPanel
             LayoutPanel northPanel = new LayoutPanel();
             this.courseLabel = new Label();
             northPanel.add(courseLabel);
@@ -136,7 +145,7 @@ public class UserAdminPage extends CloudCoderPage
             
             dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX);
             
-            // Create a center panel with user button panel and list of users 
+            // Create a center panel with user button panel, section selection, and list of users 
             // registered for the given course.
             // Can eventually put other stuff here too.
             LayoutPanel centerPanel = new LayoutPanel();
@@ -182,10 +191,20 @@ public class UserAdminPage extends CloudCoderPage
             centerPanel.setWidgetTopHeight(userManagementButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
             centerPanel.setWidgetLeftRight(userManagementButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
             
+            // section selection panel
+            FlowPanel sectionSelectionPanel = new FlowPanel();
+            sectionSelectionPanel.add(new InlineLabel("Section: "));
+            sectionList = new ArrayList<String>();
+            this.chooseSectionBox = new ListBox();
+            sectionSelectionPanel.add(chooseSectionBox);
+            centerPanel.add(sectionSelectionPanel);
+            centerPanel.setWidgetTopHeight(sectionSelectionPanel, ButtonPanel.HEIGHT_PX, Unit.PX, SECTION_SELECTION_PANEL_HEIGHT_PX, Unit.PX);
+            centerPanel.setWidgetLeftRight(sectionSelectionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+            
             // Create users list
             this.userAdminUsersListView = new UserAdminUsersListView();
             centerPanel.add(userAdminUsersListView);
-            centerPanel.setWidgetTopBottom(userAdminUsersListView, USERS_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+            centerPanel.setWidgetTopBottom(userAdminUsersListView, USERS_BUTTON_BAR_HEIGHT_PX + SECTION_SELECTION_PANEL_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
             centerPanel.setWidgetLeftRight(userAdminUsersListView, 0.0, Unit.PX, 0.0, Unit.PX);
             
             // Create a StatusMessageView
