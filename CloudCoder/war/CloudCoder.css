@@ -239,3 +239,8 @@
 	border: 0px;
 	padding: 0px;
 }
+
+/* Section selection view. */
+.cc-sectionSelectionView {
+	display: inline;
+}

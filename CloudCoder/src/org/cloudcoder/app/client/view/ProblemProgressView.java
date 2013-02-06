@@ -169,7 +169,12 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 		this.session = session;
 
+		// Make sure a Section has been selected (adding one if not)
 		currentSection = session.get(Section.class);
+		if (currentSection == null) {
+			currentSection = new Section(); // add Section selecting all sections
+			session.add(currentSection);
+		}
 		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 		problem = session.get(Problem.class);
