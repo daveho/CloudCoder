@@ -111,9 +111,6 @@ public class UserAdminPage extends CloudCoderPage
 		}
     }
     private class UI extends Composite implements SessionObserver, Subscriber {
-        private static final double USERS_BUTTON_BAR_HEIGHT_PX = 28.0;
-		private static final double SECTION_SELECTION_PANEL_HEIGHT_PX = 28.0;
-
         private PageNavPanel pageNavPanel;
         private SectionSelectionView sectionSelectionView;
         private String rawCourseTitle;
