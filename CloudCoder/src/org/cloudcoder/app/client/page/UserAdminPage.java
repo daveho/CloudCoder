@@ -58,6 +58,7 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -141,6 +142,9 @@ public class UserAdminPage extends CloudCoderPage
             
             dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX);
             
+            FlowPanel buttonAndOptionsPanel = new FlowPanel();
+            buttonAndOptionsPanel.setStyleName("cc-inlineFlowPanel", true);
+            
             // Create a center panel with user button panel, section selection, and list of users 
             // registered for the given course.
             // Can eventually put other stuff here too.
@@ -183,22 +187,22 @@ public class UserAdminPage extends CloudCoderPage
             	}
 			};
 
-			centerPanel.add(userManagementButtonPanel);
-            centerPanel.setWidgetTopHeight(userManagementButtonPanel, 0.0, Unit.PX, 28.0, Unit.PX);
-            centerPanel.setWidgetLeftRight(userManagementButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			userManagementButtonPanel.setStyleName("cc-inlineFlowPanel", true); // display inline
+			buttonAndOptionsPanel.add(userManagementButtonPanel);
+			buttonAndOptionsPanel.add(new InlineHTML(" "));
             
-            // section selection panel
-            FlowPanel sectionSelectionPanel = new FlowPanel();
+            // section selection view
             this.sectionSelectionView = new SectionSelectionView();
-            sectionSelectionPanel.add(sectionSelectionView);
-            centerPanel.add(sectionSelectionPanel);
-            centerPanel.setWidgetTopHeight(sectionSelectionPanel, ButtonPanel.HEIGHT_PX, Unit.PX, SECTION_SELECTION_PANEL_HEIGHT_PX, Unit.PX);
-            centerPanel.setWidgetLeftRight(sectionSelectionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+            buttonAndOptionsPanel.add(sectionSelectionView);
+            
+            centerPanel.add(buttonAndOptionsPanel);
+            centerPanel.setWidgetTopHeight(buttonAndOptionsPanel, 0.0, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
+            centerPanel.setWidgetLeftRight(buttonAndOptionsPanel, 0.0, Unit.PX, 0.0, Unit.PX);
             
             // Create users list
             this.userAdminUsersListView = new UserAdminUsersListView();
             centerPanel.add(userAdminUsersListView);
-            centerPanel.setWidgetTopBottom(userAdminUsersListView, USERS_BUTTON_BAR_HEIGHT_PX + SECTION_SELECTION_PANEL_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+            centerPanel.setWidgetTopBottom(userAdminUsersListView, ButtonPanel.HEIGHT_PX + 10.0, Unit.PX, 0.0, Unit.PX);
             centerPanel.setWidgetLeftRight(userAdminUsersListView, 0.0, Unit.PX, 0.0, Unit.PX);
             
             // Create a StatusMessageView

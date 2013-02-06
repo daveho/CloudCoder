@@ -240,7 +240,7 @@
 	padding: 0px;
 }
 
-/* Section selection view. */
-.cc-sectionSelectionView {
+/* Add this style to a FlowPanel to change it to inline display. */
+.cc-inlineFlowPanel {
 	display: inline;
 }

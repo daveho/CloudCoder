@@ -58,7 +58,7 @@ public class SectionSelectionView extends Composite implements Subscriber, Sessi
 	public SectionSelectionView() {
 		FlowPanel panel = new FlowPanel();
 
-		panel.setStyleName("cc-sectionSelectionView", true);
+		panel.setStyleName("cc-inlineFlowPanel", true);
 		
 		InlineLabel chooseSectionLabel = new InlineLabel("Section: ");
 		panel.add(chooseSectionLabel);
