@@ -17,9 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.model.UserSelection;
@@ -28,6 +26,7 @@ import org.cloudcoder.app.client.view.ButtonPanel;
 import org.cloudcoder.app.client.view.IButtonPanelAction;
 import org.cloudcoder.app.client.view.NewUserDialog;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.SectionSelectionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
 import org.cloudcoder.app.client.view.UserProgressListView;
@@ -53,17 +52,15 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FileUpload;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -117,8 +114,7 @@ public class UserAdminPage extends CloudCoderPage
 		private static final double SECTION_SELECTION_PANEL_HEIGHT_PX = 28.0;
 
         private PageNavPanel pageNavPanel;
-        private List<String> sectionList;
-		private ListBox chooseSectionBox;
+        private SectionSelectionView sectionSelectionView;
         private String rawCourseTitle;
         private Label courseLabel;
         private int courseId;
@@ -193,10 +189,8 @@ public class UserAdminPage extends CloudCoderPage
             
             // section selection panel
             FlowPanel sectionSelectionPanel = new FlowPanel();
-            sectionSelectionPanel.add(new InlineLabel("Section: "));
-            sectionList = new ArrayList<String>();
-            this.chooseSectionBox = new ListBox();
-            sectionSelectionPanel.add(chooseSectionBox);
+            this.sectionSelectionView = new SectionSelectionView();
+            sectionSelectionPanel.add(sectionSelectionView);
             centerPanel.add(sectionSelectionPanel);
             centerPanel.setWidgetTopHeight(sectionSelectionPanel, ButtonPanel.HEIGHT_PX, Unit.PX, SECTION_SELECTION_PANEL_HEIGHT_PX, Unit.PX);
             centerPanel.setWidgetLeftRight(sectionSelectionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
@@ -471,9 +465,18 @@ public class UserAdminPage extends CloudCoderPage
         public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
             session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
             
+            // Add a Section object to the Session if one hasn't been
+            // added already
+            Section section = session.get(Section.class);
+            if (section == null) {
+            	section = new Section(); // matches all sections
+            	session.add(section);
+            }
+            
             // Activate views
             pageNavPanel.setBackHandler(new BackHomeHandler(session));
             pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+            sectionSelectionView.activate(session, subscriptionRegistrar);
             userAdminUsersListView.activate(session, subscriptionRegistrar);
             statusMessageView.activate(session, subscriptionRegistrar);
             
