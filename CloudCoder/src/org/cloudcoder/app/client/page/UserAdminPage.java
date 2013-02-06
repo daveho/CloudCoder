@@ -212,39 +212,6 @@ public class UserAdminPage extends CloudCoderPage
             
             initWidget(dockLayoutPanel);
         }
-        
-        /**
-         * @author Andrei Papancea
-         *
-         * View a particular user's progress throughout the course.
-         * The pop-up will display the problems that the user has started
-         * and their status (complete/incomplete, num_tests_passed/num_tests_total).
-         * 
-         */
-        private class UserProgressPopupPanel extends PopupPanel{
-        	
-        	public UserProgressPopupPanel(final User user, 
-                    final Course course, final CourseRegistrationType originalType, final Session session)
-            {
-               super(true);
-               setGlassEnabled(true);
-
-               VerticalPanel vp = new VerticalPanel();
-               
-               setWidget(vp);
-               
-               vp.setWidth("600px");
-               
-               
-               vp.add(new HTML("Problem statistics for <b>"+
-            		   			user.getFirstname()+" "+user.getLastname()+" ("+
-            		   			user.getUsername()+")</b><br /><br />"));
-               
-               UserProgressListView myGrid = new UserProgressListView(user);
-               myGrid.activate(session, getSubscriptionRegistrar());
-               vp.add(myGrid);
-            }        	
-        }
 
         // TODO: replace with a dialog based on EditUserView
         private class EditUserPopupPanel extends PopupPanel{
