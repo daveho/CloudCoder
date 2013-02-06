@@ -244,7 +244,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	
 	@Override
-    public List<User> getUsersInCourse(final int courseId)
+    public List<User> getUsersInCourse(final int courseId, final int sectionNumber)
     {
 	    return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<User>>() {
             @Override
@@ -255,8 +255,12 @@ public class JDBCDatabase implements IDatabase {
                                 " from " + User.SCHEMA.getDbTableName() + " as u, " +
                                 CourseRegistration.SCHEMA.getDbTableName()+" as reg " +
                                 " where u.id =  reg.user_id " +
-                                "   and reg.course_id = ? ");
+                                "   and reg.course_id = ? " +
+                                "   and (? = 0 or reg.section = ?)" // section number of 0 means "all sections"
+                );
                 stmt.setInt(1, courseId);
+                stmt.setInt(2, sectionNumber);
+                stmt.setInt(3, sectionNumber);
 
                 ResultSet resultSet = executeQuery(stmt);
 

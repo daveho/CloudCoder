@@ -496,7 +496,7 @@ public class UserAdminPage extends CloudCoderPage
         }
         
         private void reloadUsers() {
-            userAdminUsersListView.loadUsers(getSession());
+            userAdminUsersListView.loadUsers();
         }
         
         private void handleEditUser() {

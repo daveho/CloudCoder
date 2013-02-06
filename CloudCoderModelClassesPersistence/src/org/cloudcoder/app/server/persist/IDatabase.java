@@ -194,11 +194,13 @@ public interface IDatabase {
 
 	/**
 	 * Return a list of all users in the given course.
+	 * @param sectionNumber 
 	 * 
 	 * @param course The course for which we want all users.
+	 * @param sectionNumber the section of the course (0 for all sections)
 	 * @return A lot of all users inthe given course.
 	 */
-	public List<User> getUsersInCourse(int courseId);
+	public List<User> getUsersInCourse(int courseId, int sectionNumber);
 	
 	/**
 	 * Get the Change with given id.
