@@ -50,15 +50,23 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 	public TestResultListView() {
 		cellTable = new DataGrid<NamedTestResult>();
 		
-		cellTable.addColumn(new TestCaseNameColumn(), "Test name");
-		cellTable.addColumn(new OutcomeColumn(), "Outcome");
+		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
+		cellTable.addColumn(testCaseNameColumn, "Test name");
+		cellTable.setColumnWidth(testCaseNameColumn, "160px");
+		
+		OutcomeColumn outcomeColumn = new OutcomeColumn();
+		cellTable.addColumn(outcomeColumn, "Outcome");
+		cellTable.setColumnWidth(outcomeColumn, "160px");
+		
 		cellTable.addColumn(new MessageColumn(), "Message");
+		
 		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
 			@Override
 			public String getOutputText(NamedTestResult testResult) {
 				return testResult.getTestResult().getStdout();
 			}
 		}), "Output");
+		
 		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
 			@Override
 			public String getOutputText(NamedTestResult testResult) {
