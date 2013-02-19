@@ -53,218 +53,225 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  */
 public class Builder2 implements Runnable {
-	private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
+    private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
 
-	private volatile boolean shutdownRequested;
-	private volatile boolean working;
-	private NoConnectTimer noConnectTimer;
-	private WebappSocketFactory webappSocketFactory;
-	private Map<Integer, Problem> problemIdToProblemMap;
-	private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
-	private Socket socket;
-	private ObjectInputStream in;
-	private ObjectOutputStream out;
+    private volatile boolean shutdownRequested;
+    private volatile boolean working;
+    private NoConnectTimer noConnectTimer;
+    private WebappSocketFactory webappSocketFactory;
+    private Map<Integer, Problem> problemIdToProblemMap;
+    private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
+    private Socket socket;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param webappSocketFactory the {@link WebappSocketFactory} that will create socket
-	 *                            connections to the webapp
-	 */
-	public Builder2(WebappSocketFactory webappSocketFactory) {
-		this.shutdownRequested = false;
-		this.noConnectTimer = new NoConnectTimer();
-		this.webappSocketFactory = webappSocketFactory;
-		this.problemIdToProblemMap = new HashMap<Integer, Problem>();
-		this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
-	}
+    /**
+     * Constructor.
+     * 
+     * @param webappSocketFactory the {@link WebappSocketFactory} that will create socket
+     *                            connections to the webapp
+     */
+    public Builder2(WebappSocketFactory webappSocketFactory) {
+        this.shutdownRequested = false;
+        this.noConnectTimer = new NoConnectTimer();
+        this.webappSocketFactory = webappSocketFactory;
+        this.problemIdToProblemMap = new HashMap<Integer, Problem>();
+        this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
+    }
 
-	public void run() {
-		requestLoop:
-			while (!shutdownRequested) {
-				try {
-					if (this.socket == null) {
-						attemptToConnectToServer();
-						continue requestLoop;
-					}
+    public void run() {
+        while (!shutdownRequested) {
+            runOnce();
+        }
+    }
 
-					working = false;
-					Integer problemId = safeReadObject();
-					working = true;
+    /**
+     * 
+     */
+    protected void runOnce() {
+        try {
+            if (this.socket == null) {
+                attemptToConnectToServer();
+                return;
+            }
 
-					// The CloudCoder app may send us a negative problem id as
-					// a keepalive signal.  We can just ignore these.
-					if (problemId < 0) {
-						//logger.debug("Received keepalive signal from CloudCoder app");
-						continue requestLoop;
-					}
+            working = false;
+            Integer problemId = safeReadObject();
+            working = true;
 
-					Problem problem = problemIdToProblemMap.get(problemId);
-					List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
+            // The CloudCoder app may send us a negative problem id as
+            // a keepalive signal.  We can just ignore these.
+            if (problemId < 0) {
+                return;
+            }
 
-					// let the server know whether or not we have this
-					// problem cached
-					out.writeObject((Boolean) (problem != null));
-					out.flush();
+            Problem problem = problemIdToProblemMap.get(problemId);
+            List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
 
-					// if we don't have the problem, the server will
-					// send it to us
-					if (problem == null) {
-						problem = safeReadObject();
-						testCaseList = safeReadObject();
-					}
+            // let the server know whether or not we have this
+            // problem cached
+            out.writeObject((Boolean) (problem != null));
+            out.flush();
 
-					// read program text
-					String programText = safeReadObject();
+            // if we don't have the problem, the server will
+            // send it to us
+            if (problem == null) {
+                problem = safeReadObject();
+                testCaseList = safeReadObject();
+            }
 
-					// Test the submission!
-					SubmissionResult result = testSubmission(problem, testCaseList, programText);
+            // read program text
+            String programText = safeReadObject();
 
-					// Send the SubmissionResult back to the webapp
-					out.writeObject(result);
-					out.flush();
-				} catch (IOException e) {
-					// Quite possibly, this is a routine shutdown of the CloudCoder server.
-					// We'll try connecting again soon.
-					logger.error("Error communicating with server");
-					socket = null;
-					in = null;
-					out = null;
-				} catch (ClassNotFoundException e) {
-					throw new IllegalStateException("Class not found reading message", e);
-				}
-			}
-	}
+            // Test the submission!
+            SubmissionResult result = testSubmission(problem, testCaseList, programText);
 
-	/**
-	 * Test a submission.
-	 * 
-	 * @param problem       the {@link Problem}
-	 * @param testCaseList  the list of {@link TestCase}s
-	 * @param programText   the submitted program text
-	 * @return a {@link SubmissionResult} for the submission
-	 */
-	private SubmissionResult testSubmission(Problem problem, List<TestCase> testCaseList, String programText) {
-		SubmissionResult result;
-		try {
-			// Based on the ProblemType, find a Tester
-			Tester tester = TesterFactory.getTester(problem.getProblemType());
-			if (tester == null) {
-				throw new InternalBuilderException(Builder2.class, problem.getProblemType() + " problems not supported yet");
-			}
+            // Send the SubmissionResult back to the webapp
+            out.writeObject(result);
+            out.flush();
+        } catch (IOException e) {
+            // Quite possibly, this is a routine shutdown of the CloudCoder server.
+            // We'll try connecting again soon.
+            logger.error("Error communicating with server");
+            socket = null;
+            in = null;
+            out = null;
+        } catch (ClassNotFoundException e) {
+            // XXX Should we crash the whole builder here
+            // or log the error and keep running?
+            throw new IllegalStateException("Class not found reading message", e);
+        }
+    }
 
-			// Create and populate a BuilderSubmission
-			BuilderSubmission submission = new BuilderSubmission();
-			submission.addArtifact(problem);
-			submission.addArtifact(ArrayUtil.toArray(testCaseList, TestCase.class));
-			submission.addArtifact(new ProgramSource[]{new ProgramSource(programText)});
+    /**
+     * Test a submission.
+     * 
+     * @param problem       the {@link Problem}
+     * @param testCaseList  the list of {@link TestCase}s
+     * @param programText   the submitted program text
+     * @return a {@link SubmissionResult} for the submission
+     */
+    private SubmissionResult testSubmission(Problem problem, List<TestCase> testCaseList, String programText) {
+        SubmissionResult result;
+        try {
+            // Based on the ProblemType, find a Tester
+            Tester tester = TesterFactory.getTester(problem.getProblemType());
+            if (tester == null) {
+                throw new InternalBuilderException(Builder2.class, problem.getProblemType() + " problems not supported yet");
+            }
 
-			try {
-				// Build and test
-				tester.execute(submission);
-				
-				// Get the SubmissionResult
-				result = submission.getArtifact(SubmissionResult.class);
-				if (result == null) {
-					throw new InternalBuilderException("Tester did not create a SubmissionResult");
-				}
-			} finally {
-				// Clean up all temporary resources created during building/testing
-				submission.executeAllCleanupActions();
-			}
-		} catch (Throwable e) {
-			CompilationResult compres = new CompilationResult(CompilationOutcome.BUILDER_ERROR);
-			logger.error("Internal error building and testing submission", e);
-			result = new SubmissionResult(compres);
-			result.setTestResults(new TestResult[0]);
-		}
-		
-		logger.info("Sending SubmissionResult back to server");
-		
-		if (result.getTestResults() == null) {
-			logger.error("Null TestResult - should not happen");
-			result.setTestResults(new TestResult[0]);
-		} else {
-			logger.info("{} results", result.getTestResults().length);
-		}
-			
-		return result;
-	}
+            // Create and populate a BuilderSubmission
+            BuilderSubmission submission = new BuilderSubmission();
+            submission.addArtifact(problem);
+            submission.addArtifact(ArrayUtil.toArray(testCaseList, TestCase.class));
+            submission.addArtifact(new ProgramSource[]{new ProgramSource(programText)});
 
-	private Socket createSecureSocket() throws IOException, GeneralSecurityException {
-		return webappSocketFactory.connectToWebapp();
-	}
+            try {
+                // Build and test
+                tester.execute(submission);
 
-	public void attemptToConnectToServer() {
-		try {
-			try {
-				this.socket=createSecureSocket();
-			} catch (GeneralSecurityException e) {
-				throw new RuntimeException(e);
-			}
-			this.in = new ObjectInputStream(socket.getInputStream());
-			logger.info("Connected!");
-			noConnectTimer.connected();
-			this.out = new ObjectOutputStream(socket.getOutputStream());
-		} catch (IOException e) {
-			// ClientCoder server may not be running right now...try again soon
-			//logger.error("Cannot connect to CloudCoder server");
-			noConnectTimer.notConnected();
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException ee) {
-				// ignore
-			}
-		}
-	}
+                // Get the SubmissionResult
+                result = submission.getArtifact(SubmissionResult.class);
+                if (result == null) {
+                    throw new InternalBuilderException("Tester did not create a SubmissionResult");
+                }
+            } finally {
+                // Clean up all temporary resources created during building/testing
+                submission.executeAllCleanupActions();
+            }
+        } catch (Throwable e) {
+            CompilationResult compres = new CompilationResult(CompilationOutcome.BUILDER_ERROR);
+            logger.error("Internal error building and testing submission", e);
+            result = new SubmissionResult(compres);
+            result.setTestResults(new TestResult[0]);
+        }
 
-	@SuppressWarnings("unchecked")
-	private<E> E safeReadObject() throws IOException, ClassNotFoundException {
-		Object o = in.readObject();
-		if (o == null) {
-			throw new IOException("Could not read!");
-		}
-		return (E) o;
-	}
+        logger.info("Sending SubmissionResult back to server");
 
-	public void shutdown() {
-		shutdownRequested = true;
-		if (working) {
-			logger.warn("shutdown(): cannot close worker socket because working=true");
-		} else {
-			try {
-				// Rude, but effective.
-				Socket s = socket;
-				if (s != null) {
-					s.close();
-				}
-			} catch (IOException e) {
-				logger.error("Unable to close client socket, but Builder is shutting down anyway",e);
-			}
-		}
-	}
+        if (result.getTestResults() == null) {
+            logger.error("Null TestResult - should not happen");
+            result.setTestResults(new TestResult[0]);
+        } else {
+            logger.info("{} results", result.getTestResults().length);
+        }
 
-	/**
-	 * A main method for running the Builder interactively (during development).
-	 * @param args
-	 */
-	public static void main(String[] args) throws IOException {
-		System.out.println("Running the builder interactively (type \"shutdown\" to quit)");
+        return result;
+    }
 
-		Builder2Daemon daemon = new Builder2Daemon();
+    private Socket createSecureSocket() throws IOException, GeneralSecurityException {
+        return webappSocketFactory.connectToWebapp();
+    }
 
-		daemon.start("instance");
+    public void attemptToConnectToServer() {
+        try {
+            try {
+                this.socket=createSecureSocket();
+            } catch (GeneralSecurityException e) {
+                throw new RuntimeException(e);
+            }
+            this.in = new ObjectInputStream(socket.getInputStream());
+            logger.info("Connected!");
+            noConnectTimer.connected();
+            this.out = new ObjectOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            // ClientCoder server may not be running right now...try again soon
+            //logger.error("Cannot connect to CloudCoder server");
+            noConnectTimer.notConnected();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ee) {
+                // ignore
+            }
+        }
+    }
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		while (true) {
-			String command = reader.readLine();
-			if (command == null || command.trim().equals("shutdown")) {
-				break;
-			}
-		}
+    @SuppressWarnings("unchecked")
+    private<E> E safeReadObject() throws IOException, ClassNotFoundException {
+        Object o = in.readObject();
+        if (o == null) {
+            throw new IOException("Could not read!");
+        }
+        return (E) o;
+    }
 
-		daemon.shutdown();
+    public void shutdown() {
+        shutdownRequested = true;
+        if (working) {
+            logger.warn("shutdown(): cannot close worker socket because working=true");
+        } else {
+            try {
+                // Rude, but effective.
+                Socket s = socket;
+                if (s != null) {
+                    s.close();
+                }
+            } catch (IOException e) {
+                logger.error("Unable to close client socket, but Builder is shutting down anyway",e);
+            }
+        }
+    }
 
-		System.out.println("Builder exiting");
-	}
+    /**
+     * A main method for running the Builder interactively (during development).
+     * @param args
+     */
+    public static void main(String[] args) throws IOException {
+        System.out.println("Running the builder interactively (type \"shutdown\" to quit)");
+
+        Builder2Daemon daemon = new Builder2Daemon();
+
+        daemon.start("instance");
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            String command = reader.readLine();
+            if (command == null || command.trim().equals("shutdown")) {
+                break;
+            }
+        }
+
+        daemon.shutdown();
+
+        System.out.println("Builder exiting");
+    }
 }

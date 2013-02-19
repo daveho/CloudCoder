@@ -47,7 +47,7 @@ public class Builder2Daemon implements IDaemon {
 		}
 	}
 	
-	private static class Options {
+	static class Options {
 		private Properties config;
 
 		public Options(Properties config) {
