@@ -15,33 +15,43 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.server.persist;
+package org.cloudcoder.app.client.model;
+
+import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
 
 /**
- * Runtime exception indicating that a persistence operation
- * failed.
+ * A wrapper for {@link TestResult} that specifies the
+ * name of the corresponding {@link TestCase}.
  * 
  * @author David Hovemeyer
  */
-public class PersistenceException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
-
+public class NamedTestResult {
+	private String testCaseName;
+	private TestResult testResult;
+	
 	/**
 	 * Constructor.
 	 * 
-	 * @param msg   message describing the failure
-	 * @param cause the cause
+	 * @param testCaseName the name of the test case
+	 * @param testResult   the {@link TestResult}
 	 */
-	public PersistenceException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NamedTestResult(String testCaseName, TestResult testResult) {
+		this.testCaseName = testCaseName;
+		this.testResult = testResult;
 	}
-
+	
 	/**
-	 * Constructor.
-	 * 
-	 * @param msg   message describing the failure
+	 * @return the testCaseName
 	 */
-	public PersistenceException(String msg) {
-		super(msg);
+	public String getTestCaseName() {
+		return testCaseName;
+	}
+	
+	/**
+	 * @return the testResult
+	 */
+	public TestResult getTestResult() {
+		return testResult;
 	}
 }

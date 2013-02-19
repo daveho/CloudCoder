@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -37,13 +38,22 @@ public interface UserService extends RemoteService
      * Get a list of all {@link User} objects for each of
      * the users registered for the given Course.
      * 
-     * @param course The course for which we want the users.
+     * @param courseId The course for which we want the users.
+     * @param sectionNumber the section number of the course (0 to get all sections)
      * @return An array of all of the Users registered for the given course.
      * @throws CloudCoderAuthenticationException if the client is not authenticated
      */
-    User[] getUsers(int courseId) throws CloudCoderAuthenticationException;
+    User[] getUsers(int courseId, int sectionNumber) throws CloudCoderAuthenticationException;
     
-    Boolean addUserToCourse(User user, int courseId, CourseRegistrationType type, int section) throws CloudCoderAuthenticationException;
+    /**
+     * Add a user to a course.
+     * 
+     * @param editedUser the {@link EditedUser} object containing the user information
+     * @param courseId   the id of the {@link Course} in which the user should be added
+     * @return true if successful
+     * @throws CloudCoderAuthenticationException if the authenticated user is not an instructor in the course
+     */
+    Boolean addUserToCourse(EditedUser editedUser, int courseId) throws CloudCoderAuthenticationException;
     
     /**
      * Edit the fields of the {@link User} record with the new values.

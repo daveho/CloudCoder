@@ -28,7 +28,9 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.IModelObject;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -42,11 +44,13 @@ import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 
 /**
@@ -129,13 +133,15 @@ public interface IDatabase {
 	
 	/**
 	 * Get list of {@link ProblemAndSubmissionReceipt}s for the problems the
-	 * given {@link User} is allowed to see in the given {@link Course}.
+	 * given {@link User} is allowed to see in the given {@link Course} and {@link Module}.
 	 *   
-	 * @param user    the User
+	 * @param user    the authenticated User
 	 * @param course  the Course
+	 * @param forUser the user to get the {@link ProblemAndSubmissionReceipt}s for
+	 * @param module  the Module (if null, then all problems are returned)
 	 * @return list of {@link ProblemAndSubmissionReceipt}s
 	 */
-	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course);
+	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course, User forUser, Module module);
 	
 	public void storeChanges(Change[] changeList);
 	
@@ -144,7 +150,7 @@ public interface IDatabase {
 	 * Note that no authentication is done to ensure that the caller
 	 * should be able to access the test cases.
 	 * 
-	 * @param problemId the Problem id
+	 * @param problemId         the Problem id
 	 * @return list of TestCases for the Problem
 	 */
 	public List<TestCase> getTestCasesForProblem(int problemId);
@@ -154,12 +160,15 @@ public interface IDatabase {
 	 * checking that the given authenticated {@link User} is allowed to access
 	 * the test cases for the problem.
 	 * 
-	 * @param authenticatedUser the authenticated User 
+	 * @param authenticatedUser the authenticated User
+	 * @param requireInstructor true if the operation should only succeed if the authenticated
+	 *                          user is an instructor in the course in which the
+	 *                          problem is assigned 
 	 * @param problemId         the Problem id
 	 * @return list of test cases, or null if the user is not authorized to access the test cases
 	 *         (i.e., is not an instructor for the {@link Course} in which the problem is assigned)
 	 */
-	public TestCase[] getTestCasesForProblem(User authenticatedUser, int problemId);
+	public TestCase[] getTestCasesForProblem(User authenticatedUser, boolean requireInstructor, int problemId);
 	
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
@@ -188,11 +197,13 @@ public interface IDatabase {
 
 	/**
 	 * Return a list of all users in the given course.
+	 * @param sectionNumber 
 	 * 
 	 * @param course The course for which we want all users.
+	 * @param sectionNumber the section of the course (0 for all sections)
 	 * @return A lot of all users inthe given course.
 	 */
-	public List<User> getUsersInCourse(int courseId);
+	public List<User> getUsersInCourse(int courseId, int sectionNumber);
 	
 	/**
 	 * Get the Change with given id.
@@ -278,12 +289,14 @@ public interface IDatabase {
      * will have the given course registration type and will be for the
      * section indicated.
      * 
-     * @param user
-     * @param courseId
-     * @param type
-     * @param section
+     * @param authenticatedUser the currently-authenticated {@link User}, who must be
+     *                          an instructor in the course
+     * @param courseId          the course id
+     * @param editedUser        the {@link EditedUser} containing the information about the
+     *                          new user to add
+     * @throws CloudCoderAuthenticationException if the authenticated user is not an instructor in the course
      */
-    public void addUserToCourse(User user, int courseId, CourseRegistrationType type, int section);
+    public void addUserToCourse(User authenticatedUser, int courseId, EditedUser editedUser) throws CloudCoderAuthenticationException;
 
     /**
      * Edit a user record in the database.  Any blank fields will
@@ -318,12 +331,27 @@ public interface IDatabase {
 	
 	/**
 	 * Get best submission receipts for given {@link Problem} in given {@link Course}.
+	 * Should not be called unless the currently-authenticated user is an
+	 * instructor in the course.
 	 * 
 	 * @param course   the {@link Course}
-	 * @param problemId  the problem id
-	 * @return list of {@link Pair} objects containing {@link User} and best {@link SubmissionReceipt} for user
+	 * @param section  the section number of the course (0 for all sections)
+	 * @param problem  the {@link Problem}
+	 * @return list of {@link UserAndSubmissionReceipt} objects
 	 */
-	public List<Pair<User,SubmissionReceipt>> getBestSubmissionReceipts(Course course, int problemId);
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int section, Problem problem);
+
+	/**
+	 * Get best submission receipts for given {@link Problem}.
+	 * Returns empty list if the authenticated user is not an instructor
+	 * in the course in which the problem is assigned.
+	 * 
+	 * @param problem           the {@link Problem}
+	 * @param section           the section number (0 for all sections)
+	 * @param authenticatedUser the authenticated {@link User}
+	 * @return list of best submission receipts for each user in course
+	 */
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Problem problem, int section, User authenticatedUser);
 
 	/**
 	 * Delete a problem (and its test cases).
@@ -416,7 +444,7 @@ public interface IDatabase {
 	/**
 	 * Start a {@link Quiz} for given {@link Problem} in given course section.
 	 * 
-	 * @param user    the authenticated {@link User), who must be an instructor
+	 * @param user    the authenticated {@link User}, who must be an instructor
 	 *                in the course/section
 	 * @param problem the {@link Problem} to give as a quiz
 	 * @param section the course section
@@ -455,5 +483,61 @@ public interface IDatabase {
 	 * @return true if successful, false if object could not be located by its unique id
 	 */
 	public<E extends IModelObject<E>> boolean reloadModelObject(E obj);
+
+	/**
+	 * Get all of the {@link Module}s of the {@link Problem}s that are assigned
+	 * in the given {@link Course}.  Only returns modules if the user is confirmed
+	 * to be registered in the given course.  Note that modules of non-visible
+	 * problems <em>will</em> be returned. 
+	 * 
+	 * @param user    the authenticated user
+	 * @param course  the course
+	 * @return the modules in the course
+	 */
+	public Module[] getModulesForCourse(User user, Course course);
+
+	/**
+	 * Set the {@link Module} in which the given {@link Problem} is categorized.
+	 * The {@link User} must be an instructor in the course in which the
+	 * problem is assigned.
+	 * 
+	 * @param user        the authenticated {@link User}
+	 * @param problem     the {@link Problem}
+	 * @param moduleName  the name of the {@link Module} in which the problem should
+	 *                    be categorized
+	 * @return
+	 */
+	public Module setModule(User user, Problem problem, String moduleName) throws CloudCoderAuthenticationException;
+
+	/**
+	 * Start or continue a user's work on a quiz.
+	 * Ensures that a {@link StartedQuiz} object exists for the user/quiz.
+	 * 
+	 * @param user     the {@link User}
+	 * @param quiz     the {@link Quiz}
+	 * @return the {@link StartedQuiz} that indicates that the user has started
+	 *         the quiz
+	 */
+	public StartedQuiz startOrContinueQuiz(User user, Quiz quiz);
+
+	/**
+	 * Find out whether the given {@link User} has started a {@link Quiz},
+	 * but has not finished it.
+	 * 
+	 * @param user the {@link User}
+	 * @return the {@link StartedQuiz} object specifying the unfinished quiz,
+	 *         or null if there is no unfinished quiz for this user
+	 */
+	public StartedQuiz findUnfinishedQuiz(User user);
+
+	/**
+	 * Get all sections for given {@link Course}.
+	 * 
+	 * @param course            the course
+	 * @param authenticatedUser the authenticated {@link User}, who must be
+	 *                          an instructor in the course
+	 * @return the sections, or an empty array if the user is not an instructor in the course
+	 */
+	public Integer[] getSectionsForCourse(Course course, User authenticatedUser);
 
 }

@@ -15,33 +15,44 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.server.persist;
+package org.cloudcoder.app.shared.model;
+
+import java.io.Serializable;
 
 /**
- * Runtime exception indicating that a persistence operation
- * failed.
+ * A {@link Problem} and the {@link Module} in which the problem
+ * is categorized.
  * 
  * @author David Hovemeyer
  */
-public class PersistenceException extends RuntimeException {
+public class ProblemAndModule implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param msg   message describing the failure
-	 * @param cause the cause
-	 */
-	public PersistenceException(String msg, Throwable cause) {
-		super(msg, cause);
+	private Problem problem;
+	private Module module;
+	
+	public ProblemAndModule() {
+		
 	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param msg   message describing the failure
-	 */
-	public PersistenceException(String msg) {
-		super(msg);
+	
+	public ProblemAndModule(Problem problem, Module module) {
+		this.problem = problem;
+		this.module = module;
+	}
+	
+	public void setProblem(Problem problem) {
+		this.problem = problem;
+	}
+	
+	public Problem getProblem() {
+		return problem;
+	}
+	
+	public void setModule(Module module) {
+		this.module = module;
+	}
+	
+	public Module getModule() {
+		return module;
 	}
 }

@@ -15,33 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.server.persist;
+package org.cloudcoder.app.client.model;
+
+import org.cloudcoder.app.shared.model.User;
 
 /**
- * Runtime exception indicating that a persistence operation
- * failed.
+ * A {@link User} selected in a user interface.
  * 
  * @author David Hovemeyer
  */
-public class PersistenceException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+public class UserSelection {
+	private final User user;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param msg   message describing the failure
-	 * @param cause the cause
+	 * @param user the selected user
 	 */
-	public PersistenceException(String msg, Throwable cause) {
-		super(msg, cause);
+	public UserSelection(User user) {
+		this.user = user;
 	}
-
+	
 	/**
-	 * Constructor.
-	 * 
-	 * @param msg   message describing the failure
+	 * @return the user
 	 */
-	public PersistenceException(String msg) {
-		super(msg);
+	public User getUser() {
+		return user;
 	}
 }

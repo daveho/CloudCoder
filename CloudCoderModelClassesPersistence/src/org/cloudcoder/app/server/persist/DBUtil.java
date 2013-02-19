@@ -42,7 +42,9 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndex;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.ModelObjectSchema.Delta;
+import org.cloudcoder.app.shared.model.ModelObjectSchema.PersistModelObjectDelta;
+import org.cloudcoder.app.shared.model.Problem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,13 +213,8 @@ public class DBUtil {
 			sql.append("\n  `");
 			sql.append(field.getName());
 			sql.append("` ");
-			sql.append(getSQLDatatype(field));
 			
-			sql.append(field.isAllowNull() ? " NULL" : " NOT NULL");
-			
-			if (schema.getIndexType(field) == ModelObjectIndexType.IDENTITY) {
-				sql.append(" AUTO_INCREMENT");
-			}
+			sql.append(getSQLDatatypeWithModifiers(schema, field));
 			
 			createDefinitionCount++;
 		}
@@ -250,6 +247,9 @@ public class DBUtil {
 				sql.append("` (`");
 				sql.append(field.getName());
 				sql.append("`)");
+				break;
+				
+			case NONE:
 				break;
 			}
 			
@@ -302,11 +302,13 @@ public class DBUtil {
 
 	/**
 	 * Get the SQL datatype for a {@link ModelObjectField}.
+	 * Note that the datatype will <em>not</em> include modifiers such
+	 * as NOT NULL, etc.
 	 * 
 	 * @param field the {@link ModelObjectField}
 	 * @return the SQL datatype
 	 */
-	public static Object getSQLDatatype(ModelObjectField<?,?> field) {
+	private static String getSQLDatatype(ModelObjectField<?,?> field) {
 		if (field.getType() == String.class) {
 			// If the field length is Integer.MAX_VALUE, make it a text field.
 			// Otherwise, make it VARCHAR.
@@ -326,6 +328,34 @@ public class DBUtil {
 		} else {
 			throw new IllegalArgumentException("Unknown field type: " + field.getType().getName());
 		}
+	}
+	
+	/**
+	 * Get the SQL datatype for a {@link ModelObjectField}, with modifiers such
+	 * as NOT NULL, AUTO_INCREMENT, DEFAULT, etc.
+	 * 
+	 * @param schema the model class schema
+	 * @param field  the field
+	 * @return the SQL datatype, with modifiers
+	 */
+	public static<E> String getSQLDatatypeWithModifiers(ModelObjectSchema<E> schema, ModelObjectField<? super E,?> field) {
+		StringBuilder buf = new StringBuilder();
+		
+		buf.append(getSQLDatatype(field));
+		
+		buf.append(field.isAllowNull() ? " NULL" : " NOT NULL");
+		
+		String defaultValue = field.getDefaultValue();
+		if (defaultValue != null) {
+			buf.append(" DEFAULT ");
+			buf.append(defaultValue);
+		}
+		
+		if (schema.getIndexType(field) == ModelObjectIndexType.IDENTITY) {
+			buf.append(" AUTO_INCREMENT");
+		}
+		
+		return buf.toString();
 	}
 
 	/**
@@ -474,6 +504,14 @@ public class DBUtil {
 	public static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {
 		String sql = getCreateTableStatement(schema);
 		execSql(conn, sql);
+		
+		// Check the schema to see if there are any PersistModelObjectDeltas.
+		// If so, store the specified model object(s).
+		for (Delta<? super E> delta_ : schema.getDeltaList()) {
+			if (delta_ instanceof PersistModelObjectDelta) {
+				SchemaUtil.applyDelta(conn, (PersistModelObjectDelta<?, ?>) delta_);
+			}
+		}
 	}
 
 	/**
@@ -486,9 +524,35 @@ public class DBUtil {
 		storeModelObject(conn, bean, bean.getSchema());
 	}
 
+	/**
+	 * Store an arbitrary model object in the database.
+	 * 
+	 * @param conn     the Connection to the database
+	 * @param bean     the bean (model) object to store in the database
+	 * @param schema   the model object's schema
+	 * @throws SQLException
+	 */
 	public static<E> void storeModelObject(
-			Connection conn, E bean, ModelObjectSchema<? super E> schema)
-		throws SQLException {
+			Connection conn, E bean, ModelObjectSchema<? super E> schema) throws SQLException {
+		doInsertModelObject(conn, bean, schema, false);
+	}
+	
+	/**
+	 * Insert a model object in the database, using the exact field
+	 * values stored in the model object.  Bypasses the automatic assignment
+	 * of the unique id.
+	 * 
+	 * @param conn    the Connection to the database
+	 * @param bean    the model object to insert
+	 * @param schema  the model object's schema
+	 * @throws SQLException
+	 */
+	public static<E> void insertModelObjectExact(
+			Connection conn, E bean, ModelObjectSchema<? super E> schema) throws SQLException {
+		doInsertModelObject(conn, bean, schema, true);
+	}
+	
+	public static<E> void doInsertModelObject(Connection conn, E bean, ModelObjectSchema<? super E> schema, boolean exact) throws SQLException {
 		
 		String insertSql = createInsertStatement(schema);
 		
@@ -496,7 +560,7 @@ public class DBUtil {
 		ResultSet genKeys = null;
 		
 		try {
-			stmt = conn.prepareStatement(insertSql, schema.hasUniqueId() ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
+			stmt = conn.prepareStatement(insertSql, (!exact && schema.hasUniqueId()) ? PreparedStatement.RETURN_GENERATED_KEYS : 0);
 			
 			// Bind model object field values
 			bindModelObjectValuesForInsert(bean, schema, stmt);
@@ -505,7 +569,8 @@ public class DBUtil {
 			stmt.executeUpdate();
 
 			// Store back the unique id to the model object
-			if (schema.hasUniqueId()) {
+			// (if there is a possibility that a unique id was auto-generated)
+			if (!exact && schema.hasUniqueId()) {
 				genKeys = stmt.getGeneratedKeys();
 				List<E> beans = new ArrayList<E>();
 				beans.add(bean);
@@ -517,7 +582,7 @@ public class DBUtil {
 		}
 		
 	}
-
+	
 	/**
 	 * Update a model object loaded from an database record,
 	 * based on the model object's unique id.
@@ -651,16 +716,31 @@ public class DBUtil {
 	 * @return the SQL insert statement
 	 */
 	public static <E> String createInsertStatement(ModelObjectSchema<E> schema) {
+		return doCreateInsertStatement(schema, false);
+	}
+	
+	/**
+	 * Create an SQL statement for inserting a model object.
+	 * The SQL statement will have placeholders for every model object,
+	 * <em>including</em> the unique id (if any).
+	 *  
+	 * @param schema the model object schema
+	 * @return the SQL insert statement
+	 */
+	public static <E> String createInsertStatementExact(ModelObjectSchema<E> schema) {
+		return doCreateInsertStatement(schema, true);
+	}
+
+	private static <E> String doCreateInsertStatement(ModelObjectSchema<E> schema, boolean exact) {
 		StringBuilder buf = new StringBuilder();
-		
 		buf.append("insert into " + schema.getDbTableName());
 		buf.append(" values (");
-		buf.append(getInsertPlaceholdersNoId(schema));
+		buf.append(exact ? getInsertPlaceholders(schema) : getInsertPlaceholdersNoId(schema));
 		buf.append(")");
 		String insertSql = buf.toString();
 		return insertSql;
 	}
-	
+
 	/**
      * Create an SQL statement for updating a model object.
      * The SQL statement will have update placeholders for every model object
@@ -900,5 +980,48 @@ public class DBUtil {
 			field.setUntyped(obj, value);
 		}
 		return index;
+	}
+
+	/**
+	 * Reload a model object's fields based on its unique id.
+	 * 
+	 * @param conn   connection to the database
+	 * @param obj    the object to load: the unique id must be set!
+	 * @param schema the object's schema
+	 * @throws SQLException if there is no such object in the database
+	 */
+	public static<E> void loadModelObject(Connection conn, E obj, ModelObjectSchema<? super E> schema) throws SQLException {
+		PreparedStatement stmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			ModelObjectField<? super E, ?> uniqueIdField = schema.getUniqueIdField();
+			stmt = conn.prepareStatement(
+					"select * from " + schema.getDbTableName() +
+					" where " + uniqueIdField.getName() + " = ?");
+			Object uniqueId = uniqueIdField.get(obj);
+			stmt.setObject(1, uniqueId);
+			
+			resultSet = stmt.executeQuery();
+			if (!resultSet.next()) {
+				throw new SQLException("No object found with unique id " + uniqueId);
+			}
+			
+			loadModelObjectFields(obj, schema, resultSet);
+		} finally {
+			closeQuietly(resultSet);
+			closeQuietly(stmt);
+		}
+	}
+
+	/**
+	 * Reload a model object's fields based on its unique id.
+	 * 
+	 * @param conn   connection to the database
+	 * @param obj    the object to load: the unique id must be set!
+	 * @throws SQLException if there is no such object in the database
+	 */
+	public static<E extends IModelObject<E>> void loadModelObject(Connection conn, E obj) throws SQLException {
+		loadModelObject(conn, obj, obj.getSchema());
 	}
 }

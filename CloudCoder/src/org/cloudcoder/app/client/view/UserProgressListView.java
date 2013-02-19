@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
@@ -119,16 +120,17 @@ public class UserProgressListView extends ResizeComposite implements Subscriber,
      */
     @Override
     public void eventOccurred(Object key, Publisher publisher, Object hint) {
-        if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
+        if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
             // load all the users for the current course
             loadProblems(session);
         }
     }
     
     public void loadProblems(final Session session) {
-        Course course=session.get(Course.class);
+        CourseSelection courseSelection=session.get(CourseSelection.class);
+        Course course = courseSelection.getCourse();
         
-        RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, user, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
+        RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, user, null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			@Override
 			public void onSuccess(ProblemAndSubmissionReceipt[] result) {
 				GWT.log("displaying problems for "+user.getUsername());

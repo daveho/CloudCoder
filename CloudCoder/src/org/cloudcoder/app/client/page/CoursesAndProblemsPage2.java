@@ -30,6 +30,7 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -45,6 +46,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -73,7 +77,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		/**
 		 * Width of the course and user admin buttons.
 		 */
-		public static final double COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX = 110.0;
+		public static final double COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX = 70.0;
 
 		/**
 		 * Height of the course and user admin buttons.
@@ -238,10 +242,10 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			this.pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 
 			// Load courses
-			getCoursesAndProblemsRPC(session);
+			getCourseAndCourseRegistrationsRPC(session);
 		}
 
-		protected void getCoursesAndProblemsRPC(final Session session) {
+		protected void getCourseAndCourseRegistrationsRPC(final Session session) {
 			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
 				@Override
 				public void onSuccess(CourseAndCourseRegistration[] result) {
@@ -256,7 +260,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 							@Override
 							public void run() {
 								// Try again!
-								getCoursesAndProblemsRPC(session);
+								getCourseAndCourseRegistrationsRPC(session);
 							}
 						});
 					} else {
@@ -298,22 +302,25 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 						Unit.PX);
 				westPanel.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
 
-				// Create the "Course admin" and "user admin" buttons if appropriate.
+				// Create the "Problems" and "User" admin buttons if appropriate.
 				if (isInstructor) {
-					courseAdminButton = new Button("Course admin");
-					westPanel.add(courseAdminButton);
-					westPanel.setWidgetRightWidth(courseAdminButton, SEP_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-					westPanel.setWidgetTopHeight(courseAdminButton, SectionLabel.HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+					FlowPanel adminButtonPanel = new FlowPanel();
+					
+					InlineLabel manageLabel = new InlineLabel("Manage: ");
+					adminButtonPanel.add(manageLabel);
+					
+					courseAdminButton = new Button("Problems");
 					courseAdminButton.addClickHandler(new ClickHandler(){
 						@Override
 						public void onClick(ClickEvent event) {
 							handleCourseAdminButtonClicked();
 						}
 					});
-					userAdminButton = new Button("User admin");
-					westPanel.add(userAdminButton);
-					westPanel.setWidgetRightWidth(userAdminButton, SEP_PX*2+COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_WIDTH_PX, Unit.PX);
-					westPanel.setWidgetTopHeight(userAdminButton, SectionLabel.HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+					adminButtonPanel.add(courseAdminButton);
+					
+					adminButtonPanel.add(new InlineHTML(" "));
+					
+					userAdminButton = new Button("Users");
 					userAdminButton.addClickHandler(new ClickHandler(){
 						/* (non-Javadoc)
 						 * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
@@ -323,6 +330,12 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 							handleUserAdminButtonClicked();
 						}
 					});
+					adminButtonPanel.add(userAdminButton);
+					
+					westPanel.add(adminButtonPanel);
+					westPanel.setWidgetTopHeight(adminButtonPanel, SectionLabel.HEIGHT_PX, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 4.0, Unit.PX);
+					westPanel.setWidgetLeftRight(adminButtonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+
 					// Disable buttons initially.  They will be enabled/disabled
 					// appropriately as courses are selected.
 					courseAdminButton.setEnabled(false);
@@ -333,12 +346,15 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
 					@Override
 					public void onSelectionChange(SelectionChangeEvent event) {
-						Course course = termAndCourseTreeView.getSelectedCourse();
-						getSession().add(course);
+						CourseSelection courseSelection = termAndCourseTreeView.getSelectedCourseAndModule();
+						if (courseSelection != null) {
+							getSession().add(courseSelection);
+						}
 					}
 				});
-			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof Course) {
-				Course course = (Course) hint;
+			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+				CourseSelection courseSelection = (CourseSelection) hint;
+				Course course = courseSelection.getCourse();
 
 				if (courseAdminButton != null || userAdminButton != null) {
 					// Find the CourseRegistration for this Course
@@ -359,7 +375,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		protected void handleCourseAdminButtonClicked() {
 			GWT.log("Course admin button clicked");
-			Course course = getSession().get(Course.class);
+			Course course = getCurrentCourse();
 			if (course != null) {
 				getSession().notifySubscribers(Session.Event.COURSE_ADMIN, course);
 			}
@@ -367,7 +383,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		protected void handleUserAdminButtonClicked() {
 			GWT.log("User admin button clicked");
-			Course course = getSession().get(Course.class);
+			Course course = getCurrentCourse();
 			if (course != null) {
 				getSession().notifySubscribers(Session.Event.USER_ADMIN, course);
 			}
@@ -375,17 +391,17 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		protected void handleAccountButtonClicked() {
 			GWT.log("My account button clicked");
-			Course course = getSession().get(Course.class);
+			Course course = getCurrentCourse();
 			if(course != null) {
 				getSession().notifySubscribers(Session.Event.USER_ACCOUNT, course);
 			}
 		}
 		
 		protected void handleRefreshProblemListButtonClicked() {
-			Course course = getSession().get(Course.class);
-			if (course != null) {
+			CourseSelection courseSelection = getSession().get(CourseSelection.class);
+			if (courseSelection != null) {
 				// Force a reload of the course
-				getSession().add(course);
+				getSession().add(courseSelection);
 			}
 		}
 	}

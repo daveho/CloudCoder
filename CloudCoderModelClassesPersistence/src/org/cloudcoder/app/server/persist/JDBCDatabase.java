@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -39,12 +39,14 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -60,12 +62,14 @@ import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
+import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.slf4j.Logger;
@@ -240,7 +244,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	
 	@Override
-    public List<User> getUsersInCourse(final int courseId)
+    public List<User> getUsersInCourse(final int courseId, final int sectionNumber)
     {
 	    return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<User>>() {
             @Override
@@ -251,8 +255,12 @@ public class JDBCDatabase implements IDatabase {
                                 " from " + User.SCHEMA.getDbTableName() + " as u, " +
                                 CourseRegistration.SCHEMA.getDbTableName()+" as reg " +
                                 " where u.id =  reg.user_id " +
-                                "   and reg.course_id = ? ");
+                                "   and reg.course_id = ? " +
+                                "   and (? = 0 or reg.section = ?)" // section number of 0 means "all sections"
+                );
                 stmt.setInt(1, courseId);
+                stmt.setInt(2, sectionNumber);
+                stmt.setInt(3, sectionNumber);
 
                 ResultSet resultSet = executeQuery(stmt);
 
@@ -558,17 +566,29 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
-			final User user, final Course course) {
+			final User requestingUser, final Course course, final User forUser, final Module module) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
 			 */
 			@Override
 			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
+				
+				// Users can get their own problems/submission receipts,
+				// but must be registered an an instructor to see another user's.
+				if (requestingUser.getId() != forUser.getId()) {
+					CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), requestingUser.getId(), this);
+					if (!regList.isInstructor()) {
+						logger.warn("Attempt by user {} to get problems/subscription receipts for user {}",
+								requestingUser.getId(), forUser.getId());
+						return new ArrayList<ProblemAndSubmissionReceipt>();
+					}
+				}
+				
 				// See: https://gist.github.com/4408441
 				PreparedStatement stmt = prepareStatement(
 						conn,
-						"select p.*, sr.*, e.*, sr_ids.max_sr_event_id" +
+						"select p.*, m.*, sr.*, e.*, sr_ids.max_sr_event_id" +
 						"  from cc_problems as p" +
 						" join (select p.problem_id, sm.max_sr_event_id" +
 						"         from cc_problems as p" +
@@ -579,6 +599,7 @@ public class JDBCDatabase implements IDatabase {
 						"                  group by e.problem_id) as sm on p.problem_id = sm.problem_id" +
 						"        where p.course_id = ?" +
 						"        ) as sr_ids on sr_ids.problem_id = p.problem_id" +
+						" join cc_modules as m on p.module_id = m.id " +
 						" left join cc_submission_receipts as sr on sr.event_id = sr_ids.max_sr_event_id" +
 						" left join cc_events as e on e.id = sr_ids.max_sr_event_id" + 
 						" where p.deleted = 0" +
@@ -598,12 +619,12 @@ public class JDBCDatabase implements IDatabase {
 						"                                         and q.start_time <= ?" +
 						"                                         and (q.end_time >= ? or q.end_time = 0))))"
 				);
-				stmt.setInt(1, user.getId());
+				stmt.setInt(1, forUser.getId());
 				stmt.setInt(2, course.getId());
-				stmt.setInt(3, user.getId());
+				stmt.setInt(3, requestingUser.getId());
 				stmt.setInt(4, course.getId());
 				stmt.setInt(5, CourseRegistrationType.INSTRUCTOR.ordinal());
-				stmt.setInt(6, user.getId());
+				stmt.setInt(6, forUser.getId());
 				stmt.setInt(7, course.getId());
 				long currentTime = System.currentTimeMillis();
 				stmt.setLong(8, currentTime);
@@ -616,6 +637,14 @@ public class JDBCDatabase implements IDatabase {
 				while (resultSet.next()) {
 					Problem problem = new Problem();
 					int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
+					
+					Module problemModule = new Module();
+					index = DBUtil.loadModelObjectFields(problemModule, Module.SCHEMA, resultSet, index);
+					
+					// If a module was specified, only return problems in that module
+					if (module != null && problemModule.getId() != module.getId()) {
+						continue;
+					}
 					
 					// Is there a submission receipt?
 					SubmissionReceipt receipt;
@@ -634,6 +663,7 @@ public class JDBCDatabase implements IDatabase {
 					ProblemAndSubmissionReceipt problemAndSubmissionReceipt = new ProblemAndSubmissionReceipt();
 					problemAndSubmissionReceipt.setProblem(problem);
 					problemAndSubmissionReceipt.setReceipt(receipt);
+					problemAndSubmissionReceipt.setModule(problemModule);
 					
 					result.add(problemAndSubmissionReceipt);
 				}
@@ -683,20 +713,7 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<TestCase>>() {
 			@Override
 			public List<TestCase> run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
-				stmt.setInt(1, problemId);
-				
-				List<TestCase> result = new ArrayList<TestCase>();
-				
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					TestCase testCase = new TestCase();
-					load(testCase, resultSet, 1);
-					result.add(testCase);
-				}
-				return result;
+				return doGetTestCasesForProblem(conn, problemId, this);
 			}
 			@Override
 			public String getDescription() {
@@ -704,36 +721,33 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
 	@Override
-	public TestCase[] getTestCasesForProblem(final User authenticatedUser, final int problemId) {
+	public TestCase[] getTestCasesForProblem(final User authenticatedUser, final boolean requireInstructor, final int problemId) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<TestCase[]>() {
 			@Override
 			public TestCase[] run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select tc.* " +
-						"   from " + TestCase.SCHEMA.getDbTableName() + " as tc, " + Problem.SCHEMA.getDbTableName() + " as p, " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
-						"  where tc.problem_id = p.problem_id " +
-						"    and p.problem_id = ? " +
-						"    and p.course_id =  cr.course_id " +
-						"    and cr.user_id = ? " +
-						"    and cr.registration_type >= ? " +
-						"order by tc.test_case_id asc"
-						);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, authenticatedUser.getId());
-				stmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
+				// Find the problem
+				Problem problem = new Problem();
+				problem.setProblemId(problemId);
+				DBUtil.loadModelObject(conn, problem);
 				
-				ResultSet resultSet = executeQuery(stmt);
-				List<TestCase> result = new ArrayList<TestCase>();
-				while (resultSet.next()) {
-					TestCase testCase = new TestCase();
-					load(testCase, resultSet, 1);
-					result.add(testCase);
+				// Check user's registration in the course
+				CourseRegistrationList regList = doGetCourseRegistrations(
+						conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				
+				if (regList.getList().isEmpty()) {
+					// Not registered, deny
+					return new TestCase[0];
+				}
+
+				if (requireInstructor && !regList.isInstructor()) {
+					// Authenticated user is not an instructor
+					return new TestCase[0];
 				}
 				
-				// Success!
+				// Allow the request, so go ahead and return the test cases
+				List<TestCase> result = doGetTestCasesForProblem(conn, problemId, this);
 				return result.toArray(new TestCase[result.size()]);
 			}
 			@Override
@@ -921,31 +935,31 @@ public class JDBCDatabase implements IDatabase {
     }
 
     @Override
-    public void addUserToCourse(final User user, final int courseId, final CourseRegistrationType registrationType, final int section) {
-	    databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-	        /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-             */
-            @Override
-            public Boolean run(Connection conn) throws SQLException {
-                logger.info("inserting user "+user.getUsername()+" to course "+courseId);
-                int userId=doInsertOrUpdateUser(user, conn, this);
-                user.setId(userId);
-                ConfigurationUtil.registerUser(conn, user.getId(), courseId, registrationType, section);
-                return true;
-            }
-            
-            /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-             */
-            @Override
-            public String getDescription() {
-                return "Registering student";
-            }
-        });
-    }
+	public void addUserToCourse(final User authenticatedUser, final int courseId, final EditedUser editedUser) throws CloudCoderAuthenticationException {
+    	databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
+    		@Override
+    		public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
+    			// Make sure authenticated user is an instructor in the course
+    			CourseRegistrationList regList = doGetCourseRegistrations(conn, courseId, authenticatedUser.getId(), this);
+    			if (!regList.isInstructor()) {
+    				logger.warn("Attempt by non-instructor user {} to add new user to course {}", authenticatedUser.getId(), courseId);
+    				throw new CloudCoderAuthenticationException("Only an instructor can add user to course");
+    			}
 
-    
+    			// Add the new user
+    			User user = editedUser.getUser();
+    			int userId = ConfigurationUtil.createOrUpdateUser(conn, user.getUsername(), user.getFirstname(), user.getLastname(), user.getEmail(), editedUser.getPassword(), user.getWebsite());
+    			user.setId(userId);
+    			ConfigurationUtil.registerUser(conn, user.getId(), courseId, editedUser.getRegistrationType(), editedUser.getSection());
+    			
+    			return true;
+    		}
+    		@Override
+    		public String getDescription() {
+    			return " adding user to course";
+    		}
+		});
+    }
 
     @Override
 	public void addProblem(final Problem problem) {
@@ -1353,74 +1367,37 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<Pair<User, SubmissionReceipt>> getBestSubmissionReceipts(
-			final Course course, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Pair<User, SubmissionReceipt>>>() {
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
+			final Course unused, final int section, final Problem problem) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
-			public List<Pair<User, SubmissionReceipt>> run(Connection conn)
+			public List<UserAndSubmissionReceipt> run(Connection conn)
 					throws SQLException {
-
-				// Clearly, my SQL is either amazing or appalling.
-				// Probably the latter.
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select u.*, e.*, sr.* " +
-						"  from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
-						"  (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
-						"    from cc_users as i_u," +
-						"         cc_events as i_e," +
-						"         cc_submission_receipts as i_sr," +
-						"         (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
-						"            from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
-						"           where ii_u.id = ii_e.user_id " +
-						"             and ii_e.id = ii_sr.event_id " +
-						"             and ii_e.problem_id = ?" +
-						"          group by ii_u.id) as best" +
-						"" +
-						"    where i_u.id = i_e.user_id" +
-						"      and i_e.id = i_sr.event_id" +
-						"      and i_e.problem_id = ?" +
-						"      and i_u.id = best.user_id" +
-						"      and i_sr.num_tests_passed = best.max_tests_passed" +
-						"      group by i_u.id, best.max_tests_passed) as earliest_and_best" +
-						"" +
-						" where u.id = e.user_id" +
-						"     and e.id = sr.event_id" +
-						"     and e.problem_id = ?" +
-						"     and u.id = earliest_and_best.user_id" +
-						"     and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
-						"     and e.timestamp = earliest_and_best.timestamp"
-				);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, problemId);
-				stmt.setInt(3, problemId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				List<Pair<User, SubmissionReceipt>> result = new ArrayList<Pair<User,SubmissionReceipt>>();
-				
-				while (resultSet.next()) {
-					int index = 1;
-					User user = new User();
-					index = loadGeneric(user, resultSet, index, User.SCHEMA);
-					Event event = new Event();
-					index = loadGeneric(event, resultSet, index, Event.SCHEMA);
-					SubmissionReceipt receipt = new SubmissionReceipt();
-					loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
-					
-					receipt.setEvent(event);
-					
-					Pair<User, SubmissionReceipt> pair = new Pair<User, SubmissionReceipt>();
-					pair.setLeft(user);
-					pair.setRight(receipt);
-					
-					result.add(pair);
-				}
-				
-				return result;
+				return doGetBestSubmissionReceipts(conn, problem, section, this);
 			}
 			@Override
 			public String getDescription() {
 				return " getting best submission receipts for problem/course";
+			}
+		});
+	}
+
+	@Override
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(final Problem problem, final int section, final User authenticatedUser) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
+			@Override
+			public List<UserAndSubmissionReceipt> run(Connection conn) throws SQLException {
+				CourseRegistrationList regList = doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				if (!regList.isInstructor()) {
+					// user is not an instructor
+					return new ArrayList<UserAndSubmissionReceipt>();
+				}
+
+				return doGetBestSubmissionReceipts(conn, problem, section, this);
+			}
+			@Override
+			public String getDescription() {
+				return " getting best submission receipts for problem";
 			}
 		});
 	}
@@ -1738,6 +1715,7 @@ public class JDBCDatabase implements IDatabase {
 						"   and cr.course_id = ? " +
 						"   and cr.registration_type >= ? " +
 						"   and q.course_id = cr.course_id " +
+						"   and q.section = cr.section " +
 						"   and q.problem_id = ? " +
 						"   and q.start_time <= ? " +
 						"   and (q.end_time >= ? or q.end_time = 0)"
@@ -1825,6 +1803,213 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public Module[] getModulesForCourse(final User user, final Course course) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Module[]>() {
+			@Override
+			public Module[] run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select m.* from cc_modules as m " +
+						" where m.id in " +
+						"   (select p.module_id from cc_problems as p, cc_course_registrations as cr " +
+						"     where p.course_id = cr.course_id " +
+						"       and cr.course_id = ? " +
+						"       and cr.user_id = ?) " +
+						" order by m.name"
+				);
+				stmt.setInt(1, course.getId());
+				stmt.setInt(2, user.getId());
+				
+				ResultSet resultSet = executeQuery(stmt);
+				List<Module> result = new ArrayList<Module>();
+				while (resultSet.next()) {
+					Module module = new Module();
+					DBUtil.loadModelObjectFields(module, Module.SCHEMA, resultSet);
+					result.add(module);
+				}
+				
+				return result.toArray(new Module[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return " getting modules in course";
+			}
+		});
+	}
+	
+	@Override
+	public Module setModule(final User user, final Problem problem, final String moduleName) throws CloudCoderAuthenticationException {
+		return databaseRunAuth(new AbstractDatabaseRunnable<Module>() {
+			@Override
+			public Module run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
+				// Verify that user is an instructor in the course
+				// (throwing CloudCoderAuthenticationException if not)
+				PreparedStatement verifyInstructorStmt = prepareStatement(
+						conn,
+						"select cr.id from cc_course_registrations as cr, cc_problems as p " +
+						" where cr.user_id = ? " +
+						"   and p.problem_id = ? " +
+						"   and cr.course_id = p.course_id " +
+						"   and cr.registration_type >= ?"
+				);
+				verifyInstructorStmt.setInt(1, user.getId());
+				verifyInstructorStmt.setInt(2, problem.getProblemId());
+				verifyInstructorStmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
+				
+				ResultSet verifyInstructorResultSet = executeQuery(verifyInstructorStmt);
+				if (!verifyInstructorResultSet.next()) {
+					logger.info(
+							"Attempt by user {} to set module for problem {} without instructor permission",
+							user.getId(),
+							problem.getProblemId());
+					throw new CloudCoderAuthenticationException("Only an instructor can set the module for an exercise");
+				}
+				
+				// See if the module exists already
+				PreparedStatement findExisting = prepareStatement(
+						conn,
+						"select m.* from cc_modules as m where m.name = ?"
+				);
+				findExisting.setString(1, moduleName);
+				
+				Module module = new Module();
+				ResultSet findExistingResultSet = executeQuery(findExisting);
+				if (findExistingResultSet.next()) {
+					// Use existing module
+					DBUtil.loadModelObjectFields(module, Module.SCHEMA, findExistingResultSet);
+				} else {
+					// Module doesn't exist, so add it
+					module.setName(moduleName);
+					DBUtil.storeModelObject(conn, module);
+				}
+				
+				// Update the problem to use the new module
+				problem.setModuleId(module.getId());
+				DBUtil.updateModelObject(conn, problem, Problem.SCHEMA);
+				
+				return module;
+			}
+			@Override
+			public String getDescription() {
+				return " setting module for problem";
+			}
+		});
+	}
+	
+	@Override
+	public StartedQuiz startOrContinueQuiz(final User user, final Quiz quiz) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
+			@Override
+			public StartedQuiz run(Connection conn) throws SQLException {
+				PreparedStatement query = prepareStatement(
+						conn,
+						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
+						" where sq.user_id = ? " +
+						"   and sq.quiz_id = ? " +
+						"   and q.id = sq.quiz_id " +
+						"   and q.start_time <= ? " +
+						"   and (q.end_time = 0 or q.end_time > ?)"
+				);
+				query.setInt(1, user.getId());
+				query.setInt(2, quiz.getId());
+				long currentTime = System.currentTimeMillis();
+				query.setLong(3, currentTime);
+				query.setLong(4, currentTime);
+				
+				StartedQuiz startedQuiz = new StartedQuiz();
+				ResultSet queryResult = executeQuery(query);
+				if (queryResult.next()) {
+					// Found the StartedQuiz
+					DBUtil.loadModelObjectFields(startedQuiz, StartedQuiz.SCHEMA, queryResult);
+				} else {
+					// StartedQuiz doesn't exist yet, so create it
+					startedQuiz.setQuizId(quiz.getId());
+					startedQuiz.setUserId(user.getId());
+					startedQuiz.setStartTime(currentTime);
+					DBUtil.storeModelObject(conn, startedQuiz);
+				}
+				
+				return startedQuiz;
+			}
+			
+			@Override
+			public String getDescription() {
+				return " checking for started quiz";
+			}
+		});
+	}
+	
+	@Override
+	public StartedQuiz findUnfinishedQuiz(final User user) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
+			@Override
+			public StartedQuiz run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
+						" where sq.quiz_id = q.id " +
+						"   and sq.user_id = ? " +
+						"   and q.start_time < ? " +
+						"   and (q.end_time = 0 or q.end_time > ?)"
+				);
+				stmt.setInt(1, user.getId());
+				
+				long currentTime = System.currentTimeMillis();
+				stmt.setLong(2, currentTime);
+				stmt.setLong(3, currentTime);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				StartedQuiz result = null;
+				if (resultSet.next()) {
+					result = new StartedQuiz();
+					DBUtil.loadModelObjectFields(result, StartedQuiz.SCHEMA, resultSet);
+					return result;
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " finding unfinished quiz for user";
+			}
+		});
+	}
+	
+	@Override
+	public Integer[] getSectionsForCourse(final Course course, final User authenticatedUser) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Integer[]>() {
+			@Override
+			public Integer[] run(Connection conn) throws SQLException {
+				// Make sure user is an instructor in the course
+				CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), authenticatedUser.getId(), this);
+				if (!regList.isInstructor()) {
+					return new Integer[0];
+				}
+				
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select distinct cr.section from cc_course_registrations as cr " +
+						" where cr.course_id = ? " +
+						" order by cr.section asc"
+				);
+				stmt.setInt(1, course.getId());
+				
+				List<Integer> result = new ArrayList<Integer>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					result.add(resultSet.getInt(1));
+				}
+				
+				return result.toArray(new Integer[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return " getting sections for course";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.
@@ -1858,30 +2043,107 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
-		try {
-			Connection conn = null;
-			boolean committed = false;
+		int attempts = 0;
+		
+		boolean successfulCommit = false;
+		E result = null;
+
+		// Attempt the transaction until a maximum number of attempts is reached.
+		while (!successfulCommit && attempts < 20) {
+			attempts++;
+			
+			Connection conn;
+			boolean origAutocommit;
+			
+			// Attempt to get a connection
 			try {
 				conn = getConnection();
+				origAutocommit = conn.getAutoCommit();
+			} catch (SQLException e) {
+				throw new PersistenceException("SQLException", e);
+			}
+			
+			// Attempt the execute the transaction.
+			// If the transaction is not successful (throws SQLException),
+			// determine if it is because of a deadlock or other recoverable
+			// error, and if so, retry.
+			try {
 				conn.setAutoCommit(false);
-				// FIXME: should retry if deadlock is detected
-				E result = databaseRunnable.run(conn);
+				result = databaseRunnable.run(conn);
 				conn.commit();
-				committed = true;
-				return result;
+				successfulCommit = true; // Hooray!
+			} catch (SQLException e) {
+				String sqlState = e.getSQLState();
+				if (sqlState != null && (sqlState.equals("40001") || sqlState.equals("41000") || sqlState.equals("23000"))) {
+					// Deadlock detected: retry transaction
+					// NOTE: I have also included duplicate key errors (23000).
+					// There is evidence that a MySQL bug can cause spurious
+					// duplicate key errors on auto increment fields, which I *think*
+					// I have actually seen in CloudCoder error logs.
+					//   See: http://www.softwareprojects.com/resources/programming/t-mysql-innodb-deadlocks-and-duplicate-key-errors-12-1970.html
+					// Workaround is to retry the transaction.
+					logger.info("MySQL deadlock detected (sqlState=" + sqlState + ")", e);
+				} else {
+					// Some other kind of transaction failure.
+					logger.error("Transaction failed with SQLException", e);
+					throw new PersistenceException("SQLException", e);
+				}
 			} finally {
-				if (conn != null) {
-					if (!committed) {
+				// If the transaction didn't succeed, roll back
+				if (!successfulCommit) {
+					try {
 						conn.rollback();
+					} catch (SQLException ex) {
+						throw new PersistenceException("SQLException (on rollback)", ex);
 					}
-					databaseRunnable.cleanup();
-					conn.setAutoCommit(true);
+				}
+				
+				// Restore the original autocommit value and release the connection.
+				try {
+					conn.setAutoCommit(origAutocommit);
 					releaseConnection();
+				} catch (SQLException e) {
+					throw new PersistenceException("SQLException (releasing connection)", e);
 				}
 			}
-		} catch (SQLException e) {
-			throw new PersistenceException("SQLException", e);
 		}
+		
+		// If the transaction was never executed successfully, throw a PersistenceException
+		if (!successfulCommit) {
+			throw new PersistenceException("Could not complete transaction (gave up after " + attempts + " attempts)");
+		}
+		
+		// Success!
+		return result;
+	}
+	
+	/**
+	 * Get test cases for given problem id.
+	 * 
+	 * @param conn       the database connection
+	 * @param problemId  the problem id
+	 * @param dbRunnable the {@link AbstractDatabaseRunnable}
+	 * @return the list of test cases
+	 * @throws SQLException
+	 */
+	private List<TestCase> doGetTestCasesForProblem(
+			Connection conn,
+			int problemId,
+			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"select * from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
+		stmt.setInt(1, problemId);
+		
+		List<TestCase> result = new ArrayList<TestCase>();
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		while (resultSet.next()) {
+			TestCase testCase = new TestCase();
+			load(testCase, resultSet, 1);
+			result.add(testCase);
+		}
+		return result;
 	}
 
 	/**
@@ -2058,19 +2320,6 @@ public class JDBCDatabase implements IDatabase {
 		
 		return resultSet.getInt(1);
 	}
-
-	private int doInsertOrUpdateUser(User user, 
-	    Connection conn,
-	    AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException
-	{
-	    return ConfigurationUtil.createOrUpdateUser(conn, 
-	            user.getUsername(), 
-	            user.getFirstname(), 
-	            user.getLastname(), 
-	            user.getEmail(), 
-	            user.getPasswordHash(),
-	            user.getWebsite());
-    }
 	
 	private List<? extends Object[]> doGetCoursesForUser(
 			final User user,
@@ -2334,6 +2583,97 @@ public class JDBCDatabase implements IDatabase {
 			}
 		}
 
+		return result;
+	}
+	
+	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
+			Connection conn,
+			final Problem problem,
+			final int section,
+			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+		
+		// Clearly, my SQL is either amazing or appalling.
+		// Probably the latter.
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				
+				"select uu.*, best.* from cc_users as uu " +
+				"  left join " +
+				"         (select u.id as the_user_id, e.*, sr.* " +
+				"           from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
+				"           (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
+				"             from cc_users as i_u," +
+				"                  cc_events as i_e," +
+				"                  cc_submission_receipts as i_sr," +
+				"                  (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
+				"                     from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
+				"                    where ii_u.id = ii_e.user_id " +
+				"                      and ii_e.id = ii_sr.event_id " +
+				"                      and ii_e.problem_id = ?" +
+				"                   group by ii_u.id) as best" +
+				"" +
+				"             where i_u.id = i_e.user_id" +
+				"               and i_e.id = i_sr.event_id" +
+				"               and i_e.problem_id = ?" +
+				"               and i_u.id = best.user_id" +
+				"               and i_sr.num_tests_passed = best.max_tests_passed" +
+				"               group by i_u.id, best.max_tests_passed) as earliest_and_best" +
+				"" +
+				"          where u.id = e.user_id" +
+				"              and e.id = sr.event_id" +
+				"              and e.problem_id = ?" +
+				"              and u.id = earliest_and_best.user_id" +
+				"              and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
+				"              and e.timestamp = earliest_and_best.timestamp) as best " +
+				"          on uu.id = best.the_user_id " +
+				"" +
+				" where uu.id in (select distinct xu.id from cc_users as xu, cc_course_registrations as xcr "+
+				"                  where xu.id = xcr.user_id " +
+				"                    and xcr.course_id = ? " +
+				"                    and (? = 0 or xcr.section = ?)) "
+		);
+		int problemId = problem.getProblemId();
+		stmt.setInt(1, problemId);
+		stmt.setInt(2, problemId);
+		stmt.setInt(3, problemId);
+		stmt.setInt(4, problem.getCourseId());
+		stmt.setInt(5, section); // if section is 0, all sections will be included
+		stmt.setInt(6, section);
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
+		
+		while (resultSet.next()) {
+			int index = 1;
+			User user = new User();
+			index = loadGeneric(user, resultSet, index, User.SCHEMA);
+
+			SubmissionReceipt receipt;
+			
+			// Is there a best submission receipt?
+			if (resultSet.getObject(index) != null) {
+				// Found a best submission receipt
+
+				index++; // skip best.the_user_id column
+				
+				Event event = new Event();
+				index = loadGeneric(event, resultSet, index, Event.SCHEMA);
+				receipt = new SubmissionReceipt();
+				loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+				
+				receipt.setEvent(event);
+			} else {
+				// No best submission receipt
+				receipt = null;
+			}
+			
+			UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
+			pair.setUser(user);
+			pair.setSubmissionReceipt(receipt);
+			
+			result.add(pair);
+		}
+		
 		return result;
 	}
 	

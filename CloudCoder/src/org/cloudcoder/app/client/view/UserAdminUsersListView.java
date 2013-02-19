@@ -19,11 +19,14 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
 
+import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -46,7 +49,8 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
     private DataGrid<User> grid;
     private Session session;
     private User selected;
-    private User loggedUser;
+    //private User loggedUser;
+	private Section section;
     
     public User getSelectedUser() {
         return selected;
@@ -91,9 +95,12 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
     @Override
     public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
     {
+    	// Get selected section
+    	this.section = session.get(Section.class);
+    	
         this.session = session;
         this.session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-        this.loggedUser=this.session.get(User.class);
+        //this.loggedUser=this.session.get(User.class);
         // Set selection model.
         // When a User record is selected, it will be added to the Session.
         final SingleSelectionModel<User> selectionModel = new SingleSelectionModel<User>();
@@ -101,21 +108,14 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
                 selected = selectionModel.getSelectedObject();
-                session.add(loggedUser);
+                //session.add(loggedUser);
+                session.add(new UserSelection(selected));
             }
         });
         grid.setSelectionModel(selectionModel);
-        
-        // If the session contains a list of Users, display them.
-        // Otherwise, initiate loading of users for this course.
-        User[] userList = session.get(User[].class);
-        	
-        //ProblemAndSubmissionReceipt[] problemAndSubmissionReceiptList = session.get(ProblemAndSubmissionReceipt[].class);
-        if (userList != null) {
-            displayUsers(userList);
-        } else {
-            loadUsers(session);
-        }
+
+        // Load users for course/section
+        loadUsers();
         
     }
 
@@ -124,16 +124,28 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
      */
     @Override
     public void eventOccurred(Object key, Publisher publisher, Object hint) {
-        if (key == Session.Event.ADDED_OBJECT && (hint instanceof Course)) {
+        if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
             // load all the useres for the current course
-            loadUsers(session);
+            loadUsers();
+        } else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Section)) {
+        	if (section == null || section.getNumber() != ((Section)hint).getNumber()) {
+        		// section selection changed, reload users
+            	section = (Section) hint;
+        		loadUsers();
+        	}
         }
     }
     
-    public void loadUsers(final Session session) {
-        Course course=session.get(Course.class);
+    public void loadUsers() {
+    	if (section == null) {
+    		// Need a section selection
+    		return;
+    	}
+    	
+        CourseSelection courseSelection=session.get(CourseSelection.class);
+        Course course = courseSelection.getCourse();
         int courseId=course.getId();
-        RPC.usersService.getUsers(courseId, new AsyncCallback<User[]>() {
+        RPC.usersService.getUsers(courseId, section.getNumber(), new AsyncCallback<User[]>() {
             @Override
             public void onSuccess(User[] result) {
                 displayUsers(result);

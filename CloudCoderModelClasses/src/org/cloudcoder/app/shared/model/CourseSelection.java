@@ -17,62 +17,57 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.io.Serializable;
 
 /**
- * Problem, (optional) SubmissionReceipt, and Module.
- * This object is used to convey information about a problem and a
- * summary of the user's work on the problem.
+ * Object added to the {@link Session} when a {@link Course} is selected.
+ * May specify a {@link Module} within the course, in which case
+ * only {@link Problem}s in that module should be shown.
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndSubmissionReceipt implements Serializable {
+public class CourseSelection implements ActivityObject {
 	private static final long serialVersionUID = 1L;
 
-	private Problem problem;
-	private SubmissionReceipt receipt;
+	private Course course;
 	private Module module;
 	
-	public ProblemAndSubmissionReceipt() {
+	/**
+	 * Default constructor.
+	 */
+	public CourseSelection() {
 		
 	}
 	
-	public ProblemAndSubmissionReceipt(Problem problem, SubmissionReceipt receipt, Module module) {
-		this.problem = problem;
-		this.receipt = receipt;
+	/**
+	 * Constructor.
+	 * 
+	 * @param course the {@link Course}
+	 * @param module the {@link Module}
+	 */
+	public CourseSelection(Course course, Module module) {
+		this.course = course;
 		this.module = module;
 	}
 	
 	/**
-	 * @param problem the problem to set
+	 * Set the course.
+	 * @param course the course to set
 	 */
-	public void setProblem(Problem problem) {
-		this.problem = problem;
+	public void setCourse(Course course) {
+		this.course = course;
 	}
 	
 	/**
-	 * @return the problem
+	 * Get the course.
+	 * @return the course
 	 */
-	public Problem getProblem() {
-		return problem;
+	public Course getCourse() {
+		return course;
 	}
 	
 	/**
-	 * @param receipt the receipt to set
-	 */
-	public void setReceipt(SubmissionReceipt receipt) {
-		this.receipt = receipt;
-	}
-	
-	/**
-	 * @return the receipt
-	 */
-	public SubmissionReceipt getReceipt() {
-		return receipt;
-	}
-	
-	/**
-	 * @param module the module to set
+	 * Set the module.
+	 * @param module the module to set.
 	 */
 	public void setModule(Module module) {
 		this.module = module;

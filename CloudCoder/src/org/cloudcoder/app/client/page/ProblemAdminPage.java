@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -32,8 +32,10 @@ import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndModule;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -53,18 +55,18 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
- * Page for performing course admin actions.
+ * Page for performing course admin actions related to {@link Problem}s.
  * 
  * @author David Hovemeyer
  */
-public class CourseAdminPage extends CloudCoderPage {
+public class ProblemAdminPage extends CloudCoderPage {
 	private enum ProblemAction implements IButtonPanelAction {
-		NEW("New exercise", "Create a new exercise"),
-		EDIT("Edit exercise", "Edit the selected exercise"),
-		DELETE("Delete exercise", "Delete the selected exercise"),
+		NEW("New", "Create a new exercise"),
+		EDIT("Edit", "Edit the selected exercise"),
+		DELETE("Delete", "Delete the selected exercise"),
 		STATISTICS("Statistics", "See statistics on selected exercise"),
-		IMPORT("Import exercise", "Import an exercise from the CloudCoder exercise repository"),
-		SHARE("Share exercise", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
+		IMPORT("Import", "Import an exercise from the CloudCoder exercise repository"),
+		SHARE("Share", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
 		MAKE_VISIBLE("Make visible", "Make selected exerise visible to students"),
 		MAKE_INVISIBLE("Make invisible", "Make selected exercise invisible to students"),
 		QUIZ("Quiz", "Give selected exercise as a quiz");
@@ -160,10 +162,39 @@ public class CourseAdminPage extends CloudCoderPage {
 			dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
 			
 			// Create a center panel with problems list.
-			this.courseAdminProblemListView = new CourseAdminProblemListView(CourseAdminPage.this);
+			this.courseAdminProblemListView = new CourseAdminProblemListView(ProblemAdminPage.this);
 			dockLayoutPanel.add(courseAdminProblemListView);
+			// Handle edits to the module name.
+			courseAdminProblemListView.setEditModuleNameCallback(new ICallback<ProblemAndModule>() {
+				public void call(ProblemAndModule value) {
+					setProblemModuleName(value);
+				}
+			});
 			
 			initWidget(dockLayoutPanel);
+		}
+
+		private void setProblemModuleName(final ProblemAndModule value) {
+			RPC.getCoursesAndProblemsService.setModule(value.getProblem(), value.getModule().getName(), new AsyncCallback<Module>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							@Override
+							public void run() {
+								setProblemModuleName(value);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not set module for exercise", caught));
+					}
+				}
+
+				@Override
+				public void onSuccess(Module result) {
+					getSession().add(StatusMessage.goodNews("Successfully changed module for exercise"));
+				}
+			});
 		}
 
 		/**
@@ -209,7 +240,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doChangeVisibility(final boolean visible) {
 			Problem chosen = getSession().get(Problem.class);
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			
 			getSession().add(StatusMessage.pending("Changing visibility of problem..."));
 			
@@ -271,7 +302,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		private void doImportProblem() {
 			ImportProblemDialog dialog = new ImportProblemDialog();
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			dialog.setCourse(course);
 			dialog.setResultCallback(new ICallback<ProblemAndTestCaseList>() {
 				@Override
@@ -304,7 +335,7 @@ public class CourseAdminPage extends CloudCoderPage {
 		
 		private void handleDeleteProblem() {
 			final Problem chosen = getSession().get(Problem.class);
-			final Course course = getSession().get(Course.class);
+			final Course course = getCurrentCourse();
 			
 			// Only invisible problems may be deleted
 			if (chosen.isVisible()) {
@@ -345,8 +376,8 @@ public class CourseAdminPage extends CloudCoderPage {
 			// Get the selected problem
 			final Problem chosen = getSession().get(Problem.class);
 			
-			String URL = GWT.getHostPageBaseURL()+"/admin/problems/"+chosen.getCourseId()+"/"+chosen.getProblemId();			
-			com.google.gwt.user.client.Window.open(URL, "_blank", "");
+			// Switch to the StatisticsPage
+			getSession().notifySubscribers(Session.Event.STATISTICS, chosen);
 		}
 
 		/**
@@ -402,7 +433,7 @@ public class CourseAdminPage extends CloudCoderPage {
 			problem.setAuthorWebsite(user.getWebsite());
 			
 			// Set course id
-			problem.setCourseId(getSession().get(Course.class).getId());
+			problem.setCourseId(getCurrentCourse().getId());
 			
 			// Initially there are no test cases
 			TestCase[] testCaseList= new TestCase[0];
@@ -437,8 +468,8 @@ public class CourseAdminPage extends CloudCoderPage {
 			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a course
-			Course course = session.get(Course.class);
-			courseLabel.setText(course.getName() + " - " + course.getTitle());
+			Course course = getCurrentCourse();
+			courseLabel.setText("Problems in " + course.getName() + " - " + course.getTitle());
 		}
 
 		/* (non-Javadoc)
@@ -508,7 +539,7 @@ public class CourseAdminPage extends CloudCoderPage {
 
 		public void reloadProblems(final Course course) {
 			// Reload problems
-			SessionUtil.loadProblemAndSubmissionReceiptsInCourse(CourseAdminPage.this, course, getSession());
+			SessionUtil.loadProblemAndSubmissionReceiptsInCourse(ProblemAdminPage.this, course, getSession());
 			
 			// If a problem is selected, add it to the session
 			// (so the buttons are enabled/disable appropriately).

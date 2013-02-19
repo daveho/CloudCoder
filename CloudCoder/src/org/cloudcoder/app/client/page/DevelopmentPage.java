@@ -20,9 +20,10 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cloudcoder.app.client.QuizInProgress;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
+import org.cloudcoder.app.client.model.NamedTestResult;
+import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -102,11 +103,6 @@ public class DevelopmentPage extends CloudCoderPage {
 		ONCLEAN_CALLBACK_IN_PROGRESS,
 		
 		/**
-		 * Logging out.
-		 */
-		LOGOUT,
-		
-		/**
 		 * Editing is disabled because a quiz has ended, or some other
 		 * error has occurred.
 		 */
@@ -149,6 +145,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private Mode mode;
 		private Timer checkPendingSubmissionTimer;
 		private Runnable onCleanCallback;
+		private String[] testCaseNames;
 
 		public UI() {
 			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
@@ -249,7 +246,19 @@ public class DevelopmentPage extends CloudCoderPage {
 			
 			// Add logout and back handlers
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-			pageNavPanel.setBackHandler(new BackHomeHandler(session));
+			pageNavPanel.setBackHandler(new BackHomeHandler(session) {
+				@Override
+				public void run() {
+					// Before executing superclass run method, remove
+					// Problem and QuizInProgress (if any) from the session.
+					// This prevents issues such as a quiz problem that
+					// should no longer be accessible lingering in the
+					// user's client-side session.
+					session.remove(Problem.class);
+					session.remove(QuizInProgress.class);
+					super.run();
+				}
+			});
 			
 			// Add submit handler
 			devActionsPanel.setSubmitHandler(new Runnable() {
@@ -272,6 +281,11 @@ public class DevelopmentPage extends CloudCoderPage {
 			devActionsPanel.setResetHandler(new Runnable() {
 				@Override
 				public void run() {
+					// Do not allow reset if edits are disallowed
+					if (mode == Mode.PREVENT_EDITS) {
+						return;
+					}
+
 					// Require user to confirm the reset with a dialog.
 					ChoiceDialogBox<ResetChoice> confirmResetDialog = new ChoiceDialogBox<ResetChoice>(
 							"Really reset the problem?",
@@ -375,6 +389,11 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 
 		protected void doSubmitRPC(final Problem problem, final String text) {
+			// Do not allow submit if edits are disallowed
+			if (mode == Mode.PREVENT_EDITS) {
+				return;
+			}
+
 			RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -405,6 +424,11 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 		
 		private void doResetProblem() {
+			// Do not allow reset if edits are disallowed
+			if (mode == Mode.PREVENT_EDITS) {
+				return;
+			}
+			
 			GWT.log("Resetting problem");
 			
 			// The Problem object should contain the skeleton code
@@ -497,24 +521,33 @@ public class DevelopmentPage extends CloudCoderPage {
 						});
 					} else {
 						GWT.log("Could not set problem", caught);
-						addSessionObject(StatusMessage.error("Error loading problem on server: " + caught.getMessage()));
+						addSessionObject(StatusMessage.error("Error loading exercise", caught));
 					}
 				}
 				
 				@Override
 				public void onSuccess(Problem result) {
-					// Awesome - the server has approved us to work on this problem.
-					// Get the UI ready for some coding!
-
-					// initiate loading of current problem text
-					asyncLoadCurrentProblemText();
-
-					// start a timer to periodically transmit pending changes to the server
-					startTransmitPendingChangeTimer(session);
-					
-					// create (but do not start) a timer to periodically poll to check
-					// if a submission has completed compilation/testing
-					createCheckPendingSubmissionTimer();
+					if (result == null) {
+						// The server did not approve us to work on the problem.
+						// One possibility is that the user has an active quiz in
+						// progress.  When a student starts working on a quiz,
+						// working on other problems is not allowed.
+						session.add(StatusMessage.error("This exercise is not available (did you start a quiz?)"));
+						mode = Mode.PREVENT_EDITS;
+					} else {
+						// Awesome - the server has approved us to work on this problem.
+						// Get the UI ready for some coding!
+	
+						// initiate loading of current problem text
+						asyncLoadCurrentProblemText();
+	
+						// start a timer to periodically transmit pending changes to the server
+						startTransmitPendingChangeTimer(session);
+						
+						// create (but do not start) a timer to periodically poll to check
+						// if a submission has completed compilation/testing
+						createCheckPendingSubmissionTimer();
+					}
 				}
 			});
 		}
@@ -694,7 +727,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private void onReceiveSubmissionResult(SubmissionResult result) {
 			if (result==null){
 				addSessionObject(StatusMessage.error("Results from Builder are empty"));
-				addSessionObject(new TestResult[0]);
+				addSessionObject(new NamedTestResult[0]);
 				addSessionObject(new CompilerDiagnostic[0]);
 
 			} else {
@@ -715,17 +748,16 @@ public class DevelopmentPage extends CloudCoderPage {
 				{
 					// ?
 					addSessionObject(StatusMessage.error("Error testing submission"));
-					addSessionObject(new TestResult[0]);
+					addSessionObject(new NamedTestResult[0]);
 				} else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
 					// Code did not compile
 					addSessionObject(StatusMessage.error("Error compiling submission"));
-					addSessionObject(new TestResult[0]);
+					addSessionObject(new NamedTestResult[0]);
 				} else {
 					// Code compiled, and test results were sent back.
 
-					TestResult[] results=result.getTestResults();
-					// Great, got results back from server!
-					addSessionObject(results);
+					// Display the test results
+					displayTestResults(result);
 
 					// Add a status message about the results
 					if (result.isAllTestsPassed()) {
@@ -747,6 +779,65 @@ public class DevelopmentPage extends CloudCoderPage {
 				doneWithOnCleanCallback();
 			}
 
+		}
+
+		/**
+		 * Display the test results from given {@link SubmissionResult}.
+		 * This is complicated slightly by the requirement to display
+		 * test case names, which must be loaded via RPC.
+		 * 
+		 * @param submissionResult the {@link SubmissionResult} containing the
+		 *        test results to display
+		 */
+		private void displayTestResults(final SubmissionResult submissionResult) {
+			if (this.testCaseNames == null || this.testCaseNames.length != submissionResult.getTestResults().length) {
+				// Need to load test case names via RPC
+				RPC.getCoursesAndProblemsService.getTestCaseNamesForProblem(getSession().get(Problem.class).getProblemId(), new AsyncCallback<String[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						// Hmm, couldn't get the test case names
+						getSession().add(StatusMessage.error("Could not get test case names", caught));
+						
+						// Add fake test case names
+						createFakeTestCaseNames(submissionResult.getTestResults());
+						displayNamedTestResults(submissionResult.getTestResults());
+					}
+					@Override
+					public void onSuccess(String[] result) {
+						if (result.length != submissionResult.getTestResults().length) {
+							// It is possible to receive an empty array if the user is
+							// not authorized to see this problem
+							createFakeTestCaseNames(submissionResult.getTestResults());
+						} else {
+							// Great, we have the test case names
+							testCaseNames = result;
+						}
+						displayNamedTestResults(submissionResult.getTestResults());
+					}
+				});
+			} else {
+				displayNamedTestResults(submissionResult.getTestResults());
+			}
+			
+		}
+
+		/**
+		 * @param results
+		 */
+		private void displayNamedTestResults(TestResult[] results) {
+			NamedTestResult[] namedTestResults = new NamedTestResult[results.length];
+			for (int i = 0; i < results.length; i++) {
+				namedTestResults[i] = new NamedTestResult(testCaseNames[i], results[i]);
+			}
+			addSessionObject(namedTestResults);
+		}
+
+		private void createFakeTestCaseNames(TestResult[] testResults) {
+			testCaseNames = new String[testResults.length];
+			int count = 0;
+			for (int i = 0; i < testResults.length; i++) {
+				testCaseNames[i] = "t" + (count++);
+			}
 		}
 
 		private void doEndQuiz() {
@@ -778,7 +869,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public void activate() {
 		addSessionObject(new ChangeList());
-		addSessionObject(new TestResult[0]);
+		addSessionObject(new NamedTestResult[0]);
 		addSessionObject(new CompilerDiagnostic[0]);
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}

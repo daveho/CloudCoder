@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -26,6 +26,8 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.SessionExpiredDialogBox;
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -220,4 +222,15 @@ public abstract class CloudCoderPage {
 	public SubscriptionRegistrar getSubscriptionRegistrar() {
 		return subscriptionRegistrar;
 	}
+	
+	/**
+	 * Get currently-selected {@link Course} from the {@link Session}.
+	 * 
+	 * @return currently-selected {@link Course}, or null if no course is selected
+	 */
+	public Course getCurrentCourse() {
+		CourseSelection courseSelection = session.get(CourseSelection.class);
+		return courseSelection != null ? courseSelection.getCourse() : null;
+	}
+
 }
