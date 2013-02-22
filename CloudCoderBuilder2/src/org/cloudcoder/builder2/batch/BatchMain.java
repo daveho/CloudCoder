@@ -22,13 +22,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestOutcome;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.app.shared.model.json.ReflectionFactory;
+import org.cloudcoder.builder2.server.Builder2;
 import org.cloudcoder.daemon.IOUtil;
 
 /**
@@ -48,6 +53,7 @@ public class BatchMain {
 
 		ProblemAndTestCaseList exercise = new ProblemAndTestCaseList();
 		
+		// Read the exercise (Problem and TestCases)
 		Reader r = null;
 		try {
 			r = new BufferedReader(new FileReader(exerciseJSON));
@@ -59,7 +65,9 @@ public class BatchMain {
 		} finally {
 			IOUtil.closeQuietly(r);
 		}
+		TestCase[] testCaseList = exercise.getTestCaseList();
 		
+		// Read the list of source files to test
 		List<String> sourceFileList = new ArrayList<String>();
 		BufferedReader r2 = null;
 		try {
@@ -75,6 +83,23 @@ public class BatchMain {
 			IOUtil.closeQuietly(r2);
 		}
 		
-		// TODO: testing
+		// Test each submission
+		for (String sourceFile : sourceFileList) {
+			SubmissionResult result =
+					Builder2.testSubmission(exercise.getProblem(), Arrays.asList(testCaseList), sourceFile);
+			
+			// FIXME: For now, just a hard-coded output format summarizing compilation status and test results
+			System.out.print(result.getCompilationResult().getOutcome());
+			TestResult[] testResults = result.getTestResults();
+			for (int i = 0; i < testCaseList.length; i++) {
+				System.out.print(",");
+				if (i >= testResults.length) {
+					System.out.print("false");
+				} else {
+					System.out.print(String.valueOf(testResults[i].getOutcome() == TestOutcome.PASSED));
+				}
+			}
+			System.out.println();
+		}
 	}
 }
