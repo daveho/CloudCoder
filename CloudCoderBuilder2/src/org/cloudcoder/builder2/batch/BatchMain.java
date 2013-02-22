@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.NullAppender;
+import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -106,8 +107,11 @@ public class BatchMain {
 					Builder2.testSubmission(exercise.getProblem(), Arrays.asList(testCaseList), programText);
 			
 			// FIXME: For now, just a hard-coded output format summarizing compilation status and test results
+			System.out.print(sourceFile);
+			System.out.print(":");
 			System.out.print(result.getCompilationResult().getOutcome());
 			TestResult[] testResults = result.getTestResults();
+			boolean allPassed = true;
 			for (int i = 0; i < testCaseList.length; i++) {
 				System.out.print(",");
 				System.out.print(testCaseList[i].getTestCaseName());
@@ -115,10 +119,32 @@ public class BatchMain {
 				if (i >= testResults.length) {
 					System.out.print("false");
 				} else {
-					System.out.print(String.valueOf(testResults[i].getOutcome() == TestOutcome.PASSED));
+					boolean passed = testResults[i].getOutcome() == TestOutcome.PASSED;
+					System.out.print(String.valueOf(passed));
+					if (!passed) {
+						allPassed = false;
+					}
 				}
 			}
 			System.out.println();
+			
+			// If the submission did not pass all tests,
+			// write failure report to stderr.
+			if (!allPassed) {
+				writeFailureReport(sourceFile, result, testCaseList);
+			}
+		}
+	}
+
+	private static void writeFailureReport(String sourceFile, SubmissionResult result, TestCase[] testCaseList) {
+		System.err.println("File: " + sourceFile);
+		if (result.getCompilationResult().getOutcome() != CompilationOutcome.SUCCESS){
+			System.err.println("Did not compile");
+		}
+		TestResult[] testResults = result.getTestResults();
+		for (int i = 0; i < testResults.length; i++) {
+			System.err.println(testCaseList[i].getTestCaseName());
+			System.err.println(testResults[i].getStdout());
 		}
 	}
 }
