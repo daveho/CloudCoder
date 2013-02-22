@@ -15,6 +15,7 @@
 
     <path id="CloudCoderBuilder2.classpath">
 		<pathelement location="${model.class.jar}"/>
+		<pathelement location="${json.jar}"/>
 		<pathelement location="bin"/>
 		<fileset dir="lib" includes="**/*.jar"/>
     	<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
