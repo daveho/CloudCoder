@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.varia.NullAppender;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -43,6 +46,10 @@ import org.cloudcoder.daemon.IOUtil;
  */
 public class BatchMain {
 	public static void main(String[] args) throws IOException {
+		// Shut log4j up
+		Logger.getRootLogger().removeAllAppenders();
+		Logger.getRootLogger().addAppender(new NullAppender());
+		
 		if (args.length != 2) {
 			System.err.println("Usage: java -jar cloudcoderBuilder.jar batch <exercise JSON> <source file list>");
 			System.exit(1);
@@ -85,14 +92,26 @@ public class BatchMain {
 		
 		// Test each submission
 		for (String sourceFile : sourceFileList) {
+			// Read the program text
+			FileReader fileReader = new FileReader(sourceFile);
+			String programText;
+			try {
+				programText = IOUtils.toString(fileReader);
+			} finally {
+				IOUtil.closeQuietly(fileReader);
+			}
+			
+			// Test the submission
 			SubmissionResult result =
-					Builder2.testSubmission(exercise.getProblem(), Arrays.asList(testCaseList), sourceFile);
+					Builder2.testSubmission(exercise.getProblem(), Arrays.asList(testCaseList), programText);
 			
 			// FIXME: For now, just a hard-coded output format summarizing compilation status and test results
 			System.out.print(result.getCompilationResult().getOutcome());
 			TestResult[] testResults = result.getTestResults();
 			for (int i = 0; i < testCaseList.length; i++) {
 				System.out.print(",");
+				System.out.print(testCaseList[i].getTestCaseName());
+				System.out.print("=");
 				if (i >= testResults.length) {
 					System.out.print("false");
 				} else {
