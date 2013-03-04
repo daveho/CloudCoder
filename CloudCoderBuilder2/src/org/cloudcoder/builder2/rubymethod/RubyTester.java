@@ -24,6 +24,7 @@ import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.jruby.RubyArray;
 import org.jruby.embed.ScriptingContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RubyTester {
 	private static Logger logger = LoggerFactory.getLogger(RubyTester.class);
-	
+
 	/**
 	 * Execute the test and return the {@link TestResult} indicating whether the
 	 * test passed or failed.
@@ -50,14 +51,17 @@ public class RubyTester {
 	 */
 	public TestResult execute(ScriptingContainer container, Object receiver, Problem problem, TestCase testCase) {
 		Object result_ = container.callMethod(receiver, "_test", testCase.getTestCaseName());
-		if (!(result_ instanceof Boolean)) {
-			return new TestResult(TestOutcome.INTERNAL_ERROR, "_test method did not return a Boolean result");
-		}
 		
-		Boolean result = (Boolean) result_;
-		
+		if (!(result_ instanceof RubyArray)) {
+		    return new TestResult(TestOutcome.INTERNAL_ERROR, "_test method did not return an Array result");
+        }
+        RubyArray arr=(RubyArray)result_;
+        
+        Boolean result=(Boolean)arr.get(0);
+        String output=arr.get(1).toString();
+        
 		return result
 				? TestResultUtil.createResultForPassedTest(problem, testCase)
-				: TestResultUtil.createResultForFailedTest(problem, testCase);
+				: TestResultUtil.createResultForFailedTest(problem, testCase, output);
 	}
 }

@@ -157,13 +157,32 @@ public class TestResultUtil {
 
 	/**
 	 * Create a generic {@link TestResult} for a failed test.
+	 * This method assumes that we don't have the actual output
+	 * of the submitted code (i.e. the expected result was 5
+	 * but we expected 10).  It may not be possible to capture
+	 * the return value of the method in the test harness for
+	 * all languages that require unit testing at the
+	 * method or function level.
 	 * 
 	 * @param problem  the {@link Problem}
 	 * @param testCase the {@link TestCase}
-	 * @return the {@link TestResult}
+	 * @return The {@link TestResult}
 	 */
 	public static TestResult createResultForFailedTest(Problem problem, TestCase testCase) {
-		return createTestResult(null, problem, TestOutcome.FAILED_ASSERTION, testCase);
+	    return createTestResult(null, problem, TestOutcome.FAILED_ASSERTION, testCase, null);
+	}
+	
+	/**
+	 * Create a generic {@link TestResult} for a failed test.
+	 * 
+	 * @param problem  the {@link Problem}
+	 * @param testCase the {@link TestCase}
+	 * @param output   the actual output of calling the 
+	 *                 method written by the client
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createResultForFailedTest(Problem problem, TestCase testCase, String output) {
+		return createTestResult(null, problem, TestOutcome.FAILED_ASSERTION, testCase, output);
 	}
 
 	/**
@@ -176,6 +195,10 @@ public class TestResultUtil {
 				"Took too long!  Check for infinite loops, or recursion without a proper base case");
 	}
 
+	private static TestResult createTestResult(CommandResult p, Problem problem, TestOutcome outcome, TestCase testCase) {
+	    return createTestResult(p, problem, outcome, testCase, null);
+	}
+	
 	/**
 	 * Helper method to create a standard test result.
 	 * If a {@link CommandResult} is passed, its stdout/stderr will be
@@ -185,16 +208,22 @@ public class TestResultUtil {
 	 * @param problem   the {@link Problem}
 	 * @param outcome   the {@link TestOutcome}
 	 * @param testCase  the {@link TestCase}
+	 * @param output    the actual output of the method (if null then no information will be displayed)
 	 * @return the {@link TestResult}
 	 */
-	private static TestResult createTestResult(CommandResult p, Problem problem, TestOutcome outcome, TestCase testCase) {
+	private static TestResult createTestResult(CommandResult p, Problem problem, TestOutcome outcome, TestCase testCase, String output) {
 		StringBuilder buf = new StringBuilder();
 		buf.append(outcome.getShortMessage());
 
 		if (!testCase.isSecret()) {
-			buf.append(" for input (" + testCase.getInput() + ")");
+			buf.append(outcome+"\n"+
+			        "input: (" + testCase.getInput() + ")\n");
 			if (problem.getProblemType().isOutputLiteral()) {
-				buf.append(" expected output=" + testCase.getOutput());
+				buf.append("expected output: " + testCase.getOutput()+"\n");
+				if (output!=null && outcome!=TestOutcome.PASSED) {
+				    // include the actual output, if we have it
+				    buf.append("actual output: "+output);
+				}
 			}
 		}
 

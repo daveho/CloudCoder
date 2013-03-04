@@ -95,8 +95,8 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 		// TODO: do this in a sandbox?
 		final Object receiver;
 		try {
-			System.out.println("Test source:");
-			System.out.println(testSource);
+			logger.info("Test source:");
+			logger.info(testSource);
 			receiver = container.runScriptlet(testSource);
 			System.out.println("Object returned by compilation: " + receiver);
 		} catch (ParseFailedException e) {

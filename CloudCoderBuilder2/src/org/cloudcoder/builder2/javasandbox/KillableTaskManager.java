@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * I'm going to use the stop() method in thread.  I feel a little dirty.
  * 
- * I'm 97% sure that this is a safe use of stop().  Each
+ * I'm 99% sure that this is a safe use of stop().  Each
  * thread that might be stopped will put its result into
  * a separate object; if that thread is killed early, the
  * result simply won't show up and instead we'll put

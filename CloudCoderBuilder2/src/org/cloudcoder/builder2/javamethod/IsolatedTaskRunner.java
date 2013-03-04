@@ -50,15 +50,21 @@ public class IsolatedTaskRunner implements IsolatedTask<TestResult>
         this.testCase=testCase;
     }
 
+    
+    
     @Override
     public TestResult execute() {
         try {
             Method m = theClass.getMethod(testCase.getTestCaseName());
-            Boolean result = (Boolean) m.invoke(null);
-            if (result) {
-            	return TestResultUtil.createResultForPassedTest(problem, testCase);
+            Object[] results=(Object[])m.invoke(null);
+            Boolean passedTest=(Boolean)results[0];
+            String output=(String)results[1];
+            logger.warn("Hooked onto the outcome! "+output);
+            
+            if (passedTest) {
+                return TestResultUtil.createResultForPassedTest(problem, testCase);
             } else {
-            	return TestResultUtil.createResultForFailedTest(problem, testCase);
+            	    return TestResultUtil.createResultForFailedTest(problem, testCase, output);
             }
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof SecurityException) {

@@ -55,11 +55,17 @@ public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
         tester.append("public class Tester {\n");
         tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
         for (TestCase tc : testCaseList) {
-            tester.append("\tpublic static boolean ");
+            tester.append("\tpublic static Object[] ");
             tester.append(tc.getTestCaseName());
             tester.append("() {\n");
             tester.append("\t\tTest t = new Test();\n");
-            tester.append("\t\treturn eq(t." + problem.getTestname() + "(" + tc.getInput() + "), " + tc.getOutput() + ");\n");
+            tester.append("\t\tObject theresult=t."+problem.getTestname() + "(" + tc.getInput() + ");\n");
+            //TODO capture the return value somehow...
+            //Could print it, maybe with a unique tag, and then pull it out of stderr
+            //Could have these methods return a compound type that includes the generated output
+            // how to access that?
+            tester.append("\t\tBoolean b=eq(theresult, " + tc.getOutput() + ");\n");
+            tester.append("\t\treturn new Object[] {b, theresult.toString()};\n");
             tester.append("\t\t}\n");
         }
         tester.append("}");

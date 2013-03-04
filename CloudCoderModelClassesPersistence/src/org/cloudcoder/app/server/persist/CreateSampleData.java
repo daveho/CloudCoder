@@ -30,7 +30,6 @@ import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.Term;
-import org.cloudcoder.app.shared.model.TestCase;
 
 /**
  * Create sample data.

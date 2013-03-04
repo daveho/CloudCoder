@@ -75,18 +75,28 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 		// Add cases for each testcase name
 		boolean first = true;
 		for (TestCase testCase : testCaseList) {
+		    /*
+def _test(testname)
+  if testname == "t0"
+    _output=plus(2,3)
+    _result=_output == (5)
+    return Array.[](_result, _output)
+  elsif testname == "t1"
+    _output=plus(3,2)
+    _result=_output == (5)
+    return Array.[](_result, _output)
+  end
+end
+		     */
 			buf.append("  ");
 			buf.append(first ? "if" : "elsif");
 			buf.append(" testname == \"");
 			buf.append(testCase.getTestCaseName());
 			buf.append("\"\n");
-			buf.append("    return ");
-			buf.append(problem.getTestname());
-			buf.append("(");
-			buf.append(testCase.getInput());
-			buf.append(") == (");
-			buf.append(testCase.getOutput());
-			buf.append(")\n");
+			buf.append("    _output=");
+			buf.append(problem.getTestname()+"("+testCase.getInput()+")\n");
+			buf.append("_result=(_output == ("+testCase.getOutput()+"))\n");
+			buf.append("    return Array.[](_result, _output)\n");
 			
 			first = false;
 		}

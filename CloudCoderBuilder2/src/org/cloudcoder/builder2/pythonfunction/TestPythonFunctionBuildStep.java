@@ -35,7 +35,6 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
 import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
-import org.cloudcoder.builder2.javasandbox.ThreadGroupSecurityManager;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
@@ -99,18 +98,32 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				List<TestCase> testCaseList,
 				String programText)
 		{
-			//TODO: Strip out anything that isn't a function declaration of import statement
+			//TODO: Strip out anything that isn't a function declaration or import statement
 			//XXX: If we do that, we disallow global variables, which may be OK
 			StringBuilder test = new StringBuilder();
-			test.append(programText);
+			test.append(programText+"\n");
 			programTextLength=StringUtil.countLines(programText);
 			int spaces=getIndentationIncrementFromPythonCode(programText);
 
 			for (TestCase t : testCaseList) {
 				// each test case is a function that invokes the function being tested
 				test.append("def "+t.getTestCaseName()+"():\n");
-				test.append(indent(spaces)+"return "+t.getOutput()+" == "+
-						problem.getTestname()+"("+t.getInput()+")\n");
+				/* 
+				 * The python functions for individual test cases look like this:
+				 * 
+				 * def t0():
+				 *    _output=plus(2,3)
+				 *    _result=(5 == _output)
+				 *    return (_result, _output)
+				 *    
+				 * We return a tuple with a boolean representing whether
+				 * the test case passed, and a String containing the 
+				 * actual output.  
+				 */
+				test.append(indent(spaces)+"_output="+problem.getTestname() + 
+				        "(" +t.getInput()+ ")\n");
+				test.append(indent(spaces)+"_result=("+t.getOutput()+" == _output)\n");
+				test.append(indent(spaces)+"return (_result, _output)\n");
 			}
 			String result=test.toString();
 			int totalLen=StringUtil.countLines(result);
@@ -121,7 +134,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 
 		public SubmissionResult testSubmission(BuilderSubmission submission)
 		{
-			Problem problem=submission.getArtifact(Problem.class);
+			final Problem problem=submission.getArtifact(Problem.class);
 			if (problem == null) {
 				throw new InternalBuilderException(this.getClass(), "No Problem");
 			}
@@ -163,7 +176,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				final PythonInterpreter terp=new PythonInterpreter();
 				final PyObject True=terp.eval("True");
 				// won't throw an exception because we checked it at the top of
-				// the method
+				// the method to make sure the code will compile
 				terp.execfile(new ByteArrayInputStream(sBytes));
 				// pull out the function associated with this particular test case
 				final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
@@ -171,10 +184,8 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				tasks.add(new IsolatedTask<TestResult>() {
 					@Override
 					public TestResult execute() {
-						return executeTestCase(t, True, func);
+						return executeTestCase(problem, t, True, func);
 					}
-
-
 				});
 			}
 
@@ -204,6 +215,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		 */
 		public static CompilationResult compilePythonScript(final String programText) {
 			try {
+			    logger.info("\n"+programText);
 				PythonInterpreter terp=new PythonInterpreter();
 				terp.execfile(new ByteArrayInputStream(programText.getBytes()));
 				return new CompilationResult(CompilationOutcome.SUCCESS);
@@ -266,25 +278,31 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		}
 
 		/**
-		 * @param t
+		 * @param testCase
 		 * @param True
 		 * @param func
 		 * @return
 		 */
-		static TestResult executeTestCase(final TestCase t,
-				final PyObject True, final PyFunction func) {
+		static TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) 
+		{
 			try {
-				PyObject r=func.__call__();
-				if (r!=null && r.equals(True)) {
-					return new TestResult(TestOutcome.PASSED, "Passed! input=" + t.getInput() + ", output=" + t.getOutput());
+			    // returns a tupe: (result, output)
+			    PyObject tuple=func.__call__();
+			    PyObject result=tuple.__getitem__(0);
+			    String output=tuple.__getitem__(1).toString();
+			    logger.trace("Actual output of code submitted for method: "+output);
+				if (result!=null && result.equals(True)) {
+				    return TestResultUtil.createResultForPassedTest(problem, testCase);
 				} else {
-					logger.warn("Test case failed, result is: "+r.getClass());
-					return new TestResult(TestOutcome.FAILED_ASSERTION, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
+					logger.warn("Test case failed result  "+tuple.toString());
+					// Message returned to user is created here!
+					// TODO: Factor out for Java, Python, Ruby one method for creating output
+					return TestResultUtil.createResultForFailedTest(problem, testCase, output);
 				}
 			} catch (PyException e) {
 				if (e.getCause() instanceof SecurityException) {
 					logger.warn("Security exception", e.getCause());
-					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + t.getInput() + ", expected=" + t.getOutput());
+					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
 				logger.warn("Exception type was "+e.getClass());
 				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
