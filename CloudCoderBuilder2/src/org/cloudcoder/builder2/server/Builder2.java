@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  */
 public class Builder2 implements Runnable {
+
     private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
 
     private volatile boolean shutdownRequested;
