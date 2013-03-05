@@ -22,6 +22,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
-	<classpathentry kind="lib" path="lib/daemon-0.3.jar" sourcepath="lib/daemon-0.3.jar"/>
+	<classpathentry kind="lib" path="lib/daemon-0.4.jar" sourcepath="lib/daemon-0.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
