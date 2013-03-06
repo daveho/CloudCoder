@@ -192,7 +192,7 @@ sub UpdateDownloads {
       push(@newlines, '');
       push(@newlines, $webappLink);
       push(@newlines, '');
-      push(@newlines, $webappLink);
+      push(@newlines, $builderLink);
       push(@newlines, '');
       push(@newlines, $line);
     } else {
