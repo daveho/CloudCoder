@@ -57,7 +57,7 @@ public class EditUserDialog extends DialogBox {
 		HTML passwordsMsg = new HTML("<div>Note: leave password fields blank to leave passwords unchanged</div>");
 		panel.add(passwordsMsg);
 		
-		this.editUserView = new EditUserView(verifyCurrentPassword);
+		this.editUserView = new EditUserView(verifyCurrentPassword, false);
 		editUserView.populate(user, sectionNum, userIsInstructor);
 		panel.add(editUserView);
 		

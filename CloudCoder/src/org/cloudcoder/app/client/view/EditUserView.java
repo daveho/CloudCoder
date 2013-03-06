@@ -54,14 +54,21 @@ public class EditUserView extends Composite {
 	private RadioButton studentAccountButton;
 	private RadioButton instructorAccountButton;
 	private Label errorLabel;
+	private boolean requirePasswords;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param verifyCurrentPassword if the view should prompt the user to enter
 	 *                              his/her current password
+	 * @param requirePasswords      true if password and confirmation password are required
+	 *                              (if false, they are not, which is useful for editing
+	 *                              a user, and having a blank password mean that the
+	 *                              user's current password is left unchanged)
 	 */
-	public EditUserView(boolean verifyCurrentPassword) {
+	public EditUserView(boolean verifyCurrentPassword, boolean requirePasswords) {
+		this.requirePasswords = requirePasswords;
+		
 		FlowPanel holder = new FlowPanel();
 		
 		this.validateNonEmpty = new ArrayList<TextBox>();
@@ -83,14 +90,14 @@ public class EditUserView extends Composite {
 		
 		// verify current password
 		if (verifyCurrentPassword) {
-			currentPassword = addPasswordTextBox(holder, "Current password");
+			currentPassword = addPasswordTextBox(holder, "Current password", true);
 		}
 
 		// password
-		passwd = addPasswordTextBox(holder, "Password");
+		passwd = addPasswordTextBox(holder, "Password", requirePasswords);
 
 		// re-enter password
-		passwd2 = addPasswordTextBox(holder, "Re-enter password");
+		passwd2 = addPasswordTextBox(holder, "Re-enter password", requirePasswords);
 		
 		// section
 		section = addTextBox(holder, "Section");
@@ -153,11 +160,13 @@ public class EditUserView extends Composite {
 		return textBox;
 	}
 
-	private PasswordTextBox addPasswordTextBox(FlowPanel holder, String labelText) {
+	private PasswordTextBox addPasswordTextBox(FlowPanel holder, String labelText, boolean required) {
 		holder.add(new Label(labelText));
 		PasswordTextBox textBox = new PasswordTextBox();
 		holder.add(textBox);
-		validateNonEmpty.add(textBox);
+		if (required) {
+			validateNonEmpty.add(textBox);
+		}
 		return textBox;
 	}
 	

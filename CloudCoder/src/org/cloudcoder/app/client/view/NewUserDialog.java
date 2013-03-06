@@ -47,7 +47,7 @@ public class NewUserDialog extends DialogBox {
 		
 		FlowPanel panel = new FlowPanel();
 		
-		this.editUserView = new EditUserView(false);
+		this.editUserView = new EditUserView(false, true);
 		panel.add(editUserView);
 
 		FlowPanel buttonPanel = new FlowPanel();
