@@ -30,7 +30,10 @@ import org.cloudcoder.app.client.view.SectionSelectionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAdminUsersListView;
 import org.cloudcoder.app.client.view.ViewUtil;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.ICallback;
@@ -470,20 +473,7 @@ public class UserAdminPage extends CloudCoderPage
             CourseRegistrationType type=null;
 
             if (NEW_EDIT_USER_DIALOG) {
-	            // FIXME: only require current password if non-instructor
-	            // FIXME: don't hard-code the section number!
-	            final EditUserDialog editUserDialog = new EditUserDialog(chosen, 101, true);
-	            editUserDialog.setEditUserCallback(new ICallback<EditedUser>() {
-	            	/* (non-Javadoc)
-	            	 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
-	            	 */
-	            	@Override
-	            	public void call(EditedUser value) {
-	            		getSession().add(StatusMessage.information("Should be editing the user"));
-	            		editUserDialog.hide();
-	            	}
-				});
-	            editUserDialog.center();
+            	doEditUser(chosen, course);
             } else {
 	            EditUserPopupPanel pop = new EditUserPopupPanel( 
 	                    chosen, 
@@ -494,6 +484,53 @@ public class UserAdminPage extends CloudCoderPage
 	            pop.show();
             }
         }
+
+		private void doEditUser(final User chosen, final Course course) {
+			RPC.usersService.getUserCourseRegistrationList(course, chosen, new AsyncCallback<CourseRegistrationList>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							@Override
+							public void run() {
+								doEditUser(chosen, course);
+							}
+						});
+					} else {
+						getSession().add(StatusMessage.error("Could not find course registrations for user", caught));
+					}
+				}
+				
+				public void onSuccess(CourseRegistrationList result) {
+					if (result == null) {
+						getSession().add(StatusMessage.error("You are not an instructor?"));
+					} else if (result.getList().isEmpty()) {
+						getSession().add(StatusMessage.error("Selected user is not registered in the course?"));
+					} else {
+						// FIXME: right now we only support a single registration
+						CourseRegistration firstCourseRegistration = result.getList().get(0);
+						int sectionNum = firstCourseRegistration.getSection();
+						
+				        final EditUserDialog editUserDialog = new EditUserDialog(
+				        		chosen,
+				        		firstCourseRegistration.getRegistrationType().compareTo(CourseRegistrationType.INSTRUCTOR) >= 0,
+				        		firstCourseRegistration.getSection(),
+				        		false);
+				        editUserDialog.setEditUserCallback(new ICallback<EditedUser>() {
+				        	/* (non-Javadoc)
+				        	 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
+				        	 */
+				        	@Override
+				        	public void call(EditedUser value) {
+				        		getSession().add(StatusMessage.information("Should be editing the user"));
+				        		editUserDialog.hide();
+				        	}
+						});
+				        editUserDialog.center();
+					}
+				}
+			});
+		}
         
         private void handleDeleteUser() {
             GWT.log("Delete User not implemented");

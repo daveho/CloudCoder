@@ -116,14 +116,27 @@ public class EditUserView extends Composite {
 	 * 
 	 * @param user the {@link User} object
 	 * @param sectionNum the section of the course in which the {@link User} is registered
+	 * @param isInstructor true if the {@link User} being edited is an instructor in the course 
 	 */
-	public void populate(User user, int sectionNum) {
+	public void populate(User user, int sectionNum, boolean isInstructor) {
 		username.setText(user.getUsername());
 		firstname.setText(user.getFirstname());
 		lastname.setText(user.getLastname());
 		email.setText(user.getEmail());
 		website.setText(user.getWebsite());
 		section.setText(String.valueOf(sectionNum));
+		studentAccountButton.setValue(!isInstructor);
+		instructorAccountButton.setValue(isInstructor);
+	}
+	
+	/**
+	 * Disable UI fields that should only be editable by an instructor. 
+	 */
+	public void disableInstructorFields() {
+		username.setEnabled(false);
+		section.setEnabled(false);
+		studentAccountButton.setEnabled(false);
+		instructorAccountButton.setEnabled(false);
 	}
 	
 	private TextBox addTextBox(FlowPanel holder, String labelText) {

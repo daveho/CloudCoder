@@ -27,6 +27,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 
 /**
  * Dialog for editing an existing user.
@@ -43,15 +44,21 @@ public class EditUserDialog extends DialogBox {
 	/**
 	 * Constructor.
 	 * 
+	 * @param user                  the {@link User} to edit
+	 * @param userIsInstructor      true if the {@link User} is an instructor in the course
+	 * @param sectionNum            the section number in which the user is registered
 	 * @param verifyCurrentPassword true if the user must verify his/her current password
 	 */
-	public EditUserDialog(User user, int sectionNum, boolean verifyCurrentPassword) {
+	public EditUserDialog(User user, boolean userIsInstructor, int sectionNum, boolean verifyCurrentPassword) {
 		setGlassEnabled(true);
 		
 		FlowPanel panel = new FlowPanel();
 		
+		HTML passwordsMsg = new HTML("<div>Note: leave password fields blank to leave passwords unchanged</div>");
+		panel.add(passwordsMsg);
+		
 		this.editUserView = new EditUserView(verifyCurrentPassword);
-		editUserView.populate(user, sectionNum);
+		editUserView.populate(user, sectionNum, userIsInstructor);
 		panel.add(editUserView);
 		
 		FlowPanel buttonPanel = new FlowPanel();

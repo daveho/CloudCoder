@@ -17,6 +17,9 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.EditedUser;
@@ -66,4 +69,16 @@ public interface UserService extends RemoteService
     
     
     void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type) throws CloudCoderAuthenticationException;
+    
+    /**
+     * Get the {@link CourseRegistrationList} with all of the given {@link User}'s
+     * {@link CourseRegistration}s for given {@link Course}.
+     * The authenticated user must be an instructor in the course.
+     * 
+     * @param course the {@link Course}
+     * @param user   the {@link User}
+     * @return the {@link CourseRegistrationList}, or null if the authenticated user
+     *         is not an instructor in the course
+     */
+    CourseRegistrationList getUserCourseRegistrationList(Course course, User user) throws CloudCoderAuthenticationException;
 }
