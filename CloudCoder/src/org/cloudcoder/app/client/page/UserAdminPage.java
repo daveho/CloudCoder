@@ -17,12 +17,12 @@
 
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ButtonPanel;
+import org.cloudcoder.app.client.view.EditUserDialog;
 import org.cloudcoder.app.client.view.IButtonPanelAction;
 import org.cloudcoder.app.client.view.NewUserDialog;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -75,6 +75,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class UserAdminPage extends CloudCoderPage
 {
+	private static final boolean NEW_EDIT_USER_DIALOG = false;
+	
     private enum UserAction implements IButtonPanelAction {
         NEW("Add", "Add a new user to course"),
         EDIT("Edit", "Edit user information"),
@@ -466,13 +468,31 @@ public class UserAdminPage extends CloudCoderPage
             //TODO get the course type?
             //TODO wtf is the in the user record and how does it get there?
             CourseRegistrationType type=null;
-            EditUserPopupPanel pop = new EditUserPopupPanel( 
-                    chosen, 
-                    course,
-                    type);
-            pop.center();
-            pop.setGlassEnabled(true);
-            pop.show();
+
+            if (NEW_EDIT_USER_DIALOG) {
+	            // FIXME: only require current password if non-instructor
+	            // FIXME: don't hard-code the section number!
+	            final EditUserDialog editUserDialog = new EditUserDialog(chosen, 101, true);
+	            editUserDialog.setEditUserCallback(new ICallback<EditedUser>() {
+	            	/* (non-Javadoc)
+	            	 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
+	            	 */
+	            	@Override
+	            	public void call(EditedUser value) {
+	            		getSession().add(StatusMessage.information("Should be editing the user"));
+	            		editUserDialog.hide();
+	            	}
+				});
+	            editUserDialog.center();
+            } else {
+	            EditUserPopupPanel pop = new EditUserPopupPanel( 
+	                    chosen, 
+	                    course,
+	                    type);
+	            pop.center();
+	            pop.setGlassEnabled(true);
+	            pop.show();
+            }
         }
         
         private void handleDeleteUser() {

@@ -111,6 +111,21 @@ public class EditUserView extends Composite {
 		initWidget(holder);
 	}
 	
+	/**
+	 * Populate field value from given {@link User} object.
+	 * 
+	 * @param user the {@link User} object
+	 * @param sectionNum the section of the course in which the {@link User} is registered
+	 */
+	public void populate(User user, int sectionNum) {
+		username.setText(user.getUsername());
+		firstname.setText(user.getFirstname());
+		lastname.setText(user.getLastname());
+		email.setText(user.getEmail());
+		website.setText(user.getWebsite());
+		section.setText(String.valueOf(sectionNum));
+	}
+	
 	private TextBox addTextBox(FlowPanel holder, String labelText) {
 		return addTextBox(holder, labelText, true);
 	}
