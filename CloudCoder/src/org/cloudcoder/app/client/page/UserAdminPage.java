@@ -78,7 +78,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class UserAdminPage extends CloudCoderPage
 {
-	private static final boolean NEW_EDIT_USER_DIALOG = false;
+	private static final boolean NEW_EDIT_USER_DIALOG = true;
 	
     private enum UserAction implements IButtonPanelAction {
         NEW("Add", "Add a new user to course"),
@@ -507,9 +507,8 @@ public class UserAdminPage extends CloudCoderPage
 					} else if (result.getList().isEmpty()) {
 						getSession().add(StatusMessage.error("Selected user is not registered in the course?"));
 					} else {
-						// FIXME: right now we only support a single registration
+						// FIXME: right now we only support a single registration per user
 						CourseRegistration firstCourseRegistration = result.getList().get(0);
-						int sectionNum = firstCourseRegistration.getSection();
 						
 				        final EditUserDialog editUserDialog = new EditUserDialog(
 				        		chosen,
@@ -517,13 +516,20 @@ public class UserAdminPage extends CloudCoderPage
 				        		firstCourseRegistration.getSection(),
 				        		false);
 				        editUserDialog.setEditUserCallback(new ICallback<EditedUser>() {
-				        	/* (non-Javadoc)
-				        	 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
-				        	 */
 				        	@Override
 				        	public void call(EditedUser value) {
-				        		getSession().add(StatusMessage.information("Should be editing the user"));
 				        		editUserDialog.hide();
+				        		
+				        		// If the password field was not left blank,
+				        		// then set the password hash in the User object
+				        		// to the (plaintext) password, so the hash can
+				        		// be updated.  Otherwise, leave it null as a signal
+				        		// to keep the current password.
+				        		if (!value.getPassword().equals("")) {
+				        			value.getUser().setPasswordHash(value.getPassword());
+				        		}
+				        		
+				        		UserAdminPage.UI.this.doEditUserRPC(value, course);
 				        	}
 						});
 				        editUserDialog.center();
@@ -532,7 +538,28 @@ public class UserAdminPage extends CloudCoderPage
 			});
 		}
         
-        private void handleDeleteUser() {
+        /**
+         * Attempt RPC call(s) to update user information.
+         * 
+		 * @param value the {@link EditedUser} object with updated user information
+		 */
+		protected void doEditUserRPC(final EditedUser editedUser, Course course) {
+			RPC.usersService.editUser(editedUser, course, new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Could not update user " + editedUser.getUser().getUsername(), caught));
+				}
+				
+				@Override
+				public void onSuccess(Boolean result) {
+					// Huzzah!
+					getSession().add(StatusMessage.goodNews("Successfully updated user " + editedUser.getUser().getUsername()));
+					reloadUsers();
+				}
+			});
+		}
+
+		private void handleDeleteUser() {
             GWT.log("Delete User not implemented");
             Window.alert("Not implemented yet, sorry");
         }

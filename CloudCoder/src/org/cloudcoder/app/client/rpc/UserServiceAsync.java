@@ -45,7 +45,9 @@ public interface UserServiceAsync
     void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type,
         AsyncCallback<Void> callback);
 	void getUserCourseRegistrationList(Course course, User user,
-			AsyncCallback<CourseRegistrationList> callback); 
+			AsyncCallback<CourseRegistrationList> callback);
+	void editUser(EditedUser editedUser, Course course,
+			AsyncCallback<Boolean> callback); 
         
         
 }

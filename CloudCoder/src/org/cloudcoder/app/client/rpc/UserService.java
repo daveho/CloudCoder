@@ -67,6 +67,18 @@ public interface UserService extends RemoteService
      */
     Boolean editUser(User user) throws CloudCoderAuthenticationException;
     
+    /**
+     * Update the user and course registration information specified
+     * by given {@link EditedUser} object.  The authenticated user must
+     * be an instructor in the course.
+     * 
+     * @param editedUser  the {@link EditedUser}
+     * @param course      the {@link Course}
+     * @return true if successful, false otherwise
+     * @throws CloudCoderAuthenticationException
+     */
+    Boolean editUser(EditedUser editedUser, Course course) throws CloudCoderAuthenticationException;
+    
     
     void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type) throws CloudCoderAuthenticationException;
     

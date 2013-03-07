@@ -55,6 +55,7 @@ public class EditUserView extends Composite {
 	private RadioButton instructorAccountButton;
 	private Label errorLabel;
 	private boolean requirePasswords;
+	private int userId;
 
 	/**
 	 * Constructor.
@@ -68,6 +69,7 @@ public class EditUserView extends Composite {
 	 */
 	public EditUserView(boolean verifyCurrentPassword, boolean requirePasswords) {
 		this.requirePasswords = requirePasswords;
+		this.userId = 0;
 		
 		FlowPanel holder = new FlowPanel();
 		
@@ -126,6 +128,7 @@ public class EditUserView extends Composite {
 	 * @param isInstructor true if the {@link User} being edited is an instructor in the course 
 	 */
 	public void populate(User user, int sectionNum, boolean isInstructor) {
+		userId = user.getId();
 		username.setText(user.getUsername());
 		firstname.setText(user.getFirstname());
 		lastname.setText(user.getLastname());
@@ -212,6 +215,7 @@ public class EditUserView extends Composite {
 	
 	public EditedUser getData() {
 		User user = new User();
+		user.setId(userId); // use user id set by populate() (if there was one)
 		user.setUsername(username.getValue().trim());
 		user.setFirstname(firstname.getValue().trim());
 		user.setLastname(lastname.getValue().trim());

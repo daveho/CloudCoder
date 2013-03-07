@@ -88,6 +88,29 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     }
     
     @Override
+    public Boolean editUser(EditedUser editedUser, Course course) throws CloudCoderAuthenticationException {
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+    	
+    	CourseRegistrationList authUserRegList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
+    	if (!authUserRegList.isInstructor()) {
+    		// Not authorized
+    		return false;
+    	}
+    	
+    	if (editedUser.getUser() == null) {
+    		logger.warn("EditedUser object doesn't seem to have a User in it");
+    		return false;
+    	}
+    	
+    	// Edit user information
+    	Database.getInstance().editUser(editedUser.getUser());
+    	
+    	// This IDatabase method isn't actually implemented yet:
+    	//Database.getInstance().editRegistrationType(editedUser.getUser().getId(), course.getId(), editedUser.getRegistrationType());
+    	return true;
+    }    
+    
+    @Override
     public void editCourseRegistrationType(int userId, int courseId, CourseRegistrationType type)
     throws CloudCoderAuthenticationException
     {
