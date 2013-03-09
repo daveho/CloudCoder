@@ -228,7 +228,7 @@ public class ConfigureCloudCoder
 						"Use the previous configuration settings as defaults?", "yes");
 				if (!reuse.trim().toLowerCase().equals("yes")) {
 					// Don't use
-					origConfig = null;
+					origConfig = new Properties();
 				}
 			}
 
