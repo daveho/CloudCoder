@@ -42,20 +42,13 @@ public class LogoutHandler implements Runnable {
 			public void onFailure(Throwable caught) {
 				GWT.log("Could not log out?", caught);
 
-				// well, at least we tried
-				clearSessionData();
+				// Well, at least we tried.
+				// Publish the LOGOUT event.
+				session.notifySubscribers(Session.Event.LOGOUT, null);
 			}
 
 			@Override
 			public void onSuccess(Void result) {
-				// server has purged the session
-				clearSessionData();
-			}
-
-			protected void clearSessionData() {
-				// Clear all session objects
-				session.clear();
-
 				// Publish the LOGOUT event.
 				session.notifySubscribers(Session.Event.LOGOUT, null);
 			}

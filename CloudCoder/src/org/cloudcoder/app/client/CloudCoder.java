@@ -54,6 +54,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  */
 public class CloudCoder implements EntryPoint, Subscriber {
 	private Session session;
+	private PageStack pageStack;
 	private SubscriptionRegistrar subscriptionRegistrar;
 	private CloudCoderPage currentPage;
 	
@@ -62,7 +63,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 */
 	public void onModuleLoad() {
 		session = new Session();
-		PageStack pageStack = new PageStack();
+		pageStack = new PageStack();
 		session.add(pageStack);
 		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
 		
@@ -280,8 +281,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			PageId current = session.get(PageStack.class).getTop();
 			changePage(createPageForPageId(current));
 		} else if (key == Session.Event.LOGOUT) {
-			// On logout, add a new empty PageStack and go back to the LoginPage.
-			session.add(new PageStack());
+			// On logout, clear the Session and PageStack,
+			// add the PageStack back to the Session,
+			// and go back to the LoginPage.
+			session.clear();
+			pageStack.clear();
+			session.add(pageStack);
 			changePage(new LoginPage());
 		}
 	}
