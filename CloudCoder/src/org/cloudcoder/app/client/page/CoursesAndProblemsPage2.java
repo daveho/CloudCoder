@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -223,7 +224,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		private void loadProblemButtonClicked() {
 			Problem problem = getSession().get(Problem.class);
 			if (problem != null) {
-				getSession().notifySubscribers(Session.Event.PROBLEM_CHOSEN, problem);
+				// Switch to DevelopmentPage
+				getSession().get(PageStack.class).push(PageId.DEVELOPMENT);
 			}
 		}
 
@@ -375,10 +377,11 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		}
 
 		protected void handleCourseAdminButtonClicked() {
-			GWT.log("Course admin button clicked");
+			GWT.log("Problem admin button clicked");
 			Course course = getCurrentCourse();
 			if (course != null) {
-				getSession().notifySubscribers(Session.Event.COURSE_ADMIN, course);
+				// Switch to ProblemAdmin page
+				getSession().get(PageStack.class).push(PageId.PROBLEM_ADMIN);
 			}
 		}
 
@@ -386,7 +389,8 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			GWT.log("User admin button clicked");
 			Course course = getCurrentCourse();
 			if (course != null) {
-				getSession().notifySubscribers(Session.Event.USER_ADMIN, course);
+				// Switch to UserAdmin page
+				getSession().get(PageStack.class).push(PageId.USER_ADMIN);
 			}
 		}
 
@@ -394,7 +398,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			GWT.log("My account button clicked");
 			Course course = getCurrentCourse();
 			if(course != null) {
-				getSession().notifySubscribers(Session.Event.USER_ACCOUNT, course);
+				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT);
 			}
 		}
 		
@@ -453,5 +457,10 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.COURSES_AND_PROBLEMS;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		// Nothing to do: this is the home page
 	}
 }

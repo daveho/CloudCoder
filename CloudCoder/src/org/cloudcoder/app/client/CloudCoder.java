@@ -21,12 +21,12 @@ import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.QuizPage;
 import org.cloudcoder.app.client.page.StatisticsPage;
 import org.cloudcoder.app.client.page.UserAccountPage;
@@ -62,8 +62,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 */
 	public void onModuleLoad() {
 		session = new Session();
-		session.add(new PageStack());
+		PageStack pageStack = new PageStack();
+		session.add(pageStack);
 		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+		
+		// Subscribe to PAGE_CHANGE events in the PageStack
+		pageStack.subscribe(PageStack.Event.PAGE_CHANGE, this, subscriptionRegistrar);
 
 		// Subscribe to all Session events
 		session.subscribeToAll(Session.Event.values(), this, subscriptionRegistrar);
@@ -145,46 +149,61 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		try {
 			PageId pageId = PageId.valueOf(name);
 			
-			switch (pageId) {
-			case COURSES_AND_PROBLEMS:
-				page = new CoursesAndProblemsPage2();
-				break;
-			case DEVELOPMENT:
-				page = new DevelopmentPage();
-				break;
-			case PROBLEM_ADMIN:
-				page = new ProblemAdminPage();
-				break;
-			case EDIT_PROBLEM:
-				page= new EditProblemPage();
-				break;
-			case USER_ADMIN:
-				page = new UserAdminPage();
-				break;
-			case STATISTICS:
-				page = new StatisticsPage();
-				break;
-			case USER_PROGRESS:
-				page = new UserProgressPage();
-				break;
-			case QUIZ:
-				page = new QuizPage();
-				break;
-			default:
-				GWT.log("Don't know what kind of page to create for " + pageId);
-				break;
-			}
+			page = createPageForPageId(pageId);
 		} catch (IllegalArgumentException e) {
 			GWT.log("Illegal activity name: " + name);
-		}
-		
-		// This shouldn't happen (can't find page for Activity),
-		// but if it does, go to the courses and problems page.
-		if (page == null) {
-			GWT.log("Can't find activity " + result.getName());
 			page = new CoursesAndProblemsPage2();
 		}
 		
+		// Create a reasonable PageStack.
+		// (Note that we need to disable notifications while we do this,
+		// since we're not actually navigating pages.)
+		PageStack pageStack = session.get(PageStack.class);
+		pageStack.setNotifications(false);
+		page.initDefaultPageStack(pageStack);
+		pageStack.push(page.getPageId());
+		pageStack.setNotifications(true);
+		
+		return page;
+	}
+
+	private CloudCoderPage createPageForPageId(PageId pageId) {
+		CloudCoderPage page;
+		switch (pageId) {
+		case COURSES_AND_PROBLEMS:
+			page = new CoursesAndProblemsPage2();
+			break;
+		case DEVELOPMENT:
+			page = new DevelopmentPage();
+			break;
+		case PROBLEM_ADMIN:
+			page = new ProblemAdminPage();
+			break;
+		case EDIT_PROBLEM:
+			page= new EditProblemPage();
+			break;
+		case USER_ADMIN:
+			page = new UserAdminPage();
+			break;
+		case STATISTICS:
+			page = new StatisticsPage();
+			break;
+		case USER_PROGRESS:
+			page = new UserProgressPage();
+			break;
+		case QUIZ:
+			page = new QuizPage();
+			break;
+		case USER_ACCOUNT:
+			page = new UserAccountPage();
+			break;
+		default:
+			// This shouldn't happen (can't find page for Activity),
+			// but if it does, go to the courses and problems page.
+			GWT.log("Don't know what kind of page to create for " + pageId);
+			page = new CoursesAndProblemsPage2();
+			break;
+		}
 		return page;
 	}
 	
@@ -200,6 +219,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 * @return the {@link Activity}
 	 */
 	public static Activity getActivityForSessionAndPage(CloudCoderPage page, Session session) {
+		// The activity name is the page's PageId (as a string)
 		Activity activity = new Activity(page.getPageId().toString());
 		
 		// Record the Session objects (the ones that are ActivityObjects)
@@ -255,26 +275,14 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		// This is where we monitor for events that indicate page changes.
-		if (key == Session.Event.LOGIN || key == Session.Event.BACK_HOME) {
-			changePage(new CoursesAndProblemsPage2());
-		} else if (key == Session.Event.PROBLEM_CHOSEN) {
-			changePage(new DevelopmentPage());
-		} else if (key == Session.Event.COURSE_ADMIN) {
-		    changePage(new ProblemAdminPage());
-		} else if (key == Session.Event.USER_ADMIN) {
-		    changePage(new UserAdminPage());
+		// The PageStack makes this pretty straightforward.
+		if (key == PageStack.Event.PAGE_CHANGE) {
+			PageId current = session.get(PageStack.class).getTop();
+			changePage(createPageForPageId(current));
 		} else if (key == Session.Event.LOGOUT) {
+			// On logout, add a new empty PageStack and go back to the LoginPage.
+			session.add(new PageStack());
 			changePage(new LoginPage());
-		} else if (key == Session.Event.EDIT_PROBLEM) {
-			changePage(new EditProblemPage());
-		} else if (key == Session.Event.USER_ACCOUNT) {
-		    changePage(new UserAccountPage());
-		} else if (key == Session.Event.START_QUIZ) {
-			changePage(new QuizPage());
-		} else if (key == Session.Event.STATISTICS) {
-			changePage(new StatisticsPage());
-		} else if (key == Session.Event.USER_PROGRESS) {
-			changePage(new UserProgressPage());
 		}
 	}
 }

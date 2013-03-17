@@ -21,30 +21,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.shared.util.Publisher;
 
 /**
  * Stack of {@link PageId}s representing the user's navigation
- * history.
+ * history.  A PAGE_CHANGE event is published when a page id is
+ * pushed or popped (unless notifications are disabled).
  * 
  * @author David Hovemeyer
  */
-public class PageStack {
+public class PageStack extends Publisher {
+	/** Events published by the page stack. */
+	public enum Event {
+		PAGE_CHANGE,
+	}
+	
 	private List<PageId> stack;
+	private boolean notifications;
 	
 	/**
 	 * Constructor.
 	 */
 	public PageStack() {
 		this.stack = new ArrayList<PageId>();
+		this.notifications = true;
 	}
 	
 	/**
 	 * Push a new page.
 	 * 
-	 * @param cls the {@link PageId} of the page to push
+	 * @param id the {@link PageId} of the page to push
 	 */
-	public void push(PageId cls) {
-		stack.add(cls);
+	public void push(PageId id) {
+		stack.add(id);
+		if (notifications) {
+			notifySubscribers(Event.PAGE_CHANGE, id);
+		}
 	}
 	
 	/**
@@ -54,7 +66,18 @@ public class PageStack {
 	 */
 	public PageId pop() {
 		int last = stack.size() - 1;
-		return stack.remove(last);
+		PageId id = stack.remove(last);
+		if (notifications) {
+			notifySubscribers(Event.PAGE_CHANGE, id);
+		}
+		return id;
+	}
+	
+	/**
+	 * @return  the {@link PageId} on top of the stack
+	 */
+	public PageId getTop() {
+		return stack.get(stack.size() - 1);
 	}
 	
 	/**
@@ -62,5 +85,24 @@ public class PageStack {
 	 */
 	public boolean isEmpty() {
 		return stack.isEmpty();
+	}
+
+	/**
+	 * Clear the page stack.
+	 */
+	public void clear() {
+		stack.clear();
+	}
+
+	/**
+	 * Enable or disable notifications to subscribers.
+	 * disabling notifications is useful when reconstructing
+	 * navigation history: for example, when restoring the
+	 * current activity.
+	 * 
+	 * @param b true to enable notifications, false to disable
+	 */
+	public void setNotifications(boolean b) {
+		this.notifications = b;
 	}
 }

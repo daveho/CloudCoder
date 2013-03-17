@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.NamedTestResult;
@@ -247,7 +248,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			
 			// Add logout and back handlers
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-			pageNavPanel.setBackHandler(new BackHomeHandler(session) {
+			pageNavPanel.setBackHandler(new PageBackHandler(session) {
 				@Override
 				public void run() {
 					// Before executing superclass run method, remove
@@ -897,5 +898,10 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.DEVELOPMENT;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
 	}
 }

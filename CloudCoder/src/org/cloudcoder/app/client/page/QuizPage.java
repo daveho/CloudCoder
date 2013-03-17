@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -63,13 +64,7 @@ public class QuizPage extends CloudCoderPage {
 			
 			LayoutPanel northPanel = new LayoutPanel();
 			PageNavPanel navPanel = new PageNavPanel();
-			navPanel.setBackHandler(new Runnable() {
-				@Override
-				public void run() {
-					GWT.log("Going back to course admin page");
-					getSession().notifySubscribers(Session.Event.COURSE_ADMIN, null);
-				}
-			});
+			navPanel.setBackHandler(new PageBackHandler(getSession()));
 			navPanel.setLogoutHandler(new LogoutHandler(getSession()));
 			northPanel.add(navPanel);
 			northPanel.setWidgetTopHeight(navPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
@@ -318,5 +313,11 @@ public class QuizPage extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.QUIZ;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
+		pageStack.push(PageId.PROBLEM_ADMIN);
 	}
 }

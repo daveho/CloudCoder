@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
@@ -24,7 +25,6 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemProgressView;
 import org.cloudcoder.app.client.view.SectionSelectionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
-import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -162,13 +162,7 @@ public class StatisticsPage extends CloudCoderPage {
 			problemLabel.setText("Statistics for " + problem.toNiceString() + " in " + courseSelection.getCourse().getName());
 			
 			// Set back/logout handlers
-			pageNavPanel.setBackHandler(new Runnable() {
-				@Override
-				public void run() {
-					// Go back to course admin page
-					session.notifySubscribers(Session.Event.COURSE_ADMIN, session.get(Course.class));
-				}
-			});
+			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 		}
 		
@@ -208,5 +202,11 @@ public class StatisticsPage extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.STATISTICS;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
+		pageStack.push(PageId.PROBLEM_ADMIN);
 	}
 }

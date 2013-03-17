@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -360,7 +361,7 @@ public class UserAccountPage extends CloudCoderPage
             session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
             
             // Activate views
-            pageNavPanel.setBackHandler(new BackHomeHandler(session));
+            pageNavPanel.setBackHandler(new PageBackHandler(session));
             pageNavPanel.setLogoutHandler(new LogoutHandler(session));
             userAccountView.activate(session, subscriptionRegistrar);
             statusMessageView.activate(session, subscriptionRegistrar);
@@ -474,5 +475,10 @@ public class UserAccountPage extends CloudCoderPage
     @Override
     public PageId getPageId() {
     	return PageId.USER_ACCOUNT;
+    }
+    
+    @Override
+    public void initDefaultPageStack(PageStack pageStack) {
+    	pageStack.push(PageId.COURSES_AND_PROBLEMS);
     }
 }

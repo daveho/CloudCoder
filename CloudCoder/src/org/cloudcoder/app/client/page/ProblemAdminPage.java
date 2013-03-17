@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -330,7 +331,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 				@Override
 				public void call(ProblemAndTestCaseList value) {
 					getSession().add(value);
-					getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, value);
+					getSession().get(PageStack.class).push(PageId.EDIT_PROBLEM);
 				}
 			});
 		}
@@ -375,11 +376,8 @@ public class ProblemAdminPage extends CloudCoderPage {
 		 * 
 		 */
 		private void handleStatistics() {
-			// Get the selected problem
-			final Problem chosen = getSession().get(Problem.class);
-			
 			// Switch to the StatisticsPage
-			getSession().notifySubscribers(Session.Event.STATISTICS, chosen);
+			getSession().get(PageStack.class).push(PageId.STATISTICS);
 		}
 
 		/**
@@ -445,7 +443,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 			problemAndTestCaseList.setProblem(problem);
 			problemAndTestCaseList.setTestCaseList(testCaseList);
 			getSession().add(problemAndTestCaseList);
-			getSession().notifySubscribers(Session.Event.EDIT_PROBLEM, problemAndTestCaseList);
+			getSession().get(PageStack.class).push(PageId.EDIT_PROBLEM);
 		}
 		
 		private void handleQuiz() {
@@ -456,7 +454,8 @@ public class ProblemAdminPage extends CloudCoderPage {
 					return;
 				}
 				
-				getSession().notifySubscribers(Session.Event.START_QUIZ, selected);
+				// Switch to the Quiz page
+				getSession().get(PageStack.class).push(PageId.QUIZ);
 			}
 		}
 
@@ -464,7 +463,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 			
 			// Activate views
-			pageNavPanel.setBackHandler(new BackHomeHandler(session));
+			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			courseAdminProblemListView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
@@ -599,4 +598,8 @@ public class ProblemAdminPage extends CloudCoderPage {
 		return PageId.PROBLEM_ADMIN;
 	}
 
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
+	}
 }

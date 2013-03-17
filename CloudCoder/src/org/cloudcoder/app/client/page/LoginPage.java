@@ -1,5 +1,6 @@
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -157,7 +158,7 @@ public class LoginPage extends CloudCoderPage {
 					} else {
 						// Successful login!
 						getSession().add(result);
-						getSession().notifySubscribers(Session.Event.LOGIN, result);
+						getSession().get(PageStack.class).push(PageId.COURSES_AND_PROBLEMS);
 					}
 				}
 			});
@@ -201,5 +202,10 @@ public class LoginPage extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.LOGIN;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		throw new IllegalStateException("Not an activity");
 	}
 }

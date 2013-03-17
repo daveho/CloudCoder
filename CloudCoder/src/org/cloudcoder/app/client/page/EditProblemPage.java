@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -289,7 +290,8 @@ public class EditProblemPage extends CloudCoderPage {
 							// reload the problem list for the Course.
 							getSession().remove(ProblemAndSubmissionReceipt[].class);
 							
-							session.notifySubscribers(Session.Event.COURSE_ADMIN, course);
+							// Go back to previous page.
+							session.get(PageStack.class).pop();
 						}
 					});
 				}
@@ -515,5 +517,11 @@ public class EditProblemPage extends CloudCoderPage {
 	@Override
 	public PageId getPageId() {
 		return PageId.EDIT_PROBLEM;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
+		pageStack.push(PageId.PROBLEM_ADMIN);
 	}
 }
