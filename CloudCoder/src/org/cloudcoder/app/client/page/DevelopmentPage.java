@@ -23,6 +23,7 @@ import java.util.List;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.NamedTestResult;
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -891,5 +892,10 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public boolean isActivity() {
 		return true;
+	}
+	
+	@Override
+	public PageId getPageId() {
+		return PageId.DEVELOPMENT;
 	}
 }

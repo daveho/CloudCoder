@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client;
 
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -61,6 +62,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 */
 	public void onModuleLoad() {
 		session = new Session();
+		session.add(new PageStack());
 		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
 
 		// Subscribe to all Session events
@@ -136,26 +138,54 @@ public class CloudCoder implements EntryPoint, Subscriber {
 
 	protected CloudCoderPage getPageForActivity(Activity result) {
 		String name = result.getName();
-		if (name.equals(CoursesAndProblemsPage2.class.getName())) {
-			return new CoursesAndProblemsPage2();
-		} else if (name.equals(DevelopmentPage.class.getName())) {
-			return new DevelopmentPage();
-		} else if (name.equals(ProblemAdminPage.class.getName())) {
-			return new ProblemAdminPage();
-		} else if (name.equals(EditProblemPage.class.getName())) {
-			return new EditProblemPage();
-		} else if (name.equals(QuizPage.class.getName())) {
-			return new QuizPage();
-		} else if (name.equals(StatisticsPage.class.getName())) {
-			return new StatisticsPage();
-		} else if (name.equals(UserProgressPage.class.getName())) {
-			return new UserProgressPage();
+		
+		CloudCoderPage page = null;
+		
+		// The activity name must be the string representation of a PageId.
+		try {
+			PageId pageId = PageId.valueOf(name);
+			
+			switch (pageId) {
+			case COURSES_AND_PROBLEMS:
+				page = new CoursesAndProblemsPage2();
+				break;
+			case DEVELOPMENT:
+				page = new DevelopmentPage();
+				break;
+			case PROBLEM_ADMIN:
+				page = new ProblemAdminPage();
+				break;
+			case EDIT_PROBLEM:
+				page= new EditProblemPage();
+				break;
+			case USER_ADMIN:
+				page = new UserAdminPage();
+				break;
+			case STATISTICS:
+				page = new StatisticsPage();
+				break;
+			case USER_PROGRESS:
+				page = new UserProgressPage();
+				break;
+			case QUIZ:
+				page = new QuizPage();
+				break;
+			default:
+				GWT.log("Don't know what kind of page to create for " + pageId);
+				break;
+			}
+		} catch (IllegalArgumentException e) {
+			GWT.log("Illegal activity name: " + name);
 		}
 		
 		// This shouldn't happen (can't find page for Activity),
 		// but if it does, go to the courses and problems page.
-		GWT.log("Can't find activity " + result.getName());
-		return new CoursesAndProblemsPage2();
+		if (page == null) {
+			GWT.log("Can't find activity " + result.getName());
+			page = new CoursesAndProblemsPage2();
+		}
+		
+		return page;
 	}
 	
 	protected Activity getActivityForPage(CloudCoderPage page) {
@@ -170,7 +200,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 * @return the {@link Activity}
 	 */
 	public static Activity getActivityForSessionAndPage(CloudCoderPage page, Session session) {
-		Activity activity = new Activity(page.getClass().getName());
+		Activity activity = new Activity(page.getPageId().toString());
 		
 		// Record the Session objects (the ones that are ActivityObjects)
 		for (Object obj : session.getObjects()) {

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.CloudCoder;
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -233,4 +234,9 @@ public abstract class CloudCoderPage {
 		return courseSelection != null ? courseSelection.getCourse() : null;
 	}
 
+	/**
+	 * @return the {@link PageId} for this page
+	 */
+	public abstract PageId getPageId();
+	
 }

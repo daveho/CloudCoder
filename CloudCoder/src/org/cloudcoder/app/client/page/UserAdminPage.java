@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.model.UserSelection;
@@ -652,5 +653,10 @@ public class UserAdminPage extends CloudCoderPage
     @Override
     public boolean isActivity() {
         return true;
+    }
+    
+    @Override
+    public PageId getPageId() {
+    	return PageId.USER_ADMIN;
     }
 }

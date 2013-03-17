@@ -1,5 +1,6 @@
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -195,5 +196,10 @@ public class LoginPage extends CloudCoderPage {
 	@Override
 	public boolean isActivity() {
 		return false;
+	}
+	
+	@Override
+	public PageId getPageId() {
+		return PageId.LOGIN;
 	}
 }

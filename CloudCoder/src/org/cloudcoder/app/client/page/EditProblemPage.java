@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -511,4 +512,8 @@ public class EditProblemPage extends CloudCoderPage {
 		return true;
 	}
 	
+	@Override
+	public PageId getPageId() {
+		return PageId.EDIT_PROBLEM;
+	}
 }
