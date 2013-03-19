@@ -20,9 +20,11 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.NamedTestResult;
+import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -246,16 +248,19 @@ public class DevelopmentPage extends CloudCoderPage {
 			
 			// Add logout and back handlers
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-			pageNavPanel.setBackHandler(new BackHomeHandler(session) {
+			pageNavPanel.setBackHandler(new PageBackHandler(session) {
 				@Override
 				public void run() {
-					// Before executing superclass run method, remove
-					// Problem and QuizInProgress (if any) from the session.
+					// If the Session has a QuizInProgress, remove it and
+					// also the Problem.
 					// This prevents issues such as a quiz problem that
 					// should no longer be accessible lingering in the
 					// user's client-side session.
-					session.remove(Problem.class);
-					session.remove(QuizInProgress.class);
+					if (session.get(QuizInProgress.class) != null) {
+						session.remove(Problem.class);
+						session.remove(QuizInProgress.class);
+					}
+					
 					super.run();
 				}
 			});
@@ -891,5 +896,15 @@ public class DevelopmentPage extends CloudCoderPage {
 	@Override
 	public boolean isActivity() {
 		return true;
+	}
+	
+	@Override
+	public PageId getPageId() {
+		return PageId.DEVELOPMENT;
+	}
+	
+	@Override
+	public void initDefaultPageStack(PageStack pageStack) {
+		pageStack.push(PageId.COURSES_AND_PROBLEMS);
 	}
 }
