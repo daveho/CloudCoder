@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -81,5 +82,8 @@ public interface GetCoursesAndProblemsServiceAsync {
 
 	void getAllSubmissionReceiptsForUser(Problem problem, User user,
 			AsyncCallback<SubmissionReceipt[]> callback);
+
+	void getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt,
+			AsyncCallback<NamedTestResult[]> callback);
 
 }

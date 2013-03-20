@@ -21,16 +21,17 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -575,5 +576,18 @@ public interface IDatabase {
 	 * @return the problem text
 	 */
 	public ProblemText getSubmissionText(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
+
+	/**
+	 * Get test results for given submission.
+	 * Authenticated user must either be the submission's user,
+	 * or an instructor in the course containing the problem for
+	 * which the submission was submitted.
+	 * 
+	 * @param authenticatedUser the authenticated user
+	 * @param problem           the problem
+	 * @param receipt           the submission for the problem
+	 * @return the test results, or an empty list if the user isn't permitted to access them
+	 */
+	public NamedTestResult[] getTestResultsForSubmission(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
 
 }

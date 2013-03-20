@@ -47,6 +47,7 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -2084,11 +2085,13 @@ public class JDBCDatabase implements IDatabase {
 						"select c.text from cc_changes as c, cc_events as e " +
 						" where c.event_id = e.id " +
 						"   and c.event_id = ? " +
-						"   and (e.user_id = ? or ? = 1)"
+						"   and (e.user_id = ? or ? = 1) " +
+						"   and e.problem_id = ?"
 				);
 				stmt.setInt(1, receipt.getLastEditEventId());
 				stmt.setInt(2, authenticatedUser.getId());
 				stmt.setInt(3, regList.isInstructor() ? 1 : 0);
+				stmt.setInt(4, problem.getProblemId());
 				
 				ResultSet resultSet = executeQuery(stmt);
 				ProblemText result;
@@ -2105,6 +2108,59 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " getting submission text";
+			}
+		});
+	}
+	
+	@Override
+	public NamedTestResult[] getTestResultsForSubmission(final User authenticatedUser, final Problem problem, final SubmissionReceipt receipt) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<NamedTestResult[]>() {
+			@Override
+			public NamedTestResult[] run(Connection conn) throws SQLException {
+				
+				CourseRegistrationList regList = doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				
+				// Get all test results
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select tr.*,  e.* from cc_test_results as tr, cc_submission_receipts as sr, cc_events as e " +
+						" where e.id = ?" +
+						"   and tr.submission_receipt_event_id = e.id " +
+						"   and sr.event_id = e.id " +
+						"   and (e.user_id = ? or ? = 1) " +
+						"   and e.problem_id = ? " +
+						" order by tr.id asc"
+				);
+				stmt.setInt(1, receipt.getEventId());
+				stmt.setInt(2, authenticatedUser.getId());
+				stmt.setInt(3, regList.isInstructor() ? 1 : 0);
+				stmt.setInt(4, problem.getProblemId());
+				
+				// Get the test results (which we are assumed as stored in order by id)
+				List<TestResult> testResults = new ArrayList<TestResult>();
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					TestResult testResult = new TestResult();
+					DBUtil.loadModelObjectFields(testResult, TestResult.SCHEMA, resultSet);
+					testResults.add(testResult);
+				}
+				
+				// Get the test cases (so we can find out the test case names)
+				List<TestCase> testCases = doGetTestCasesForProblem(conn, problem.getProblemId(), this);
+				
+				// Build the list of NamedTestResults
+				NamedTestResult[] results = new NamedTestResult[testResults.size()];
+				for (int i = 0; i < results.length; i++) {
+					String testCaseName = (i < testCases.size() ? testCases.get(i).getTestCaseName() : ("t" + i));
+					NamedTestResult namedTestResult = new NamedTestResult(testCaseName, testResults.get(i));
+					results[i] = namedTestResult;
+				}
+
+				return results;
+			}
+			@Override
+			public String getDescription() {
+				return " getting test results for submission";
 			}
 		});
 	}

@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.model;
+package org.cloudcoder.app.shared.model;
+
+import java.io.Serializable;
 
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -26,9 +28,17 @@ import org.cloudcoder.app.shared.model.TestResult;
  * 
  * @author David Hovemeyer
  */
-public class NamedTestResult {
+public class NamedTestResult implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String testCaseName;
 	private TestResult testResult;
+	
+	/**
+	 * Default constructor.
+	 */
+	public NamedTestResult() {
+	}
 	
 	/**
 	 * Constructor.
@@ -38,6 +48,24 @@ public class NamedTestResult {
 	 */
 	public NamedTestResult(String testCaseName, TestResult testResult) {
 		this.testCaseName = testCaseName;
+		this.testResult = testResult;
+	}
+	
+	/**
+	 * Set the test case name.
+	 * 
+	 * @param testCaseName the test case name
+	 */
+	public void setTestCaseName(String testCaseName) {
+		this.testCaseName = testCaseName;
+	}
+	
+	/**
+	 * Set the test result.
+	 * 
+	 * @param testResult the test result
+	 */
+	public void setTestResult(TestResult testResult) {
 		this.testResult = testResult;
 	}
 	

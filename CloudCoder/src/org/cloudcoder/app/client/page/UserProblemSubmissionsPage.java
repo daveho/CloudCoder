@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.client.view.ViewUtil;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -59,7 +60,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  */
 public class UserProblemSubmissionsPage extends CloudCoderPage {
 	private class UI extends Composite implements SessionObserver {
-		private static final double SLIDER_HEIGHT_PX = 24.0;
+		private static final double SLIDER_HEIGHT_PX = 28.0;
 		
 		private Label usernameAndProblemLabel;
 		private PageNavPanel pageNavPanel;
@@ -94,12 +95,12 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			submissionSlider.setMaximum(10);
 			northPanel.add(submissionSlider);
 			northPanel.setWidgetLeftRight(submissionSlider, (38.0 * 2), Unit.PX, 0, Unit.PX);
-			northPanel.setWidgetTopHeight(submissionSlider, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(submissionSlider, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			
 			this.prevSubmissionButton = new Button("<");
 			northPanel.add(prevSubmissionButton);
 			northPanel.setWidgetLeftWidth(prevSubmissionButton, 0.0, Unit.PX, 30, Unit.PX);
-			northPanel.setWidgetTopHeight(prevSubmissionButton, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(prevSubmissionButton, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			prevSubmissionButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -110,7 +111,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			this.nextSubmissionButton = new Button(">");
 			northPanel.add(nextSubmissionButton);
 			northPanel.setWidgetLeftWidth(nextSubmissionButton, 38.0, Unit.PX, 30, Unit.PX);
-			northPanel.setWidgetTopHeight(nextSubmissionButton, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(nextSubmissionButton, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			nextSubmissionButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -237,7 +238,8 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 
 		private void onSelectSubmission(SubmissionReceipt receipt) {
 			// Load text
-			RPC.editCodeService.getSubmissionText(getSession().get(Problem.class), receipt, new AsyncCallback<ProblemText>() {
+			Problem problem = getSession().get(Problem.class);
+			RPC.editCodeService.getSubmissionText(problem, receipt, new AsyncCallback<ProblemText>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					getSession().add(StatusMessage.error("Couldn't get text for submission", caught));
@@ -246,6 +248,18 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				@Override
 				public void onSuccess(ProblemText result) {
 					editor.setText(result.getText());
+				}
+			});
+			
+			// Get test results
+			RPC.getCoursesAndProblemsService.getTestResultsForSubmission(problem, receipt, new AsyncCallback<NamedTestResult[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Couldn't load test results for submission", caught));
+				}
+				
+				public void onSuccess(NamedTestResult[] result) {
+					getSession().add(result);
 				}
 			});
 		}

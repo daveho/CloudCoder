@@ -17,10 +17,11 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -238,4 +239,16 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws CloudCoderAuthenticationException
 	 */
 	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get all test results for given submission.
+	 * Authenticated user must either be the user specified in the
+	 * submission receipt, or an instructor in the course.
+	 * 
+	 * @param problem the problem
+	 * @param receipt the submission receipt
+	 * @return the test results
+	 * @throws CloudCoderAuthenticationException 
+	 */
+	public NamedTestResult[] getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException;
 }

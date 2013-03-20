@@ -23,7 +23,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
@@ -50,12 +49,12 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.ModuleNameComparator;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
-import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
@@ -453,5 +452,11 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		}
 		
 		return Database.getInstance().getAllSubmissionReceiptsForUser(problem, user);
+	}
+	
+	@Override
+	public NamedTestResult[] getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		return Database.getInstance().getTestResultsForSubmission(authenticatedUser, problem, receipt);
 	}
 }
