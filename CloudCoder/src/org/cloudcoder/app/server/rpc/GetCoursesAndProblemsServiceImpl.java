@@ -57,6 +57,7 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -168,31 +169,6 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getProblemAndSubscriptionReceiptsInCourse(user, course, forUser, module);
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
 	}
-	
-//	/* (non-Javadoc)
-//	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getProblemAndSubscriptionReceipts(org.cloudcoder.app.shared.model.Course)
-//	 */
-//	@Override
-//	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
-//			Course course, User user) throws CloudCoderAuthenticationException {
-//
-//		logger.warn("yay! getting submission receipts for user "+user.getUsername());
-//		
-//		List<ProblemAndSubmissionReceipt> resultList = new LinkedList<ProblemAndSubmissionReceipt>();
-//		ProblemList problems = Database.getInstance().getProblemsInCourse(user, course);
-//		for(Problem p : problems.getProblemList()){
-//			List<UserAndSubmissionReceipt> e = Database.getInstance().getBestSubmissionReceipts(course, 0, p);
-//			for(UserAndSubmissionReceipt pair : e){
-//				if(pair.getUser().getId() == user.getId()){
-//					// FIXME: is it a problem that we're not including Modules in the ProblemAndSubmissionReceipts?
-//					resultList.add(new ProblemAndSubmissionReceipt(p,pair.getSubmissionReceipt(),null));
-//				}
-//			}
-//		}
-//		
-//		//List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getBestSubmissionReceipts(course, problemId).getProblemAndSubscriptionReceiptsInCourse(user, course);
-//		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
-//	}
 	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getBestSubmissionReceipts(org.cloudcoder.app.shared.model.Problem)
@@ -463,5 +439,19 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 
 		return Database.getInstance().getSectionsForCourse(course, user);
+	}
+	
+	@Override
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		// Make sure authenticated user is an instructor
+		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, problem.getCourseId());
+		if (!regList.isInstructor()) {
+			return new SubmissionReceipt[0];
+		}
+		
+		return Database.getInstance().getAllSubmissionReceiptsForUser(problem, user);
 	}
 }

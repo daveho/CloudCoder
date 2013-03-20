@@ -2025,6 +2025,46 @@ public class JDBCDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	@Override
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(final Problem problem, final User user) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt[]>() {
+			@Override
+			public SubmissionReceipt[] run(Connection conn) throws SQLException {
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select sr.*, e.* from cc_submission_receipts as sr, cc_events as e " +
+						"  where sr.event_id = e.id " +
+						"    and e.user_id = ? " +
+						"    and e.problem_id = ? " +
+						" order by e.timestamp asc"
+				);
+				stmt.setInt(1, user.getId());
+				stmt.setInt(2, problem.getProblemId());
+				
+				ArrayList<SubmissionReceipt> result = new ArrayList<SubmissionReceipt>();
+				
+				ResultSet resultSet = executeQuery(stmt);
+				while (resultSet.next()) {
+					int index = 1;
+					SubmissionReceipt receipt = new SubmissionReceipt();
+					index = DBUtil.loadModelObjectFields(receipt, SubmissionReceipt.SCHEMA, resultSet, index);
+					Event event = new Event();
+					index = DBUtil.loadModelObjectFields(event, Event.SCHEMA, resultSet, index);
+					
+					receipt.setEvent(event);
+					
+					result.add(receipt);
+				}
+				
+				return result.toArray(new SubmissionReceipt[result.size()]);
+			}
+			@Override
+			public String getDescription() {
+				return " getting subscription receipts for user";
+			}
+		});
+	}
 
 	/**
 	 * Run a database transaction and return the result.

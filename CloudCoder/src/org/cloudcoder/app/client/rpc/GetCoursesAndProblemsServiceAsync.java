@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
@@ -42,9 +43,6 @@ public interface GetCoursesAndProblemsServiceAsync {
 
 	void getProblemAndSubscriptionReceipts(Course course, User forUser, Module module,
 			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
-
-//	void getProblemAndSubscriptionReceipts(Course course, User user,
-//			AsyncCallback<ProblemAndSubmissionReceipt[]> callback);
 
 	void getBestSubmissionReceipts(Problem problem, int section,
 			AsyncCallback<UserAndSubmissionReceipt[]> callback);
@@ -80,5 +78,8 @@ public interface GetCoursesAndProblemsServiceAsync {
 			AsyncCallback<Module> callback);
 
 	void getSectionsForCourse(Course course, AsyncCallback<Integer[]> callback);
+
+	void getAllSubmissionReceiptsForUser(Problem problem, User user,
+			AsyncCallback<SubmissionReceipt[]> callback);
 
 }

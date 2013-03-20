@@ -20,16 +20,24 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.Slider;
+import org.cloudcoder.app.client.view.SliderEvent;
+import org.cloudcoder.app.client.view.SliderListener;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserSelection;
+import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -78,7 +86,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			submissionSlider.setMaximum(10);
 			northPanel.add(submissionSlider);
 			northPanel.setWidgetLeftRight(submissionSlider, 0, Unit.PX, 0, Unit.PX);
-			northPanel.setWidgetTopHeight(submissionSlider, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(submissionSlider, 24.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			
 			panel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + 8.0 + SLIDER_HEIGHT_PX);
 			
@@ -111,7 +119,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		}
 		
 		@Override
-		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			// Show username, problem name and description
 			Problem problem = session.get(Problem.class);
 			UserSelection userSelection = session.get(UserSelection.class);
@@ -123,6 +131,58 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			statusMessageView.activate(session, subscriptionRegistrar);
 			testOutcomeSummaryView.activate(session, subscriptionRegistrar);
 			testResultListView.activate(session, subscriptionRegistrar);
+			
+			// Get all SubmissionReceipts for this user on this problem
+			RPC.getCoursesAndProblemsService.getAllSubmissionReceiptsForUser(problem, userSelection.getUser(), new AsyncCallback<SubmissionReceipt[]>() {
+				@Override
+				public void onSuccess(SubmissionReceipt[] result) {
+					onLoadSubmissionReceipts(result);
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					session.add(StatusMessage.error("Could not get submission receipts", caught));
+				}
+			});
+		}
+
+		private void onLoadSubmissionReceipts(SubmissionReceipt[] result) {
+			getSession().add(result);
+			
+			submissionSlider.setMinimum(0);
+			submissionSlider.setMaximum(result.length - 1);
+			
+			submissionSlider.addListener(new SliderListener() {
+				@Override
+				public void onStop(SliderEvent e) {
+				}
+				
+				@Override
+				public void onStart(SliderEvent e) {
+				}
+				
+				@Override
+				public boolean onSlide(SliderEvent e) {
+					return true;
+				}
+				
+				@Override
+				public void onChange(SliderEvent e) {
+					int[] values = e.getValues();
+					GWT.log("Slider value is " + values[0]);
+				}
+			});
+			
+			// Find the best submission
+			int best = 0;
+			for (int i = 1; i < result.length; i++) {
+				if (result[i].getNumTestsPassed() > result[best].getNumTestsPassed()) {
+					best = i;
+				}
+			}
+			GWT.log("Best submission is " + best);
+			
+			submissionSlider.setValue(best);
 		}
 	}
 	

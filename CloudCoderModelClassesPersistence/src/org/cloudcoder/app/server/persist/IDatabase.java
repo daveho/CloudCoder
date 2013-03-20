@@ -552,4 +552,15 @@ public interface IDatabase {
 	 */
 	public Integer[] getSectionsForCourse(Course course, User authenticatedUser);
 
+	/**
+	 * Get all submission receipts for given user on given problem.
+	 * This operation should only be performed if the current user
+	 * is an instructor in the course containing the problem.
+	 * 
+	 * @param problem the {@link Problem}
+	 * @param user    the {@link User}
+	 * @return list of all of the user's submissions receipts for this problem
+	 */
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user);
+
 }

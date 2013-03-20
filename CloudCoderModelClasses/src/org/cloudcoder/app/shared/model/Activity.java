@@ -32,7 +32,6 @@ public class Activity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	//private ActivityObject[] sessionObjectList;
 	
 	// GWT serialization cannot deal with supertype references.
 	// So, we need a separate field for each ActivityObject subclass
@@ -105,6 +104,9 @@ public class Activity implements Serializable {
 		}
 		if (problemAndTestCaseList != null) {
 			result.add(problemAndTestCaseList);
+		}
+		if (userSelection != null) {
+			result.add(userSelection);
 		}
 		
 		return result;

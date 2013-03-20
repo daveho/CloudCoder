@@ -85,14 +85,6 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User forUser, Module module) throws CloudCoderAuthenticationException;
 	
-//	/**
-//	 * @param course
-//	 * @param user
-//	 * @return
-//	 * @throws NetCoderAuthenticationException
-//	 */
-//	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws CloudCoderAuthenticationException;
-	
 	/**
 	 * Get the best submission receipts for each {@link User} on a specific {@link Problem}.
 	 * Currently-authenticated user must be an instructor in the course.
@@ -235,4 +227,15 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws CloudCoderAuthenticationException
 	 */
 	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get all submission receipts for given user on given problem.
+	 * Currently-authenticated user must be an instructor.
+	 * 
+	 * @param problem the {@link Problem}
+	 * @param user    the {@link User}
+	 * @return list of {@link SubmissionReceipt}s
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException;
 }
