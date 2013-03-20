@@ -29,7 +29,9 @@ import org.cloudcoder.app.client.view.SliderListener;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
+import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -45,6 +47,8 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
 /**
  * Page for viewing a user's submissions on a particular {@link Problem}.
@@ -53,7 +57,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
  */
 public class UserProblemSubmissionsPage extends CloudCoderPage {
 	private class UI extends Composite implements SessionObserver {
-		private static final double SLIDER_HEIGHT_PX = 36.0;
+		private static final double SLIDER_HEIGHT_PX = 24.0;
 		
 		private Label usernameAndProblemLabel;
 		private PageNavPanel pageNavPanel;
@@ -86,7 +90,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			submissionSlider.setMaximum(10);
 			northPanel.add(submissionSlider);
 			northPanel.setWidgetLeftRight(submissionSlider, 0, Unit.PX, 0, Unit.PX);
-			northPanel.setWidgetTopHeight(submissionSlider, 24.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetTopHeight(submissionSlider, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			
 			panel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + 8.0 + SLIDER_HEIGHT_PX);
 			
@@ -124,6 +128,16 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			Problem problem = session.get(Problem.class);
 			UserSelection userSelection = session.get(UserSelection.class);
 			usernameAndProblemLabel.setText(userSelection.getUser().getUsername() + ", " + problem.toNiceString());
+			
+			// Activate editor
+			editor.startEditor();
+			editor.setFontSize("14px");
+			editor.setReadOnly(true);
+			editor.setTheme(AceEditorTheme.VIBRANT_INK);
+			AceEditorMode mode = ViewUtil.getModeForLanguage(problem.getProblemType().getLanguage());
+			if (mode != null) {
+				editor.setMode(mode);
+			}
 			
 			// Activate views
 			pageNavPanel.setBackHandler(new PageBackHandler(session));
@@ -169,7 +183,10 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				@Override
 				public void onChange(SliderEvent e) {
 					int[] values = e.getValues();
-					GWT.log("Slider value is " + values[0]);
+					int selected = values[0];
+					GWT.log("Slider value is " + selected);
+					SubmissionReceipt[] submissionReceipts = getSession().get(SubmissionReceipt[].class);
+					onSelectSubmission(submissionReceipts[selected]);
 				}
 			});
 			
@@ -183,6 +200,21 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			GWT.log("Best submission is " + best);
 			
 			submissionSlider.setValue(best);
+		}
+
+		private void onSelectSubmission(SubmissionReceipt receipt) {
+			// Load text
+			RPC.editCodeService.getSubmissionText(getSession().get(Problem.class), receipt, new AsyncCallback<ProblemText>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Couldn't get text for submission", caught));
+				}
+				
+				@Override
+				public void onSuccess(ProblemText result) {
+					editor.setText(result.getText());
+				}
+			});
 		}
 	}
 	

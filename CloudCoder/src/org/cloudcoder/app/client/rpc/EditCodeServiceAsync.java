@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -28,4 +29,6 @@ public interface EditCodeServiceAsync {
 	void loadCurrentText(AsyncCallback<ProblemText> callback);
 	void logChange(Change[] changeList, long clientSubmitTime,
 			AsyncCallback<Boolean> callback);
+	void getSubmissionText(Problem problem, SubmissionReceipt receipt,
+			AsyncCallback<ProblemText> callback);
 }

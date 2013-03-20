@@ -22,6 +22,7 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.QuizEndedException;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -57,4 +58,17 @@ public interface EditCodeService extends RemoteService {
      */
 	public Boolean logChange(Change[] changeList, long clientSubmitTime)
 			throws CloudCoderAuthenticationException, QuizEndedException;
+	
+	/**
+	 * Get the full text of a user's submission.
+	 * The authenticated user must either be the owner of the submission,
+	 * or must be an instructor in the course in which the submission's
+	 * problem was assigned.
+	 * 
+	 * @param problem the problem
+	 * @param receipt the submission receipt
+	 * @return the text of the submission
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public ProblemText getSubmissionText(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException;
 }

@@ -55,6 +55,7 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
@@ -2062,6 +2063,48 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public String getDescription() {
 				return " getting subscription receipts for user";
+			}
+		});
+	}
+	
+	@Override
+	public ProblemText getSubmissionText(final User authenticatedUser, final Problem problem, final SubmissionReceipt receipt) {
+		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemText>() {
+			@Override
+			public ProblemText run(Connection conn) throws SQLException {
+				CourseRegistrationList regList =
+						doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				
+				// Note that the query requires that either
+				//   (1) the authenticated user is the submitter of the change event
+				//       specified in the submission receipt as the last edit, or
+				//   (2) the authenticated user is an instructor in the course
+				PreparedStatement stmt = prepareStatement(
+						conn,
+						"select c.text from cc_changes as c, cc_events as e " +
+						" where c.event_id = e.id " +
+						"   and c.event_id = ? " +
+						"   and (e.user_id = ? or ? = 1)"
+				);
+				stmt.setInt(1, receipt.getLastEditEventId());
+				stmt.setInt(2, authenticatedUser.getId());
+				stmt.setInt(3, regList.isInstructor() ? 1 : 0);
+				
+				ResultSet resultSet = executeQuery(stmt);
+				ProblemText result;
+				if (resultSet.next()) {
+					// Got it
+					result = new ProblemText(resultSet.getString(1), false);
+				} else {
+					// No such edit event, or user is not authorized to see it
+					result = new ProblemText("", false);
+				}
+				
+				return result;
+			}
+			@Override
+			public String getDescription() {
+				return " getting submission text";
 			}
 		});
 	}

@@ -29,12 +29,14 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.StartedQuiz;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,4 +271,10 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		return true;
 	}
 
+	@Override
+	public ProblemText getSubmissionText(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		
+		return Database.getInstance().getSubmissionText(authenticatedUser, problem, receipt);
+	}
 }

@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
@@ -562,5 +563,17 @@ public interface IDatabase {
 	 * @return list of all of the user's submissions receipts for this problem
 	 */
 	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user);
+
+	/**
+	 * Get the text of a submission specified by the given submission receipt.
+	 * The authenticated user must either be the submitter, or an instructor
+	 * in the course in which the problem was assigned.
+	 * 
+	 * @param authenticatedUser the authenticated user
+	 * @param problem           the problem
+	 * @param receipt           the submission receipt
+	 * @return the problem text
+	 */
+	public ProblemText getSubmissionText(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
 
 }
