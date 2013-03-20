@@ -24,10 +24,12 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -59,6 +61,8 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 	private UserAndSubmissionReceipt[] data;
 	private Session session;
 	private Section currentSection;
+	private ICallback<UserSelection> viewUserSubmissionsCallback;
+
 	
 	public ProblemProgressView() {
 		data = new UserAndSubmissionReceipt[0];
@@ -73,6 +77,16 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 		grid.addColumn(new ViewSubmissionsColumn(), "Submissions");
 		
 		initWidget(grid);
+	}
+	
+	/**
+	 * Set callback to invoke when the "View" button is pressed to
+	 * see a particular user's submissions.
+	 * 
+	 * @param viewUserSubmissionsCallback the viewUserSubmissionsCallback to set
+	 */
+	public void setViewUserSubmissionsCallback(ICallback<UserSelection> viewUserSubmissionsCallback) {
+		this.viewUserSubmissionsCallback = viewUserSubmissionsCallback;
 	}
 	
 	private class UsernameColumn extends TextColumn<UserAndSubmissionReceipt> {
@@ -176,8 +190,12 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 			setFieldUpdater(new FieldUpdater<UserAndSubmissionReceipt, String>() {
 				@Override
 				public void update(int index, UserAndSubmissionReceipt object, String value) {
-					// TODO
 					GWT.log("Show submissions for " + object.getUser().getUsername());
+					if (viewUserSubmissionsCallback != null) {
+						UserSelection userSelection = new UserSelection(object.getUser());
+						session.add(userSelection);
+						viewUserSubmissionsCallback.call(userSelection);
+					}
 				}
 			});
 		}

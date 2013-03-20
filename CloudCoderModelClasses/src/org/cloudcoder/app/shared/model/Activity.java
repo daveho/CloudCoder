@@ -41,6 +41,7 @@ public class Activity implements Serializable {
 	private Problem problem;
 	private CourseSelection courseSelection;
 	private ProblemAndTestCaseList problemAndTestCaseList;
+	private UserSelection userSelection;
 	
 	/**
 	 * Default constructor.
@@ -80,6 +81,8 @@ public class Activity implements Serializable {
 			this.courseSelection = (CourseSelection) obj;
 		} else if (obj instanceof ProblemAndTestCaseList) {
 			this.problemAndTestCaseList = (ProblemAndTestCaseList) obj;
+		} else if (obj instanceof UserSelection) {
+			this.userSelection = (UserSelection) obj;
 		} else {
 			throw new IllegalArgumentException("Unknown ActivityObject subclass: " + obj.getClass().getName());
 		}

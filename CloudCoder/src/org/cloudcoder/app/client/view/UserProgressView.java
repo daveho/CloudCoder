@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
-import org.cloudcoder.app.client.model.UserSelection;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
@@ -31,6 +30,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.cell.client.AbstractCell;
