@@ -33,6 +33,9 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.cell.client.ButtonCell;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
@@ -67,6 +70,7 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 		grid.addColumn(new StartedColumn(), "Started");
 		grid.addColumn(new BestScoreColumn(), "Best score");
 		grid.addColumn(new BestScoreBarColumn(), "Best score bar");
+		grid.addColumn(new ViewSubmissionsColumn(), "Submissions");
 		
 		initWidget(grid);
 	}
@@ -162,6 +166,28 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 		@Override
 		public SubmissionReceipt getValue(UserAndSubmissionReceipt object) {
 			return object.getSubmissionReceipt();
+		}
+	}
+	
+	private class ViewSubmissionsColumn extends Column<UserAndSubmissionReceipt, String> {
+		public ViewSubmissionsColumn() {
+			super(new ButtonCell());
+			
+			setFieldUpdater(new FieldUpdater<UserAndSubmissionReceipt, String>() {
+				@Override
+				public void update(int index, UserAndSubmissionReceipt object, String value) {
+					// TODO
+					GWT.log("Show submissions for " + object.getUser().getUsername());
+				}
+			});
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+		 */
+		@Override
+		public String getValue(UserAndSubmissionReceipt object) {
+			return "View";
 		}
 	}
 	
