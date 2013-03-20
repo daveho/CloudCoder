@@ -34,12 +34,14 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserSelection;
-import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -62,6 +64,8 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		private Label usernameAndProblemLabel;
 		private PageNavPanel pageNavPanel;
 		private Slider submissionSlider;
+		private Button prevSubmissionButton;
+		private Button nextSubmissionButton;
 		private StatusMessageView statusMessageView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
 		private TestResultListView testResultListView;
@@ -89,9 +93,31 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			submissionSlider.setMinimum(1);
 			submissionSlider.setMaximum(10);
 			northPanel.add(submissionSlider);
-			northPanel.setWidgetLeftRight(submissionSlider, 0, Unit.PX, 0, Unit.PX);
+			northPanel.setWidgetLeftRight(submissionSlider, (38.0 * 2), Unit.PX, 0, Unit.PX);
 			northPanel.setWidgetTopHeight(submissionSlider, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
 			
+			this.prevSubmissionButton = new Button("<");
+			northPanel.add(prevSubmissionButton);
+			northPanel.setWidgetLeftWidth(prevSubmissionButton, 0.0, Unit.PX, 30, Unit.PX);
+			northPanel.setWidgetTopHeight(prevSubmissionButton, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			prevSubmissionButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					onChangeSubmission(-1);
+				}
+			});
+
+			this.nextSubmissionButton = new Button(">");
+			northPanel.add(nextSubmissionButton);
+			northPanel.setWidgetLeftWidth(nextSubmissionButton, 38.0, Unit.PX, 30, Unit.PX);
+			northPanel.setWidgetTopHeight(nextSubmissionButton, 30.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
+			nextSubmissionButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					onChangeSubmission(1);
+				}
+			});
+
 			panel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + 8.0 + SLIDER_HEIGHT_PX);
 			
 			// South panel has status message view, test outcome summary view,
@@ -121,7 +147,15 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			
 			initWidget(panel);
 		}
-		
+
+		private void onChangeSubmission(int delta) {
+			int value = submissionSlider.getValue();
+			value += delta;
+			if (value >= submissionSlider.getMinimum() && value <= submissionSlider.getMaximum()) {
+				submissionSlider.setValue(value);
+			}
+		}
+
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			// Show username, problem name and description
@@ -182,8 +216,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				
 				@Override
 				public void onChange(SliderEvent e) {
-					int[] values = e.getValues();
-					int selected = values[0];
+					int selected = submissionSlider.getValue();
 					GWT.log("Slider value is " + selected);
 					SubmissionReceipt[] submissionReceipts = getSession().get(SubmissionReceipt[].class);
 					onSelectSubmission(submissionReceipts[selected]);
