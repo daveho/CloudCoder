@@ -48,6 +48,7 @@ import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -172,9 +173,39 @@ public interface IDatabase {
 	 */
 	public TestCase[] getTestCasesForProblem(User authenticatedUser, boolean requireInstructor, int problemId);
 	
+	/**
+	 * Insert a {@link SubmissionReceipt} and corresponding {@link TestResult}s
+	 * (to record a user's submission). 
+	 * 
+	 * @param receipt        the submission receipt
+	 * @param testResultList the test results
+	 */
 	public void insertSubmissionReceipt(SubmissionReceipt receipt, TestResult[] testResultList);
+	
+	/**
+	 * Get the latest {@link SubmissionReceipt} recording given {@link User}'s work
+	 * on given {@link Problem}.  Creates a new one with receipt type
+	 * {@link SubmissionStatus#STARTED} if there is not yet any
+	 * submission receipt for the user/problem.
+	 * 
+	 * @param user    the {@link User}
+	 * @param problem the {@link Problem}
+	 */
 	public void getOrAddLatestSubmissionReceipt(User user, Problem problem);
+	
+	/**
+	 * Add a {@link Problem} to the database.
+	 * 
+	 * @param problem the {@link Problem} to add.
+	 */
 	public void addProblem(Problem problem);
+	
+	/**
+	 * Add {@link TestCase} to a database for a given {@link Problem}.
+	 * 
+	 * @param problem      the problem
+	 * @param testCaseList the test cases
+	 */
 	public void addTestCases(Problem problem, List<TestCase> testCaseList);
 
 	public void insertUsersFromInputStream(InputStream in, Course course);
