@@ -239,9 +239,9 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	}
 
 	@Override
-	public ProblemText getSubmissionText(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
+	public ProblemText getSubmissionText(User submitter, Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
 		
-		return Database.getInstance().getSubmissionText(authenticatedUser, problem, receipt);
+		return Database.getInstance().getSubmissionText(authenticatedUser, submitter, problem, receipt);
 	}
 }

@@ -602,11 +602,12 @@ public interface IDatabase {
 	 * in the course in which the problem was assigned.
 	 * 
 	 * @param authenticatedUser the authenticated user
+	 * @param submitter              the user the submission receipt belongs to
 	 * @param problem           the problem
 	 * @param receipt           the submission receipt
 	 * @return the problem text
 	 */
-	public ProblemText getSubmissionText(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
+	public ProblemText getSubmissionText(User authenticatedUser, User submitter, Problem problem, SubmissionReceipt receipt);
 
 	/**
 	 * Get test results for given submission.

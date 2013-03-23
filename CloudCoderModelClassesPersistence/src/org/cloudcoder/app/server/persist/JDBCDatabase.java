@@ -2069,38 +2069,80 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public ProblemText getSubmissionText(final User authenticatedUser, final Problem problem, final SubmissionReceipt receipt) {
+	public ProblemText getSubmissionText(final User authenticatedUser, final User submitter, final Problem problem, final SubmissionReceipt receipt) {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemText>() {
 			@Override
 			public ProblemText run(Connection conn) throws SQLException {
+				// Check authenticated user's course registrations
 				CourseRegistrationList regList =
 						doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
-				
-				// Note that the query requires that either
+
+				// Note that the queries require that either
 				//   (1) the authenticated user is the submitter of the change event
 				//       specified in the submission receipt as the last edit, or
 				//   (2) the authenticated user is an instructor in the course
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select c.text from cc_changes as c, cc_events as e " +
-						" where c.event_id = e.id " +
-						"   and c.event_id = ? " +
-						"   and (e.user_id = ? or ? = 1) " +
-						"   and e.problem_id = ?"
-				);
-				stmt.setInt(1, receipt.getLastEditEventId());
-				stmt.setInt(2, authenticatedUser.getId());
-				stmt.setInt(3, regList.isInstructor() ? 1 : 0);
-				stmt.setInt(4, problem.getProblemId());
 				
-				ResultSet resultSet = executeQuery(stmt);
+				// There are two cases:
+				//   - the normal case where we know the event if of the full-text
+				//     change containing the submission text
+				//   - the case where the submission receipt is the initial one
+				//     where the status is SubmissionStatus.STARTED, in which case
+				//     we look for the user's first full-text submission
+				//     (which the client webapp will typically create using the
+				//     problem's skeleton code)
+
 				ProblemText result;
-				if (resultSet.next()) {
-					// Got it
-					result = new ProblemText(resultSet.getString(1), false);
+				
+				if (receipt.getLastEditEventId() < 0) {
+					// Don't know the submission receipt: look for the first full-text change
+					// for the user/problem
+					PreparedStatement stmt = prepareStatement(
+							conn,
+							"select oc.text from cc_changes as oc " +
+							" where oc.event_id = " +
+							"   (select min(e.id) from cc_changes as c, cc_events as e " +
+							"     where c.event_id = e.id " +
+							"       and e.user_id = ? " +
+							"       and e.problem_id = ? " +
+							"       and c.type = ? " +
+							"       and (e.user_id = ? or ? = 1))"
+					);
+					stmt.setInt(1, submitter.getId());
+					stmt.setInt(2, problem.getProblemId());
+					stmt.setInt(3, ChangeType.FULL_TEXT.ordinal());
+					stmt.setInt(4, authenticatedUser.getId());
+					stmt.setInt(5, regList.isInstructor() ? 1 : 0);
+					
+					ResultSet resultSet = executeQuery(stmt);
+					if (resultSet.next()) {
+						result = new ProblemText(resultSet.getString(1), false);
+					} else {
+						result = new ProblemText("", false);
+					}
 				} else {
-					// No such edit event, or user is not authorized to see it
-					result = new ProblemText("", false);
+					// We have the event id of the full-text change, so just
+					// find it.
+					PreparedStatement stmt = prepareStatement(
+							conn,
+							"select c.text from cc_changes as c, cc_events as e " +
+							" where c.event_id = e.id " +
+							"   and c.event_id = ? " +
+							"   and (e.user_id = ? or ? = 1) " +
+							"   and e.problem_id = ?"
+					);
+					stmt.setInt(1, receipt.getLastEditEventId());
+					stmt.setInt(2, authenticatedUser.getId());
+					stmt.setInt(3, regList.isInstructor() ? 1 : 0);
+					stmt.setInt(4, problem.getProblemId());
+					
+					ResultSet resultSet = executeQuery(stmt);
+					if (resultSet.next()) {
+						// Got it
+						result = new ProblemText(resultSet.getString(1), false);
+					} else {
+						// No such edit event, or user is not authorized to see it
+						result = new ProblemText("", false);
+					}
 				}
 				
 				return result;

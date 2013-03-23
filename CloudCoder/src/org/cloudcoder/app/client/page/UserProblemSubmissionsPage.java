@@ -239,7 +239,8 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		private void onSelectSubmission(SubmissionReceipt receipt) {
 			// Load text
 			Problem problem = getSession().get(Problem.class);
-			RPC.editCodeService.getSubmissionText(problem, receipt, new AsyncCallback<ProblemText>() {
+			UserSelection userSelection = getSession().get(UserSelection.class);
+			RPC.editCodeService.getSubmissionText(userSelection.getUser(), problem, receipt, new AsyncCallback<ProblemText>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					getSession().add(StatusMessage.error("Couldn't get text for submission", caught));
