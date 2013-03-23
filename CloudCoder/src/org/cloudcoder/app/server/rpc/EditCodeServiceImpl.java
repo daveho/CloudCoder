@@ -19,9 +19,6 @@ package org.cloudcoder.app.server.rpc;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.server.model.ApplyChangeToTextDocument;
 import org.cloudcoder.app.server.model.TextDocument;
@@ -29,7 +26,6 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
-import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
@@ -51,8 +47,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCodeService {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger=LoggerFactory.getLogger(EditCodeServiceImpl.class);
-	
-	private static final boolean DEBUG_CODE_DELTAS = false;
 
 	@Override
 	public Problem setProblem(int problemId) throws CloudCoderAuthenticationException {
@@ -123,13 +117,6 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     	Quiz quiz = (Quiz) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.QUIZ_KEY);
     	if (quiz != null) {
     		text.setQuiz(true);
-    	}
-    	
-    	if (DEBUG_CODE_DELTAS) {
-	    	// Keep a TextDocument in the session for debugging code deltas
-	    	TextDocument doc = new TextDocument();
-	    	doc.setText(text.getText());
-	    	getThreadLocalRequest().getSession().setAttribute("doc", doc);
     	}
     	
     	return text;
@@ -247,26 +234,6 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 
 		// Insert changes
 		Database.getInstance().storeChanges(changeList);
-		
-		if (DEBUG_CODE_DELTAS) {
-			// For debugging - keep a TextDocument in the session,
-			// and apply changes to it
-			
-			HttpServletRequest req = this.getThreadLocalRequest();
-			HttpSession session = req.getSession();
-			
-			TextDocument doc = (TextDocument) session.getAttribute("doc");
-			if (doc == null) {
-				doc = new TextDocument();
-				session.setAttribute("doc", doc);
-			}
-			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-			for (Change change : changeList) {
-				applicator.apply(change, doc);
-			}
-			
-			logger.debug("Document is now:\n" + doc.getText());
-		}
 		
 		return true;
 	}
