@@ -32,6 +32,7 @@ import java.util.Scanner;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
+import org.cloudcoder.app.server.persist.txn.GetMostRecentFullTextChange;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
@@ -198,36 +199,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public Change getMostRecentFullTextChange(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>() {
-			@Override
-			public Change run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
-						"                where cc.event_id = ee.id " +
-						"                  and ee.problem_id = ? " +
-						"                  and ee.user_id = ? " +
-						"                  and cc.type = ?)"
-				);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, user.getId());
-				stmt.setInt(3, ChangeType.FULL_TEXT.ordinal());
-
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				Change change = new Change();
-				Queries.load(change, resultSet, 1);
-				return change;
-			}
-			@Override
-			public String getDescription() {
-				return " retrieving most recent full text change";
-			}
-		});
+		return databaseRun(new GetMostRecentFullTextChange(problemId, user));
 	}
 	
 	/* (non-Javadoc)
