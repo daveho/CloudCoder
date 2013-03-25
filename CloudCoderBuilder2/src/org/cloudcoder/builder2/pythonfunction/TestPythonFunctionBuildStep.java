@@ -33,8 +33,9 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
-import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
+import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
+import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
@@ -101,6 +102,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			//TODO: Strip out anything that isn't a function declaration or import statement
 			//XXX: If we do that, we disallow global variables, which may be OK
 			StringBuilder test = new StringBuilder();
+			test.append("import sys\n");
 			test.append(programText+"\n");
 			programTextLength=StringUtil.countLines(programText);
 			int spaces=getIndentationIncrementFromPythonCode(programText);
@@ -166,21 +168,21 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				compres.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
 				return new SubmissionResult(compres);
 			}
+			
+			// Create a Python interpreter, load True from the interpreter
+			// then execute our script.
+			// Note that our script will have all statements outside of a function
+			// stripped out (except for import statements) so no global variables
+			final PythonInterpreter terp=new PythonInterpreter();
+			final PyObject True=terp.eval("True");
+			// won't throw an exception because we checked it at the top of
+			// the method to make sure the code will compile
+			terp.execfile(new ByteArrayInputStream(sBytes));
 
 			List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
 			for (final TestCase t : testCaseList) {
-				// Create a Python interpreter, load True from the interpreter
-				// then execute our script.
-				// Note that our script will have all statements outside of a function
-				// stripped out (except for import statements) so no global variables
-				final PythonInterpreter terp=new PythonInterpreter();
-				final PyObject True=terp.eval("True");
-				// won't throw an exception because we checked it at the top of
-				// the method to make sure the code will compile
-				terp.execfile(new ByteArrayInputStream(sBytes));
-				// pull out the function associated with this particular test case
-				final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
-
+			    // pull out the function associated with this particular test case
+	            final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
 				tasks.add(new IsolatedTask<TestResult>() {
 					@Override
 					public TestResult execute() {
@@ -189,21 +191,21 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				});
 			}
 
-			KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
+			PythonKillableTaskManager<TestResult> pool=new PythonKillableTaskManager<TestResult>(
 					tasks, 
 					TIMEOUT_LIMIT,
-					new KillableTaskManager.TimeoutHandler<TestResult>() {
+					new TimeoutHandler<TestResult>() {
 						@Override
 						public TestResult handleTimeout() {
 							return TestResultUtil.createResultForTimeout();
 						}
-					});
+					},
+					terp);
 
 			// run each task in a separate thread
 			pool.run();
 
 			//merge outcomes with their buffered inputs for stdout/stderr
-
 			List<TestResult> testResults=SandboxUtil.getStdoutStderr(pool);
 			SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
 			result.setTestResults(testResults.toArray(new TestResult[testResults.size()]));
@@ -286,7 +288,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		static TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) 
 		{
 			try {
-			    // returns a tupe: (result, output)
+			    // returns a tuple: (result, output)
 			    PyObject tuple=func.__call__();
 			    PyObject result=tuple.__getitem__(0);
 			    String output=tuple.__getitem__(1).toString();
@@ -301,7 +303,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				}
 			} catch (PyException e) {
 				if (e.getCause() instanceof SecurityException) {
-					logger.warn("Security exception", e.getCause());
+					logger.error("Security exception", e.getCause());
 					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
 				logger.warn("Exception type was "+e.getClass());

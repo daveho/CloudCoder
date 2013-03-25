@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.javasandbox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Locale;
@@ -51,6 +52,10 @@ public class ThreadedPrintStreamMonitor extends PrintStream
         // get random method calls on whatever stream (probably stdout and stderr)
         // the constructor is called on.
         super(stream);
+    }
+    
+    public ThreadedPrintStreamMonitor() {
+        super(new ByteArrayOutputStream());
     }
     
     private PrintStream getPrintStream() {

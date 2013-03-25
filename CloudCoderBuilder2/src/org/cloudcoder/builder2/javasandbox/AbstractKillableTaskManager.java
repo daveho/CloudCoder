@@ -1,23 +1,5 @@
-// CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 package org.cloudcoder.builder2.javasandbox;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -27,79 +9,47 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * I'm going to use the stop() method in thread.  I feel a little dirty.
- * 
- * I'm 99% sure that this is a safe use of stop().  Each
- * thread that might be stopped will put its result into
- * a separate object; if that thread is killed early, the
- * result simply won't show up and instead we'll put
- * in a user-supplied default result.  So long as the
- * instances of Task don't hold any locks or put any resources
- * into an inconsistent state, the threads spawned to execute
- * those tasks should be able to be stop()ed without any
- * negative repercussions.
- * 
- * 
- * 
- * @author jspacco
- *
- */
-public class KillableTaskManager<T>
+public abstract class AbstractKillableTaskManager<T>
 {
-
-	private static final Logger logger=LoggerFactory.getLogger(KillableTaskManager.class);
-	private static boolean securityManagerInstalled = false;
-	
+    protected static final Logger logger = LoggerFactory.getLogger(JVMKillableTaskManager.class);
+    protected static boolean securityManagerInstalled = false;
     /** list of "isolated tasks" to be executed */
     private List<IsolatedTask<T>> tasks;
     /** List of Outcomes; essentially placeholders objects where tasks will put their results */
     private List<Outcome<T>> results;
     private long maxRunTime;
-    private int numPauses=5;
-    // Buffers for stdout/stderr of each task thread
-    private Map<Integer,String> stdOutMap=new HashMap<Integer,String>();
-    private Map<Integer,String> stdErrMap=new HashMap<Integer,String>();
-    private final PrintStream originalStdOut=System.out;
-    private final PrintStream originalStdErr=System.err;
+    private int numPauses = 5;
+
+    protected ThreadedPrintStreamMonitor stdOutMonitor;
+    protected ThreadedPrintStreamMonitor stdErrMonitor;
+    private Map<Integer,String> stdOutMap = new HashMap<Integer,String>();
+    private Map<Integer,String> stdErrMap = new HashMap<Integer,String>();
+    
     /** Handles timeouts by producing a T representing a timeout event */
     private TimeoutHandler<T> timeoutHandler;
     /** All threads will be in a thread group of worker threads */
-    public static final ThreadGroup WORKER_THREAD_GROUP=new ThreadGroup("WorkerThreads");
-    public int numThreads=1;
-	private String threadNamePrefix;
-
-    /**
-     * Callback handler to create a new task outcome of type T
-     * when a task times out.
-     * 
-     * It's necessary to have a callback here because several 
-     * task threads may time out, requiring the creation of multiple
-     * objects for each timeout.
-     * 
-     */
-    public interface TimeoutHandler<T> {
-        public T handleTimeout();
-    }
+    public static final ThreadGroup WORKER_THREAD_GROUP = new ThreadGroup("WorkerThreads");
+    public int numThreads = 1;
+    protected String threadNamePrefix;
 
     /**
      * Constructor.
      * Note that {@link #installSecurityManager()} must be called
-     * before instances of {@link KillableTaskManager} can be created.
+     * before instances of {@link JVMKillableTaskManager} can be created.
      * 
      * @param tasks          tasks to run
      * @param maxRunTime     maximum time to let any task run
      * @param timeoutHandler callback to run if a timeout occurs
      */
-    public KillableTaskManager(List<IsolatedTask<T>> tasks, 
+    public AbstractKillableTaskManager(List<IsolatedTask<T>> tasks, 
             long maxRunTime, 
             TimeoutHandler<T> timeoutHandler)
     {
-    	if (!securityManagerInstalled) {
-    		throw new IllegalStateException(
-    				"Must call KillableTaskManager.installSecurityManager() before creating instance");
-    	}
-    	
+        if (!securityManagerInstalled) {
+            throw new IllegalStateException(
+                    "Must call KillableTaskManager.installSecurityManager() before creating instance");
+        }
+        
         this.tasks=tasks;
         this.maxRunTime=maxRunTime;
         this.timeoutHandler=timeoutHandler;
@@ -111,7 +61,7 @@ public class KillableTaskManager<T>
         
         this.threadNamePrefix = "Thread";
     }
-    
+
     /**
      * Set the name prefix that will be used for the names of worker threads.
      * Useful for allowing {@link ThreadGroupSecurityManager} to implement
@@ -120,16 +70,18 @@ public class KillableTaskManager<T>
      * @param threadNamePrefix name prefix for names of worker threads
      */
     public void setThreadNamePrefix(String threadNamePrefix) {
-    	this.threadNamePrefix = threadNamePrefix;
+        this.threadNamePrefix = threadNamePrefix;
     }
 
     public boolean isFinished(int x) {
         return results.get(x).finished;
     }
+
     public T getResult(int x) {
         return results.get(x).result;
     }
-    public List<T> getOutcomes(){
+
+    public List<T> getOutcomes() {
         List<T> ret=new LinkedList<T>();
         for (int i=0; i<results.size(); i++) {
             ret.add(getResult(i));
@@ -140,14 +92,7 @@ public class KillableTaskManager<T>
     public void run() {
         // re-direct stdout/stderr to print stream monitors
         // that will buffer the outputs for each thread
-        ThreadedPrintStreamMonitor stdOutMonitor=
-                new ThreadedPrintStreamMonitor(System.out);
-        ThreadedPrintStreamMonitor stdErrMonitor=
-                new ThreadedPrintStreamMonitor(System.err);
-
-        //XXX Debug
-        //System.setOut(stdOutMonitor);
-        //System.setErr(stdErrMonitor);
+        redirectStandardOutputStreams();
 
         Thread[] pool=new Thread[tasks.size()];
         for (int i=0; i<tasks.size(); i++) {
@@ -189,11 +134,28 @@ public class KillableTaskManager<T>
             stdOutMap.put(i, stdOutMonitor.getBufferedOutput(t));
             stdErrMap.put(i, stdErrMonitor.getBufferedOutput(t));
         }
-
-        // put stdout/stderr back to normal
-        System.setOut(originalStdOut);
-        System.setErr(originalStdErr);
+        // return the original stdout/stderr
+        // how to do this varies between Java, Python/Jython
+        // and Ruby/JRuby
+        unredirectStandardOutputStreams();
     }
+    
+    /**
+     * Redirect standard output and standard error.
+     * 
+     * How to do this varies between Java, Python/Jython,
+     * and Ruby/JRuby.
+     * 
+     */
+    public abstract void unredirectStandardOutputStreams();
+    /**
+     * Put standard output and standard error back the
+     * way that they were.
+     * 
+     * How to do this varies between Java, Python/Jython,
+     * and Ruby/JRuby.
+     */
+    public abstract void redirectStandardOutputStreams();
 
     /**
      * Pause for a certain amount of time.  Return true if any
@@ -221,6 +183,46 @@ public class KillableTaskManager<T>
     }
 
     /**
+     * Install the security manager needed by {@link JVMKillableTaskManager}.
+     */
+    public static void installSecurityManager() {
+        if (!securityManagerInstalled) {
+            // So far the new system of extracting a PyFunction and passing
+            // that and the PythonInterpreter into the KillableThread seems to work.
+            // The main concern is that this requires removing any executable code that is
+            // not inside a method.
+            System.setSecurityManager(
+                    new ThreadGroupSecurityManager(JVMKillableTaskManager.WORKER_THREAD_GROUP));
+            securityManagerInstalled  = true;
+        }
+    }
+
+    public Map<Integer, String> getBufferedStdout() {
+        return stdOutMap;
+    }
+
+    public Map<Integer, String> getBufferedStderr() {
+        return stdErrMap;
+    }
+
+    public AbstractKillableTaskManager() {
+        super();
+    }
+
+    /**
+     * Simple container for a result of type T and whether the task
+     * producing T finished normally.
+     * 
+     * @author jspacco
+     *
+     * @param <T>
+     */
+    private static class Outcome<T> {
+        //Outcome() {}
+        boolean finished;
+        T result;
+    }
+    /**
      * Worker thread takes a given Task, calls its execute() method
      * to produce a result of type E, and puts the result into the 
      * given outcome container.
@@ -233,7 +235,7 @@ public class KillableTaskManager<T>
      *
      * @param <E>
      */
-    private class WorkerThread<E> extends Thread
+    class WorkerThread<E> extends Thread
     {
         private IsolatedTask<E> task;
         private Outcome<E> out;
@@ -279,40 +281,4 @@ public class KillableTaskManager<T>
             }
         }
     }
-
-    /**
-     * Simple container for a result of type T and whether the task
-     * producing T finished normally.
-     * 
-     * @author jspacco
-     *
-     * @param <T>
-     */
-    private static class Outcome<T> {
-        Outcome() {}
-        boolean finished;
-        T result;
-    }
-
-    public Map<Integer, String> getBufferedStdout() {
-        return stdOutMap;
-    }
-    public Map<Integer, String> getBufferedStderr() {
-        return stdErrMap;
-    }
-
-    /**
-     * Install the security manager needed by {@link KillableTaskManager}.
-     */
-	public static void installSecurityManager() {
-		if (!securityManagerInstalled) {
-			// So far the new system of extracting a PyFunction and passing
-			// that and the PythonInterpreter into the KillableThread seems to work.
-			// The main concern is that this requires removing any executable code that is
-			// not inside a method.
-			System.setSecurityManager(
-					new ThreadGroupSecurityManager(KillableTaskManager.WORKER_THREAD_GROUP));
-			securityManagerInstalled  = true;
-		}
-	}
 }
