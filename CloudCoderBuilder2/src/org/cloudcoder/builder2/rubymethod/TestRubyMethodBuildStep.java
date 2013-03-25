@@ -28,8 +28,8 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
-import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
+import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
@@ -63,6 +63,7 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	static {
 		new RubyTester();
 		TestResultUtil.createResultForTimeout();
+		//TODO cannot execute any code with ruby before redirecting
 		container = new ScriptingContainer(LocalContextScope.CONCURRENT);
 		container.runScriptlet("true");
 	}
@@ -123,16 +124,17 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 		}
 		
 		// Execute the tasks in a KillableTaskManager
-		KillableTaskManager<TestResult> pool = new KillableTaskManager<TestResult>(
+		RubyKillableTaskManager<TestResult> pool = new RubyKillableTaskManager<TestResult>(
 				tasks,
 				TIMEOUT_LIMIT,
-				new KillableTaskManager.TimeoutHandler<TestResult>() {
+				new TimeoutHandler<TestResult>() {
 					@Override
 					public TestResult handleTimeout() {
 						return TestResultUtil.createResultForTimeout();
 					}
-				}
-		);
+				},
+				container);
+
 		pool.setThreadNamePrefix("RubyTest_"); // enable Ruby-specific security manager rules
 		pool.run();
 		

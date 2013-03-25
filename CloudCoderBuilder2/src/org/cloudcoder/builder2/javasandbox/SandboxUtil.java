@@ -21,6 +21,7 @@ import java.util.Map;
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
 
 /**
  * Utility methods for working with sandboxed Java code.
@@ -29,13 +30,13 @@ import org.cloudcoder.app.shared.model.TestResult;
  */
 public abstract class SandboxUtil {
 	/**
-	 * Annotate all {@link TestResult}s produced by given {@link KillableTaskManager}
+	 * Annotate all {@link TestResult}s produced by given {@link JVMKillableTaskManager}
 	 * with stdout/stderr text.
 	 * 
-	 * @param pool the {@link KillableTaskManager}
+	 * @param pool the {@link JVMKillableTaskManager}
 	 * @return list of {@link TestResult}s
 	 */
-	public static List<TestResult> getStdoutStderr(KillableTaskManager<TestResult> pool) {
+	public static List<TestResult> getStdoutStderr(AbstractKillableTaskManager<TestResult> pool) {
 		List<TestResult> outcomes=pool.getOutcomes();
 		Map<Integer,String> stdout=pool.getBufferedStdout();
 		Map<Integer,String> stderr=pool.getBufferedStderr();

@@ -3,7 +3,7 @@ package org.cloudcoder.builder2.server;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
+import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.server.Builder2Daemon.Options;
 import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class SingeThreadedBuildTester
         }
         
         // Install KillableTaskManager's security manager
-        KillableTaskManager.installSecurityManager();
+        JVMKillableTaskManager.installSecurityManager();
         
         logger.info("Builder starting");
         logger.info("appHost={}", options.getAppHost());
