@@ -30,6 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
+import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
+import org.cloudcoder.app.server.persist.txn.Queries;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
@@ -148,27 +151,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public ConfigurationSetting getConfigurationSetting(final ConfigurationSettingName name) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ConfigurationSetting>() {
-			@Override
-			public ConfigurationSetting run(Connection conn)
-					throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select s.* from " + ConfigurationSetting.SCHEMA.getDbTableName() + " as s where s.name = ?");
-				stmt.setString(1, name.toString());
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				ConfigurationSetting configurationSetting = new ConfigurationSetting();
-				load(configurationSetting, resultSet, 1);
-				return configurationSetting;
-			}
-			@Override
-			public String getDescription() {
-				return "retrieving configuration setting";
-			}
-		});
+		return databaseRun(new GetConfigurationSetting(name));
 	}
 	
 	private User getUser(Connection conn, String userName) throws SQLException {
@@ -181,42 +164,13 @@ public class JDBCDatabase implements IDatabase {
         }
         
         User user = new User();
-        load(user, resultSet, 1);
-        return user;
-	}
-	
-	private User getUser(Connection conn, int userId) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where id = ?");
-        stmt.setInt(1, userId);
-        
-        ResultSet resultSet = stmt.executeQuery();
-        if (!resultSet.next()) {
-            return null;
-        }
-        
-        User user = new User();
-        load(user, resultSet, 1);
+        Queries.load(user, resultSet, 1);
         return user;
 	}
 	
 	public User getUserGivenId(final int userId) {
 		
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public User run(Connection conn) throws SQLException {
-				return getUser(conn, userId);
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "retrieving user for username";
-			}
-		});
+		return databaseRun(new GetUserGivenId(userId));
 		
 	}
 	
@@ -273,7 +227,7 @@ public class JDBCDatabase implements IDatabase {
                 List<User> users=new LinkedList<User>();
                 while (resultSet.next()) {
                     User u=new User();
-                    load(u, resultSet, 1);
+                    Queries.load(u, resultSet, 1);
                     users.add(u);
                 }
                 return users;
@@ -1517,7 +1471,7 @@ public class JDBCDatabase implements IDatabase {
 					return null;
 				}
 				UserRegistrationRequest request = new UserRegistrationRequest();
-				loadGeneric(request, resultSet, 1, UserRegistrationRequest.SCHEMA);
+				Queries.loadGeneric(request, resultSet, 1, UserRegistrationRequest.SCHEMA);
 				return request;
 			}
 			@Override
@@ -1591,7 +1545,7 @@ public class JDBCDatabase implements IDatabase {
 				while (resultSet.next()) {
 					RepoProblemTag tag = new RepoProblemTag();
 					
-					loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
+					Queries.loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
 					
 					// Because these tags are aggregated from (potentially) multiple
 					// records in the table, we set the user id to 0, so there is no
@@ -2628,7 +2582,7 @@ public class JDBCDatabase implements IDatabase {
 		if (!origRS.next()) {
 			throw new SQLException("Can't update problem " + problem.getProblemId() + " because it doesn't exist");
 		}
-		loadGeneric(orig, origRS, 1, Problem.SCHEMA);
+		Queries.loadGeneric(orig, origRS, 1, Problem.SCHEMA);
 		
 		if (orig.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
 			// FIXME: get the hash of the imported problem from the database
@@ -2846,7 +2800,7 @@ public class JDBCDatabase implements IDatabase {
 		while (resultSet.next()) {
 			int index = 1;
 			User user = new User();
-			index = loadGeneric(user, resultSet, index, User.SCHEMA);
+			index = Queries.loadGeneric(user, resultSet, index, User.SCHEMA);
 
 			SubmissionReceipt receipt;
 			
@@ -2857,9 +2811,9 @@ public class JDBCDatabase implements IDatabase {
 				index++; // skip best.the_user_id column
 				
 				Event event = new Event();
-				index = loadGeneric(event, resultSet, index, Event.SCHEMA);
+				index = Queries.loadGeneric(event, resultSet, index, Event.SCHEMA);
 				receipt = new SubmissionReceipt();
-				loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
+				Queries.loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
 				
 				receipt.setEvent(event);
 			} else {
@@ -2877,16 +2831,8 @@ public class JDBCDatabase implements IDatabase {
 		return result;
 	}
 	
-	protected void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(configurationSetting, resultSet, index, ConfigurationSetting.SCHEMA);
-	}
-
-	private void load(User user, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(user, resultSet, index, User.SCHEMA);
-	}
-
 	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(problem, resultSet, index, Problem.SCHEMA);
+		Queries.loadGeneric(problem, resultSet, index, Problem.SCHEMA);
 	}
 
 	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
@@ -2913,57 +2859,35 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(course, resultSet, index, Course.SCHEMA);
+		Queries.loadGeneric(course, resultSet, index, Course.SCHEMA);
 	}
 
 	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(term, resultSet, index, Term.SCHEMA);
+		Queries.loadGeneric(term, resultSet, index, Term.SCHEMA);
 	}
 
 	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
+		Queries.loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
+		Queries.loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
 	}
 	
 	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(event, resultSet, index, Event.SCHEMA);
+		Queries.loadGeneric(event, resultSet, index, Event.SCHEMA);
 	}
 	
 	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(reg, resultSet, index, CourseRegistration.SCHEMA);
+		Queries.loadGeneric(reg, resultSet, index, CourseRegistration.SCHEMA);
 	}
 	
 	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
+		Queries.loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
 	}
 	
 	protected void load(RepoTestCase repoTestCase, ResultSet resultSet, int index) throws SQLException {
-		loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
-	}
-
-	/**
-	 * Generic method to load model object data from the current row of
-	 * a ResultSet.
-	 * 
-	 * @param modelObj   the model object
-	 * @param resultSet  the ResultSet
-	 * @param index      the index of the first column containing model object data
-	 * @param schema     the schema of the model object
-	 * @return           the index of the first column after the model object data in the result set
-	 * @throws SQLException
-	 */
-	protected<E> int loadGeneric(E modelObj, ResultSet resultSet, int index, ModelObjectSchema<E> schema) throws SQLException {
-		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-			// Note: this could return an object which does not exactly match the field type
-			Object value = resultSet.getObject(index++);
-			value = DBUtil.convertValue(value, field.getType());
-			
-			field.setUntyped(modelObj, value);
-		}
-		return index;
+		Queries.loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
 	}
 
 	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
