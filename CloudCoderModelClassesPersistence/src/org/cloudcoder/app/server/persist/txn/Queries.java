@@ -23,10 +23,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.User;
 
 /**
@@ -94,6 +96,39 @@ public class Queries {
 	    User user = new User();
 	    load(user, resultSet, 1);
 	    return user;
+	}
+
+	public static Quiz doFindQuiz(
+			int problemId,
+			int section,
+			long currentTimeMillis,
+			Connection conn,
+			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
+		PreparedStatement stmt = dbRunnable.prepareStatement(
+				conn,
+				"select q.* from cc_quizzes as q " +
+				" where q.problem_id = ? " +
+				"   and q.section = ? " +
+				"   and q.start_time <= ? " +
+				"   and (q.end_time >= ? or q.end_time = 0)"
+		);
+		stmt.setInt(1, problemId);
+		stmt.setInt(2, section);
+		stmt.setLong(3, currentTimeMillis);
+		stmt.setLong(4, currentTimeMillis);
+		
+		Quiz result = null;
+		
+		ResultSet resultSet = dbRunnable.executeQuery(stmt);
+		while (resultSet.next()) {
+			Quiz quiz = new Quiz();
+			DBUtil.loadModelObjectFields(quiz, Quiz.SCHEMA, resultSet);
+			if (result == null || quiz.getEndTime() > result.getEndTime()) {
+				result = quiz;
+			}
+		}
+	
+		return result;
 	}
 
 }

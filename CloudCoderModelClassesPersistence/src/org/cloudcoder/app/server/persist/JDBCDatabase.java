@@ -26,13 +26,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
+import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
+import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
+import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.Queries;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
@@ -156,137 +158,27 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	public User getUserGivenId(final int userId) {
-		
 		return databaseRun(new GetUserGivenId(userId));
-		
 	}
 	
 	@Override
 	public User authenticateUser(final String userName, final String password) {
 		return databaseRun(new AuthenticateUser(userName, password));
-	};
-	
-	
+	}
 	
 	@Override
-    public List<User> getUsersInCourse(final int courseId, final int sectionNumber)
-    {
-	    return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<User>>() {
-            @Override
-            public List<User> run(Connection conn) throws SQLException
-            {
-                PreparedStatement stmt=prepareStatement(conn, 
-                        "select u.* " +
-                                " from " + User.SCHEMA.getDbTableName() + " as u, " +
-                                CourseRegistration.SCHEMA.getDbTableName()+" as reg " +
-                                " where u.id =  reg.user_id " +
-                                "   and reg.course_id = ? " +
-                                "   and (? = 0 or reg.section = ?)" // section number of 0 means "all sections"
-                );
-                stmt.setInt(1, courseId);
-                stmt.setInt(2, sectionNumber);
-                stmt.setInt(3, sectionNumber);
+    public List<User> getUsersInCourse(final int courseId, final int sectionNumber) {
+		return databaseRun(new GetUsersInCourse(sectionNumber, courseId));
+	}
 
-                ResultSet resultSet = executeQuery(stmt);
-
-                List<User> users=new LinkedList<User>();
-                while (resultSet.next()) {
-                    User u=new User();
-                    Queries.load(u, resultSet, 1);
-                    users.add(u);
-                }
-                return users;
-            }
-
-            @Override
-            public String getDescription() {
-                return "retrieving users in courseId "+courseId;
-            }
-	        
-        });
-    }
-
-    /* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#getUserWithoutAuthentication(java.lang.String)
-	 */
 	@Override
 	public User getUserWithoutAuthentication(final String userName) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public User run(Connection conn) throws SQLException {
-				return Queries.getUser(conn, userName, this);
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "retrieving user for username";
-			}
-		});
+		return databaseRun(new GetUserWithoutAuthentication(userName));
 	}
 	
 	@Override
 	public Pair<Problem, Quiz> getProblem(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Pair<Problem, Quiz>>() {
-			@Override
-			public Pair<Problem, Quiz> run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select p.*, r.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
-						" where p.problem_id = ? " +
-						"   and c.id = p.course_id " +
-						"   and r.course_id = c.id " +
-						"   and r.user_id = ?"
-				);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, user.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				if (!resultSet.next()) {
-					// no such problem, or user is not registered in the course
-					// in which the problem is assigned
-					return null;
-				}
-				
-				// Get Problem and CourseRegistration
-				Problem problem = new Problem();
-				CourseRegistration reg = new CourseRegistration();
-				
-				int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
-				index = DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet, index);
-				
-				// Check to see if user is authorized to see this problem
-				
-				// Instructors are always allowed to see problems, even if not visible
-				if (reg.getRegistrationType().isInstructor()) {
-					return new Pair<Problem, Quiz>(problem, null);
-				}
-				
-				// Problem is visible?
-				if (problem.isVisible()) {
-					return new Pair<Problem, Quiz>(problem, null);
-				}
-				
-				// See if there is an ongoing quiz
-				Quiz quiz = doFindQuiz(problem.getProblemId(), reg.getSection(), System.currentTimeMillis(), conn, this);
-				if (quiz != null) {
-					System.out.println("Found quiz for problem " + problem.getProblemId());
-					return new Pair<Problem, Quiz>(problem, quiz);
-				}
-				
-				return null;
-			}
-			
-			@Override
-			public String getDescription() {
-				return "retrieving problem";
-			}
-		});
+		return databaseRun(new GetProblemForUser(problemId, user));
 	}
 
 	/* (non-Javadoc)
@@ -2672,39 +2564,6 @@ public class JDBCDatabase implements IDatabase {
 		return true;
 	}
 
-	protected Quiz doFindQuiz(
-			int problemId,
-			int section,
-			long currentTimeMillis,
-			Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				"select q.* from cc_quizzes as q " +
-				" where q.problem_id = ? " +
-				"   and q.section = ? " +
-				"   and q.start_time <= ? " +
-				"   and (q.end_time >= ? or q.end_time = 0)"
-		);
-		stmt.setInt(1, problemId);
-		stmt.setInt(2, section);
-		stmt.setLong(3, currentTimeMillis);
-		stmt.setLong(4, currentTimeMillis);
-		
-		Quiz result = null;
-		
-		ResultSet resultSet = dbRunnable.executeQuery(stmt);
-		while (resultSet.next()) {
-			Quiz quiz = new Quiz();
-			DBUtil.loadModelObjectFields(quiz, Quiz.SCHEMA, resultSet);
-			if (result == null || quiz.getEndTime() > result.getEndTime()) {
-				result = quiz;
-			}
-		}
-
-		return result;
-	}
-	
 	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
 			Connection conn,
 			final Problem problem,
