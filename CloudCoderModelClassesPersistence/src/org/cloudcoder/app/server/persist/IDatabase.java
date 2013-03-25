@@ -20,6 +20,8 @@ package org.cloudcoder.app.server.persist;
 import java.io.InputStream;
 import java.util.List;
 
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;

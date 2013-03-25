@@ -30,6 +30,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
+import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;

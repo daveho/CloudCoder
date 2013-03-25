@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.daemon.JarRewriter;
 import org.cloudcoder.daemon.Util;
 

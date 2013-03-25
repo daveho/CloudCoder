@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
