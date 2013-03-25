@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.Queries;
@@ -162,29 +163,7 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public User authenticateUser(final String userName, final String password) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
-			@Override
-			public User run(Connection conn) throws SQLException {
-				User user=Queries.getUser(conn, userName, this);
-				
-				if (user == null) {
-					// No such user
-					return null;
-				}
-				
-				if (BCrypt.checkpw(password, user.getPasswordHash())) {
-					// Plaintext password matches hash: authentication succeeded
-					return user;
-				} else {
-					// Plaintext password does not match hash: authentication failed
-					return null;
-				}
-			}
-			@Override
-			public String getDescription() {
-				return "retrieving user";
-			}
-		});
+		return databaseRun(new AuthenticateUser(userName, password));
 	};
 	
 	
