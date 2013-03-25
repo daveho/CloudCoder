@@ -40,7 +40,7 @@ public class GetUserGivenId extends AbstractDatabaseRunnableNoAuthException<User
 
 	@Override
 	public User run(Connection conn) throws SQLException {
-		return Queries.getUser(conn, userId);
+		return Queries.getUser(conn, userId, this);
 	}
 
 	@Override

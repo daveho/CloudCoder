@@ -154,20 +154,6 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new GetConfigurationSetting(name));
 	}
 	
-	private User getUser(Connection conn, String userName) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where username = ?");
-        stmt.setString(1, userName);
-        
-        ResultSet resultSet = stmt.executeQuery();
-        if (!resultSet.next()) {
-            return null;
-        }
-        
-        User user = new User();
-        Queries.load(user, resultSet, 1);
-        return user;
-	}
-	
 	public User getUserGivenId(final int userId) {
 		
 		return databaseRun(new GetUserGivenId(userId));
@@ -179,7 +165,7 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<User>() {
 			@Override
 			public User run(Connection conn) throws SQLException {
-				User user=getUser(conn, userName);
+				User user=Queries.getUser(conn, userName, this);
 				
 				if (user == null) {
 					// No such user
@@ -252,7 +238,7 @@ public class JDBCDatabase implements IDatabase {
 			 */
 			@Override
 			public User run(Connection conn) throws SQLException {
-				return getUser(conn, userName);
+				return Queries.getUser(conn, userName, this);
 			}
 			/* (non-Javadoc)
 			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
@@ -1437,7 +1423,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public OperationResult run(Connection conn) throws SQLException {
 				// Make sure that username is not already taken
-				User existing = getUser(conn, request.getUsername());
+				User existing = Queries.getUser(conn, request.getUsername(), this);
 				if (existing != null) {
 					return new OperationResult(false, "Username " + request.getUsername() + " is already in use");
 				}

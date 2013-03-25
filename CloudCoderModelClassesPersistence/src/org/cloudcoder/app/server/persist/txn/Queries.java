@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ModelObjectField;
@@ -63,11 +64,11 @@ public class Queries {
 		loadGeneric(user, resultSet, index, User.SCHEMA);
 	}
 
-	public static User getUser(Connection conn, int userId) throws SQLException {
-	    PreparedStatement stmt = conn.prepareStatement("select * from "+User.SCHEMA.getDbTableName()+" where id = ?");
+	public static User getUser(Connection conn, int userId, AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+	    PreparedStatement stmt = dbRunnable.prepareStatement(conn, "select * from "+User.SCHEMA.getDbTableName()+" where id = ?");
 	    stmt.setInt(1, userId);
 	    
-	    ResultSet resultSet = stmt.executeQuery();
+	    ResultSet resultSet = dbRunnable.executeQuery(stmt);
 	    if (!resultSet.next()) {
 	        return null;
 	    }
@@ -79,6 +80,20 @@ public class Queries {
 
 	public static void load(ConfigurationSetting configurationSetting, ResultSet resultSet, int index) throws SQLException {
 		loadGeneric(configurationSetting, resultSet, index, ConfigurationSetting.SCHEMA);
+	}
+
+	public static User getUser(Connection conn, String userName, AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
+	    PreparedStatement stmt = dbRunnable.prepareStatement(conn, "select * from "+User.SCHEMA.getDbTableName()+" where username = ?");
+	    stmt.setString(1, userName);
+	    
+	    ResultSet resultSet = dbRunnable.executeQuery(stmt);
+	    if (!resultSet.next()) {
+	        return null;
+	    }
+	    
+	    User user = new User();
+	    load(user, resultSet, 1);
+	    return user;
 	}
 
 }
