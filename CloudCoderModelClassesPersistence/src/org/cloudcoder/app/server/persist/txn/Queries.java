@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
@@ -129,6 +130,29 @@ public class Queries {
 		}
 	
 		return result;
+	}
+
+	public static void load(Change change, ResultSet resultSet, int index) throws SQLException {
+		// Change objects require special handling because the database
+		// has two columns for the change text (depending on how long the
+		// text is).  Whichever of the columns is not null should be used
+		// as the text value to store in the model object.
+		
+		String text = null;
+		
+		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
+			Object value = resultSet.getObject(index++);
+			if (field != Change.TEXT_SHORT && field != Change.TEXT) {
+				field.setUntyped(change, DBUtil.convertValue(value, field.getType()));
+			} else {
+				// This is the value of either the text_short or text columns.
+				// Use whichever is not null.
+				if (value != null) {
+					text = (String) value;
+				}
+			}
+		}
+		change.setText(text);
 	}
 
 }

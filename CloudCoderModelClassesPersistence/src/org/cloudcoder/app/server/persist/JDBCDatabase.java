@@ -31,6 +31,8 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
+import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
+import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
@@ -186,65 +188,12 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public Problem getProblem(final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Problem>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Problem run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + Problem.SCHEMA.getDbTableName() + " where problem_id = ?");
-				stmt.setInt(1, problemId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (resultSet.next()) {
-					Problem problem = new Problem();
-					load(problem, resultSet, 1);
-					return problem;
-				}
-				return null;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "get problem";
-			}
-		});
+		return databaseRun(new GetProblemForProblemId(problemId));
 	}
 	
 	@Override
 	public Change getMostRecentChange(final User user, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>() {
-			@Override
-			public Change run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where c.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + Change.SCHEMA.getDbTableName() + " as cc, " + Event.SCHEMA.getDbTableName() + " as ee " +
-						"                where cc.event_id = ee.id " +
-						"                  and ee.problem_id = ? " +
-						"                  and ee.user_id = ?)"
-				);
-				stmt.setInt(1, problemId);
-				stmt.setInt(2, user.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				
-				Change change = new Change();
-				load(change, resultSet, 1);
-				return change;
-			}
-			public String getDescription() {
-				return "retrieving latest code change";
-			}
-		});
+		return databaseRun(new GetMostRecentChangeForUserAndProblem(problemId, user));
 	}
 	
 	@Override
@@ -271,7 +220,7 @@ public class JDBCDatabase implements IDatabase {
 					return null;
 				}
 				Change change = new Change();
-				load(change, resultSet, 1);
+				Queries.load(change, resultSet, 1);
 				return change;
 			}
 			@Override
@@ -340,7 +289,7 @@ public class JDBCDatabase implements IDatabase {
 				ResultSet resultSet = executeQuery(stmt);
 				while (resultSet.next()) {
 					Change change = new Change();
-					load(change, resultSet, 1);
+					Queries.load(change, resultSet, 1);
 					result.add(change);
 				}
 				
@@ -2296,7 +2245,7 @@ public class JDBCDatabase implements IDatabase {
 		List<Problem> resultList = new ArrayList<Problem>();
 		while (resultSet.next()) {
 			Problem problem = new Problem();
-			load(problem, resultSet, 1);
+			Queries.loadGeneric(problem, resultSet, 1, Problem.SCHEMA);
 			resultList.add(problem);
 		}
 		
@@ -2655,33 +2604,6 @@ public class JDBCDatabase implements IDatabase {
 		return result;
 	}
 	
-	protected void load(Problem problem, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(problem, resultSet, index, Problem.SCHEMA);
-	}
-
-	protected void load(Change change, ResultSet resultSet, int index) throws SQLException {
-		// Change objects require special handling because the database
-		// has two columns for the change text (depending on how long the
-		// text is).  Whichever of the columns is not null should be used
-		// as the text value to store in the model object.
-		
-		String text = null;
-		
-		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
-			Object value = resultSet.getObject(index++);
-			if (field != Change.TEXT_SHORT && field != Change.TEXT) {
-				field.setUntyped(change, DBUtil.convertValue(value, field.getType()));
-			} else {
-				// This is the value of either the text_short or text columns.
-				// Use whichever is not null.
-				if (value != null) {
-					text = (String) value;
-				}
-			}
-		}
-		change.setText(text);
-	}
-
 	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
 		Queries.loadGeneric(course, resultSet, index, Course.SCHEMA);
 	}
@@ -2789,7 +2711,7 @@ public class JDBCDatabase implements IDatabase {
 
 	protected Change getChangeAndEvent(ResultSet resultSet) throws SQLException {
 		Change change = new Change();
-		load(change, resultSet, 1);
+		Queries.load(change, resultSet, 1);
 		Event event = new Event();
 		load(event, resultSet, Change.NUM_FIELDS + 1);
 		change.setEvent(event);
