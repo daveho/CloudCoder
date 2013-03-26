@@ -249,9 +249,9 @@ public interface IDatabase {
 	public Change getChange(int changeEventId);
 
 	/**
-	 * Insert TestResults.
+	 * Replace TestResults.
 	 * 
-	 * @param testResults         the TestResults
+	 * @param testResults         the TestResults which should overwrite the existing test results
 	 * @param submissionReceiptId the id of the SubmissionReceipt with which these
 	 *                            TestResults are associated
 	 */

@@ -24,11 +24,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import org.cloudcoder.app.server.persist.txn.AddTestCasesToProblem;
 import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
+import org.cloudcoder.app.server.persist.txn.CreateProblemSummary;
 import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
@@ -42,14 +43,22 @@ import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsFo
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
+import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
+import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblem;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblemCheckAuth;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
+import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.Queries;
+import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
+import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
+import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
+import org.cloudcoder.app.server.persist.txn.StoreProblemAndTestCaseList;
+import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
@@ -67,7 +76,6 @@ import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IModelObject;
-import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -76,20 +84,16 @@ import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
-import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
-import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
-import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
-import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
@@ -303,391 +307,54 @@ public class JDBCDatabase implements IDatabase {
 
     @Override
 	public void addProblem(final Problem problem) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				return doInsertProblem(problem, conn, (AbstractDatabaseRunnableNoAuthException<?>) this);
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "adding Problem";
-			}
-		});
+		databaseRun(new InsertProblem(problem));
 	}
 	
 	@Override
 	public void addTestCases(final Problem problem, final List<TestCase> testCaseList) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				AbstractDatabaseRunnableNoAuthException<?> databaseRunnable = this;
-				
-				return doInsertTestCases(problem, testCaseList, conn,
-						databaseRunnable);
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "adding test case";
-			}
-		});
+		databaseRun(new AddTestCasesToProblem(problem, testCaseList));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#createProblemSummary(org.cloudcoder.app.shared.model.Problem)
-	 */
 	@Override
 	public ProblemSummary createProblemSummary(final Problem problem) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemSummary>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public ProblemSummary run(Connection conn) throws SQLException {
-				// Determine how many students (non-instructor users) are in this course
-				int numStudentsInCourse = doCountStudentsInCourse(problem, conn, this);
-				
-				// Get all SubmissionReceipts
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select sr.*, e.* " +
-						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where sr.event_id = e.id " +
-						"   and e.problem_id = ?");
-				stmt.setInt(1, problem.getProblemId());
-				
-				// Keep track of "best" submissions from each student.
-				HashMap<Integer, SubmissionReceipt> bestSubmissions = new HashMap<Integer, SubmissionReceipt>();
-				
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					SubmissionReceipt receipt = Queries.loadSubmissionReceiptAndEvent(resultSet);
-					
-					SubmissionReceipt prevBest = bestSubmissions.get(receipt.getEvent().getUserId());
-					SubmissionStatus curStatus = receipt.getStatus();
-					//SubmissionStatus prevStatus = prevBest.getStatus();
-					if (prevBest == null
-							|| curStatus == SubmissionStatus.TESTS_PASSED && prevBest.getStatus() != SubmissionStatus.TESTS_PASSED
-							|| receipt.getNumTestsPassed() > prevBest.getNumTestsPassed()) {
-						// New receipt is better than the previous receipt
-						bestSubmissions.put(receipt.getEvent().getUserId(), receipt);
-					}
-				}
-				
-				// Aggregate the data
-				int started = 0;
-				int anyPassed = 0;
-				int allPassed = 0;
-				for (SubmissionReceipt r : bestSubmissions.values()) {
-					if (r.getStatus() == SubmissionStatus.TESTS_PASSED) {
-						started++;
-						allPassed++;
-						anyPassed++;
-					} else if (r.getNumTestsPassed() > 0) {
-						started++;
-						anyPassed++;
-					} else {
-						started++;
-					}
-				}
-				
-				// Create the ProblemSummary
-				ProblemSummary problemSummary = new ProblemSummary();
-				problemSummary.setProblem(problem);
-				problemSummary.setNumStudents(numStudentsInCourse);
-				problemSummary.setNumStarted(started);
-				problemSummary.setNumPassedAtLeastOneTest(anyPassed);
-				problemSummary.setNumCompleted(allPassed);
-				
-				return problemSummary;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "get problem summary for problem";
-			}
-		});
+		return databaseRun(new CreateProblemSummary(problem));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#getSubmissionReceipt(int)
-	 */
 	@Override
 	public SubmissionReceipt getSubmissionReceipt(final int submissionReceiptId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public SubmissionReceipt run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select sr.*, e.* " +
-						"  from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as sr, " +
-						"       " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where sr.event_id = e.id " +
-						"   and e.event_id = ?");
-				stmt.setInt(1, submissionReceiptId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				if (resultSet.next()) {
-					SubmissionReceipt receipt = Queries.loadSubmissionReceiptAndEvent(resultSet);
-					return receipt;
-				}
-				return null;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "getting submission receipt";
-			}
-		});
+		return databaseRun(new GetSubmissionReceipt(submissionReceiptId));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#insertTestResults(org.cloudcoder.app.shared.model.TestResult[], int)
-	 */
 	@Override
 	public void replaceTestResults(final TestResult[] testResults, final int submissionReceiptId) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				// Delete old test results (if any)
-				PreparedStatement delTestResults = prepareStatement(
-						conn,
-						"delete from " + TestResult.SCHEMA.getDbTableName() + " where submission_receipt_event_id = ?");
-				delTestResults.setInt(1, submissionReceiptId);
-				delTestResults.executeUpdate();
-				
-				// Insert new test results
-				Queries.doInsertTestResults(testResults, submissionReceiptId, conn, this);
-				
-				return true;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "store test results";
-			}
-		});
+		databaseRun(new ReplaceTestResults(submissionReceiptId, testResults));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#updateSubmissionReceipt(org.cloudcoder.app.shared.model.SubmissionReceipt)
-	 */
 	@Override
 	public void updateSubmissionReceipt(final SubmissionReceipt receipt) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				// Only update the fields that we expect might have changed
-				// following a retest.
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"update " + SubmissionReceipt.SCHEMA.getDbTableName() + 
-						"  set status = ?, num_tests_attempted = ?, num_tests_passed = ?");
-				stmt.setInt(1, receipt.getStatus().ordinal());
-				stmt.setInt(2, receipt.getNumTestsAttempted());
-				stmt.setInt(3, receipt.getNumTestsPassed());
-				
-				stmt.executeUpdate();
-				
-				return true;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "update submission receipt";
-			}
-		});
+		databaseRun(new ReplaceSubmissionReceipt(receipt));
 	}
 	
 	@Override
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(
 			final ProblemAndTestCaseList problemAndTestCaseList, final Course course, final User user)
 			throws CloudCoderAuthenticationException {
-		return databaseRunAuth(new AbstractDatabaseRunnable<ProblemAndTestCaseList>() {
-			@Override
-			public ProblemAndTestCaseList run(Connection conn)
-					throws SQLException, CloudCoderAuthenticationException {
-				// Ensure problem and course id match.
-				if (!problemAndTestCaseList.getProblem().getCourseId().equals((Integer) course.getId())) {
-					throw new CloudCoderAuthenticationException("Problem does not match course");
-				}
-				
-				// Check that user is registered as an instructor in the course.
-				boolean isInstructor = false;
-				List<? extends Object[]> courses = Queries.doGetCoursesForUser(user, conn, this);
-				for (Object[] tuple : courses) {
-					CourseRegistration courseReg = (CourseRegistration) tuple[2];
-					if (courseReg.getCourseId() == course.getId()
-							&& courseReg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
-							isInstructor = true;
-						break;
-					}
-				}
-				if (!isInstructor) {
-					throw new CloudCoderAuthenticationException("not instructor in course");
-				}
-				
-				// If the problem id is not set, then insert the problem.
-				// Otherwise, update the existing problem.
-				if (problemAndTestCaseList.getProblem().getProblemId() == null
-						|| problemAndTestCaseList.getProblem().getProblemId() < 0) {
-					// Insert problem and test cases
-					doInsertProblem(problemAndTestCaseList.getProblem(), conn, this);
-					doInsertTestCases(
-							problemAndTestCaseList.getProblem(),
-							problemAndTestCaseList.getTestCaseData(),
-							conn,
-							this);
-				} else {
-					// Update problem and test cases
-					doUpdateProblem(problemAndTestCaseList.getProblem(), conn, this);
-					
-					// We can achieve the effect of updating the test cases by deleting
-					// and then reinserting
-					doDeleteTestCases(problemAndTestCaseList.getProblem().getProblemId(), conn, this);
-					doInsertTestCases(
-							problemAndTestCaseList.getProblem(),
-							problemAndTestCaseList.getTestCaseData(),
-							conn,
-							this);
-				}
-				
-				// Success!
-				return problemAndTestCaseList;
-			}
-
-			@Override
-			public String getDescription() {
-				return " storing problem and test cases";
-			}
-		});
+		return databaseRunAuth(new StoreProblemAndTestCaseList(problemAndTestCaseList, course, user));
 	}
 	
 	@Override
 	public RepoProblemAndTestCaseList getRepoProblemAndTestCaseList(final String hash) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<RepoProblemAndTestCaseList>() {
-			@Override
-			public RepoProblemAndTestCaseList run(Connection conn) throws SQLException {
-				// Query to find the RepoProblem
-				PreparedStatement findRepoProblem = prepareStatement(
-						conn,
-						"select * from " + RepoProblem.SCHEMA.getDbTableName() + " as rp " +
-						" where rp." + RepoProblem.HASH.getName() + " = ?");
-				findRepoProblem.setString(1, hash);
-				
-				ResultSet repoProblemRs = executeQuery(findRepoProblem);
-				if (!repoProblemRs.next()) {
-					return null;
-				}
-				
-				RepoProblem repoProblem = new RepoProblem();
-				load(repoProblem, repoProblemRs, 1);
-				
-				RepoProblemAndTestCaseList result = new RepoProblemAndTestCaseList();
-				result.setProblem(repoProblem);
-				
-				// Find all RepoTestCases associated with the RepoProblem
-				doFindRepoTestCases(repoProblem, result, conn, this);
-				
-				return result;
-			}
-
-			@Override
-			public String getDescription() {
-				return " retrieving problem and test cases from the repository";
-			}
-		});
+		return databaseRun(new GetRepoProblemAndTestCaseListGivenHash(hash));
 	}
 
 	@Override
 	public void storeRepoProblemAndTestCaseList(final RepoProblemAndTestCaseList exercise, final User user) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				// Compute hash
-				exercise.computeHash();
-				
-				// Set user id
-				exercise.getProblem().setUserId(user.getId());
-
-				// Store the RepoProblem
-				DBUtil.storeModelObject(conn, exercise.getProblem());
-				
-				// Insert RepoTestCases (setting repo problem id of each)
-				String insertRepoTestCaseSql = DBUtil.createInsertStatement(RepoTestCase.SCHEMA);
-				PreparedStatement stmt = prepareStatement(conn, insertRepoTestCaseSql, PreparedStatement.RETURN_GENERATED_KEYS);
-				for (RepoTestCase repoTestCase : exercise.getTestCaseData()) {
-					repoTestCase.setRepoProblemId(exercise.getProblem().getId());
-					DBUtil.bindModelObjectValuesForInsert(repoTestCase, RepoTestCase.SCHEMA, stmt);
-					stmt.addBatch();
-				}
-				stmt.executeBatch();
-
-				// Get generated unique ids of RepoTestCase objects
-				ResultSet genKeys = getGeneratedKeys(stmt);
-				DBUtil.getModelObjectUniqueIds(exercise.getTestCaseData(), RepoTestCase.SCHEMA, genKeys);
-				
-				// Add a tag indicating the programming language
-				Language language = exercise.getProblem().getProblemType().getLanguage();
-				RepoProblemTag tag = new RepoProblemTag();
-				tag.setName(language.getTagName());
-				tag.setRepoProblemId(exercise.getProblem().getId());
-				tag.setUserId(user.getId());
-				doAddRepoProblemTag(conn, tag, this);
-				
-				return true;
-			}
-			@Override
-			public String getDescription() {
-				return " storing exercise in repository database";
-			}
-		});
+		databaseRun(new StoreRepoProblemAndTestCaseList(user, exercise));
 	}
 	
 	@Override
 	public List<RepoProblemSearchResult> searchRepositoryExercises(final RepoProblemSearchCriteria searchCriteria) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemSearchResult>>() {
-			@Override
-			public List<RepoProblemSearchResult> run(Connection conn) throws SQLException {
-				RepoProblemSearch search = new RepoProblemSearch();
-				search.setSearchCriteria(searchCriteria);
-				search.execute(conn, this);
-				return search.getSearchResultList();
-			}
-			@Override
-			public String getDescription() {
-				return " searching for exercises in the exercise repository";
-			}
-		});
+		return databaseRun(new SearchRepositoryExercises(searchCriteria));
 	}
 	
 	@Override
@@ -952,7 +619,7 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
-				return doAddRepoProblemTag(conn, repoProblemTag, this);
+				return Queries.doAddRepoProblemTag(conn, repoProblemTag, this);
 			}
 			
 			@Override
@@ -1654,209 +1321,6 @@ public class JDBCDatabase implements IDatabase {
 		return result;
 	}
 	
-	/**
-	 * Count students in course for given {@link Problem}.
-	 * 
-	 * @param problem  the {@link Problem}
-	 * @param conn     the database connection
-	 * @param abstractDatabaseRunnable the {@link AbstractDatabaseRunnable}
-	 * @return number of students in the course
-	 * @throws SQLException 
-	 */
-	protected int doCountStudentsInCourse(Problem problem, Connection conn,
-			AbstractDatabaseRunnableNoAuthException<ProblemSummary> abstractDatabaseRunnable) throws SQLException {
-		PreparedStatement stmt = abstractDatabaseRunnable.prepareStatement(
-				conn,
-				"select count(*) from " +
-				Course.SCHEMA.getDbTableName() + " as c, " +
-				CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
-				" where c.id = ? " +
-				"   and cr.course_id = c.id "
-				);
-		stmt.setInt(1, problem.getCourseId());
-		
-		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
-		if (!resultSet.next()) {
-			return -1;
-		}
-		
-		return resultSet.getInt(1);
-	}
-	
-	private Boolean doInsertProblem(
-			final Problem problem,
-			Connection conn,
-			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
-		PreparedStatement stmt = databaseRunnable.prepareStatement(
-				conn,
-				"insert into " + Problem.SCHEMA.getDbTableName() +
-				" values (" +
-				DBUtil.getInsertPlaceholdersNoId(Problem.SCHEMA) +
-				")",
-				PreparedStatement.RETURN_GENERATED_KEYS
-		);
-		
-		storeNoId(problem, stmt, 1);
-		
-		stmt.executeUpdate();
-		
-		ResultSet generatedKey = databaseRunnable.getGeneratedKeys(stmt);
-		if (!generatedKey.next()) {
-			throw new SQLException("Could not get generated key for inserted problem");
-		}
-		problem.setProblemId(generatedKey.getInt(1));
-		
-		return true;
-	}
-
-	private Boolean doInsertTestCases(final Problem problem,
-			final List<TestCase> testCaseList, Connection conn,
-			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
-		PreparedStatement stmt = databaseRunnable.prepareStatement(
-				conn,
-				"insert into " + TestCase.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
-				PreparedStatement.RETURN_GENERATED_KEYS
-		);
-		
-		for (TestCase testCase : testCaseList) {
-			testCase.setProblemId(problem.getProblemId());
-			storeNoId(testCase, stmt, 1);
-			stmt.addBatch();
-		}
-		
-		stmt.executeBatch();
-		
-		ResultSet generatedKeys = databaseRunnable.getGeneratedKeys(stmt);
-		int count = 0;
-		while (generatedKeys.next()) {
-			testCaseList.get(count).setTestCaseId(generatedKeys.getInt(1));
-			count++;
-		}
-		if (count != testCaseList.size()) {
-			throw new SQLException("wrong number of generated keys for inserted test cases");
-		}
-		
-		return true;
-	}
-
-	private Boolean doUpdateProblem(
-			final Problem problem,
-			Connection conn,
-			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
-		
-		// Special case: if the authorship status of the original version was
-		// IMPORTED, then we need to change it to IMPORTED_AND_MODIFIED and
-		// set the parent hash field.  (In theory, loading the current
-		// version of the problem from the database isn't necessary,
-		// but it doesn't hurt to be paranoid, and authorship status is
-		// important to track precisely.)
-		Problem orig = new Problem();
-		PreparedStatement fetchOrig = databaseRunnable.prepareStatement(
-				conn,
-				"select * from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
-		fetchOrig.setInt(1, problem.getProblemId());
-		ResultSet origRS = databaseRunnable.executeQuery(fetchOrig);
-		if (!origRS.next()) {
-			throw new SQLException("Can't update problem " + problem.getProblemId() + " because it doesn't exist");
-		}
-		Queries.loadGeneric(orig, origRS, 1, Problem.SCHEMA);
-		
-		if (orig.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
-			// FIXME: get the hash of the imported problem from the database
-			// Probably, could just use parent_hash: for IMPORTED problems,
-			// it's the actual hash, but for IMPORTED_AND_MODIFIED problems,
-			// it's the parent hash.  Actually, that would be nice because
-			// then we don't have to do anything with the hash.
-			problem.setProblemAuthorship(ProblemAuthorship.IMPORTED_AND_MODIFIED);
-		}
-		
-		PreparedStatement update = databaseRunnable.prepareStatement(
-				conn,
-				"update " + Problem.SCHEMA.getDbTableName() +
-				" set " + DBUtil.getUpdatePlaceholdersNoId(Problem.SCHEMA) +
-				" where problem_id = ?"
-				);
-		int index = storeNoId(problem, update, 1);
-		update.setInt(index, problem.getProblemId());
-		
-		int rowCount = update.executeUpdate();
-		if (rowCount != 1) {
-			throw new SQLException("Could not update problem (no such problem in database?)");
-		}
-		
-		return true;
-	}
-	
-	protected void doDeleteTestCases(
-			Integer problemId,
-			Connection conn,
-			AbstractDatabaseRunnable<ProblemAndTestCaseList> abstractDatabaseRunnable) throws SQLException {
-		PreparedStatement deleteStmt = abstractDatabaseRunnable.prepareStatement(
-				conn,
-				"delete from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
-		deleteStmt.setInt(1, problemId);
-		
-		deleteStmt.executeUpdate();
-	}
-	
-	protected void doFindRepoTestCases(
-			RepoProblem repoProblem,
-			RepoProblemAndTestCaseList exercise,
-			Connection conn,
-			AbstractDatabaseRunnable<?> dbRunnable)
-			throws SQLException {
-		PreparedStatement findRepoTestCases = dbRunnable.prepareStatement(
-				conn,
-				"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
-				" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
-		findRepoTestCases.setInt(1, repoProblem.getId());
-		
-		ResultSet repoTestCaseRs = dbRunnable.executeQuery(findRepoTestCases);
-		while (repoTestCaseRs.next()) {
-			RepoTestCase repoTestCase = new RepoTestCase();
-			load(repoTestCase, repoTestCaseRs, 1);
-			exercise.addTestCase(repoTestCase);
-		}
-	}
-
-	/**
-	 * Add a {@link RepoProblemTag} to the database as part of a transaction.
-	 * 
-	 * @param conn             the database connection
-	 * @param repoProblemTag   the {@link RepoProblemTag} to add
-	 * @param databaseRunnable the transaction ({@link AbstractDatabaseRunnableNoAuthException})
-	 * @return true if the tag was added succesfully,
-	 *         false if the user has already added an identical tag
-	 * @throws SQLException
-	 */
-	protected Boolean doAddRepoProblemTag(
-			Connection conn,
-			RepoProblemTag repoProblemTag,
-			AbstractDatabaseRunnableNoAuthException<?> databaseRunnable) throws SQLException {
-		PreparedStatement stmt = databaseRunnable.prepareStatement(
-				conn,
-				"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
-				" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
-		);
-		
-		DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
-		
-		try {
-			stmt.executeUpdate();
-		} catch (SQLException e) {
-			if (e.getSQLState().equals("23000")) {
-				// failed due to duplicate key: this almost certainly means
-				// that the user has already added the same tag
-				return false;
-			} else {
-				// some other failure
-				throw e;
-			}
-		}
-		
-		return true;
-	}
-
 	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
 			Connection conn,
 			final Problem problem,
@@ -1946,22 +1410,6 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		return result;
-	}
-	
-	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
-	}
-	
-	protected void load(RepoTestCase repoTestCase, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
-	}
-
-	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
-		return Queries.storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
-	}
-
-	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
-		Queries.storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
 	}
 	
 }

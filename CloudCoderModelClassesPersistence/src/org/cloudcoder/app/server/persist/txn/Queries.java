@@ -41,7 +41,14 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
+import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.RepoProblem;
+import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -488,6 +495,209 @@ public class Queries {
 		loadGeneric(submissionReceipt, resultSet, 1, SubmissionReceipt.SCHEMA);
 		loadGeneric(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1, Event.SCHEMA);
 		return submissionReceipt;
+	}
+
+	public static Boolean doInsertProblem(
+			final Problem problem,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + Problem.SCHEMA.getDbTableName() +
+				" values (" +
+				DBUtil.getInsertPlaceholdersNoId(Problem.SCHEMA) +
+				")",
+				PreparedStatement.RETURN_GENERATED_KEYS
+		);
+		
+		Queries.storeNoIdGeneric(problem, stmt, 1, Problem.SCHEMA);
+		
+		stmt.executeUpdate();
+		
+		ResultSet generatedKey = databaseRunnable.getGeneratedKeys(stmt);
+		if (!generatedKey.next()) {
+			throw new SQLException("Could not get generated key for inserted problem");
+		}
+		problem.setProblemId(generatedKey.getInt(1));
+		
+		return true;
+	}
+
+	/**
+	 * Count students in course for given {@link Problem}.
+	 * 
+	 * @param problem  the {@link Problem}
+	 * @param conn     the database connection
+	 * @param abstractDatabaseRunnable the {@link AbstractDatabaseRunnable}
+	 * @return number of students in the course
+	 * @throws SQLException 
+	 */
+	public static int doCountStudentsInCourse(Problem problem, Connection conn,
+			AbstractDatabaseRunnableNoAuthException<ProblemSummary> abstractDatabaseRunnable) throws SQLException {
+		PreparedStatement stmt = abstractDatabaseRunnable.prepareStatement(
+				conn,
+				"select count(*) from " +
+				Course.SCHEMA.getDbTableName() + " as c, " +
+				CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
+				" where c.id = ? " +
+				"   and cr.course_id = c.id "
+				);
+		stmt.setInt(1, problem.getCourseId());
+		
+		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
+		if (!resultSet.next()) {
+			return -1;
+		}
+		
+		return resultSet.getInt(1);
+	}
+
+	public static Boolean doUpdateProblem(
+			final Problem problem,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		
+		// Special case: if the authorship status of the original version was
+		// IMPORTED, then we need to change it to IMPORTED_AND_MODIFIED and
+		// set the parent hash field.  (In theory, loading the current
+		// version of the problem from the database isn't necessary,
+		// but it doesn't hurt to be paranoid, and authorship status is
+		// important to track precisely.)
+		Problem orig = new Problem();
+		PreparedStatement fetchOrig = databaseRunnable.prepareStatement(
+				conn,
+				"select * from " + Problem.SCHEMA.getDbTableName() + " where " + Problem.PROBLEM_ID.getName() + " = ?");
+		fetchOrig.setInt(1, problem.getProblemId());
+		ResultSet origRS = databaseRunnable.executeQuery(fetchOrig);
+		if (!origRS.next()) {
+			throw new SQLException("Can't update problem " + problem.getProblemId() + " because it doesn't exist");
+		}
+		loadGeneric(orig, origRS, 1, Problem.SCHEMA);
+		
+		if (orig.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
+			// FIXME: get the hash of the imported problem from the database
+			// Probably, could just use parent_hash: for IMPORTED problems,
+			// it's the actual hash, but for IMPORTED_AND_MODIFIED problems,
+			// it's the parent hash.  Actually, that would be nice because
+			// then we don't have to do anything with the hash.
+			problem.setProblemAuthorship(ProblemAuthorship.IMPORTED_AND_MODIFIED);
+		}
+		
+		PreparedStatement update = databaseRunnable.prepareStatement(
+				conn,
+				"update " + Problem.SCHEMA.getDbTableName() +
+				" set " + DBUtil.getUpdatePlaceholdersNoId(Problem.SCHEMA) +
+				" where problem_id = ?"
+				);
+		int index = storeNoIdGeneric(problem, update, 1, Problem.SCHEMA);
+		update.setInt(index, problem.getProblemId());
+		
+		int rowCount = update.executeUpdate();
+		if (rowCount != 1) {
+			throw new SQLException("Could not update problem (no such problem in database?)");
+		}
+		
+		return true;
+	}
+
+	public static void doDeleteTestCases(
+			Integer problemId,
+			Connection conn,
+			AbstractDatabaseRunnable<ProblemAndTestCaseList> abstractDatabaseRunnable) throws SQLException {
+		PreparedStatement deleteStmt = abstractDatabaseRunnable.prepareStatement(
+				conn,
+				"delete from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
+		deleteStmt.setInt(1, problemId);
+		
+		deleteStmt.executeUpdate();
+	}
+
+	public static Boolean doInsertTestCases(final Problem problem,
+			final List<TestCase> testCaseList, Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + TestCase.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
+				PreparedStatement.RETURN_GENERATED_KEYS
+		);
+		
+		for (TestCase testCase : testCaseList) {
+			testCase.setProblemId(problem.getProblemId());
+			storeNoIdGeneric(testCase, stmt, 1, TestCase.SCHEMA);
+			stmt.addBatch();
+		}
+		
+		stmt.executeBatch();
+		
+		ResultSet generatedKeys = databaseRunnable.getGeneratedKeys(stmt);
+		int count = 0;
+		while (generatedKeys.next()) {
+			testCaseList.get(count).setTestCaseId(generatedKeys.getInt(1));
+			count++;
+		}
+		if (count != testCaseList.size()) {
+			throw new SQLException("wrong number of generated keys for inserted test cases");
+		}
+		
+		return true;
+	}
+
+	public static void doFindRepoTestCases(
+			RepoProblem repoProblem,
+			RepoProblemAndTestCaseList exercise,
+			Connection conn,
+			AbstractDatabaseRunnable<?> dbRunnable)
+			throws SQLException {
+		PreparedStatement findRepoTestCases = dbRunnable.prepareStatement(
+				conn,
+				"select * from " + RepoTestCase.SCHEMA.getDbTableName() + " as rtc " +
+				" where rtc." + RepoTestCase.REPO_PROBLEM_ID.getName() + " = ?");
+		findRepoTestCases.setInt(1, repoProblem.getId());
+		
+		ResultSet repoTestCaseRs = dbRunnable.executeQuery(findRepoTestCases);
+		while (repoTestCaseRs.next()) {
+			RepoTestCase repoTestCase = new RepoTestCase();
+			loadGeneric(repoTestCase, repoTestCaseRs, 1, RepoTestCase.SCHEMA);
+			exercise.addTestCase(repoTestCase);
+		}
+	}
+
+	/**
+	 * Add a {@link RepoProblemTag} to the database as part of a transaction.
+	 * 
+	 * @param conn             the database connection
+	 * @param repoProblemTag   the {@link RepoProblemTag} to add
+	 * @param databaseRunnable the transaction ({@link AbstractDatabaseRunnableNoAuthException})
+	 * @return true if the tag was added succesfully,
+	 *         false if the user has already added an identical tag
+	 * @throws SQLException
+	 */
+	public static Boolean doAddRepoProblemTag(
+			Connection conn,
+			RepoProblemTag repoProblemTag,
+			AbstractDatabaseRunnableNoAuthException<?> databaseRunnable) throws SQLException {
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+				conn,
+				"insert into " + RepoProblemTag.SCHEMA.getDbTableName() +
+				" values (" + DBUtil.getInsertPlaceholders(RepoProblemTag.SCHEMA) + ")"
+		);
+		
+		DBUtil.bindModelObjectValuesForInsert(repoProblemTag, RepoProblemTag.SCHEMA, stmt);
+		
+		try {
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			if (e.getSQLState().equals("23000")) {
+				// failed due to duplicate key: this almost certainly means
+				// that the user has already added the same tag
+				return false;
+			} else {
+				// some other failure
+				throw e;
+			}
+		}
+		
+		return true;
 	}
 
 }
