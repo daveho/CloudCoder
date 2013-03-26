@@ -17,50 +17,41 @@
 
 package org.cloudcoder.app.server.persist.txn;
 
+import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Course;
 
 /**
- * Store a sequence of {@link Change}s representing a user's edits
- * on a problem.
+ * Transaction to insert users by reading an input stream.
  */
-public class StoreChanges extends AbstractDatabaseRunnableNoAuthException<Boolean> {
-	private final Change[] changeList;
+public class InsertUsersFromInputStream extends AbstractDatabaseRunnable<Boolean> {
+	private final InputStream in;
+	private final Course course;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param changeList list of changes to be stored
+	 * @param in     the input stream
+	 * @param course the {@link Course} to which the users should be added
 	 */
-	public StoreChanges(Change[] changeList) {
-		this.changeList = changeList;
+	public InsertUsersFromInputStream(InputStream in, Course course) {
+		this.in = in;
+		this.course = course;
 	}
 
 	@Override
-	public Boolean run(Connection conn) throws SQLException {
-		// Store Events
-		Queries.storeEvents(changeList, conn, this);
-		
-		// Store Changes
-		PreparedStatement insertChange = prepareStatement(
-				conn,
-				"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
-		);
-		for (Change change : changeList) {
-			Queries.store(change, insertChange, 1);
-			insertChange.addBatch();
-		}
-		insertChange.executeBatch();
-		
+	public Boolean run(Connection conn) throws SQLException,CloudCoderAuthenticationException
+	{
+		Queries.doInsertUsersFromInputStream(in, course, conn);
 		return true;
 	}
 
 	@Override
 	public String getDescription() {
-		return "storing text changes";
+		return "Inserting users into course "+course.getName();
 	}
 }

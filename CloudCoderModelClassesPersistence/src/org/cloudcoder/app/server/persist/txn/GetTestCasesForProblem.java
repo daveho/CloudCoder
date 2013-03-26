@@ -18,49 +18,34 @@
 package org.cloudcoder.app.server.persist.txn;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.TestCase;
 
 /**
- * Store a sequence of {@link Change}s representing a user's edits
- * on a problem.
+ * Transaction to get all {@link TestCase}s for given {@link Problem}.
  */
-public class StoreChanges extends AbstractDatabaseRunnableNoAuthException<Boolean> {
-	private final Change[] changeList;
+public class GetTestCasesForProblem extends AbstractDatabaseRunnableNoAuthException<List<TestCase>> {
+	private final int problemId;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param changeList list of changes to be stored
+	 * @param problemId unique id of the {@link Problem}
 	 */
-	public StoreChanges(Change[] changeList) {
-		this.changeList = changeList;
+	public GetTestCasesForProblem(int problemId) {
+		this.problemId = problemId;
 	}
 
 	@Override
-	public Boolean run(Connection conn) throws SQLException {
-		// Store Events
-		Queries.storeEvents(changeList, conn, this);
-		
-		// Store Changes
-		PreparedStatement insertChange = prepareStatement(
-				conn,
-				"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
-		);
-		for (Change change : changeList) {
-			Queries.store(change, insertChange, 1);
-			insertChange.addBatch();
-		}
-		insertChange.executeBatch();
-		
-		return true;
+	public List<TestCase> run(Connection conn) throws SQLException {
+		return Queries.doGetTestCasesForProblem(conn, problemId, this);
 	}
 
 	@Override
 	public String getDescription() {
-		return "storing text changes";
+		return " getting test cases for problem";
 	}
 }

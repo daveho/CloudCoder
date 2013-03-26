@@ -18,49 +18,36 @@
 package org.cloudcoder.app.server.persist.txn;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
+import org.cloudcoder.app.shared.model.User;
 
 /**
- * Store a sequence of {@link Change}s representing a user's edits
- * on a problem.
+ * Database transaction to edit user information.
  */
-public class StoreChanges extends AbstractDatabaseRunnableNoAuthException<Boolean> {
-	private final Change[] changeList;
+public class EditUser extends AbstractDatabaseRunnableNoAuthException<Boolean> {
+	private final User user;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param changeList list of changes to be stored
+	 * @param user the {@link User} to update
 	 */
-	public StoreChanges(Change[] changeList) {
-		this.changeList = changeList;
+	public EditUser(User user) {
+		this.user = user;
 	}
 
 	@Override
 	public Boolean run(Connection conn) throws SQLException {
-		// Store Events
-		Queries.storeEvents(changeList, conn, this);
-		
-		// Store Changes
-		PreparedStatement insertChange = prepareStatement(
-				conn,
-				"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
-		);
-		for (Change change : changeList) {
-			Queries.store(change, insertChange, 1);
-			insertChange.addBatch();
-		}
-		insertChange.executeBatch();
-		
+		getLogger().info("Editing user "+user.getId()+" "+user.getUsername());
+		ConfigurationUtil.updateUserById(conn, user);
 		return true;
 	}
 
 	@Override
 	public String getDescription() {
-		return "storing text changes";
+		return "Updating user record";
 	}
 }

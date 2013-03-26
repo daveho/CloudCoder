@@ -18,49 +18,41 @@
 package org.cloudcoder.app.server.persist.txn;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.TestResult;
 
 /**
- * Store a sequence of {@link Change}s representing a user's edits
- * on a problem.
+ * Transaction to store a {@link SubmissionReceipt} and {@link TestResult}s
+ * for a user's submission.
  */
-public class StoreChanges extends AbstractDatabaseRunnableNoAuthException<Boolean> {
-	private final Change[] changeList;
+public class StoreSubmissionReceipt extends
+		AbstractDatabaseRunnableNoAuthException<Boolean> {
+	private final TestResult[] testResultList_;
+	private final SubmissionReceipt receipt;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param changeList list of changes to be stored
+	 * @param testResultList_  the {@link TestResult}s
+	 * @param receipt          the {@link SubmissionReceipt}
 	 */
-	public StoreChanges(Change[] changeList) {
-		this.changeList = changeList;
+	public StoreSubmissionReceipt(TestResult[] testResultList_,
+			SubmissionReceipt receipt) {
+		this.testResultList_ = testResultList_;
+		this.receipt = receipt;
 	}
 
 	@Override
 	public Boolean run(Connection conn) throws SQLException {
-		// Store Events
-		Queries.storeEvents(changeList, conn, this);
-		
-		// Store Changes
-		PreparedStatement insertChange = prepareStatement(
-				conn,
-				"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
-		);
-		for (Change change : changeList) {
-			Queries.store(change, insertChange, 1);
-			insertChange.addBatch();
-		}
-		insertChange.executeBatch();
-		
+		Queries.doInsertSubmissionReceipt(receipt, testResultList_, conn, this);
 		return true;
 	}
 
 	@Override
 	public String getDescription() {
-		return "storing text changes";
+		return "storing submission receipt";
 	}
 }

@@ -23,30 +23,35 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
+import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetCoursesForUser;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentFullTextChange;
+import org.cloudcoder.app.server.persist.txn.GetOrAddLatestSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsForUserInCourse;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
+import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblem;
+import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblemCheckAuth;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
+import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.Queries;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
+import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
+import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
 import org.cloudcoder.app.shared.model.Change;
@@ -60,7 +65,6 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
-import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
@@ -186,9 +190,6 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new GetProblemForUser(problemId, user));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#getProblem(int)
-	 */
 	@Override
 	public Problem getProblem(final int problemId) {
 		return databaseRun(new GetProblemForProblemId(problemId));
@@ -204,9 +205,6 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new GetMostRecentFullTextChange(problemId, user));
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.persist.IDatabase#getFullTextChange(long)
-	 */
 	@Override
 	public Change getChange(final int changeEventId) {
 		return databaseRun(new GetChangeGivenChangeEventId(changeEventId));
@@ -241,51 +239,13 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<TestCase> getTestCasesForProblem(final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<TestCase>>() {
-			@Override
-			public List<TestCase> run(Connection conn) throws SQLException {
-				return doGetTestCasesForProblem(conn, problemId, this);
-			}
-			@Override
-			public String getDescription() {
-				return "getting test cases for problem";
-			}
-		});
+		return databaseRun(new GetTestCasesForProblem(problemId));
 	}
 
 	@Override
 	public TestCase[] getTestCasesForProblem(final User authenticatedUser, final boolean requireInstructor, final int problemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<TestCase[]>() {
-			@Override
-			public TestCase[] run(Connection conn) throws SQLException {
-				// Find the problem
-				Problem problem = new Problem();
-				problem.setProblemId(problemId);
-				DBUtil.loadModelObject(conn, problem);
-				
-				// Check user's registration in the course
-				CourseRegistrationList regList = Queries.doGetCourseRegistrations(
-						conn, problem.getCourseId(), authenticatedUser.getId(), this);
-				
-				if (regList.getList().isEmpty()) {
-					// Not registered, deny
-					return new TestCase[0];
-				}
-
-				if (requireInstructor && !regList.isInstructor()) {
-					// Authenticated user is not an instructor
-					return new TestCase[0];
-				}
-				
-				// Allow the request, so go ahead and return the test cases
-				List<TestCase> result = doGetTestCasesForProblem(conn, problemId, this);
-				return result.toArray(new TestCase[result.size()]);
-			}
-			@Override
-			public String getDescription() {
-				return "getting test cases for problem";
-			}
-		});
+		return databaseRun(new GetTestCasesForProblemCheckAuth(authenticatedUser,
+				requireInstructor, problemId));
 	}
 	
 	/* (non-Javadoc)
@@ -293,142 +253,30 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public void insertSubmissionReceipt(final SubmissionReceipt receipt, final TestResult[] testResultList_) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				doInsertSubmissionReceipt(receipt, testResultList_, conn, this);
-				return true;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "storing submission receipt";
-			}
-		});
+		databaseRun(new StoreSubmissionReceipt(testResultList_, receipt));
 	}
 	
 	public void insertUsersFromInputStream(final InputStream in, final Course course) {
-	    try {
-	    databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
-
-            @Override
-            public Boolean run(Connection conn) throws SQLException,CloudCoderAuthenticationException
-            {
-                doInsertUsersFromInputStream(in, course, conn);
-                return true;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Inserting users into course "+course.getName();
-            }
-	        
-        });
-	    } catch (CloudCoderAuthenticationException e) {
-	        // TODO proper error handling
-	        throw new RuntimeException(e);
-	    }
+		try {
+			databaseRunAuth(new InsertUsersFromInputStream(in, course));
+		} catch (CloudCoderAuthenticationException e) {
+			// TODO proper error handling
+			throw new RuntimeException(e);
+		}
 	}
 	
-	private void doInsertUsersFromInputStream(InputStream in, Course course, Connection conn)
-	throws SQLException
-	{
-	    conn.setAutoCommit(false);
-	    // Assuming that the users are in the following format:
-	    // firstname   lastname    username    password    email
-        //TODO: CreateWebApp should prompt for firstname/lastname/email as well
-	    //TODO: Add first/last/email to the User record
-	    Scanner scan=new Scanner(in);
-	    PreparedStatement stmt=conn.prepareStatement("insert into " +User.SCHEMA.getDbTableName()+
-                " (username, password_hash) values (?, ?)");
-	    
-	    while (scan.hasNextLine()) {
-	        String line=scan.nextLine();
-	        String[] tokens=line.split("\t");
-	        String username=tokens[2];
-	        String password=tokens[3];
-	        stmt.setString(1, username);
-	        stmt.setString(2, password);
-	        stmt.addBatch();
-	    }
-	    stmt.execute();
-	    conn.commit();
-    }
-
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.server.persist.IDatabase#addSubmissionReceiptIfNecessary(org.cloudcoder.app.shared.model.User, org.cloudcoder.app.shared.model.Problem)
 	 */
 	@Override
 	public void getOrAddLatestSubmissionReceipt(final User user, final Problem problem) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public SubmissionReceipt run(Connection conn) throws SQLException {
-				// Get most recent submission receipt for user/problem
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select r.*, e.* from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as r, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where r.event_id = e.id " +
-						"   and e.id = (select max(ee.id) from " + SubmissionReceipt.SCHEMA.getDbTableName() + " as rr, " + Event.SCHEMA.getDbTableName() + " as ee " +
-						"                where rr.event_id = ee.id " +
-						"                  and ee.problem_id = ? " +
-						"                  and ee.user_id = ?)");
-				stmt.setInt(1, problem.getProblemId());
-				stmt.setInt(2, user.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (resultSet.next()) {
-					SubmissionReceipt submissionReceipt = loadSubmissionReceiptAndEvent(resultSet);
-					return submissionReceipt;
-				}
-				
-				// There is no submission receipt in the database yet, so add one
-				// with status STARTED
-				SubmissionStatus status = SubmissionStatus.STARTED;
-				SubmissionReceipt receipt = SubmissionReceipt.create(user, problem, status, -1, 0, 0);
-				doInsertSubmissionReceipt(receipt, new TestResult[0], conn, this);
-				return receipt;
-				
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "adding initial submission receipt if necessary";
-			}
-		});
+		databaseRun(new GetOrAddLatestSubmissionReceipt(user, problem));
 	}
 	
 	@Override
 	public void editUser(final User user)
 	{
-	    databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-            /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-             */
-            @Override
-            public Boolean run(Connection conn) throws SQLException {
-                logger.info("Editing user "+user.getId()+" "+user.getUsername());
-                ConfigurationUtil.updateUserById(conn, user);
-                return true;
-            }
-            
-            /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-             */
-            @Override
-            public String getDescription() {
-                return "Updating user record";
-            }
-        });
+	    databaseRun(new EditUser(user));
 	}
 	
 	@Override
@@ -563,7 +411,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				ResultSet resultSet = executeQuery(stmt);
 				while (resultSet.next()) {
-					SubmissionReceipt receipt = loadSubmissionReceiptAndEvent(resultSet);
+					SubmissionReceipt receipt = Queries.loadSubmissionReceiptAndEvent(resultSet);
 					
 					SubmissionReceipt prevBest = bestSubmissions.get(receipt.getEvent().getUserId());
 					SubmissionStatus curStatus = receipt.getStatus();
@@ -636,7 +484,7 @@ public class JDBCDatabase implements IDatabase {
 				ResultSet resultSet = executeQuery(stmt);
 				
 				if (resultSet.next()) {
-					SubmissionReceipt receipt = loadSubmissionReceiptAndEvent(resultSet);
+					SubmissionReceipt receipt = Queries.loadSubmissionReceiptAndEvent(resultSet);
 					return receipt;
 				}
 				return null;
@@ -670,7 +518,7 @@ public class JDBCDatabase implements IDatabase {
 				delTestResults.executeUpdate();
 				
 				// Insert new test results
-				doInsertTestResults(testResults, submissionReceiptId, conn, this);
+				Queries.doInsertTestResults(testResults, submissionReceiptId, conn, this);
 				
 				return true;
 			}
@@ -1717,7 +1565,7 @@ public class JDBCDatabase implements IDatabase {
 				}
 				
 				// Get the test cases (so we can find out the test case names)
-				List<TestCase> testCases = doGetTestCasesForProblem(conn, problem.getProblemId(), this);
+				List<TestCase> testCases = Queries.doGetTestCasesForProblem(conn, problem.getProblemId(), this);
 				
 				// Build the list of NamedTestResults
 				NamedTestResult[] results = new NamedTestResult[testResults.size()];
@@ -1843,135 +1691,6 @@ public class JDBCDatabase implements IDatabase {
 		
 		// Success!
 		return result;
-	}
-	
-	/**
-	 * Get test cases for given problem id.
-	 * 
-	 * @param conn       the database connection
-	 * @param problemId  the problem id
-	 * @param dbRunnable the {@link AbstractDatabaseRunnable}
-	 * @return the list of test cases
-	 * @throws SQLException
-	 */
-	private List<TestCase> doGetTestCasesForProblem(
-			Connection conn,
-			int problemId,
-			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				"select * from " + TestCase.SCHEMA.getDbTableName() + " where problem_id = ?");
-		stmt.setInt(1, problemId);
-		
-		List<TestCase> result = new ArrayList<TestCase>();
-		
-		ResultSet resultSet = dbRunnable.executeQuery(stmt);
-		while (resultSet.next()) {
-			TestCase testCase = new TestCase();
-			load(testCase, resultSet, 1);
-			result.add(testCase);
-		}
-		return result;
-	}
-
-	/**
-	 * Store the Event objects embedded in the given IContainsEvent objects.
-	 * 
-	 * @param containsEventList list of IContainsEvent objects
-	 * @param conn              database connection
-	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
-	 * @throws SQLException
-	 */
-	public static void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
-			throws SQLException {
-		PreparedStatement insertEvent = dbRunnable.prepareStatement(
-				conn,
-				"insert into " + Event.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?)", 
-				Statement.RETURN_GENERATED_KEYS
-		);
-		for (IContainsEvent change : containsEventList) {
-			Queries.storeNoIdGeneric(change.getEvent(), insertEvent, 1, Event.SCHEMA);
-			insertEvent.addBatch();
-		}
-		insertEvent.executeBatch();
-		
-		// Get the generated ids of the newly inserted Events
-		ResultSet genKeys = dbRunnable.getGeneratedKeys(insertEvent);
-		int count = 0;
-		while (genKeys.next()) {
-			int id = genKeys.getInt(1);
-			containsEventList[count].getEvent().setId(id);
-			containsEventList[count].setEventId(id);
-			count++;
-		}
-		if (count != containsEventList.length) {
-			throw new SQLException("Did not get all generated keys for inserted events");
-		}
-	}
-
-	private void doInsertSubmissionReceipt(
-			final SubmissionReceipt receipt,
-			final TestResult[] testResultList_,
-			Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
-			throws SQLException {
-		// Get TestResults (ensuring that the array is non-null
-		TestResult[] testResultList = testResultList_ != null ? testResultList_ : new TestResult[0];
-		
-		// Store the underlying Event
-		storeEvents(new SubmissionReceipt[]{receipt}, conn, dbRunnable);
-		
-		// Set the SubmissionReceipt's event id to match the event we just inserted
-		receipt.setEventId(receipt.getEvent().getId());
-		
-		// Insert the SubmissionReceipt
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				"insert into " + SubmissionReceipt.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?)",
-				PreparedStatement.RETURN_GENERATED_KEYS
-		);
-		store(receipt, stmt, 1);
-		stmt.execute();
-		
-//		// Get the generated key for this submission receipt
-//		ResultSet genKey = dbRunnable.getGeneratedKeys(stmt);
-//		if (!genKey.next()) {
-//			throw new SQLException("Could not get generated key for submission receipt");
-//		}
-//		receipt.setId(genKey.getInt(1));
-		
-		// Store the TestResults
-//		doInsertTestResults(testResultList, receipt.getId(), conn, dbRunnable);
-		doInsertTestResults(testResultList, receipt.getEventId(), conn, dbRunnable);
-	}
-
-	private void doInsertTestResults(TestResult[] testResultList,
-			int submissionReceiptId, Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
-		for (TestResult testResult : testResultList) {
-			testResult.setSubmissionReceiptEventId(submissionReceiptId);
-		}
-		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
-				conn,
-				"insert into " + TestResult.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
-				PreparedStatement.RETURN_GENERATED_KEYS
-		);
-		for (TestResult testResult : testResultList) {
-			storeNoId(testResult, insertTestResults, 1);
-			insertTestResults.addBatch();
-		}
-		insertTestResults.executeBatch();
-		
-		// Get generated TestResult ids
-		ResultSet generatedIds = dbRunnable.getGeneratedKeys(insertTestResults);
-		int count = 0;
-		while (generatedIds.next()) {
-			testResultList[count].setId(generatedIds.getInt(1));
-			count++;
-		}
-		if (count != testResultList.length) {
-			throw new SQLException("Wrong number of generated ids for test results");
-		}
 	}
 	
 	/**
@@ -2268,14 +1987,6 @@ public class JDBCDatabase implements IDatabase {
 		return result;
 	}
 	
-	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
-	}
-	
-	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
-	}
-	
 	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
 		Queries.loadGeneric(repoProblem, resultSet, index, RepoProblem.SCHEMA);
 	}
@@ -2284,27 +1995,12 @@ public class JDBCDatabase implements IDatabase {
 		Queries.loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
 	}
 
-	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
-		Queries.storeNoIdGeneric(receipt, stmt, index, SubmissionReceipt.SCHEMA);
-	}
-
-	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		Queries.storeNoIdGeneric(testResult, stmt, index, TestResult.SCHEMA);
-	}
-	
 	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
 		return Queries.storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
 		Queries.storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
-	}
-
-	private SubmissionReceipt loadSubmissionReceiptAndEvent(ResultSet resultSet) throws SQLException {
-		SubmissionReceipt submissionReceipt = new SubmissionReceipt();
-		load(submissionReceipt, resultSet, 1);
-		Queries.loadGeneric(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1, Event.SCHEMA);
-		return submissionReceipt;
 	}
 	
 }
