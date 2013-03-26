@@ -20,10 +20,7 @@ package org.cloudcoder.app.server.persist;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.server.persist.txn.AddRepoProblemTag;
@@ -43,6 +40,7 @@ import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
 import org.cloudcoder.app.server.persist.txn.FindUnfinishedQuizForStudent;
 import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
+import org.cloudcoder.app.server.persist.txn.GetAllSubmissionReceiptsForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblemForAuthenticatedUser;
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
@@ -58,15 +56,17 @@ import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
+import org.cloudcoder.app.server.persist.txn.GetSectionsForCourse;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
+import org.cloudcoder.app.server.persist.txn.GetSubmissionText;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblem;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblemCheckAuth;
+import org.cloudcoder.app.server.persist.txn.GetTestResultsForSubmission;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
-import org.cloudcoder.app.server.persist.txn.Queries;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
@@ -81,10 +81,8 @@ import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
 import org.cloudcoder.app.shared.model.Change;
-import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -92,7 +90,6 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
-import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -473,215 +470,22 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public Integer[] getSectionsForCourse(final Course course, final User authenticatedUser) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Integer[]>() {
-			@Override
-			public Integer[] run(Connection conn) throws SQLException {
-				// Make sure user is an instructor in the course
-				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, course.getId(), authenticatedUser.getId(), this);
-				if (!regList.isInstructor()) {
-					return new Integer[0];
-				}
-				
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select distinct cr.section from cc_course_registrations as cr " +
-						" where cr.course_id = ? " +
-						" order by cr.section asc"
-				);
-				stmt.setInt(1, course.getId());
-				
-				List<Integer> result = new ArrayList<Integer>();
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					result.add(resultSet.getInt(1));
-				}
-				
-				return result.toArray(new Integer[result.size()]);
-			}
-			@Override
-			public String getDescription() {
-				return " getting sections for course";
-			}
-		});
+		return databaseRun(new GetSectionsForCourse(course, authenticatedUser));
 	}
 	
 	@Override
 	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(final Problem problem, final User user) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<SubmissionReceipt[]>() {
-			@Override
-			public SubmissionReceipt[] run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select sr.*, e.* from cc_submission_receipts as sr, cc_events as e " +
-						"  where sr.event_id = e.id " +
-						"    and e.user_id = ? " +
-						"    and e.problem_id = ? " +
-						" order by e.timestamp asc"
-				);
-				stmt.setInt(1, user.getId());
-				stmt.setInt(2, problem.getProblemId());
-				
-				ArrayList<SubmissionReceipt> result = new ArrayList<SubmissionReceipt>();
-				
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					int index = 1;
-					SubmissionReceipt receipt = new SubmissionReceipt();
-					index = DBUtil.loadModelObjectFields(receipt, SubmissionReceipt.SCHEMA, resultSet, index);
-					Event event = new Event();
-					index = DBUtil.loadModelObjectFields(event, Event.SCHEMA, resultSet, index);
-					
-					receipt.setEvent(event);
-					
-					result.add(receipt);
-				}
-				
-				return result.toArray(new SubmissionReceipt[result.size()]);
-			}
-			@Override
-			public String getDescription() {
-				return " getting subscription receipts for user";
-			}
-		});
+		return databaseRun(new GetAllSubmissionReceiptsForUserAndProblem(problem, user));
 	}
 	
 	@Override
 	public ProblemText getSubmissionText(final User authenticatedUser, final User submitter, final Problem problem, final SubmissionReceipt receipt) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemText>() {
-			@Override
-			public ProblemText run(Connection conn) throws SQLException {
-				// Check authenticated user's course registrations
-				CourseRegistrationList regList =
-						Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
-
-				// Note that the queries require that either
-				//   (1) the authenticated user is the submitter of the change event
-				//       specified in the submission receipt as the last edit, or
-				//   (2) the authenticated user is an instructor in the course
-				
-				// There are two cases:
-				//   - the normal case where we know the event if of the full-text
-				//     change containing the submission text
-				//   - the case where the submission receipt is the initial one
-				//     where the status is SubmissionStatus.STARTED, in which case
-				//     we look for the user's first full-text submission
-				//     (which the client webapp will typically create using the
-				//     problem's skeleton code)
-
-				ProblemText result;
-				
-				if (receipt.getLastEditEventId() < 0) {
-					// Don't know the submission receipt: look for the first full-text change
-					// for the user/problem
-					PreparedStatement stmt = prepareStatement(
-							conn,
-							"select oc.text from cc_changes as oc " +
-							" where oc.event_id = " +
-							"   (select min(e.id) from cc_changes as c, cc_events as e " +
-							"     where c.event_id = e.id " +
-							"       and e.user_id = ? " +
-							"       and e.problem_id = ? " +
-							"       and c.type = ? " +
-							"       and (e.user_id = ? or ? = 1))"
-					);
-					stmt.setInt(1, submitter.getId());
-					stmt.setInt(2, problem.getProblemId());
-					stmt.setInt(3, ChangeType.FULL_TEXT.ordinal());
-					stmt.setInt(4, authenticatedUser.getId());
-					stmt.setInt(5, regList.isInstructor() ? 1 : 0);
-					
-					ResultSet resultSet = executeQuery(stmt);
-					if (resultSet.next()) {
-						result = new ProblemText(resultSet.getString(1), false);
-					} else {
-						result = new ProblemText("", false);
-					}
-				} else {
-					// We have the event id of the full-text change, so just
-					// find it.
-					PreparedStatement stmt = prepareStatement(
-							conn,
-							"select c.text from cc_changes as c, cc_events as e " +
-							" where c.event_id = e.id " +
-							"   and c.event_id = ? " +
-							"   and (e.user_id = ? or ? = 1) " +
-							"   and e.problem_id = ?"
-					);
-					stmt.setInt(1, receipt.getLastEditEventId());
-					stmt.setInt(2, authenticatedUser.getId());
-					stmt.setInt(3, regList.isInstructor() ? 1 : 0);
-					stmt.setInt(4, problem.getProblemId());
-					
-					ResultSet resultSet = executeQuery(stmt);
-					if (resultSet.next()) {
-						// Got it
-						result = new ProblemText(resultSet.getString(1), false);
-					} else {
-						// No such edit event, or user is not authorized to see it
-						result = new ProblemText("", false);
-					}
-				}
-				
-				return result;
-			}
-			@Override
-			public String getDescription() {
-				return " getting submission text";
-			}
-		});
+		return databaseRun(new GetSubmissionText(receipt, authenticatedUser, problem, submitter));
 	}
 	
 	@Override
 	public NamedTestResult[] getTestResultsForSubmission(final User authenticatedUser, final Problem problem, final SubmissionReceipt receipt) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<NamedTestResult[]>() {
-			@Override
-			public NamedTestResult[] run(Connection conn) throws SQLException {
-				
-				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
-				
-				// Get all test results
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select tr.*,  e.* from cc_test_results as tr, cc_submission_receipts as sr, cc_events as e " +
-						" where e.id = ?" +
-						"   and tr.submission_receipt_event_id = e.id " +
-						"   and sr.event_id = e.id " +
-						"   and (e.user_id = ? or ? = 1) " +
-						"   and e.problem_id = ? " +
-						" order by tr.id asc"
-				);
-				stmt.setInt(1, receipt.getEventId());
-				stmt.setInt(2, authenticatedUser.getId());
-				stmt.setInt(3, regList.isInstructor() ? 1 : 0);
-				stmt.setInt(4, problem.getProblemId());
-				
-				// Get the test results (which we are assumed as stored in order by id)
-				List<TestResult> testResults = new ArrayList<TestResult>();
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					TestResult testResult = new TestResult();
-					DBUtil.loadModelObjectFields(testResult, TestResult.SCHEMA, resultSet);
-					testResults.add(testResult);
-				}
-				
-				// Get the test cases (so we can find out the test case names)
-				List<TestCase> testCases = Queries.doGetTestCasesForProblem(conn, problem.getProblemId(), this);
-				
-				// Build the list of NamedTestResults
-				NamedTestResult[] results = new NamedTestResult[testResults.size()];
-				for (int i = 0; i < results.length; i++) {
-					String testCaseName = (i < testCases.size() ? testCases.get(i).getTestCaseName() : ("t" + i));
-					NamedTestResult namedTestResult = new NamedTestResult(testCaseName, testResults.get(i));
-					results[i] = namedTestResult;
-				}
-
-				return results;
-			}
-			@Override
-			public String getDescription() {
-				return " getting test results for submission";
-			}
-		});
+		return databaseRun(new GetTestResultsForSubmission(receipt, authenticatedUser, problem));
 	}
 
 	/**
