@@ -27,12 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.server.persist.txn.AddTestCasesToProblem;
+import org.cloudcoder.app.server.persist.txn.AddUserRegistrationRequest;
 import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.CreateProblemSummary;
+import org.cloudcoder.app.server.persist.txn.DeleteProblem;
 import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
+import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourse;
+import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourseId;
+import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
+import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem;
+import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblemForAuthenticatedUser;
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetCoursesForUser;
@@ -359,106 +366,30 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public CourseRegistrationList findCourseRegistrations(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistrationList>() {
-			@Override
-			public CourseRegistrationList run(Connection conn) throws SQLException {
-				int userId = user.getId();
-				int courseId = course.getId();
-				return Queries.doGetCourseRegistrations(conn, courseId, userId, this);
-			}
-			@Override
-			public String getDescription() {
-				return " finding course registration for user/course";
-			}
-		});
+		return databaseRun(new FindCourseRegistrationsGivenUserAndCourse(course, user));
 	}
 	
 	@Override
 	public CourseRegistrationList findCourseRegistrations(final User user, final int courseId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<CourseRegistrationList>() {
-			@Override
-			public CourseRegistrationList run(Connection conn) throws SQLException {
-				int userId = user.getId();
-				return Queries.doGetCourseRegistrations(conn, courseId, userId, this);
-			}
-			@Override
-			public String getDescription() {
-				return " finding course registration for user/course";
-			}
-		});
+		return databaseRun(new FindCourseRegistrationsGivenUserAndCourseId(user, courseId));
 	}
 	
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
 			final Course unused, final int section, final Problem problem) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
-			@Override
-			public List<UserAndSubmissionReceipt> run(Connection conn)
-					throws SQLException {
-				return doGetBestSubmissionReceipts(conn, problem, section, this);
-			}
-			@Override
-			public String getDescription() {
-				return " getting best submission receipts for problem/course";
-			}
-		});
+		return databaseRun(new GetBestSubmissionReceiptsForProblem(section, problem));
 	}
 
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(final Problem problem, final int section, final User authenticatedUser) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
-			@Override
-			public List<UserAndSubmissionReceipt> run(Connection conn) throws SQLException {
-				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
-				if (!regList.isInstructor()) {
-					// user is not an instructor
-					return new ArrayList<UserAndSubmissionReceipt>();
-				}
-
-				return doGetBestSubmissionReceipts(conn, problem, section, this);
-			}
-			@Override
-			public String getDescription() {
-				return " getting best submission receipts for problem";
-			}
-		});
+		return databaseRun(new GetBestSubmissionReceiptsForProblemForAuthenticatedUser(section,
+				problem, authenticatedUser));
 	}
 	
 	@Override
 	public boolean deleteProblem(final User user, final Course course, final Problem problem)
 			throws CloudCoderAuthenticationException {
-		return databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
-				// verify that the user is an instructor in the course
-				CourseRegistrationList courseReg = Queries.doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
-				if (!courseReg.isInstructor()) {
-					throw new CloudCoderAuthenticationException("Only instructor can delete a problem");
-				}
-				
-				// Delete the problem
-				// Note that we do NOT delete the problem from the database.
-				// Instead, we just set the deleted flag to true, which prevents the
-				// problem from coming up in future searches.  Because lots
-				// of information is linked to a problem, and serious database
-				// corruption could occur if a problem id were reused, this
-				// is a much safer approach than physical deletion.
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"update " + Problem.SCHEMA.getDbTableName() +
-						"   set " + Problem.DELETED.getName() + " = 1 " +
-						" where " + Problem.PROBLEM_ID.getName() + " = ?");
-				stmt.setInt(1, problem.getProblemId());
-				
-				stmt.executeUpdate();
-				
-				return true;
-			}
-			@Override
-			public String getDescription() {
-				return " deleting problem";
-			}
-		});
+		return databaseRunAuth(new DeleteProblem(user, problem, course));
 	}
 	
 	/**
@@ -480,52 +411,12 @@ public class JDBCDatabase implements IDatabase {
 
 	@Override
 	public OperationResult addUserRegistrationRequest(final UserRegistrationRequest request) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<OperationResult>() {
-			@Override
-			public OperationResult run(Connection conn) throws SQLException {
-				// Make sure that username is not already taken
-				User existing = Queries.getUser(conn, request.getUsername(), this);
-				if (existing != null) {
-					return new OperationResult(false, "Username " + request.getUsername() + " is already in use");
-				}
-				
-				// Insert the request
-				DBUtil.storeModelObject(conn, request, UserRegistrationRequest.SCHEMA);
-				
-				return new OperationResult(true, "Successfully added registration request to database");
-			}
-			@Override
-			public String getDescription() {
-				return " adding user registration request";
-			}
-		});
+		return databaseRun(new AddUserRegistrationRequest(request));
 	}
 	
 	@Override
 	public UserRegistrationRequest findUserRegistrationRequest(final String secret) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<UserRegistrationRequest>() {
-			@Override
-			public UserRegistrationRequest run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + UserRegistrationRequest.SCHEMA.getDbTableName() + " as urr " +
-						" where urr." + UserRegistrationRequest.SECRET.getName() + " = ?"
-				);
-				stmt.setString(1, secret);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				UserRegistrationRequest request = new UserRegistrationRequest();
-				Queries.loadGeneric(request, resultSet, 1, UserRegistrationRequest.SCHEMA);
-				return request;
-			}
-			@Override
-			public String getDescription() {
-				return " finding user registration request";
-			}
-		});
+		return databaseRun(new FindUserRegistrationRequestGivenSecret(secret));
 	}
 	
 	@Override
@@ -1318,97 +1209,6 @@ public class JDBCDatabase implements IDatabase {
 		}
 		
 		// Success!
-		return result;
-	}
-	
-	protected List<UserAndSubmissionReceipt> doGetBestSubmissionReceipts(
-			Connection conn,
-			final Problem problem,
-			final int section,
-			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
-		
-		// Clearly, my SQL is either amazing or appalling.
-		// Probably the latter.
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				
-				"select uu.*, best.* from cc_users as uu " +
-				"  left join " +
-				"         (select u.id as the_user_id, e.*, sr.* " +
-				"           from cc_users as u, cc_events as e, cc_submission_receipts as sr," +
-				"           (select i_u.id as user_id, best.max_tests_passed as max_tests_passed, MIN(i_e.timestamp) as timestamp" +
-				"             from cc_users as i_u," +
-				"                  cc_events as i_e," +
-				"                  cc_submission_receipts as i_sr," +
-				"                  (select ii_u.id as user_id, MAX(ii_sr.num_tests_passed) as max_tests_passed" +
-				"                     from cc_users as ii_u, cc_events as ii_e, cc_submission_receipts as ii_sr " +
-				"                    where ii_u.id = ii_e.user_id " +
-				"                      and ii_e.id = ii_sr.event_id " +
-				"                      and ii_e.problem_id = ?" +
-				"                   group by ii_u.id) as best" +
-				"" +
-				"             where i_u.id = i_e.user_id" +
-				"               and i_e.id = i_sr.event_id" +
-				"               and i_e.problem_id = ?" +
-				"               and i_u.id = best.user_id" +
-				"               and i_sr.num_tests_passed = best.max_tests_passed" +
-				"               group by i_u.id, best.max_tests_passed) as earliest_and_best" +
-				"" +
-				"          where u.id = e.user_id" +
-				"              and e.id = sr.event_id" +
-				"              and e.problem_id = ?" +
-				"              and u.id = earliest_and_best.user_id" +
-				"              and sr.num_tests_passed = earliest_and_best.max_tests_passed" +
-				"              and e.timestamp = earliest_and_best.timestamp) as best " +
-				"          on uu.id = best.the_user_id " +
-				"" +
-				" where uu.id in (select distinct xu.id from cc_users as xu, cc_course_registrations as xcr "+
-				"                  where xu.id = xcr.user_id " +
-				"                    and xcr.course_id = ? " +
-				"                    and (? = 0 or xcr.section = ?)) "
-		);
-		int problemId = problem.getProblemId();
-		stmt.setInt(1, problemId);
-		stmt.setInt(2, problemId);
-		stmt.setInt(3, problemId);
-		stmt.setInt(4, problem.getCourseId());
-		stmt.setInt(5, section); // if section is 0, all sections will be included
-		stmt.setInt(6, section);
-		
-		ResultSet resultSet = dbRunnable.executeQuery(stmt);
-		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();
-		
-		while (resultSet.next()) {
-			int index = 1;
-			User user = new User();
-			index = Queries.loadGeneric(user, resultSet, index, User.SCHEMA);
-
-			SubmissionReceipt receipt;
-			
-			// Is there a best submission receipt?
-			if (resultSet.getObject(index) != null) {
-				// Found a best submission receipt
-
-				index++; // skip best.the_user_id column
-				
-				Event event = new Event();
-				index = Queries.loadGeneric(event, resultSet, index, Event.SCHEMA);
-				receipt = new SubmissionReceipt();
-				Queries.loadGeneric(receipt, resultSet, index, SubmissionReceipt.SCHEMA);
-				
-				receipt.setEvent(event);
-			} else {
-				// No best submission receipt
-				receipt = null;
-			}
-			
-			UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
-			pair.setUser(user);
-			pair.setSubmissionReceipt(receipt);
-			
-			result.add(pair);
-		}
-		
 		return result;
 	}
 	
