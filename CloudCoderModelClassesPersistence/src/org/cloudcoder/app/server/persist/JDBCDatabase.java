@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.EditUser;
+import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
@@ -51,7 +53,6 @@ import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
 import org.cloudcoder.app.shared.model.Change;
@@ -283,26 +284,8 @@ public class JDBCDatabase implements IDatabase {
     public void editUser(final int userId, final String username, final String firstname, 
         final String lastname, final String email, final String passwd)
     {
-	    databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-            /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-             */
-            @Override
-            public Boolean run(Connection conn) throws SQLException {
-                logger.info("Editing user "+userId);
-                ConfigurationUtil.updateUser(conn, userId, username,
-                        firstname, lastname, email, passwd);
-                return true;
-            }
-            
-            /* (non-Javadoc)
-             * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-             */
-            @Override
-            public String getDescription() {
-                return "Updating user record";
-            }
-        });    
+	    databaseRun(new EditUserGivenUserData(username, lastname, email, passwd, userId,
+				firstname));    
     }
 
     @Override
@@ -315,29 +298,7 @@ public class JDBCDatabase implements IDatabase {
 
     @Override
 	public void addUserToCourse(final User authenticatedUser, final int courseId, final EditedUser editedUser) throws CloudCoderAuthenticationException {
-    	databaseRunAuth(new AbstractDatabaseRunnable<Boolean>() {
-    		@Override
-    		public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
-    			// Make sure authenticated user is an instructor in the course
-    			CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, courseId, authenticatedUser.getId(), this);
-    			if (!regList.isInstructor()) {
-    				logger.warn("Attempt by non-instructor user {} to add new user to course {}", authenticatedUser.getId(), courseId);
-    				throw new CloudCoderAuthenticationException("Only an instructor can add user to course");
-    			}
-
-    			// Add the new user
-    			User user = editedUser.getUser();
-    			int userId = ConfigurationUtil.createOrUpdateUser(conn, user.getUsername(), user.getFirstname(), user.getLastname(), user.getEmail(), editedUser.getPassword(), user.getWebsite());
-    			user.setId(userId);
-    			ConfigurationUtil.registerUser(conn, user.getId(), courseId, editedUser.getRegistrationType(), editedUser.getSection());
-    			
-    			return true;
-    		}
-    		@Override
-    		public String getDescription() {
-    			return " adding user to course";
-    		}
-		});
+    	databaseRunAuth(new AddUserToCourse(courseId, authenticatedUser, editedUser));
     }
 
     @Override
