@@ -26,16 +26,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cloudcoder.app.server.persist.txn.AddRepoProblemTag;
 import org.cloudcoder.app.server.persist.txn.AddTestCasesToProblem;
 import org.cloudcoder.app.server.persist.txn.AddUserRegistrationRequest;
 import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
+import org.cloudcoder.app.server.persist.txn.CompleteRegistration;
 import org.cloudcoder.app.server.persist.txn.CreateProblemSummary;
 import org.cloudcoder.app.server.persist.txn.DeleteProblem;
 import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
+import org.cloudcoder.app.server.persist.txn.EndQuiz;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourse;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourseId;
+import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
+import org.cloudcoder.app.server.persist.txn.FindUnfinishedQuizForStudent;
 import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem;
@@ -43,12 +48,14 @@ import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetCoursesForUser;
+import org.cloudcoder.app.server.persist.txn.GetModulesForCourse;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentFullTextChange;
 import org.cloudcoder.app.server.persist.txn.GetOrAddLatestSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsForUserInCourse;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
+import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
@@ -60,13 +67,18 @@ import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.Queries;
+import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
+import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
+import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
+import org.cloudcoder.app.server.persist.txn.StudentStartOrContinueQuiz;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.txn.StoreProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
+import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
@@ -77,13 +89,11 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IModelObject;
-import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -106,7 +116,6 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
-import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -391,23 +400,6 @@ public class JDBCDatabase implements IDatabase {
 			throws CloudCoderAuthenticationException {
 		return databaseRunAuth(new DeleteProblem(user, problem, course));
 	}
-	
-	/**
-	 * Check whether at least one of the {@link CourseRegistration} objects
-	 * is an instructor registration.
-	 * 
-	 * @param courseReg list of {@link CourseRegistration} objects
-	 * @return true if at least one {@link CourseRegistration} is an instructor
-	 *         registration
-	 */
-	protected boolean isInstructor(List<CourseRegistration> courseReg) {
-		for (CourseRegistration reg : courseReg) {
-			if (reg.getRegistrationType().ordinal() >= CourseRegistrationType.INSTRUCTOR.ordinal()) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	@Override
 	public OperationResult addUserRegistrationRequest(final UserRegistrationRequest request) {
@@ -421,473 +413,62 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public OperationResult completeRegistration(final UserRegistrationRequest request) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<OperationResult>() {
-			@Override
-			public OperationResult run(Connection conn) throws SQLException {
-				// Copy information from request into a User object
-				User user = new User();
-				for (ModelObjectField<? super User, ?> field : User.SCHEMA.getFieldList()) {
-					Object val = field.get(request);
-					field.setUntyped(user, val);
-				}
-				
-				// Attempt to insert the User
-				try {
-					DBUtil.storeModelObject(conn, user);
-				} catch (SQLException e) {
-					// Check to see if it was a duplicate key error, which would mean
-					// an account with the same username or password has already been
-					// created.
-					if (e.getSQLState().equals("23000")) {
-						throw new SQLException("A user account with the same username or email address has already been created.");
-					} else {
-						throw e;
-					}
-				}
-				
-				// Successfully added User - now set request status to CONFIRMED
-				request.setStatus(UserRegistrationRequestStatus.CONFIRMED);
-				DBUtil.updateModelObject(conn, request, UserRegistrationRequest.SCHEMA);
-				
-				// Success!
-				return new OperationResult(true, "User account " + user.getUsername() + " created successfully!");
-			}
-			@Override
-			public String getDescription() {
-				return " completing user registration request";
-			}
-		});
+		return databaseRun(new CompleteRegistration(request));
 	}
 	
 	@Override
 	public List<RepoProblemTag> getProblemTags(final int repoProblemId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<RepoProblemTag>>() {
-			@Override
-			public List<RepoProblemTag> run(Connection conn) throws SQLException {
-				// Order the tags by decreasing order of popularity
-				// and (secondarily) ascending name order.
-				// Return at most 8 tags.
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select rpt.*, count(rpt." + RepoProblemTag.NAME.getName() + ") as count " +
-						"  from " + RepoProblemTag.SCHEMA.getDbTableName() + " as rpt " +
-						" where rpt." + RepoProblemTag.REPO_PROBLEM_ID.getName() + " = ? " +
-						" group by rpt." + RepoProblemTag.NAME.getName() + " " +
-						" order by count desc, rpt." + RepoProblemTag.NAME.getName() + " asc " +
-						" limit 8"
-						);
-				stmt.setInt(1, repoProblemId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				List<RepoProblemTag> result = new ArrayList<RepoProblemTag>();
-				while (resultSet.next()) {
-					RepoProblemTag tag = new RepoProblemTag();
-					
-					Queries.loadGeneric(tag, resultSet, 1, RepoProblemTag.SCHEMA);
-					
-					// Because these tags are aggregated from (potentially) multiple
-					// records in the table, we set the user id to 0, so there is no
-					// confusion over whether the tag is linked to a specific user.
-					tag.setUserId(0);
-					
-					// Set the count (number of users who added this tag to this problem)
-					tag.setCount(resultSet.getInt(RepoProblemTag.SCHEMA.getNumFields() + 1));
-					
-					result.add(tag);
-				}
-				
-				return result;
-			}
-			@Override
-			public String getDescription() {
-				return " getting tags for repository exercise"; 
-			}
-		});
+		return databaseRun(new GetRepoProblemTags(repoProblemId));
 	}
 	
 	@Override
 	public boolean addRepoProblemTag(final RepoProblemTag repoProblemTag) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				return Queries.doAddRepoProblemTag(conn, repoProblemTag, this);
-			}
-			
-			@Override
-			public String getDescription() {
-				return " adding tag to repository exercise";
-			}
-		});
+		return databaseRun(new AddRepoProblemTag(repoProblemTag));
 	}
 	
 	@Override
 	public List<String> suggestTagNames(final String term) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<String>>() {
-			@Override
-			public List<String> run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select distinct " + RepoProblemTag.NAME.getName() +
-						"  from " + RepoProblemTag.SCHEMA.getDbTableName() +
-						" where "+ RepoProblemTag.NAME.getName() + " like ? " +
-						" order by "+ RepoProblemTag.NAME.getName() + " asc"
-				);
-				stmt.setString(1, term + "%");
-				
-				List<String> result = new ArrayList<String>();
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					result.add(resultSet.getString(1));
-				}
-				
-				return result;
-			}
-			@Override
-			public String getDescription() {
-				return " suggesting tag names";
-			}
-		});
+		return databaseRun(new SuggestTagNames(term));
 	}
 	
 	@Override
 	public Quiz startQuiz(final User user, final Problem problem, final int section) throws CloudCoderAuthenticationException {
-		return databaseRunAuth(new AbstractDatabaseRunnable<Quiz>() {
-			@Override
-			public Quiz run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
-				// Find the user's course registration in the course/section
-				PreparedStatement findReg = prepareStatement(
-						conn,
-						"select cr.* from cc_course_registrations as cr " +
-						" where cr.user_id = ? " +
-						"   and cr.course_id = ? " +
-						"   and cr.section = ? " +
-						"   and cr.registration_type >= ?"
-				);
-				findReg.setInt(1, user.getId());
-				findReg.setInt(2, problem.getCourseId());
-				findReg.setInt(3, section);
-				findReg.setInt(4, CourseRegistrationType.INSTRUCTOR.ordinal());
-				
-				ResultSet resultSet = executeQuery(findReg);
-				
-				if (!resultSet.next()) {
-					throw new CloudCoderAuthenticationException("User is not an instructor in given course/section");
-				}
-				
-				// Delete previous quiz for this problem/section (if any)
-				PreparedStatement delOldQuiz = prepareStatement(
-						conn,
-						"delete from cc_quizzes where problem_id = ? and section = ?"
-				);
-				delOldQuiz.setInt(1, problem.getProblemId());
-				delOldQuiz.setInt(2, section);
-				delOldQuiz.executeUpdate();
-				
-				// Create the quiz record
-				Quiz quiz = new Quiz();
-				quiz.setProblemId(problem.getProblemId());
-				quiz.setCourseId(problem.getCourseId());
-				quiz.setSection(section);
-				quiz.setStartTime(System.currentTimeMillis());
-				quiz.setEndTime(0L);
-				PreparedStatement insertQuiz = prepareStatement(
-						conn,
-						"insert into cc_quizzes values (" +
-						DBUtil.getInsertPlaceholdersNoId(Quiz.SCHEMA) +
-						")",
-						PreparedStatement.RETURN_GENERATED_KEYS
-				);
-				DBUtil.bindModelObjectValuesForInsert(quiz, Quiz.SCHEMA, insertQuiz);
-				
-				insertQuiz.executeUpdate();
-				
-				ResultSet generatedKey = getGeneratedKeys(insertQuiz);
-				if (!generatedKey.next()) {
-					throw new SQLException("Could not get generated key for inserted Quiz");
-				}
-				quiz.setId(generatedKey.getInt(1));
-				
-				return quiz;
-			}
-			@Override
-			public String getDescription() {
-				return " starting quiz";
-			}
-		});
+		return databaseRunAuth(new InstructorStartQuiz(section, user, problem));
 	}
 	
 	@Override
 	public Quiz findCurrentQuiz(final User user, final Problem problem) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Quiz>() {
-			@Override
-			public Quiz run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select q.* from cc_quizzes as q, cc_course_registrations as cr " +
-						" where cr.user_id = ? " +
-						"   and cr.course_id = ? " +
-						"   and cr.registration_type >= ? " +
-						"   and q.course_id = cr.course_id " +
-						"   and q.section = cr.section " +
-						"   and q.problem_id = ? " +
-						"   and q.start_time <= ? " +
-						"   and (q.end_time >= ? or q.end_time = 0)"
-				);
-				stmt.setInt(1, user.getId());
-				stmt.setInt(2, problem.getCourseId());
-				stmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
-				stmt.setInt(4, problem.getProblemId());
-				long currentTime = System.currentTimeMillis();
-				stmt.setLong(5, currentTime);
-				stmt.setLong(6, currentTime);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return null;
-				}
-				
-				Quiz quiz = new Quiz();
-				DBUtil.loadModelObjectFields(quiz, Quiz.SCHEMA, resultSet);
-				return quiz;
-			}
-			@Override
-			public String getDescription() {
-				return " finding current quiz for problem";
-			}
-		});
+		return databaseRun(new FindCurrentQuiz(problem, user));
 	}
 	
 	@Override
 	public Boolean endQuiz(final User user, final Quiz quiz) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"update cc_quizzes as q" +
-						"  join cc_course_registrations as cr on  cr.course_id = q.course_id" +
-						"                                     and cr.section = q.section" +
-						"                                     and cr.user_id = ?" +
-						"                                     and q.problem_id = ?" +
-						"                                     and q.section = ?" +
-						"                                     and q.course_id = ?" +
-						" set end_time = ?"
-				);
-				stmt.setInt(1, user.getId());
-				stmt.setInt(2, quiz.getProblemId());
-				stmt.setInt(3, quiz.getSection());
-				stmt.setInt(4, quiz.getCourseId());
-				long currentTime = System.currentTimeMillis();
-				stmt.setLong(5, currentTime);
-				
-				int updateCount = stmt.executeUpdate();
-				return updateCount > 0;
-			}
-			@Override
-			public String getDescription() {
-				return " ending quiz";
-			}
-		});
+		return databaseRun(new EndQuiz(quiz, user));
 	}
 	
 	@Override
 	public <E extends IModelObject<E>> boolean reloadModelObject(final E obj) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				ModelObjectField<? super E, ?> idField = obj.getSchema().getUniqueIdField();
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select * from " + obj.getSchema().getDbTableName() + " where " + idField.getName() + " = ?"
-				);
-				stmt.setObject(1, idField.get(obj));
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (!resultSet.next()) {
-					return false;
-				}
-				
-				DBUtil.loadModelObjectFields(obj, obj.getSchema(), resultSet);
-				return true;
-			}
-			@Override
-			public String getDescription() {
-				return " reloading model object";
-			}
-		});
+		return databaseRun(new ReloadModelObject<E>(obj));
 	}
 	
 	@Override
 	public Module[] getModulesForCourse(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Module[]>() {
-			@Override
-			public Module[] run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select m.* from cc_modules as m " +
-						" where m.id in " +
-						"   (select p.module_id from cc_problems as p, cc_course_registrations as cr " +
-						"     where p.course_id = cr.course_id " +
-						"       and cr.course_id = ? " +
-						"       and cr.user_id = ?) " +
-						" order by m.name"
-				);
-				stmt.setInt(1, course.getId());
-				stmt.setInt(2, user.getId());
-				
-				ResultSet resultSet = executeQuery(stmt);
-				List<Module> result = new ArrayList<Module>();
-				while (resultSet.next()) {
-					Module module = new Module();
-					DBUtil.loadModelObjectFields(module, Module.SCHEMA, resultSet);
-					result.add(module);
-				}
-				
-				return result.toArray(new Module[result.size()]);
-			}
-			@Override
-			public String getDescription() {
-				return " getting modules in course";
-			}
-		});
+		return databaseRun(new GetModulesForCourse(user, course));
 	}
 	
 	@Override
 	public Module setModule(final User user, final Problem problem, final String moduleName) throws CloudCoderAuthenticationException {
-		return databaseRunAuth(new AbstractDatabaseRunnable<Module>() {
-			@Override
-			public Module run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
-				// Verify that user is an instructor in the course
-				// (throwing CloudCoderAuthenticationException if not)
-				PreparedStatement verifyInstructorStmt = prepareStatement(
-						conn,
-						"select cr.id from cc_course_registrations as cr, cc_problems as p " +
-						" where cr.user_id = ? " +
-						"   and p.problem_id = ? " +
-						"   and cr.course_id = p.course_id " +
-						"   and cr.registration_type >= ?"
-				);
-				verifyInstructorStmt.setInt(1, user.getId());
-				verifyInstructorStmt.setInt(2, problem.getProblemId());
-				verifyInstructorStmt.setInt(3, CourseRegistrationType.INSTRUCTOR.ordinal());
-				
-				ResultSet verifyInstructorResultSet = executeQuery(verifyInstructorStmt);
-				if (!verifyInstructorResultSet.next()) {
-					logger.info(
-							"Attempt by user {} to set module for problem {} without instructor permission",
-							user.getId(),
-							problem.getProblemId());
-					throw new CloudCoderAuthenticationException("Only an instructor can set the module for an exercise");
-				}
-				
-				// See if the module exists already
-				PreparedStatement findExisting = prepareStatement(
-						conn,
-						"select m.* from cc_modules as m where m.name = ?"
-				);
-				findExisting.setString(1, moduleName);
-				
-				Module module = new Module();
-				ResultSet findExistingResultSet = executeQuery(findExisting);
-				if (findExistingResultSet.next()) {
-					// Use existing module
-					DBUtil.loadModelObjectFields(module, Module.SCHEMA, findExistingResultSet);
-				} else {
-					// Module doesn't exist, so add it
-					module.setName(moduleName);
-					DBUtil.storeModelObject(conn, module);
-				}
-				
-				// Update the problem to use the new module
-				problem.setModuleId(module.getId());
-				DBUtil.updateModelObject(conn, problem, Problem.SCHEMA);
-				
-				return module;
-			}
-			@Override
-			public String getDescription() {
-				return " setting module for problem";
-			}
-		});
+		return databaseRunAuth(new SetModuleForProblem(moduleName, user, problem));
 	}
 	
 	@Override
 	public StartedQuiz startOrContinueQuiz(final User user, final Quiz quiz) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
-			@Override
-			public StartedQuiz run(Connection conn) throws SQLException {
-				PreparedStatement query = prepareStatement(
-						conn,
-						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
-						" where sq.user_id = ? " +
-						"   and sq.quiz_id = ? " +
-						"   and q.id = sq.quiz_id " +
-						"   and q.start_time <= ? " +
-						"   and (q.end_time = 0 or q.end_time > ?)"
-				);
-				query.setInt(1, user.getId());
-				query.setInt(2, quiz.getId());
-				long currentTime = System.currentTimeMillis();
-				query.setLong(3, currentTime);
-				query.setLong(4, currentTime);
-				
-				StartedQuiz startedQuiz = new StartedQuiz();
-				ResultSet queryResult = executeQuery(query);
-				if (queryResult.next()) {
-					// Found the StartedQuiz
-					DBUtil.loadModelObjectFields(startedQuiz, StartedQuiz.SCHEMA, queryResult);
-				} else {
-					// StartedQuiz doesn't exist yet, so create it
-					startedQuiz.setQuizId(quiz.getId());
-					startedQuiz.setUserId(user.getId());
-					startedQuiz.setStartTime(currentTime);
-					DBUtil.storeModelObject(conn, startedQuiz);
-				}
-				
-				return startedQuiz;
-			}
-			
-			@Override
-			public String getDescription() {
-				return " checking for started quiz";
-			}
-		});
+		return databaseRun(new StudentStartOrContinueQuiz(quiz, user));
 	}
 	
 	@Override
 	public StartedQuiz findUnfinishedQuiz(final User user) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<StartedQuiz>() {
-			@Override
-			public StartedQuiz run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select sq.* from cc_started_quizzes as sq, cc_quizzes as q " +
-						" where sq.quiz_id = q.id " +
-						"   and sq.user_id = ? " +
-						"   and q.start_time < ? " +
-						"   and (q.end_time = 0 or q.end_time > ?)"
-				);
-				stmt.setInt(1, user.getId());
-				
-				long currentTime = System.currentTimeMillis();
-				stmt.setLong(2, currentTime);
-				stmt.setLong(3, currentTime);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				StartedQuiz result = null;
-				if (resultSet.next()) {
-					result = new StartedQuiz();
-					DBUtil.loadModelObjectFields(result, StartedQuiz.SCHEMA, resultSet);
-					return result;
-				}
-				
-				return result;
-			}
-			@Override
-			public String getDescription() {
-				return " finding unfinished quiz for user";
-			}
-		});
+		return databaseRun(new FindUnfinishedQuizForStudent(user));
 	}
 	
 	@Override
