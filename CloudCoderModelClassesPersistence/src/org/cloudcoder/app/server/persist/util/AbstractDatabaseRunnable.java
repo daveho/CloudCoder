@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Stack;
 
+import org.slf4j.Logger;
+
 
 /**
  * Abstract base class for database transactions.
@@ -19,6 +21,7 @@ import java.util.Stack;
 public abstract class AbstractDatabaseRunnable<E> implements DatabaseRunnable<E> {
 
 	private Stack<Object> cleanupStack = new Stack<Object>();
+	private Logger logger;
 
 	/**
 	 * Constructor.
@@ -92,6 +95,16 @@ public abstract class AbstractDatabaseRunnable<E> implements DatabaseRunnable<E>
 				DBUtil.closeQuietly((ResultSet) o);
 			}
 		}
+	}
+	
+	@Override
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+	
+	@Override
+	public Logger getLogger() {
+		return logger;
 	}
 
 }

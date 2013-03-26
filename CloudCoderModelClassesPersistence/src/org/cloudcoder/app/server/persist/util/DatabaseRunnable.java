@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.slf4j.Logger;
 
 /**
  * Interface for database transactions.
@@ -33,4 +34,6 @@ public interface DatabaseRunnable<E> {
 	public E run(Connection conn) throws SQLException, CloudCoderAuthenticationException;
 	public String getDescription();
 	public void cleanup();
+	public void setLogger(Logger logger);
+	public Logger getLogger();
 }

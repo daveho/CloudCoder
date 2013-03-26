@@ -30,15 +30,21 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
+import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
+import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
+import org.cloudcoder.app.server.persist.txn.GetCoursesForUser;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentFullTextChange;
+import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsForUserInCourse;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
+import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.Queries;
+import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
@@ -58,7 +64,6 @@ import org.cloudcoder.app.shared.model.IContainsEvent;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.ModelObjectField;
-import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -80,7 +85,6 @@ import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
-import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
@@ -96,9 +100,7 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class JDBCDatabase implements IDatabase {
-	private static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
-
-    //private static final String USERS = "cc_users";
+	static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 
 	private String jdbcUrl;
 	
@@ -207,243 +209,34 @@ public class JDBCDatabase implements IDatabase {
 	 */
 	@Override
 	public Change getChange(final int changeEventId) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<Change>(){
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public Change run(Connection conn) throws SQLException {
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select ch.*, e.* " +
-						"  from " + Change.SCHEMA.getDbTableName() + " as ch, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where e.id = ? and ch.event_id = e.id");
-				stmt.setInt(1, changeEventId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				if (resultSet.next()) {
-					Change change = getChangeAndEvent(resultSet);
-					return change;
-				}
-				
-				return null;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "get text change";
-			}
-		});
+		return databaseRun(new GetChangeGivenChangeEventId(changeEventId));
 	}
 	
 	@Override
 	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<Change>>() {
-			@Override
-			public List<Change> run(Connection conn) throws SQLException {
-				List<Change> result = new ArrayList<Change>();
-				
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
-						" where c.event_id = e.id " +
-						"   and e.id > ? " +
-						"   and e.user_id = ? " +
-						"   and e.problem_id = ? " +
-						" order by e.id asc"
-				);
-				stmt.setInt(1, baseRev);
-				stmt.setInt(2, user.getId());
-				stmt.setInt(3, problemId);
-				
-				ResultSet resultSet = executeQuery(stmt);
-				while (resultSet.next()) {
-					Change change = new Change();
-					Queries.load(change, resultSet, 1);
-					result.add(change);
-				}
-				
-				return result;
-			}
-			@Override
-			public String getDescription() {
-				return " retrieving most recent text changes";
-			}
-		});
+		return databaseRun(new GetAllChangesNewerThan(problemId, user, baseRev));
 	}
 	
 	@Override
 	public List<? extends Object[]> getCoursesForUser(final User user) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<? extends Object[]>>() {
-			@Override
-			public List<? extends Object[]> run(Connection conn) throws SQLException {
-				return doGetCoursesForUser(user, conn, this);
-			}
-			@Override
-			public String getDescription() {
-				return " retrieving courses for user";
-			}
-		});
+		return databaseRun(new GetCoursesForUser(user));
 	}
 
 	@Override
 	public ProblemList getProblemsInCourse(final User user, final Course course) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<ProblemList>() {
-			@Override
-			public ProblemList run(Connection conn) throws SQLException {
-				return new ProblemList(doGetProblemsInCourse(user, course, conn, this));
-			}
-			@Override
-			public String getDescription() {
-				return "retrieving problems for course";
-			}
-		});
+		return databaseRun(new GetProblemsInCourse(course, user));
 	}
 
 	@Override
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(
 			final User requestingUser, final Course course, final User forUser, final Module module) {
-		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<ProblemAndSubmissionReceipt>>() {
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#run(java.sql.Connection)
-			 */
-			@Override
-			public List<ProblemAndSubmissionReceipt> run(Connection conn) throws SQLException {
-				
-				// Users can get their own problems/submission receipts,
-				// but must be registered an an instructor to see another user's.
-				if (requestingUser.getId() != forUser.getId()) {
-					CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), requestingUser.getId(), this);
-					if (!regList.isInstructor()) {
-						logger.warn("Attempt by user {} to get problems/subscription receipts for user {}",
-								requestingUser.getId(), forUser.getId());
-						return new ArrayList<ProblemAndSubmissionReceipt>();
-					}
-				}
-				
-				// See: https://gist.github.com/4408441
-				PreparedStatement stmt = prepareStatement(
-						conn,
-						"select p.*, m.*, sr.*, e.*, sr_ids.max_sr_event_id" +
-						"  from cc_problems as p" +
-						" join (select p.problem_id, sm.max_sr_event_id" +
-						"         from cc_problems as p" +
-						"       left join (select e.problem_id as problem_id, max(sr.event_id) as max_sr_event_id" +
-						"                    from cc_submission_receipts as sr, cc_events as e" +
-						"                  where e.id = sr.event_id" +
-						"                    and e.user_id = ?" +
-						"                  group by e.problem_id) as sm on p.problem_id = sm.problem_id" +
-						"        where p.course_id = ?" +
-						"        ) as sr_ids on sr_ids.problem_id = p.problem_id" +
-						" join cc_modules as m on p.module_id = m.id " +
-						" left join cc_submission_receipts as sr on sr.event_id = sr_ids.max_sr_event_id" +
-						" left join cc_events as e on e.id = sr_ids.max_sr_event_id" + 
-						" where p.deleted = 0" +
-						"   and p.problem_id in" +
-						"          (select p.problem_id from cc_problems as p" +
-						"          join cc_course_registrations as cr on cr.course_id = p.course_id and cr.user_id = ?" +
-						"          where" +
-						"             p.course_id = ?" +
-						"             and (   p.visible <> 0" +
-						"                  or cr.registration_type >= ?" +
-						"                  or p.problem_id in (select q.problem_id" +
-						"                                        from cc_quizzes as q, cc_course_registrations as cr" +
-						"                                       where cr.user_id = ?" +
-						"                                         and cr.course_id = ?" +
-						"                                         and q.course_id = cr.course_id" +
-						"                                         and q.section = cr.section" +
-						"                                         and q.start_time <= ?" +
-						"                                         and (q.end_time >= ? or q.end_time = 0))))"
-				);
-				stmt.setInt(1, forUser.getId());
-				stmt.setInt(2, course.getId());
-				stmt.setInt(3, requestingUser.getId());
-				stmt.setInt(4, course.getId());
-				stmt.setInt(5, CourseRegistrationType.INSTRUCTOR.ordinal());
-				stmt.setInt(6, forUser.getId());
-				stmt.setInt(7, course.getId());
-				long currentTime = System.currentTimeMillis();
-				stmt.setLong(8, currentTime);
-				stmt.setLong(9, currentTime);
-				
-				List<ProblemAndSubmissionReceipt> result = new ArrayList<ProblemAndSubmissionReceipt>();
-				
-				ResultSet resultSet = executeQuery(stmt);
-				
-				while (resultSet.next()) {
-					Problem problem = new Problem();
-					int index = DBUtil.loadModelObjectFields(problem, Problem.SCHEMA, resultSet);
-					
-					Module problemModule = new Module();
-					index = DBUtil.loadModelObjectFields(problemModule, Module.SCHEMA, resultSet, index);
-					
-					// If a module was specified, only return problems in that module
-					if (module != null && problemModule.getId() != module.getId()) {
-						continue;
-					}
-					
-					// Is there a submission receipt?
-					SubmissionReceipt receipt;
-					if (resultSet.getObject(index) != null) {
-						// Yes
-						receipt = new SubmissionReceipt();
-						index = DBUtil.loadModelObjectFields(receipt, SubmissionReceipt.SCHEMA, resultSet, index);
-						Event event = new Event();
-						index = DBUtil.loadModelObjectFields(event, Event.SCHEMA, resultSet, index);
-						receipt.setEvent(event);
-					} else {
-						// No
-						receipt = null;
-					}
-					
-					ProblemAndSubmissionReceipt problemAndSubmissionReceipt = new ProblemAndSubmissionReceipt();
-					problemAndSubmissionReceipt.setProblem(problem);
-					problemAndSubmissionReceipt.setReceipt(receipt);
-					problemAndSubmissionReceipt.setModule(problemModule);
-					
-					result.add(problemAndSubmissionReceipt);
-				}
-				
-				return result;
-			}
-			/* (non-Javadoc)
-			 * @see org.cloudcoder.app.server.persist.DatabaseRunnable#getDescription()
-			 */
-			@Override
-			public String getDescription() {
-				return "retrieving problems and subscription receipts for course";
-			}
-		});
+		return databaseRun(new GetProblemAndSubscriptionReceiptsForUserInCourse(course, forUser,
+				module, requestingUser));
 	}
 	
 	@Override
 	public void storeChanges(final Change[] changeList) {
-		databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				// Store Events
-				storeEvents(changeList, conn, this);
-				
-				// Store Changes
-				PreparedStatement insertChange = prepareStatement(
-						conn,
-						"insert into " + Change.SCHEMA.getDbTableName() + " values (?, ?, ?, ?, ?, ?, ?, ?)"
-				);
-				for (Change change : changeList) {
-					store(change, insertChange, 1);
-					insertChange.addBatch();
-				}
-				insertChange.executeBatch();
-				
-				return true;
-			}
-			@Override
-			public String getDescription() {
-				return "storing text changes";
-			}
-		});
+		databaseRun(new StoreChanges(changeList));
 	}
 	
 	@Override
@@ -471,7 +264,7 @@ public class JDBCDatabase implements IDatabase {
 				DBUtil.loadModelObject(conn, problem);
 				
 				// Check user's registration in the course
-				CourseRegistrationList regList = doGetCourseRegistrations(
+				CourseRegistrationList regList = Queries.doGetCourseRegistrations(
 						conn, problem.getCourseId(), authenticatedUser.getId(), this);
 				
 				if (regList.getList().isEmpty()) {
@@ -678,7 +471,7 @@ public class JDBCDatabase implements IDatabase {
     		@Override
     		public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
     			// Make sure authenticated user is an instructor in the course
-    			CourseRegistrationList regList = doGetCourseRegistrations(conn, courseId, authenticatedUser.getId(), this);
+    			CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, courseId, authenticatedUser.getId(), this);
     			if (!regList.isInstructor()) {
     				logger.warn("Attempt by non-instructor user {} to add new user to course {}", authenticatedUser.getId(), courseId);
     				throw new CloudCoderAuthenticationException("Only an instructor can add user to course");
@@ -941,7 +734,7 @@ public class JDBCDatabase implements IDatabase {
 				
 				// Check that user is registered as an instructor in the course.
 				boolean isInstructor = false;
-				List<? extends Object[]> courses = doGetCoursesForUser(user, conn, this);
+				List<? extends Object[]> courses = Queries.doGetCoursesForUser(user, conn, this);
 				for (Object[] tuple : courses) {
 					CourseRegistration courseReg = (CourseRegistration) tuple[2];
 					if (courseReg.getCourseId() == course.getId()
@@ -1095,7 +888,7 @@ public class JDBCDatabase implements IDatabase {
 			public CourseRegistrationList run(Connection conn) throws SQLException {
 				int userId = user.getId();
 				int courseId = course.getId();
-				return doGetCourseRegistrations(conn, courseId, userId, this);
+				return Queries.doGetCourseRegistrations(conn, courseId, userId, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1110,7 +903,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public CourseRegistrationList run(Connection conn) throws SQLException {
 				int userId = user.getId();
-				return doGetCourseRegistrations(conn, courseId, userId, this);
+				return Queries.doGetCourseRegistrations(conn, courseId, userId, this);
 			}
 			@Override
 			public String getDescription() {
@@ -1140,7 +933,7 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>>() {
 			@Override
 			public List<UserAndSubmissionReceipt> run(Connection conn) throws SQLException {
-				CourseRegistrationList regList = doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
 				if (!regList.isInstructor()) {
 					// user is not an instructor
 					return new ArrayList<UserAndSubmissionReceipt>();
@@ -1162,7 +955,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public Boolean run(Connection conn) throws SQLException, CloudCoderAuthenticationException {
 				// verify that the user is an instructor in the course
-				CourseRegistrationList courseReg = doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
+				CourseRegistrationList courseReg = Queries.doGetCourseRegistrations(conn, course.getId(), user.getId(), this);
 				if (!courseReg.isInstructor()) {
 					throw new CloudCoderAuthenticationException("Only instructor can delete a problem");
 				}
@@ -1736,7 +1529,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public Integer[] run(Connection conn) throws SQLException {
 				// Make sure user is an instructor in the course
-				CourseRegistrationList regList = doGetCourseRegistrations(conn, course.getId(), authenticatedUser.getId(), this);
+				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, course.getId(), authenticatedUser.getId(), this);
 				if (!regList.isInstructor()) {
 					return new Integer[0];
 				}
@@ -1811,7 +1604,7 @@ public class JDBCDatabase implements IDatabase {
 			public ProblemText run(Connection conn) throws SQLException {
 				// Check authenticated user's course registrations
 				CourseRegistrationList regList =
-						doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+						Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
 
 				// Note that the queries require that either
 				//   (1) the authenticated user is the submitter of the change event
@@ -1896,7 +1689,7 @@ public class JDBCDatabase implements IDatabase {
 			@Override
 			public NamedTestResult[] run(Connection conn) throws SQLException {
 				
-				CourseRegistrationList regList = doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
+				CourseRegistrationList regList = Queries.doGetCourseRegistrations(conn, problem.getCourseId(), authenticatedUser.getId(), this);
 				
 				// Get all test results
 				PreparedStatement stmt = prepareStatement(
@@ -1975,6 +1768,9 @@ public class JDBCDatabase implements IDatabase {
 	}
 
 	private<E> E doDatabaseRun(DatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException {
+		// Give the DatabaseRunnable access to the logger
+		databaseRunnable.setLogger(logger);
+		
 		int attempts = 0;
 		
 		boolean successfulCommit = false;
@@ -2086,7 +1882,7 @@ public class JDBCDatabase implements IDatabase {
 	 * @param dbRunnable        an AbstractDatabaseRunnable that is managing statements and result sets
 	 * @throws SQLException
 	 */
-	private void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
+	public static void storeEvents(final IContainsEvent[] containsEventList, Connection conn, AbstractDatabaseRunnableNoAuthException<?> dbRunnable)
 			throws SQLException {
 		PreparedStatement insertEvent = dbRunnable.prepareStatement(
 				conn,
@@ -2094,7 +1890,7 @@ public class JDBCDatabase implements IDatabase {
 				Statement.RETURN_GENERATED_KEYS
 		);
 		for (IContainsEvent change : containsEventList) {
-			storeNoId(change.getEvent(), insertEvent, 1);
+			Queries.storeNoIdGeneric(change.getEvent(), insertEvent, 1, Event.SCHEMA);
 			insertEvent.addBatch();
 		}
 		insertEvent.executeBatch();
@@ -2179,52 +1975,6 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	/**
-	 * Get all problems for user/course.
-	 * 
-	 * @param user    a User
-	 * @param course  a Course
-	 * @param conn    the Connection
-	 * @param dbRunnable the AbstractDatabaseRunnable
-	 * @return List of Problems for user/course
-	 * @throws SQLException 
-	 */
-	protected List<Problem> doGetProblemsInCourse(User user, Course course,
-			Connection conn,
-			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
-		
-		//
-		// Note that we have to join on course registrations to ensure
-		// that we return courses that the user is actually registered for.
-		// For each problem, we also have to check that the user is either
-		// an instructor or that the problem is visible.  Students should
-		// not be allowed to see problems that are not visible.
-		//
-		PreparedStatement stmt = dbRunnable.prepareStatement(
-				conn,
-				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
-				" where p.course_id = c.id " +
-				"   and p." + Problem.DELETED.getName() + " = 0 " +
-				"   and r.course_id = c.id " +
-				"   and r.user_id = ? " +
-				"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
-				"   and c.id = ?"
-		);
-		stmt.setInt(1, user.getId());
-		stmt.setInt(2, course.getId());
-		
-		ResultSet resultSet = dbRunnable.executeQuery(stmt);
-		
-		List<Problem> resultList = new ArrayList<Problem>();
-		while (resultSet.next()) {
-			Problem problem = new Problem();
-			Queries.loadGeneric(problem, resultSet, 1, Problem.SCHEMA);
-			resultList.add(problem);
-		}
-		
-		return resultList;
-	}
-
-	/**
 	 * Count students in course for given {@link Problem}.
 	 * 
 	 * @param problem  the {@link Problem}
@@ -2253,37 +2003,6 @@ public class JDBCDatabase implements IDatabase {
 		return resultSet.getInt(1);
 	}
 	
-	private List<? extends Object[]> doGetCoursesForUser(
-			final User user,
-			Connection conn,
-			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
-		List<Object[]> result = new ArrayList<Object[]>();
-
-		PreparedStatement stmt = databaseRunnable.prepareStatement(
-				conn,
-				"select c.*, t.*, r.* from " + Course.SCHEMA.getDbTableName() + " as c, " + Term.SCHEMA.getDbTableName() + " as t, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
-				" where c.id = r.course_id " + 
-				"   and c.term_id = t.id " +
-				"   and r.user_id = ? " +
-				" order by c.year desc, t.seq desc"
-		);
-		stmt.setInt(1, user.getId());
-		
-		ResultSet resultSet = databaseRunnable.executeQuery(stmt);
-		
-		while (resultSet.next()) {
-			Course course = new Course();
-			load(course, resultSet, 1);
-			Term term = new Term();
-			load(term, resultSet, Course.NUM_FIELDS + 1);
-			CourseRegistration reg = new CourseRegistration();
-			load(reg, resultSet, Course.NUM_FIELDS + Term.NUM_FIELDS + 1);
-			result.add(new Object[]{course, term, reg});
-		}
-		
-		return result;
-	}
-
 	private Boolean doInsertProblem(
 			final Problem problem,
 			Connection conn,
@@ -2420,33 +2139,6 @@ public class JDBCDatabase implements IDatabase {
 		}
 	}
 
-	protected CourseRegistrationList doGetCourseRegistrations(
-			Connection conn,
-			int courseId,
-			int userId,
-			AbstractDatabaseRunnable<?> abstractDatabaseRunnable) throws SQLException {
-		PreparedStatement stmt = abstractDatabaseRunnable.prepareStatement(
-				conn,
-				"select cr.* from " + CourseRegistration.SCHEMA.getDbTableName() + " as cr " +
-				" where cr." + CourseRegistration.USER_ID.getName() + " = ? " +
-				"   and cr." + CourseRegistration.COURSE_ID.getName() + " = ?"
-		);
-		stmt.setInt(1, userId);
-		stmt.setInt(2, courseId);
-		
-		ResultSet resultSet = abstractDatabaseRunnable.executeQuery(stmt);
-		
-		CourseRegistrationList result = new CourseRegistrationList();
-		
-		while (resultSet.next()) {
-			CourseRegistration reg = new CourseRegistration();
-			DBUtil.loadModelObjectFields(reg, CourseRegistration.SCHEMA, resultSet);
-			result.getList().add(reg);
-		}
-		
-		return result;
-	}
-
 	/**
 	 * Add a {@link RepoProblemTag} to the database as part of a transaction.
 	 * 
@@ -2576,28 +2268,12 @@ public class JDBCDatabase implements IDatabase {
 		return result;
 	}
 	
-	protected void load(Course course, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(course, resultSet, index, Course.SCHEMA);
-	}
-
-	protected void load(Term term, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(term, resultSet, index, Term.SCHEMA);
-	}
-
 	protected void load(TestCase testCase, ResultSet resultSet, int index) throws SQLException {
 		Queries.loadGeneric(testCase, resultSet, index, TestCase.SCHEMA);
 	}
 	
 	protected void load(SubmissionReceipt submissionReceipt, ResultSet resultSet, int index) throws SQLException {
 		Queries.loadGeneric(submissionReceipt, resultSet, index, SubmissionReceipt.SCHEMA);
-	}
-	
-	protected void load(Event event, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(event, resultSet, index, Event.SCHEMA);
-	}
-	
-	protected void load(CourseRegistration reg, ResultSet resultSet, int index) throws SQLException {
-		Queries.loadGeneric(reg, resultSet, index, CourseRegistration.SCHEMA);
 	}
 	
 	protected void load(RepoProblem repoProblem, ResultSet resultSet, int index) throws SQLException {
@@ -2608,92 +2284,26 @@ public class JDBCDatabase implements IDatabase {
 		Queries.loadGeneric(repoTestCase, resultSet, index, RepoTestCase.SCHEMA);
 	}
 
-	protected void storeNoId(Event event, PreparedStatement stmt, int index) throws SQLException {
-		storeNoIdGeneric(event, stmt, index, Event.SCHEMA);
-	}
-
-	protected void store(Change change, PreparedStatement stmt, int index) throws SQLException {
-		// Change objects require special handling so that we use the correct
-		// database column to store the change text.
-		
-		String changeText = change.getText();
-		boolean isShort = changeText.length() <= Change.MAX_TEXT_LEN_IN_ROW;
-		String textShort = isShort ? changeText : null;
-		String textLong  = !isShort ? changeText : null;
-		
-		for (ModelObjectField<? super Change, ?> field : Change.SCHEMA.getFieldList()) {
-			if (field == Change.TEXT_SHORT) {
-				stmt.setString(index++, textShort);
-			} else if (field == Change.TEXT) {
-				stmt.setString(index++, textLong);
-			} else {
-				stmt.setObject(index++, DBUtil.convertValueToStore(field.get(change)));
-			}
-		}
-	}
-
 	protected void store(SubmissionReceipt receipt, PreparedStatement stmt, int index) throws SQLException {
-		storeNoIdGeneric(receipt, stmt, index, SubmissionReceipt.SCHEMA);
+		Queries.storeNoIdGeneric(receipt, stmt, index, SubmissionReceipt.SCHEMA);
 	}
 
 	protected void storeNoId(TestResult testResult, PreparedStatement stmt, int index) throws SQLException {
-		storeNoIdGeneric(testResult, stmt, index, TestResult.SCHEMA);
+		Queries.storeNoIdGeneric(testResult, stmt, index, TestResult.SCHEMA);
 	}
 	
 	protected int storeNoId(Problem problem, PreparedStatement stmt, int index) throws SQLException {
-		return storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
+		return Queries.storeNoIdGeneric(problem, stmt, index, Problem.SCHEMA);
 	}
 
 	protected void storeNoId(TestCase testCase, PreparedStatement stmt, int index) throws SQLException {
-		storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
-	}
-
-	/**
-	 * Store the field values of a model object (sans unique id) in the parameters
-	 * of the given PreparedStatement. 
-	 * 
-	 * @param modelObj the model object
-	 * @param stmt     the PreparedStatement
-	 * @param index    the index of the first PreparedStatement parameter where the model object data should be stored
-	 * @param schema   the schema of the model object
-	 * @return the index of the parameter just after where the model object's field values are stored
-	 * @throws SQLException
-	 */
-	protected<E> int storeNoIdGeneric(E modelObj, PreparedStatement stmt, int index, ModelObjectSchema<E> schema) throws SQLException {
-		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
-			if (!field.isUniqueId()) {
-				Object value = field.get(modelObj);
-				value = DBUtil.convertValueToStore(value);
-				
-				if (value instanceof String) {
-					String s = (String) value;
-					// Somewhat hackish solution to avoiding "string too long" errors inserting into database
-					// FIXME: broken if string contains characters that don't have a 1-byte encoding in UTF8
-					if (s.length() > field.getSize()) {
-						s = s.substring(0, field.getSize());
-						value = s;
-					}
-				}
-				
-				stmt.setObject(index++, value);
-			}
-		}
-		return index;
-	}
-
-	protected Change getChangeAndEvent(ResultSet resultSet) throws SQLException {
-		Change change = new Change();
-		Queries.load(change, resultSet, 1);
-		Event event = new Event();
-		load(event, resultSet, Change.NUM_FIELDS + 1);
-		change.setEvent(event);
-		return change;
+		Queries.storeNoIdGeneric(testCase, stmt, index, TestCase.SCHEMA);
 	}
 
 	private SubmissionReceipt loadSubmissionReceiptAndEvent(ResultSet resultSet) throws SQLException {
 		SubmissionReceipt submissionReceipt = new SubmissionReceipt();
 		load(submissionReceipt, resultSet, 1);
-		load(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1);
+		Queries.loadGeneric(submissionReceipt.getEvent(), resultSet, SubmissionReceipt.NUM_FIELDS + 1, Event.SCHEMA);
 		return submissionReceipt;
 	}
 	
