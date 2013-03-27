@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
+import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
+import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
 import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
@@ -110,7 +111,8 @@ public class Builder2Daemon implements IDaemon {
 		}
 		
 		// Install KillableTaskManager's security manager
-		KillableTaskManager.installSecurityManager();
+		JVMKillableTaskManager.installSecurityManager();
+		PythonKillableTaskManager.installSecurityManager();
 		
 		logger.info("Builder starting");
 		logger.info("appHost={}", options.getAppHost());

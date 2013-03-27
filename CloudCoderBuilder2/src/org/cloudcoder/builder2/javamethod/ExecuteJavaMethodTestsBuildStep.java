@@ -28,9 +28,11 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.builder2.javasandbox.AbstractKillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
-import org.cloudcoder.builder2.javasandbox.KillableTaskManager;
+import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
+import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
@@ -83,10 +85,10 @@ public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
             tasks.add(new IsolatedTaskRunner(testerCls, problem, t));
         }
 
-        KillableTaskManager<TestResult> pool = new KillableTaskManager<TestResult>(
+        AbstractKillableTaskManager<TestResult> pool = new JVMKillableTaskManager<TestResult>(
                 tasks, 
                 TIMEOUT_LIMIT,
-                new KillableTaskManager.TimeoutHandler<TestResult>() {
+                new TimeoutHandler<TestResult>() {
                     @Override
                     public TestResult handleTimeout() {
                         return new TestResult(TestOutcome.FAILED_FROM_TIMEOUT, 

@@ -5,6 +5,7 @@ use strict;
 
 my $DEBUG=0;
 
+#
 # Create a new distribution of CloudCoder
 #
 # Finds the latest tag prefixed with v in the repostiory
@@ -23,6 +24,8 @@ my $aws="./aws";
 my $bucket="cloudcoder-binaries";
 my $webapp="CloudCoderWebServer/cloudcoderApp.jar";
 my $builder="CloudCoderBuilder2/cloudcoderBuilder.jar";
+my $webappSrc='CloudCoder/src';
+my $builderSrc='CloudCoderBuilder2/src';
 my $wiki="../CloudCoder.wiki";
 my $downloadFile='Downloads.md';
 my $downloads="$wiki/$downloadFile";
@@ -30,7 +33,8 @@ my $downloads="$wiki/$downloadFile";
 my $comment='';
 my $version=0;
 my $override=0;
-if (scalar(@ARGV) > 0) {
+my $build=1;
+while (scalar(@ARGV) > 0) {
   my $arg = shift @ARGV;
   if ($arg =~ /^--wiki=(.*)$/) {
     $wiki = $1;
@@ -39,13 +43,18 @@ if (scalar(@ARGV) > 0) {
   } elsif ($arg eq '--debug' or $arg eq '-d' or $arg eq '-D') {
     $DEBUG = 1;
   } elsif ($arg eq '--override') {
+    # override of checking 
     $override = 1;
+  } elsif ($arg eq '--skipbuild') {
+    $build = 0;
   } else {
     die "Unknown option: $arg\n";
   }
 }
 
+#
 # TODO:  If the version is given and is a new version, then tag with the version
+#
 
 # Get the latest version
 $version=LatestVersion();
@@ -64,12 +73,27 @@ this command with the --override switch\n";
 # ";
 # print $msg;
 
-# TODO: Assert there are no uncommitted changes...
+#
+# Create VERSION file
+# Copy VERSION into the proper folders
+#
+print "Creating VERSION file\n";
+WriteStringToFile($version, 'VERSION');
+print "Done creating VERSION\n";
+Run('cp', 'VERSION', "$webappSrc");
+Run('cp', 'VERSION', "$builderSrc");
+print "Done copying VERSION to $webappSrc and $builderSrc";
+
+# TODO: Assert the VERSION files match to allow skipping
+# the building
+# TODO: Assert there are no uncommitted changes
 # Build the binaries
-print "Building code:\n./build.pl\n";
-print `./fetchdeps.pl`;
-print `./build.pl`;
-print "\n\nDONE BUILDING\n\n";
+if ($build==1) {
+  print "Building code:\n./build.pl\n";
+  print `./fetchdeps.pl`;
+  print `./build.pl`;
+  print "\n\nDONE BUILDING\n\n";
+}
 
 # Create LATEST file
 print "Creating LATEST file\n";
@@ -78,20 +102,28 @@ print "Done creating LATEST\n";
 
 # upload files to S3
 print "Uploading to S3\n";
-Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderApp-$version.jar", "$webapp");
-Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderBuilder-$version.jar", "$builder");
-Run("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/LATEST", "LATEST");
-Run("$aws", 'put', '"x-amz-acl: public-read"', '$bucket/bootstrap.pl', 'bootstrap.pl');
+Run2("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/LATEST", "LATEST");
+Run2("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/bootstrap.pl", 'bootstrap.pl');
+Run2("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderApp-$version.jar", "$webapp");
+Run2("$aws", 'put', '"x-amz-acl: public-read"', "$bucket/cloudcoderBuilder-$version.jar", "$builder");
+
 print "Done uploading to S3\n";
+
+# update the Wiki repository
+print "git pull origin master for $wiki";
+GitPullOriginMaster($wiki);
+print "Done pulling for $wiki";
 
 # update the Downloads.md file
 print "Updating Downloads of CloudCoder.wiki\n";
 UpdateDownloads($version, $downloads, $comment);
 print "Done updating Downloads of CloudCoder.wiki\n";
 
-print "Commiting new Downloads.md";
+print "Committing new Downloads.md";
 GitAddCommit($version, $wiki, $downloadFile);
 print "Done committing Downloads.md";
+
+print "\n\nReleased $version\n\n";
 
 sub ReadLinesFromTextFile {
   my @lines=();
@@ -128,6 +160,14 @@ sub UpdateDownloads {
   }
 
   my @lines=ReadLinesFromTextFile($downloads);
+  #
+  # If we already have the version number in a line, don't update
+  #
+  for my $line (@lines) {
+    if ($line =~ $version) {
+      return;
+    }
+  }
 
 
   my $webappLink="> [cloudcoderApp-$version.jar](https://s3.amazonaws.com/$bucket/cloudcoderApp-$version.jar)";
@@ -161,6 +201,14 @@ sub UpdateDownloads {
   }
 
   WriteStringToFile(join("\n", @newlines), $downloads);
+}
+
+sub GitPullOriginMaster {
+  my $dir=shift @_;
+  print `cd $dir ; git pull origin master`;
+  if ($?) {
+    die "Unable to git pull origin master in $dir";
+  }
 }
 
 sub GitAddCommit {
@@ -221,5 +269,15 @@ sub debug {
 
 sub Run {
   my @cmd = @_;
-  system(@cmd)/256 == 0 || die ("Could not run command: " . join(@cmd, ' ') . "\n");
+  debug('' . join(' ', @cmd));
+  system(@cmd)/256 == 0 || die ("Could not run command: " . join(' ', @cmd) . "\n");
+}
+
+sub Run2 {
+  my $cmd=join(' ', @_) . "\n";
+  print "$cmd\n";
+  print `$cmd`;
+  if ($?) {
+    die "ERROR: unable to execute $cmd";
+  }
 }
