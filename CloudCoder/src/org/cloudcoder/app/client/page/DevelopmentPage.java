@@ -71,6 +71,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 
+import edu.ycp.cs.dh.acegwt.client.ace.AceAnnotationType;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
@@ -386,7 +387,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// local text is in-sync.  So, submit the code!
 			
 			addSessionObject(StatusMessage.pending("Testing your code, please wait..."));
-			
+			// clear any annotations we set from compiler errors
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();
 
@@ -730,7 +731,9 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 		
 		private void onReceiveSubmissionResult(SubmissionResult result) {
-			if (result==null){
+			// clear any annotations from the editor
+		    aceEditor.clearAnnotations();
+		    if (result==null){
 				addSessionObject(StatusMessage.error("Results from Builder are empty"));
 				addSessionObject(new NamedTestResult[0]);
 				addSessionObject(new CompilerDiagnostic[0]);
@@ -758,6 +761,11 @@ public class DevelopmentPage extends CloudCoderPage {
 					// Code did not compile
 					addSessionObject(StatusMessage.error("Error compiling submission"));
 					addSessionObject(new NamedTestResult[0]);
+					// mark the ACE editor with compiler errors
+					for (CompilerDiagnostic d : compilerDiagnosticList) {
+					    aceEditor.addAnnotation((int)d.getStartLine()-1, (int)d.getStartColumn()-1, d.getMessage(), AceAnnotationType.ERROR);
+					}
+					aceEditor.setAnnotations();
 				} else {
 					// Code compiled, and test results were sent back.
 

@@ -38,7 +38,7 @@ public class AceEditor extends Composite implements RequiresResize {
 	private final String elementId;
 
 	private JavaScriptObject editor;
-
+	
   private JsArray<AceAnnotation> annotations = JavaScriptObject.createArray().cast();
 
 	/**
@@ -365,7 +365,7 @@ public class AceEditor extends Composite implements RequiresResize {
 	public native void clearAnnotations() /*-{
 		var editor = this.@edu.ycp.cs.dh.acegwt.client.ace.AceEditor::editor;
 		editor.getSession().clearAnnotations();
-		this.@edu.ycp.cs.dh.acegwt.client.ace.AceEditor::resetAnnotations();
+		this.@edu.ycp.cs.dh.acegwt.client.ace.AceEditor::resetAnnotations()();
 	}-*/;
 
 	/**
