@@ -24,9 +24,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
-import org.cloudcoder.app.client.view.Slider;
-import org.cloudcoder.app.client.view.SliderEvent;
-import org.cloudcoder.app.client.view.SliderListener;
+import org.cloudcoder.app.client.view.ProblemSubmissionHistorySliderView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
@@ -42,10 +40,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -67,9 +62,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		
 		private Label usernameAndProblemLabel;
 		private PageNavPanel pageNavPanel;
-		private Slider submissionSlider;
-		private Button prevSubmissionButton;
-		private Button nextSubmissionButton;
+		private ProblemSubmissionHistorySliderView sliderView;
 		private StatusMessageView statusMessageView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
 		private TestResultListView testResultListView;
@@ -92,71 +85,12 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			northPanel.add(pageNavPanel);
 			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
-			
-			// FIXME: factor this into a separate view
-			this.submissionSlider = new Slider("ccSubSlider");
-			submissionSlider.setMinimum(1);
-			submissionSlider.setMaximum(10);
-			submissionSlider.addListener(new SliderListener() {
-				@Override
-				public void onStop(SliderEvent e) {
-				}
-				
-				@Override
-				public void onStart(SliderEvent e) {
-				}
-				
-				@Override
-				public boolean onSlide(SliderEvent e) {
-					return true;
-				}
-				
-				@Override
-				public void onChange(SliderEvent e) {
-					int selected = submissionSlider.getValue();
-					GWT.log("Slider value is " + selected);
-					/*
-					SubmissionReceipt[] submissionReceipts = getSession().get(SubmissionReceipt[].class);
-					onSelectSubmission(submissionReceipts[selected]);
-					*/
-					
-					// Only change the selection in the submission history if it's
-					// a value that differs from the slider.
-					ProblemSubmissionHistory problemSubmissionHistory = getSession().get(ProblemSubmissionHistory.class);
-					int selectedInHistory = problemSubmissionHistory.getSelected();
-					if (selected != selectedInHistory) {
-						problemSubmissionHistory.setSelected(selected);
-					}
-				}
-			});
-			northPanel.add(submissionSlider);
-			northPanel.setWidgetLeftRight(submissionSlider, (38.0 * 2), Unit.PX, 0, Unit.PX);
-			northPanel.setWidgetTopHeight(submissionSlider, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
-			
-			this.prevSubmissionButton = new Button("<");
-			northPanel.add(prevSubmissionButton);
-			northPanel.setWidgetLeftWidth(prevSubmissionButton, 0.0, Unit.PX, 30, Unit.PX);
-			northPanel.setWidgetTopHeight(prevSubmissionButton, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
-			prevSubmissionButton.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					//onChangeSubmission(-1);
-					getSession().get(ProblemSubmissionHistory.class).back();
-				}
-			});
 
-			this.nextSubmissionButton = new Button(">");
-			northPanel.add(nextSubmissionButton);
-			northPanel.setWidgetLeftWidth(nextSubmissionButton, 38.0, Unit.PX, 30, Unit.PX);
-			northPanel.setWidgetTopHeight(nextSubmissionButton, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
-			nextSubmissionButton.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					//onChangeSubmission(1);
-					getSession().get(ProblemSubmissionHistory.class).forward();
-				}
-			});
-
+			this.sliderView = new ProblemSubmissionHistorySliderView();
+			northPanel.add(sliderView);
+			northPanel.setWidgetTopHeight(sliderView, PageNavPanel.HEIGHT_PX, Unit.PX, ProblemSubmissionHistorySliderView.HEIGHT_PX, Unit.PX);
+			northPanel.setWidgetLeftRight(sliderView, 0.0, Unit.PX, 0.0, Unit.PX);
+			
 			panel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + 8.0 + SLIDER_HEIGHT_PX);
 			
 			// South panel has status message view, test outcome summary view,
@@ -186,14 +120,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			
 			initWidget(panel);
 		}
-
-//		private void onChangeSubmission(int delta) {
-//			int value = submissionSlider.getValue();
-//			value += delta;
-//			if (value >= submissionSlider.getMinimum() && value <= submissionSlider.getMaximum()) {
-//				submissionSlider.setValue(value);
-//			}
-//		}
 
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
@@ -227,6 +153,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			// Activate views
 			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
+			sliderView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
 			testOutcomeSummaryView.activate(session, subscriptionRegistrar);
 			testResultListView.activate(session, subscriptionRegistrar);
@@ -247,14 +174,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 
 		private void onLoadSubmissionReceipts(SubmissionReceipt[] result) {
 			GWT.log("Loaded submission receipts");
-			/*
-			getSession().add(result);
-			
-			submissionSlider.setMinimum(0);
-			submissionSlider.setMaximum(result.length - 1);
-			
-			submissionSlider.addListener();
-			*/
 			
 			// Add to ProblemSubmissionHistory
 			getSession().get(ProblemSubmissionHistory.class).setSubmissionReceiptList(result);
@@ -268,8 +187,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			}
 			GWT.log("Best submission is " + best);
 			
-			//submissionSlider.setValue(best);
-			
 			// Set selected Submission to best one
 			getSession().get(ProblemSubmissionHistory.class).setSelected(best);
 			
@@ -277,21 +194,10 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			if (key == ProblemSubmissionHistory.Event.SET_SUBMISSION_RECEIPT_LIST) {
-				GWT.log("Setting list of submission receipts");
-				// FIXME
-				ProblemSubmissionHistory history = getSession().get(ProblemSubmissionHistory.class);
-				submissionSlider.setMinimum(0);
-				submissionSlider.setMaximum(history.getNumSubmissions() - 1);
-			} else if (key == ProblemSubmissionHistory.Event.SET_SELECTED) {
+			if (key == ProblemSubmissionHistory.Event.SET_SELECTED) {
 				GWT.log("Setting selected submission");
 				ProblemSubmissionHistory problemSubmissionHistory = getSession().get(ProblemSubmissionHistory.class);
 				int selected = problemSubmissionHistory.getSelected();
-
-				// FIXME: move to submission history slider view
-				if (submissionSlider.getValue() != selected) {
-					submissionSlider.setValue(selected);
-				}
 				
 				// Load text
 				Problem problem = getSession().get(Problem.class);
@@ -334,37 +240,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				editor.setText(((ProblemText)hint).getText());
 			}
 		}
-
-		/*
-		private void onSelectSubmission(SubmissionReceipt receipt) {
-			// Load text
-			Problem problem = getSession().get(Problem.class);
-			UserSelection userSelection = getSession().get(UserSelection.class);
-			RPC.editCodeService.getSubmissionText(userSelection.getUser(), problem, receipt, new AsyncCallback<ProblemText>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Couldn't get text for submission", caught));
-				}
-				
-				@Override
-				public void onSuccess(ProblemText result) {
-					editor.setText(result.getText());
-				}
-			});
-			
-			// Get test results
-			RPC.getCoursesAndProblemsService.getTestResultsForSubmission(problem, receipt, new AsyncCallback<NamedTestResult[]>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Couldn't load test results for submission", caught));
-				}
-				
-				public void onSuccess(NamedTestResult[] result) {
-					getSession().add(result);
-				}
-			});
-		}
-		*/
 	}
 	
 	private UI ui;
