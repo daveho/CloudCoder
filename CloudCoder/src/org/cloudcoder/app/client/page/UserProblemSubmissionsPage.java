@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.page;
 
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
+import org.cloudcoder.app.client.model.ProblemSubmissionHistory;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -35,6 +36,8 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserSelection;
+import org.cloudcoder.app.shared.util.Publisher;
+import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.shared.GWT;
@@ -59,7 +62,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  * @author David Hovemeyer
  */
 public class UserProblemSubmissionsPage extends CloudCoderPage {
-	private class UI extends Composite implements SessionObserver {
+	private class UI extends Composite implements SessionObserver, Subscriber {
 		private static final double SLIDER_HEIGHT_PX = 28.0;
 		
 		private Label usernameAndProblemLabel;
@@ -90,9 +93,42 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			
+			// FIXME: factor this into a separate view
 			this.submissionSlider = new Slider("ccSubSlider");
 			submissionSlider.setMinimum(1);
 			submissionSlider.setMaximum(10);
+			submissionSlider.addListener(new SliderListener() {
+				@Override
+				public void onStop(SliderEvent e) {
+				}
+				
+				@Override
+				public void onStart(SliderEvent e) {
+				}
+				
+				@Override
+				public boolean onSlide(SliderEvent e) {
+					return true;
+				}
+				
+				@Override
+				public void onChange(SliderEvent e) {
+					int selected = submissionSlider.getValue();
+					GWT.log("Slider value is " + selected);
+					/*
+					SubmissionReceipt[] submissionReceipts = getSession().get(SubmissionReceipt[].class);
+					onSelectSubmission(submissionReceipts[selected]);
+					*/
+					
+					// Only change the selection in the submission history if it's
+					// a value that differs from the slider.
+					ProblemSubmissionHistory problemSubmissionHistory = getSession().get(ProblemSubmissionHistory.class);
+					int selectedInHistory = problemSubmissionHistory.getSelected();
+					if (selected != selectedInHistory) {
+						problemSubmissionHistory.setSelected(selected);
+					}
+				}
+			});
 			northPanel.add(submissionSlider);
 			northPanel.setWidgetLeftRight(submissionSlider, (38.0 * 2), Unit.PX, 0, Unit.PX);
 			northPanel.setWidgetTopHeight(submissionSlider, 36.0, Unit.PX, SLIDER_HEIGHT_PX, Unit.PX);
@@ -104,7 +140,8 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			prevSubmissionButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					onChangeSubmission(-1);
+					//onChangeSubmission(-1);
+					getSession().get(ProblemSubmissionHistory.class).back();
 				}
 			});
 
@@ -115,7 +152,8 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			nextSubmissionButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					onChangeSubmission(1);
+					//onChangeSubmission(1);
+					getSession().get(ProblemSubmissionHistory.class).forward();
 				}
 			});
 
@@ -149,16 +187,28 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			initWidget(panel);
 		}
 
-		private void onChangeSubmission(int delta) {
-			int value = submissionSlider.getValue();
-			value += delta;
-			if (value >= submissionSlider.getMinimum() && value <= submissionSlider.getMaximum()) {
-				submissionSlider.setValue(value);
-			}
-		}
+//		private void onChangeSubmission(int delta) {
+//			int value = submissionSlider.getValue();
+//			value += delta;
+//			if (value >= submissionSlider.getMinimum() && value <= submissionSlider.getMaximum()) {
+//				submissionSlider.setValue(value);
+//			}
+//		}
 
 		@Override
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+			// Add a ProblemSubmissionHistory object to the session.
+			ProblemSubmissionHistory history = new ProblemSubmissionHistory();
+			session.add(history);
+			
+			// FIXME: for now, subscribe the page directly to the ProblemSubmissionHistory
+			// Eventually, only the various views should be subscribed
+			history.subscribe(ProblemSubmissionHistory.Event.SET_SUBMISSION_RECEIPT_LIST, this, subscriptionRegistrar);
+			history.subscribe(ProblemSubmissionHistory.Event.SET_SELECTED, this, subscriptionRegistrar);
+			
+			// FIXME: also subscribe to session add object events
+			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+			
 			// Show username, problem name and description
 			Problem problem = session.get(Problem.class);
 			UserSelection userSelection = session.get(UserSelection.class);
@@ -196,33 +246,18 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		}
 
 		private void onLoadSubmissionReceipts(SubmissionReceipt[] result) {
+			GWT.log("Loaded submission receipts");
+			/*
 			getSession().add(result);
 			
 			submissionSlider.setMinimum(0);
 			submissionSlider.setMaximum(result.length - 1);
 			
-			submissionSlider.addListener(new SliderListener() {
-				@Override
-				public void onStop(SliderEvent e) {
-				}
-				
-				@Override
-				public void onStart(SliderEvent e) {
-				}
-				
-				@Override
-				public boolean onSlide(SliderEvent e) {
-					return true;
-				}
-				
-				@Override
-				public void onChange(SliderEvent e) {
-					int selected = submissionSlider.getValue();
-					GWT.log("Slider value is " + selected);
-					SubmissionReceipt[] submissionReceipts = getSession().get(SubmissionReceipt[].class);
-					onSelectSubmission(submissionReceipts[selected]);
-				}
-			});
+			submissionSlider.addListener();
+			*/
+			
+			// Add to ProblemSubmissionHistory
+			getSession().get(ProblemSubmissionHistory.class).setSubmissionReceiptList(result);
 			
 			// Find the best submission
 			int best = 0;
@@ -233,9 +268,74 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			}
 			GWT.log("Best submission is " + best);
 			
-			submissionSlider.setValue(best);
+			//submissionSlider.setValue(best);
+			
+			// Set selected Submission to best one
+			getSession().get(ProblemSubmissionHistory.class).setSelected(best);
+			
+		}
+		
+		@Override
+		public void eventOccurred(Object key, Publisher publisher, Object hint) {
+			if (key == ProblemSubmissionHistory.Event.SET_SUBMISSION_RECEIPT_LIST) {
+				GWT.log("Setting list of submission receipts");
+				// FIXME
+				ProblemSubmissionHistory history = getSession().get(ProblemSubmissionHistory.class);
+				submissionSlider.setMinimum(0);
+				submissionSlider.setMaximum(history.getNumSubmissions() - 1);
+			} else if (key == ProblemSubmissionHistory.Event.SET_SELECTED) {
+				GWT.log("Setting selected submission");
+				ProblemSubmissionHistory problemSubmissionHistory = getSession().get(ProblemSubmissionHistory.class);
+				int selected = problemSubmissionHistory.getSelected();
+
+				// FIXME: move to submission history slider view
+				if (submissionSlider.getValue() != selected) {
+					submissionSlider.setValue(selected);
+				}
+				
+				// Load text
+				Problem problem = getSession().get(Problem.class);
+				UserSelection userSelection = getSession().get(UserSelection.class);
+				
+				// Determine which SubmissionReceipt was selected
+				SubmissionReceipt receipt = problemSubmissionHistory.getSubmissionReceipt(selected);
+				
+				// Load the ProblemText, add to the session
+				GWT.log("Loading ProblemText for submission " + selected);
+				RPC.editCodeService.getSubmissionText(userSelection.getUser(), problem, receipt, new AsyncCallback<ProblemText>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						getSession().add(StatusMessage.error("Couldn't get text for submission", caught));
+					}
+					
+					@Override
+					public void onSuccess(ProblemText result) {
+						//editor.setText(result.getText());
+						GWT.log("Problem text loaded");
+						getSession().add(result);
+					}
+				});
+
+				// Get test results
+				GWT.log("Getting test results for submission");
+				RPC.getCoursesAndProblemsService.getTestResultsForSubmission(problem, receipt, new AsyncCallback<NamedTestResult[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						getSession().add(StatusMessage.error("Couldn't load test results for submission", caught));
+					}
+					
+					public void onSuccess(NamedTestResult[] result) {
+						getSession().add(result);
+					}
+				});
+
+			} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof ProblemText)) {
+				GWT.log("Setting problem text in editor");
+				editor.setText(((ProblemText)hint).getText());
+			}
 		}
 
+		/*
 		private void onSelectSubmission(SubmissionReceipt receipt) {
 			// Load text
 			Problem problem = getSession().get(Problem.class);
@@ -264,6 +364,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				}
 			});
 		}
+		*/
 	}
 	
 	private UI ui;
