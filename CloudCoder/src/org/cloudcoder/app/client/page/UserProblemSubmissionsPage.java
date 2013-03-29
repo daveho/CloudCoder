@@ -25,10 +25,10 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemSubmissionHistorySliderView;
+import org.cloudcoder.app.client.view.ReadOnlyProblemTextView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
-import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
@@ -47,10 +47,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 
-import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
-import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
-import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
-
 /**
  * Page for viewing a user's submissions on a particular {@link Problem}.
  * 
@@ -63,10 +59,10 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		private Label usernameAndProblemLabel;
 		private PageNavPanel pageNavPanel;
 		private ProblemSubmissionHistorySliderView sliderView;
+		private ReadOnlyProblemTextView problemTextView;
 		private StatusMessageView statusMessageView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
 		private TestResultListView testResultListView;
-		private AceEditor editor;
 
 		public UI() {
 			SplitLayoutPanel panel = new SplitLayoutPanel();
@@ -114,9 +110,9 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			
 			panel.addSouth(southPanel, 200.0);
 			
-			// Center panel has a read-only ACE editor showing the source code.
-			this.editor = new AceEditor(true);
-			panel.add(editor);
+			// Center panel has a ReadOnlyProblemTextView
+			this.problemTextView = new ReadOnlyProblemTextView();
+			panel.add(problemTextView);
 			
 			initWidget(panel);
 		}
@@ -140,20 +136,11 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			UserSelection userSelection = session.get(UserSelection.class);
 			usernameAndProblemLabel.setText(userSelection.getUser().getUsername() + ", " + problem.toNiceString());
 			
-			// Activate editor
-			editor.startEditor();
-			editor.setFontSize("14px");
-			editor.setReadOnly(true);
-			editor.setTheme(AceEditorTheme.VIBRANT_INK);
-			AceEditorMode mode = ViewUtil.getModeForLanguage(problem.getProblemType().getLanguage());
-			if (mode != null) {
-				editor.setMode(mode);
-			}
-			
 			// Activate views
 			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			sliderView.activate(session, subscriptionRegistrar);
+			problemTextView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
 			testOutcomeSummaryView.activate(session, subscriptionRegistrar);
 			testResultListView.activate(session, subscriptionRegistrar);
@@ -234,10 +221,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 						getSession().add(result);
 					}
 				});
-
-			} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof ProblemText)) {
-				GWT.log("Setting problem text in editor");
-				editor.setText(((ProblemText)hint).getText());
 			}
 		}
 	}
