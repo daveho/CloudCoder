@@ -55,15 +55,15 @@ public class NoConnectTimer {
 	 * Should be called periodically.  At increasing intervals, will write
 	 * a log message.
 	 */
-	public void notConnected() {
+	public void notConnected(Throwable exception) {
 		long currentTime = System.currentTimeMillis();
 		if (nextReport < 0) {
 			connectionLost = currentTime;
-			report(currentTime); // initial report
+			report(currentTime, exception); // initial report
 			index = 0;
 			scheduleNextReport(currentTime);
 		} else if (currentTime >= nextReport) {
-			report(currentTime);
+			report(currentTime, exception);
 			if (index < REPORT_NSEC.length-1) {
 				index++;
 			}
@@ -75,15 +75,16 @@ public class NoConnectTimer {
 		nextReport = currentTime + REPORT_NSEC[index]*1000L;
 	}
 
-	private void report(long currentTime) {
+	private void report(long currentTime, Throwable exception) {
 		if (currentTime == connectionLost) {
-			logger.error(
-					"Cannot connect to CloudCoder server",
-					(currentTime-connectionLost)/1000);
+		    String message=String.format("Cannot connect to CloudCoder server",
+                    (currentTime-connectionLost)/1000);
+			logger.error(message, exception);
 		} else {
-			logger.error(
-					"Cannot connect to CloudCoder server (last connection about {} seconds ago)",
-					(currentTime-connectionLost)/1000);
+		    String message=
+		            String.format("Cannot connect to CloudCoder server (last connection about %d seconds ago)",
+                    (currentTime-connectionLost)/1000);
+			logger.error(message, exception);
 		}
 	}
 }
