@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -34,6 +36,7 @@ import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.IOUtil;
 import org.cloudcoder.daemon.JarRewriter;
 import org.cloudcoder.daemon.Upgrade;
+import org.cloudcoder.daemon.Util;
 
 /**
  * {@link DaemonController} implementation for the Builder.
@@ -108,6 +111,8 @@ public class Builder2DaemonController extends DaemonController {
 			BatchMain.main(argList.toArray(new String[argList.size()]));
 		} else if (args.length >= 1 && args[0].equals("upgrade")) {
 			doUpgrade();
+		} else if (args.length >= 1 && args[0].equals("listconfig")) {
+		    doListConfig();
 		} else {
 			Builder2DaemonController controller = new Builder2DaemonController();
 			controller.exec(args);
@@ -146,4 +151,44 @@ public class Builder2DaemonController extends DaemonController {
 		upgrader.addConfigFile("keystore.jks");
 		upgrader.upgradeJarFile(new DefaultUpgradeCallback());
 	}
+	
+	private static void doListConfig() throws IOException {
+	    String filename=CLOUDCODER_PROPERTIES;
+        Properties ccProps=Util.loadPropertiesFromResource(Builder2Daemon.class.getClassLoader(), filename);
+        // go through properties in a certain order
+        
+        System.out.println("\n\ncloudcoderApp.jar configuration properties ('the Webapp')");
+        printCloudCoderProperties(ccProps);
+	}
+	private static final String CLOUDCODER_PROPERTIES = "cloudcoder.properties";
+    private static List<String> keys=Arrays.asList("gwt.sdk",
+            "cloudcoder.db.user",
+            "cloudcoder.db.passwd",
+            "cloudcoder.db.databaseName",
+            "cloudcoder.db.host",
+            "cloudcoder.db.portStr",
+            "cloudcoder.login.service",
+            "cloudcoder.submitsvc.oop.host",
+            "cloudcoder.submitsvc.oop.numThreads",
+            "cloudcoder.submitsvc.oop.port",
+            "cloudcoder.submitsvc.ssl.cn",
+            "cloudcoder.submitsvc.ssl.keystore",
+            "cloudcoder.submitsvc.ssl.keystore.password",
+            "cloudcoder.webserver.port",
+            "cloudcoder.webserver.contextpath",
+            "cloudcoder.webserver.localhostonly");
+    
+    public static void printCloudCoderProperties(Properties ccProps) {
+        for (String key : keys) {
+            if (ccProps.containsKey(key)) {
+                System.out.println(key+"="+ccProps.getProperty(key));
+            }
+        }
+        for (Entry e : ccProps.entrySet()) {
+            //OK, fine, this requires a few linear scans
+            if (!keys.contains(e.getKey())) {
+                System.out.println(e.getKey()+"="+e.getValue());
+            }
+        }
+    }
 }
