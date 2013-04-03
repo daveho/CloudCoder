@@ -48,6 +48,7 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -195,8 +196,8 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
-			
-			this.testResultListView = new TestResultListView();
+			// the testResultListView still needs to be initialize in the activate() method
+			this.testResultListView=new TestResultListView(getSession().get(Problem.class));
 			addResultsTab(this.testResultListView, "Test results");
 			
 			this.compilerDiagnosticListView = new CompilerDiagnosticListView();
@@ -240,7 +241,7 @@ public class DevelopmentPage extends CloudCoderPage {
 
 			// Create AceEditor instance
 			createEditor(problem.getProblemType().getLanguage());
-
+			
 			// editor will be readonly until problem text is loaded
 			aceEditor.setReadOnly(true);
 

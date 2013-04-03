@@ -135,7 +135,7 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			southPanel.setWidgetRightWidth(testOutcomeSummaryView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX, Unit.PX);
 			southPanel.setWidgetTopHeight(testOutcomeSummaryView, 0.0, Unit.PX, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX);
 			
-			this.testResultListView = new TestResultListView();
+			this.testResultListView = new TestResultListView(getSession().get(Problem.class));
 			southPanel.add(testResultListView);
 			southPanel.setWidgetLeftRight(testResultListView, 0.0, Unit.PX, 0.0, Unit.PX);
 			southPanel.setWidgetTopBottom(testResultListView, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);

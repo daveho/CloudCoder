@@ -19,6 +19,9 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
+
 /**
  * A TestResult represents the outcome of a particular
  * {@link TestCase} on a particular {@link Submission}.
@@ -87,6 +90,51 @@ public class TestResult implements Serializable, IModelObject<TestResult>
         this(outcome,message);
         this.stdout=stdout;
         this.stderr=stderr;
+    }
+    
+    private static RegExp pass=RegExp.compile("Test passed for input \\(([^)]*)\\), expected output=(.*)");
+    private static RegExp fail=RegExp.compile("Test failed for input \\(([^)]*)\\), expected output=(.*), actual output=(.*)");
+    private static RegExp exception=RegExp.compile("Test failed for input \\(([^)]*)\\), expected output=(.*), exception (.*)");
+
+    private static String group(RegExp pattern, int num, String text) {
+        MatchResult m=pattern.exec(text);
+        boolean found=m!=null;
+        if (found) {
+            return m.getGroup(num);
+        }
+        return "";
+    }
+    
+    public String getInput() {
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(pass, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_WITH_EXCEPTION) {
+            return group(exception, 1, getMessage());
+        }
+        // Nothing else to cover here
+        return "";
+    }
+    public String getActualOutput() {
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(fail, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 3, getMessage());
+        }
+        return "";
+    }
+    public String getExpectedOutput() {
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(fail, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 2, getMessage());
+        }
+        return "";
     }
     
     /**
