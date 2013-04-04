@@ -64,13 +64,10 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		if (problem!=null) {
 		    type=problem.getProblemType();
 		}
-		if (type==ProblemType.JAVA_METHOD || 
-		        type==ProblemType.PYTHON_FUNCTION || 
-		        type==ProblemType.RUBY_METHOD)
-		{
+		if (type.isOutputLiteral()) {
 		    // appropriate for function/methods where we know the inputs, the expected output,
 		    // and the actual output.
-		    // Unclear if C functions fit this category...
+		    // Unclear if C functions can be made to fit this category...
 		    cellTable.addColumn(new InputColumn(), "Input");
 		    cellTable.addColumn(new ExpectedOutputColumn(), "Expected Output");
 		    cellTable.addColumn(new ActualOutputColumn(), "Actual Output");
@@ -136,9 +133,13 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
                 return "";
             }
             if (outcome==TestOutcome.FAILED_FROM_TIMEOUT) {
-                return TestOutcome.FAILED_ASSERTION.toString();
+                return TestOutcome.FAILED_FROM_TIMEOUT.toString();
             }
             if (outcome==TestOutcome.FAILED_WITH_EXCEPTION) {
+                String actualOutput=object.getTestResult().getActualOutput();
+                if (actualOutput!=null && !actualOutput.equals("")) {
+                    return actualOutput;
+                }
                 return TestOutcome.FAILED_WITH_EXCEPTION.toString();
             }
             return object.getTestResult().getActualOutput();

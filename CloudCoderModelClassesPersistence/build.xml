@@ -22,7 +22,7 @@
 	<target name="build" depends="javac"/>
 	
 	<target name="jar" depends="javac">
-		<jar destfile="${jarfile}">
+		<jar destfile="${jarfile}" update="true">
 			<fileset dir="bin" includes="**/*.class"/>
 		</jar>
 	</target>

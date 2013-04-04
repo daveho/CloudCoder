@@ -445,7 +445,8 @@ public class Queries {
 		}
 		PreparedStatement insertTestResults = dbRunnable.prepareStatement(
 				conn,
-				"insert into " + TestResult.SCHEMA.getDbTableName() + " values (NULL, ?, ?, ?, ?, ?)",
+				"insert into " + TestResult.SCHEMA.getDbTableName() + 
+				" values (NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
 				PreparedStatement.RETURN_GENERATED_KEYS
 		);
 		for (TestResult testResult : testResultList) {
