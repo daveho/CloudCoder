@@ -18,7 +18,7 @@
 	</target>
 	
 	<target name="jar" depends="build">
-		<jar destfile="${jarfile}">
+		<jar destfile="${jarfile}" update="true">
 			<fileset dir="bin" includes="**"/>
 		</jar>
 	</target>
