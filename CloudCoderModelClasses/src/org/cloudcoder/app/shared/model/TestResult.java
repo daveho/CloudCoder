@@ -19,6 +19,9 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
+
 /**
  * A TestResult represents the outcome of a particular
  * {@link TestCase} on a particular {@link Submission}.
@@ -33,35 +36,68 @@ public class TestResult implements Serializable, IModelObject<TestResult>
     private String message;
     private String stdout;
     private String stderr;
+    private String input;
+    private String expectedOutput;
+    private String actualOutput;
+    
+    public static final ModelObjectField<TestResult, Integer> ID=new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+        public void set(TestResult obj, Integer value) { obj.setId(value); }
+        public Integer get(TestResult obj) { return obj.getId(); }
+    };
+    public static final ModelObjectField<TestResult, Integer> SUBMISSON_RECEIPT_EVENT_ID=new ModelObjectField<TestResult, Integer>("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+        public void set(TestResult obj, Integer value) { obj.setSubmissionReceiptEventId(value); }
+        public Integer get(TestResult obj) { return obj.getSubmissionReceiptEventId(); }
+    };
+    public static final ModelObjectField<TestResult, TestOutcome> TEST_OUTCOME=new ModelObjectField<TestResult, TestOutcome>("test_outcome", TestOutcome.class, 0) {
+        public void set(TestResult obj, TestOutcome value) { obj.setOutcome(value); }
+        public TestOutcome get(TestResult obj) { return obj.getOutcome(); }
+    };
+    public static final ModelObjectField<TestResult, String> MESSAGE=new ModelObjectField<TestResult, String>("message", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setMessage(value); }
+        public String get(TestResult obj) { return obj.getMessage(); }
+    };
+    public static final ModelObjectField<TestResult, String> STDOUT=new ModelObjectField<TestResult, String>("stdout", String.class, Integer.MAX_VALUE) {
+        public void set(TestResult obj, String value) { obj.setStdout(value); }
+        public String get(TestResult obj) { return obj.getStdout(); }
+    };
+    public static final ModelObjectField<TestResult, String> STDERR=new ModelObjectField<TestResult, String>("stderr", String.class, Integer.MAX_VALUE) {
+        public void set(TestResult obj, String value) { obj.setStderr(value); }
+        public String get(TestResult obj) { return obj.getStderr(); }
+    };
+    public static final ModelObjectField<TestResult, String> INPUT=new ModelObjectField<TestResult, String>("input", String.class, 100) {
+            public void set(TestResult obj, String value) { obj.setInput(value); }
+            public String get(TestResult obj) { return obj.getInput(); }
+    };
+    public static final ModelObjectField<TestResult, String> EXPECTED_OUTPUT=new ModelObjectField<TestResult, String>("expected", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setExpectedOutput(value); }
+        public String get(TestResult obj) { return obj.getExpectedOutput(); }
+    };
+    public static final ModelObjectField<TestResult, String> ACTUAL_OUTPUT=new ModelObjectField<TestResult, String>("actual", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setActualOutput(value); }
+        public String get(TestResult obj) { return obj.getActualOutput(); }
+    };
     
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<TestResult> SCHEMA = new ModelObjectSchema<TestResult>("test_result")
-		.add(new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(TestResult obj, Integer value) { obj.setId(value); }
-			public Integer get(TestResult obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<TestResult, Integer>("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-			public void set(TestResult obj, Integer value) { obj.setSubmissionReceiptEventId(value); }
-			public Integer get(TestResult obj) { return obj.getSubmissionReceiptEventId(); }
-		})
-		.add(new ModelObjectField<TestResult, TestOutcome>("test_outcome", TestOutcome.class, 0) {
-			public void set(TestResult obj, TestOutcome value) { obj.setOutcome(value); }
-			public TestOutcome get(TestResult obj) { return obj.getOutcome(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("message", String.class, 100) {
-			public void set(TestResult obj, String value) { obj.setMessage(value); }
-			public String get(TestResult obj) { return obj.getMessage(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("stdout", String.class, Integer.MAX_VALUE) {
-			public void set(TestResult obj, String value) { obj.setStdout(value); }
-			public String get(TestResult obj) { return obj.getStdout(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("stderr", String.class, Integer.MAX_VALUE) {
-			public void set(TestResult obj, String value) { obj.setStderr(value); }
-			public String get(TestResult obj) { return obj.getStderr(); }
-		});
+	public static final ModelObjectSchema<TestResult> SCHEMA_V0 = new ModelObjectSchema<TestResult>("test_result")
+		.add(ID)
+		.add(SUBMISSON_RECEIPT_EVENT_ID)
+		.add(TEST_OUTCOME)
+		.add(MESSAGE)
+		.add(STDOUT)
+		.add(STDERR);
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<TestResult> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+	        .addAfter(STDERR, INPUT)
+            .addAfter(INPUT, EXPECTED_OUTPUT)
+            .addAfter(EXPECTED_OUTPUT, ACTUAL_OUTPUT)
+            .finishDelta();
+	
+	public static final ModelObjectSchema<TestResult> SCHEMA = SCHEMA_V1;
     
     public TestResult() {
     	
@@ -89,6 +125,115 @@ public class TestResult implements Serializable, IModelObject<TestResult>
         this.stderr=stderr;
     }
     
+    public TestResult(TestOutcome outcome,
+        String input,
+        String actualOutput,
+        String expectedOutput,
+        String stdout,
+        String stderr)
+    {
+        this.outcome=outcome;
+        this.input=input;
+        this.actualOutput=actualOutput;
+        this.expectedOutput=expectedOutput;
+        this.stdout=stdout;
+        this.stderr=stderr;
+    }
+    
+    private static final RegExp pass=RegExp.compile("Test passed for input \\(([^)]*)\\), expected output=(.*)");
+    private static final RegExp fail=RegExp.compile("Test failed for input \\(([^)]*)\\), expected output=(.*), actual output=(.*)");
+    private static final RegExp exception=RegExp.compile("Failed for input \\(([^)]*)\\), expected output=(.*), exception (.*)");
+
+    private static String group(RegExp pattern, int num, String text) {
+        MatchResult m=pattern.exec(text);
+        boolean found=m!=null;
+        if (found) {
+            return m.getGroup(num);
+        }
+        return "";
+    }
+    
+    /**
+     * Get the input.  If input is null, will try to parse the input from the
+     * message.
+     * @return The input, or an empty string if the input is missing or cannot
+     *      be determined.
+     */
+    public String getInput() {
+        if (input!=null) {
+            return input;
+        }
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(pass, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_WITH_EXCEPTION) {
+            //XXX Exception doesn't necessarily work
+            return group(exception, 1, getMessage());
+        }
+        // Nothing else to cover here
+        return "";
+    }
+    /**
+     * Get the actual output from this test case.  If it's null, try to parse
+     * it out of the message.
+     * @return The actual output for this test case, or an empty string if the actual
+     *      output is missing or cannot be determined.
+     */
+    public String getActualOutput() {
+        if (actualOutput!=null) {
+            return actualOutput;
+        }
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(fail, 1, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 3, getMessage());
+        }
+        return "";
+    }
+    /**
+     * Get the expected output for this test case.  If it's null, try to parse
+     * it out of the message.
+     * @return The expected output for this test case, or an empty string if the
+     *      expected output is missing or cannot be determined.
+     */
+    public String getExpectedOutput() {
+        if (expectedOutput!=null){
+            return expectedOutput;
+        }
+        if (getOutcome()==TestOutcome.PASSED) {
+            return group(pass, 2, getMessage());
+        }
+        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
+            return group(fail, 2, getMessage());
+        }
+        return "";
+    }
+    
+    /**
+     * @param input The input to set
+     */
+    public void setInput(String input) {
+        this.input = input;
+    }
+
+    /**
+     * @param expectedOutput The expected output to set
+     */
+    public void setExpectedOutput(String expectedOutput) {
+        this.expectedOutput = expectedOutput;
+    }
+
+    /**
+     * @param actualOutput The actual output to set
+     */
+    public void setActualOutput(String actualOutput) {
+        this.actualOutput = actualOutput;
+    }
+
     /**
 	 * @param id the id to set
 	 */

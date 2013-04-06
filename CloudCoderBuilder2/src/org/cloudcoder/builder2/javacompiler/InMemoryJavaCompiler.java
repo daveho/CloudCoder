@@ -83,10 +83,12 @@ public class InMemoryJavaCompiler
 			compileResult=new CompilationResult(CompilationOutcome.FAILURE);
 			List<CompilerDiagnostic> diagnosticList=new LinkedList<CompilerDiagnostic>();
 			for (Diagnostic<? extends JavaFileObject> d : collector.getDiagnostics()) {
-				// convert Java-specific diagnostics to the language-independent diagnostics
-				// we could also 
 				diagnosticList.add(InMemoryJavaCompiler.convertJavaxDiagnostic(d));
 			}
+			// convert compiler errors/warnings to a more readable, user-friendly form
+            // could selectively enable/disable to test effectiveness of error messages
+            JavaCompilerDiagnosticConverter converter=new JavaCompilerDiagnosticConverter();
+            diagnosticList=converter.convertCompilerDiagnostics(diagnosticList);
 			compileResult.setCompilerDiagnosticList(diagnosticList.toArray(new CompilerDiagnostic[diagnosticList.size()]));
 			logger.warn("Unable to compile: "+compileResult);
 			return false;

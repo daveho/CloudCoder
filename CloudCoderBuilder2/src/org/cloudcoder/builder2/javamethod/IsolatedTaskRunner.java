@@ -59,7 +59,7 @@ public class IsolatedTaskRunner implements IsolatedTask<TestResult>
             Object[] results=(Object[])m.invoke(null);
             Boolean passedTest=(Boolean)results[0];
             String output=(String)results[1];
-            logger.warn("Hooked onto the outcome! "+output);
+            logger.trace("Hooked onto the outcome! "+output);
             
             if (passedTest) {
                 return TestResultUtil.createResultForPassedTest(problem, testCase);
@@ -68,13 +68,13 @@ public class IsolatedTaskRunner implements IsolatedTask<TestResult>
             }
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof SecurityException) {
-                //logger.warn("Security exception with code: "+programText);
+                logger.error("Security exception", e);
                 return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Security exception while testing submission");
             } 
             logger.warn("InvocationTargetException", e);
-            return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, 
-                    "Failed for input=(" + testCase.getInput() + ") expected=" + testCase.getOutput()+
-                    ", exception "+e.getTargetException().getMessage());
+            logger.trace("cause: "+e.getCause());
+            logger.trace("target exception: "+e.getTargetException());
+            return TestResultUtil.createResultForFailedWithExceptionTest(problem, testCase, e);
         } catch (NoSuchMethodException e) {
             return new TestResult(TestOutcome.INTERNAL_ERROR, "Method not found while testing submission");
         } catch (IllegalAccessException e) {

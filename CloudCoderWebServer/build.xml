@@ -121,7 +121,7 @@
 			all requried libraries, and the webapp.  Note that signatures
 			must be removed from the libraries.
 		-->
-		<jar destfile="${jarname}">
+		<jar destfile="${jarname}" update="true">
 			<!-- Copy classes  from the bin directory. -->
 			<fileset dir="bin" includes="**"/>
 
