@@ -158,7 +158,7 @@ public class BatchMain {
 		
 		TestCase[] testCaseList = exercise.getTestCaseList();
 		
-		Worker[] workers = new Worker[Runtime.getRuntime().availableProcessors() * 2];
+		Worker[] workers = new Worker[/*Runtime.getRuntime().availableProcessors() * 2*/1];
 		Thread[] threads = new Thread[workers.length];
 		
 		try {
