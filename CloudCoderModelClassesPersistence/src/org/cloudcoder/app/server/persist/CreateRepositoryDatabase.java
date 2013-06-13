@@ -28,6 +28,7 @@ import org.cloudcoder.app.server.persist.util.SchemaUtil;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -45,6 +46,7 @@ public class CreateRepositoryDatabase {
 		RepoTestCase.SCHEMA,
 		RepoProblemTag.SCHEMA,
 		UserRegistrationRequest.SCHEMA,
+		RepoProblemRating.SCHEMA,
 	};
 	
 	public static void main(String[] args) throws Exception {
