@@ -26,7 +26,7 @@ public class RepoProblemRating implements IModelObject<RepoProblemRating> {
 		public Integer get(RepoProblemRating obj) { return obj.value; }
 	};
 	
-	private static final ModelObjectSchema<RepoProblemRating> SCHEMA_V0 = new ModelObjectSchema<RepoProblemRating>("repoproblemrating")
+	private static final ModelObjectSchema<RepoProblemRating> SCHEMA_V0 = new ModelObjectSchema<RepoProblemRating>("repo_problem_rating")
 			.add(ID)
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)
