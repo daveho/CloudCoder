@@ -263,4 +263,14 @@ public abstract class EditProblemAdapter implements IProblem {
 		return delegate.getModuleId();
 	}
 
+	@Override
+	public void setShared(boolean shared) {
+		delegate.setShared(shared);
+		onChange();
+	}
+	
+	@Override
+	public boolean isShared() {
+		return delegate.isShared();
+	}
 }
