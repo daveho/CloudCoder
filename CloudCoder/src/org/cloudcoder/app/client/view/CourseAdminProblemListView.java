@@ -41,6 +41,7 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
@@ -78,6 +79,15 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.addColumn(new ProblemWhenDueColumn(), "Due");
 		grid.addColumn(new ProblemVisibleColumn(), "Visible");
 		grid.addColumn(new ProblemSharedColumn(), "Shared");
+		
+		grid.setColumnWidth(0, 12.5, Unit.PCT);
+		grid.setColumnWidth(1, 25.0, Unit.PCT);
+		grid.setColumnWidth(2, 12.5, Unit.PCT);
+		grid.setColumnWidth(3, 12.5, Unit.PCT);
+		grid.setColumnWidth(4, 12.5, Unit.PCT);
+		grid.setColumnWidth(5, 60.0, Unit.PX);
+		grid.setColumnWidth(6, 60.0, Unit.PX);
+		grid.setColumnWidth(7, 25.0, Unit.PCT);
 		
 		// The column displaying the module name allows editing, and invokes
 		// a callback when the module name changes.
