@@ -24,6 +24,8 @@ import java.util.List;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.NamedTestResult;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -47,7 +49,7 @@ import com.google.gwt.user.client.ui.ResizeComposite;
 public class TestResultListView extends ResizeComposite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<NamedTestResult> cellTable;
 	
-	public TestResultListView() {
+	public TestResultListView(Problem problem) {
 		cellTable = new DataGrid<NamedTestResult>();
 		
 		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
@@ -58,7 +60,23 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		cellTable.addColumn(outcomeColumn, "Outcome");
 		cellTable.setColumnWidth(outcomeColumn, "160px");
 		
-		cellTable.addColumn(new MessageColumn(), "Message");
+		ProblemType type=null;
+		if (problem!=null) {
+		    type=problem.getProblemType();
+		}
+		if (type.isOutputLiteral()) {
+		    // appropriate for function/methods where we know the inputs, the expected output,
+		    // and the actual output.
+		    // Unclear if C functions can be made to fit this category...
+		    cellTable.addColumn(new InputColumn(), "Input");
+		    cellTable.addColumn(new ExpectedOutputColumn(), "Expected Output");
+		    cellTable.addColumn(new ActualOutputColumn(), "Actual Output");
+		    
+		} else {
+		    // appropriate for whole-program exercises that use regexps to check 
+		    // correctness of outputs
+		    cellTable.addColumn(new MessageColumn(), "Message");
+		}
 		
 		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
 			@Override
@@ -99,6 +117,41 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 			}
 		}
 	}
+	
+	private static class InputColumn extends TextColumn<NamedTestResult> {
+	    @Override
+	    public String getValue(NamedTestResult object) {
+	        return object.getTestResult().getInput();
+	    }
+	}
+	
+	private static class ActualOutputColumn extends TextColumn<NamedTestResult> {
+        @Override
+        public String getValue(NamedTestResult object) {
+            TestOutcome outcome=object.getTestResult().getOutcome();
+            if (outcome==TestOutcome.PASSED) {
+                return "";
+            }
+            if (outcome==TestOutcome.FAILED_FROM_TIMEOUT) {
+                return TestOutcome.FAILED_FROM_TIMEOUT.toString();
+            }
+            if (outcome==TestOutcome.FAILED_WITH_EXCEPTION) {
+                String actualOutput=object.getTestResult().getActualOutput();
+                if (actualOutput!=null && !actualOutput.equals("")) {
+                    return actualOutput;
+                }
+                return TestOutcome.FAILED_WITH_EXCEPTION.toString();
+            }
+            return object.getTestResult().getActualOutput();
+        }
+    }
+	
+	private static class ExpectedOutputColumn extends TextColumn<NamedTestResult> {
+        @Override
+        public String getValue(NamedTestResult object) {
+            return object.getTestResult().getExpectedOutput();
+        }
+    }
 	
 	private static class MessageColumn extends TextColumn<NamedTestResult> {
 		@Override

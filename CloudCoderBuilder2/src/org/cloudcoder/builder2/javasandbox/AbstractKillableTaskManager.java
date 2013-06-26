@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.builder2.javasandbox;
 
 import java.util.ArrayList;
@@ -9,9 +26,26 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * I'm going to use the stop() method in thread.  I feel a little dirty.
+ * 
+ * I'm 99% sure that this is a safe use of stop().  Each
+ * thread that might be stopped will put its result into
+ * a separate object; if that thread is killed early, the
+ * result simply won't show up and instead we'll put
+ * in a user-supplied default result.  So long as the
+ * instances of Task don't hold any locks or put any resources
+ * into an inconsistent state, the threads spawned to execute
+ * those tasks should be able to be stop()ed without any
+ * negative repercussions.
+ * 
+ * @author jaimespacco
+ *
+ * @param <T>
+ */
 public abstract class AbstractKillableTaskManager<T>
 {
-    protected static final Logger logger = LoggerFactory.getLogger(JVMKillableTaskManager.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractKillableTaskManager.class);
     protected static boolean securityManagerInstalled = false;
     /** list of "isolated tasks" to be executed */
     private List<IsolatedTask<T>> tasks;
@@ -183,7 +217,7 @@ public abstract class AbstractKillableTaskManager<T>
     }
 
     /**
-     * Install the security manager needed by {@link JVMKillableTaskManager}.
+     * Install the security manager needed by {@link AbstractKillableTaskManager}.
      */
     public static void installSecurityManager() {
         if (!securityManagerInstalled) {
@@ -192,7 +226,7 @@ public abstract class AbstractKillableTaskManager<T>
             // The main concern is that this requires removing any executable code that is
             // not inside a method.
             System.setSecurityManager(
-                    new ThreadGroupSecurityManager(JVMKillableTaskManager.WORKER_THREAD_GROUP));
+                    new ThreadGroupSecurityManager(AbstractKillableTaskManager.WORKER_THREAD_GROUP));
             securityManagerInstalled  = true;
         }
     }
@@ -270,11 +304,11 @@ public abstract class AbstractKillableTaskManager<T>
                 out.result=o;
                 out.finished=true;
             } catch (NoClassDefFoundError e) {
-                logger.error("Thread killed in go!", e);
+                logger.error("Killing test case thread due to class loading error", e);
             } catch (Throwable e) {
                 // Make sure that the thread dies very quietly
                 // "Attaching an exception-catching silencer to my thread-killing gun"
-                logger.error("Thread killed in go!", e);
+                logger.error("Killing test case thread for unknown reason", e);
             } finally {
                 //System.err.println(System.getSecurityManager());
                 //System.out.println(System.getSecurityManager());

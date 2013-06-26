@@ -48,6 +48,7 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -71,6 +72,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 
+import edu.ycp.cs.dh.acegwt.client.ace.AceAnnotationType;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
@@ -194,8 +196,8 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
-			
-			this.testResultListView = new TestResultListView();
+			// the testResultListView still needs to be initialize in the activate() method
+			this.testResultListView=new TestResultListView(getSession().get(Problem.class));
 			addResultsTab(this.testResultListView, "Test results");
 			
 			this.compilerDiagnosticListView = new CompilerDiagnosticListView();
@@ -239,7 +241,7 @@ public class DevelopmentPage extends CloudCoderPage {
 
 			// Create AceEditor instance
 			createEditor(problem.getProblemType().getLanguage());
-
+			
 			// editor will be readonly until problem text is loaded
 			aceEditor.setReadOnly(true);
 
@@ -386,7 +388,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			// local text is in-sync.  So, submit the code!
 			
 			addSessionObject(StatusMessage.pending("Testing your code, please wait..."));
-			
+			// clear any annotations we set from compiler errors
 			Problem problem = getSession().get(Problem.class);
 			String text = aceEditor.getText();
 
@@ -730,7 +732,9 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 		
 		private void onReceiveSubmissionResult(SubmissionResult result) {
-			if (result==null){
+			// clear any annotations from the editor
+		    aceEditor.clearAnnotations();
+		    if (result==null){
 				addSessionObject(StatusMessage.error("Results from Builder are empty"));
 				addSessionObject(new NamedTestResult[0]);
 				addSessionObject(new CompilerDiagnostic[0]);
@@ -758,6 +762,11 @@ public class DevelopmentPage extends CloudCoderPage {
 					// Code did not compile
 					addSessionObject(StatusMessage.error("Error compiling submission"));
 					addSessionObject(new NamedTestResult[0]);
+					// mark the ACE editor with compiler errors
+					for (CompilerDiagnostic d : compilerDiagnosticList) {
+					    aceEditor.addAnnotation((int)d.getStartLine()-1, (int)d.getStartColumn()-1, d.getMessage(), AceAnnotationType.ERROR);
+					}
+					aceEditor.setAnnotations();
 				} else {
 					// Code compiled, and test results were sent back.
 

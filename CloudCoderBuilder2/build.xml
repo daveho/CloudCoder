@@ -91,7 +91,7 @@
 		Build a single executable jarfile.
 	-->
 	<target name="jar" depends="checkDistBuild,build">
-		<jar destfile="${jarname}">
+		<jar destfile="${jarname}" update="true">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
 			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
 			<zipgroupfileset file="${model.class.jar}" />
