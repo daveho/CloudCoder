@@ -54,6 +54,8 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * @author David Hovemeyer
  */
 public class CourseAdminProblemListView extends ResizeComposite implements Subscriber, SessionObserver {
+	private static final String CHECKMARK = "\u2713";
+
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndModule> grid;
 	private Session session;
@@ -72,6 +74,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.addColumn(new ProblemWhenAssignedColumn(), "Assigned");
 		grid.addColumn(new ProblemWhenDueColumn(), "Due");
 		grid.addColumn(new ProblemVisibleColumn(), "Visible");
+		grid.addColumn(new ProblemSharedColumn(), "Shared");
 		
 		// The column displaying the module name allows editing, and invokes
 		// a callback when the module name changes.
@@ -157,6 +160,14 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		@Override
 		public String getValue(ProblemAndModule object) {
 			return object.getProblem().isVisible() ? "true" : "false";
+		}
+	}
+	
+	private static class ProblemSharedColumn extends TextColumn<ProblemAndModule> {
+
+		@Override
+		public String getValue(ProblemAndModule object) {
+			return object.getProblem().isShared() ? CHECKMARK : "";
 		}
 	}
 	
