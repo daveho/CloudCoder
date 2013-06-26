@@ -37,8 +37,11 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -54,7 +57,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * @author David Hovemeyer
  */
 public class CourseAdminProblemListView extends ResizeComposite implements Subscriber, SessionObserver {
-	private static final String CHECKMARK = "\u2713";
+	private static final String CHECKMARK_URL = GWT.getModuleBaseForStaticFiles() + "images/check-mark-icon-sm.png";
 
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndModule> grid;
@@ -163,20 +166,26 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		}
 	}
 	
-	private static class ProblemSharedColumn extends TextColumn<ProblemAndModule> {
-
+	private static class ProblemSharedCell extends AbstractCell<Boolean> {
 		@Override
-		public String getValue(ProblemAndModule object) {
-			return object.getProblem().isShared() ? CHECKMARK : "";
+		public void render(com.google.gwt.cell.client.Cell.Context context,
+				Boolean value, SafeHtmlBuilder sb) {
+			if (value) {
+				sb.appendHtmlConstant("<img src=\"" + CHECKMARK_URL + "\" alt=\"yes\" />");
+			}
 		}
 	}
 	
-//	private static class ProblemModuleNameColumn extends TextColumn<ProblemAndModule> {
-//		@Override
-//		public String getValue(ProblemAndModule object) {
-//			return object.getModule().getName();
-//		}
-//	}
+	private static class ProblemSharedColumn extends Column<ProblemAndModule, Boolean> {
+		public ProblemSharedColumn() {
+			super(new ProblemSharedCell());
+		}
+		
+		@Override
+		public Boolean getValue(ProblemAndModule object) {
+			return object.getProblem().isShared();
+		}
+	}
 	
 	private static class ProblemModuleNameColumn extends Column<ProblemAndModule, String> {
 		public ProblemModuleNameColumn() {
