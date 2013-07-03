@@ -19,11 +19,14 @@ package org.cloudcoder.builder2.util;
 
 import org.cloudcoder.app.shared.model.ITestCase;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for creating {@link TestResult}s.
@@ -32,6 +35,7 @@ import org.cloudcoder.builder2.model.CommandResult;
  * @author Jaime Spacco
  */
 public class TestResultUtil {
+    private static final Logger logger=LoggerFactory.getLogger(TestResultUtil.class);
 	/**
 	 * Create a TestResult for an executed test that timed out.
 	 * 
@@ -154,6 +158,10 @@ public class TestResultUtil {
 	public static TestResult createResultForPassedTest(Problem problem, TestCase testCase) {
 		return createTestResult(null, problem, TestOutcome.PASSED, testCase);
 	}
+	
+	public static TestResult createExtendedResultForPassedTest(Problem problem, TestCase testCase) {
+        return createTestResult(null, problem, TestOutcome.PASSED, testCase);
+    }
 
 	/**
 	 * Create a generic {@link TestResult} for a failed test.
@@ -225,8 +233,15 @@ public class TestResultUtil {
 				}
 			}
 		}
-
+		
 		TestResult testResult = new TestResult(outcome, buf.toString());
+		
+		ProblemType type=problem.getProblemType();
+		if (type.isOutputLiteral() && !testCase.isSecret()) {
+		    testResult.setInput(testCase.getInput());
+		    testResult.setExpectedOutput(testCase.getOutput());
+		    testResult.setActualOutput(output);
+		}
 
 		if (p != null) {
 			if (outcome.isDisplayProcessStatus() &&
@@ -246,4 +261,24 @@ public class TestResultUtil {
 
 		return testResult;
 	}
+
+    public static TestResult createResultForFailedWithExceptionTest(Problem problem, 
+        TestCase testCase, Throwable exception)
+    {
+        //TODO: We can parse the stack trace to get out specific line numbers
+        Throwable targetException=exception.getCause();
+        String message="";
+        if (!testCase.isSecret()) {
+            message="Failed with exception "+targetException.getMessage();
+        }
+        TestResult testResult = new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, message); 
+        if (problem.getProblemType().isOutputLiteral()) {
+            testResult.setInput(testCase.getInput());
+            testResult.setExpectedOutput(testCase.getOutput());
+            testResult.setActualOutput(targetException.toString());
+            logger.debug("targetException: "+targetException);
+            logger.debug("targetException.getMessage(): "+targetException.getMessage());
+        }
+        return testResult;
+    }
 }

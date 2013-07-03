@@ -292,6 +292,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 
 							if (value.isSuccess()) {
 								getSession().add(StatusMessage.goodNews(value.getMessage()));
+								
+								// Reload the problems so that the shared flag is updated
+								// for the problem the user just shared
+								reloadProblems(getCurrentCourse());
 							} else {
 								getSession().add(StatusMessage.error(value.getMessage()));
 							}

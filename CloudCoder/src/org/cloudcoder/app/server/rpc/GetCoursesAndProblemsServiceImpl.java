@@ -231,7 +231,18 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws CloudCoderAuthenticationException  {
 		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
+
+		// Only a course instructor may share an exercise.
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		Course course = new Course();
+		course.setId(exercise.getProblem().getCourseId());
+		Database.getInstance().reloadModelObject(course);
+		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
+		if (!regList.isInstructor()) {
+			return new OperationResult(false, "You must be an instructor to share an exercise");
+		}
 		
+		// Get the exercise repository URL
 		ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
 		if (repoUrlSetting == null) {
 			return new OperationResult(false, "URL of exercise repository is not configured");
@@ -269,6 +280,10 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			StatusLine statusLine = response.getStatusLine();
 			
 			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+				// Update the exercise's shared flag so we have a record that it was shared.
+				exercise.getProblem().setShared(true);
+				Database.getInstance().storeProblemAndTestCaseList(exercise, course, authenticatedUser);
+
 				return new OperationResult(true, "Exercise successfully published to the repository - thank you!");
 			} else if (statusLine.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
 				return new OperationResult(false, "Authentication with repository failed - incorrect username/password?");

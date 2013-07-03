@@ -95,7 +95,7 @@ public class User implements Serializable, IModelObject<User> {
 		.finishDelta();
 	
 	/**
-     * Description of fields (schema version 1).
+     * Description of fields (schema version 2).
      */
     public static final ModelObjectSchema<User> SCHEMA_V2 = ModelObjectSchema.basedOn(SCHEMA_V1)
         .addAfter(WEBSITE, CONSENT)

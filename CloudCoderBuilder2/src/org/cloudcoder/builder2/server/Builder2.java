@@ -217,7 +217,7 @@ public class Builder2 implements Runnable {
         } catch (IOException e) {
             // ClientCoder server may not be running right now...try again soon
             //logger.error("Cannot connect to CloudCoder server");
-            noConnectTimer.notConnected();
+            noConnectTimer.notConnected(e);
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException ee) {

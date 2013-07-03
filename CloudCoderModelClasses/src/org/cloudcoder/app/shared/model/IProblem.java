@@ -126,5 +126,21 @@ public interface IProblem extends IProblemData {
 	 * @return the module id
 	 */
 	public int getModuleId();
+	
+	/**
+	 * Set the shared flag. (Set to true if the problem has
+	 * been shared to the exercise repository.)
+	 * 
+	 * @param shared the shared flag to set
+	 */
+	public void setShared(boolean shared);
+	
+	/**
+	 * Get the shared flag value (true if the problem has been shared
+	 * to the exercise repository).
+	 * 
+	 * @return the shared flag value
+	 */
+	public boolean isShared();
 
 }
