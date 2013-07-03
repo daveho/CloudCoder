@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,11 +45,20 @@ public class Compiler {
     private static final Logger logger=LoggerFactory.getLogger(Compiler.class);
 
 	public static final String DEFAULT_COMPILER_EXE = "gcc";
+	
+	private static class Module {
+		String sourceFileName;
+		String code;
+		Module(String sourceFileName, String code) {
+			this.sourceFileName = sourceFileName;
+			this.code = code;
+		}
+	}
 
     private String compilerExe;
     private String progName;
     private File workDir;
-    private String code;
+    private List<Module> modules;
     private String statusMessage;
     private List<String> compilerOutput;
 
@@ -63,7 +73,7 @@ public class Compiler {
     	this.compilerExe = DEFAULT_COMPILER_EXE;
         this.progName = progName;
         this.workDir = workDir;
-        this.code = code;
+        this.modules = Arrays.asList(new Module(progName + ".c", code));
         this.statusMessage = "";
         this.compilerOutput = new LinkedList<String>();
     }
@@ -83,18 +93,21 @@ public class Compiler {
 	 * @return true if the compilation was successful, false if not
 	 */
     public boolean compile() {
-        // copy source program into a .c file in the temporary directory
-        File sourceFile = new File(workDir, getSourceFileName());
-        OutputStream out = null;
-        try {
-            out = new BufferedOutputStream(new FileOutputStream(sourceFile));
-            IOUtils.write(code, out);
-        } catch (IOException e) {
-            logger.error("Could not create source file", e);
-            statusMessage = "Could not create source file: " + e.getMessage();
-        } finally {
-            IOUtils.closeQuietly(out);
-        }
+    	
+    	for (Module m : modules) {
+	        // copy source file(s) into .c file(s) in the temporary directory
+	        File sourceFile = new File(workDir, m.sourceFileName);
+	        OutputStream out = null;
+	        try {
+	            out = new BufferedOutputStream(new FileOutputStream(sourceFile));
+	            IOUtils.write(m.code, out);
+	        } catch (IOException e) {
+	            logger.error("Could not create source file", e);
+	            statusMessage = "Could not create source file: " + e.getMessage();
+	        } finally {
+	            IOUtils.closeQuietly(out);
+	        }
+    	}
 
         if (!runCommand(workDir, getCompileCmd())) {
             return false;
@@ -124,17 +137,16 @@ public class Compiler {
     }        
 
     private String[] getCompileCmd() {
-        return new String[]{
-                this.compilerExe,
-                "-Wall", // ALWAYS use -Wall
-                "-o",
-                getExeFileName(),
-                getSourceFileName(),
-        };
-    }
-
-    private String getSourceFileName() {
-        return progName + ".c";
+    	List<String> cmd = new ArrayList<String>();
+    	cmd.add(this.compilerExe);
+    	cmd.add("-Wall");// ALWAYS use -Wall
+    	// TODO: add linker options
+    	cmd.add("-o");
+    	cmd.add(getExeFileName());
+    	for (Module m : modules) {
+    		cmd.add(m.sourceFileName);
+    	}
+    	return cmd.toArray(new String[cmd.size()]);
     }
 
     private String getExeFileName() {
