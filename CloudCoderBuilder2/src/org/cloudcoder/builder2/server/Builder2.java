@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
+import org.cloudcoder.builder2.model.ICleanupAction;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.model.Tester;
@@ -62,6 +64,7 @@ public class Builder2 implements Runnable {
     private WebappSocketFactory webappSocketFactory;
     private Map<Integer, Problem> problemIdToProblemMap;
     private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
+    private List<ICleanupAction> cleanupActionList;
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
@@ -78,8 +81,26 @@ public class Builder2 implements Runnable {
         this.webappSocketFactory = webappSocketFactory;
         this.problemIdToProblemMap = new HashMap<Integer, Problem>();
         this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
+        this.cleanupActionList = new ArrayList<ICleanupAction>();
+    }
+    
+    /**
+     * Prepare to test submissions.
+     */
+    public void prepare() {
+    	
+    }
+    
+    /**
+     * Perform cleanup actions.
+     */
+    public void cleanup() {
+    	
     }
 
+    /**
+     * The main server loop.
+     */
     public void run() {
         while (!shutdownRequested) {
             runOnce();
@@ -87,7 +108,8 @@ public class Builder2 implements Runnable {
     }
 
     /**
-     * 
+     * Attempt to read one submission, compile and test it, and send the
+     * result back to the webapp.
      */
     protected void runOnce() {
         try {
