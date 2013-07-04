@@ -7,7 +7,15 @@ shift
 # Execute the wrapped program in a subprocess shell,
 # setting resource limits as indicated by the 
 # CC_PROCESS_RESOURCE_LIMITS env var.
-(for limit in ${CC_PROCESS_RESOURCE_LIMITS}; do ulimit $limit; done; exec ${prog} "$@")
+# Also, if the CC_LD_PRELOAD environment variable is set,
+# set LD_PRELOAD to its value.  (This is used for sandboxing
+# using the EasySandbox shared library.)
+# And, if set, use the CC_EASYSANDBOX_HEAPSIZE to set the EASYSANDBOX_HEAPSIZE
+# environment variable (to set a heap size for a sandboxed process).
+(for limit in ${CC_PROCESS_RESOURCE_LIMITS}; do ulimit $limit; done; \
+if [ ! -z "${CC_LD_PRELOAD}" ]; then export LD_PRELOAD=${CC_LD_PRELOAD}; fi; \
+if [ ! -z "${CC_EASYSANDBOX_HEAPSIZE}" ]; then export EASYSANDBOX_HEAPSIZE=${CC_EASYSANDBOX_HEAPSIZE}; fi; \
+exec ${prog} "$@")
 
 rc=$?
 

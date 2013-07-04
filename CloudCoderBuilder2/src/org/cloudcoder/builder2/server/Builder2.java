@@ -47,36 +47,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Builder2 {
 	private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
-
-	private CleanupActionStack cleanupActionStack;
-	private EasySandboxSharedLibrary easySandboxSharedLibrary;
 	
 	/**
 	 * Constructor.
 	 */
 	public Builder2() {
-        this.cleanupActionStack = new CleanupActionStack();
 	}
-	
-	/**
-	 * Prepare to test submissions.
-	 * Must be called before {@link #testSubmission(Problem, List, String)} is called.
-	 * 
-	 * @throws IOException if an error occurs preparing for testing submissions
-	 */
-	public void prepare() throws IOException {
-		// FIXME: make this conditional on a config property
-		EasySandboxSharedLibrary shlib = new EasySandboxSharedLibrary();
-		shlib.build();
-		
-		easySandboxSharedLibrary = shlib;
-		cleanupActionStack.push(new ICleanupAction() {
-			@Override
-			public void execute() {
-				easySandboxSharedLibrary.cleanup();
-			}
-		});
-	}	
 
 	/**
 	 * Test a submission.
@@ -134,13 +110,4 @@ public class Builder2 {
 
 	   return result;
 	}
-	
-	/**
-	 * Perform cleanup actions.
-	 * Should be called when the object is no longer needed.
-	 */
-	public void cleanup() {
-		cleanupActionStack.executeAll();
-	}
-
 }

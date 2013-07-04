@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -42,7 +43,6 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 import org.cloudcoder.builder2.server.Builder2;
-import org.cloudcoder.builder2.server.Builder2Server;
 import org.cloudcoder.daemon.IOUtil;
 
 /**
@@ -157,15 +157,7 @@ public class BatchMain {
 	
 	public void execute() throws IOException, InterruptedException {
 		builder2 = new Builder2();
-		try {
-			builder2.prepare();
-			doExecute();
-		} finally {
-			builder2.cleanup();
-		}
-	}
-
-	private void doExecute() throws InterruptedException {
+		
 		Map<String, String> resultMap = new HashMap<String, String>();
 		
 		TestCase[] testCaseList = exercise.getTestCaseList();

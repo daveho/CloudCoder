@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -24,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cloudcoder.builder2.csandbox.EasySandboxSharedLibrary;
 import org.cloudcoder.builder2.model.CommandExecutionPreferences;
 import org.cloudcoder.builder2.model.CommandLimit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ProcessRunner implementation that sets process resource limits
@@ -34,6 +38,8 @@ import org.cloudcoder.builder2.model.CommandLimit;
  * @author David Hovemeyer
  */
 public class LimitedProcessRunner extends ProcessRunner {
+	private static Logger logger = LoggerFactory.getLogger(LimitedProcessRunner.class);
+	
 	private static final Map<CommandLimit, Integer> DEFAULT_LIMIT_MAP = new HashMap<CommandLimit, Integer>();
 	static {
 		// Set default limits: these serve as reasonable defaults
@@ -46,6 +52,8 @@ public class LimitedProcessRunner extends ProcessRunner {
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_LINE_MAX_CHARS, 200);
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_MAX_BYTES, 10000);
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_MAX_LINES, 50);
+		DEFAULT_LIMIT_MAP.put(CommandLimit.ENABLE_SANDBOX, 1);
+		DEFAULT_LIMIT_MAP.put(CommandLimit.SANDBOX_HEAP_SIZE_BYTES, 8*1024*1024);
 	}
 	
 	private Map<CommandLimit, Integer> limitMap;
@@ -102,6 +110,24 @@ public class LimitedProcessRunner extends ProcessRunner {
 		String limits = buf.toString();
 		//System.out.println("Limits: " + limits);
 		allEnvVars.add(limits);
+		
+		// Also, if the ENABLE_SANDBOX limit is set to a non-zero value,
+		// then use the EasySandbox library for sandboxing.
+		// FIXME: make this conditional on configuration properties
+		Integer enableSandbox = limitMap.get(CommandLimit.ENABLE_SANDBOX);
+		if (enableSandbox != null && enableSandbox != 0) {
+			String easySandboxShlib = EasySandboxSharedLibrary.getInstance().getSharedLibraryPath();
+			if (easySandboxShlib == null) {
+				logger.error("Sandboxing requested, but EasySandbox.so is not available");
+				// FIXME: should we abort at this point?
+			} else {
+				logger.info("Setting CC_LD_PRELOAD to {}", easySandboxShlib);
+				allEnvVars.add("CC_LD_PRELOAD=" + easySandboxShlib);
+				Integer heapSize = limitMap.get(CommandLimit.SANDBOX_HEAP_SIZE_BYTES);
+				logger.info("Setting CC_EASYSANDBOX_HEAPSIZE to {}", heapSize);
+				allEnvVars.add("CC_EASYSANDBOX_HEAPSIZE=" + heapSize);
+			}
+		}
 		
 		return allEnvVars.toArray(new String[allEnvVars.size()]);
 	}

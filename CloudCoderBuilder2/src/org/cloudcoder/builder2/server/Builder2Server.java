@@ -24,24 +24,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.shared.model.CompilationOutcome;
-import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.builder2.model.BuilderSubmission;
-import org.cloudcoder.builder2.model.ICleanupAction;
-import org.cloudcoder.builder2.model.InternalBuilderException;
-import org.cloudcoder.builder2.model.ProgramSource;
-import org.cloudcoder.builder2.model.Tester;
-import org.cloudcoder.builder2.tester.TesterFactory;
-import org.cloudcoder.builder2.util.ArrayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,17 +77,9 @@ public class Builder2Server implements Runnable {
      * The main server loop.
      */
     public void run() {
-    	try {
-	    	builder2.prepare();
-	    	
-	        while (!shutdownRequested) {
-	            runOnce();
-	        }
-    	} catch (IOException e) {
-    		logger.error("Preparing Builder2 object failed", e);
-    	} finally {
-    		builder2.cleanup();
-    	}
+        while (!shutdownRequested) {
+            runOnce();
+        }
     }
 
     /**

@@ -28,22 +28,49 @@ import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
 import org.cloudcoder.daemon.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Compile the EasySandbox shared library.
+ * This is a singleton object that can be used by many threads.
+ * Some code in the overall process should guarantee that
+ * the {@link #cleanup()} method is called on the singleton instance
+ * before the process exits.
  * 
  * @author David Hovemeyer
  */
 public class EasySandboxSharedLibrary {
+	private Logger logger = LoggerFactory.getLogger(EasySandboxSharedLibrary.class);
+	
+	private static EasySandboxSharedLibrary instance = new EasySandboxSharedLibrary();
+	
+	/**
+	 * Get the singleton instance.
+	 * 
+	 * @return the singleton instance
+	 */
+	public static EasySandboxSharedLibrary getInstance() {
+		return instance;
+	}
+	
 	private File tempDir;
 	private String sharedLibraryPath;
+	
+	private EasySandboxSharedLibrary() {
+		try {
+			build();
+		} catch (IOException e) {
+			logger.warn("Could not build EasySandbox shared library", e);
+		}
+	}
 	
 	/**
 	 * Compile the EasySandbox shared library.
 	 * 
 	 * @throws IOException if an error occurs
 	 */
-	public void build() throws IOException {
+	private void build() throws IOException {
 		// Get source code for the EasySandbox source files
 		String source1 = sourceResourceToString("EasySandbox.c");
 		String source2 = sourceResourceToString("malloc.c");
@@ -59,6 +86,9 @@ public class EasySandboxSharedLibrary {
 		compiler.addEndFlag("-ldl");
 		
 		if (!compiler.compile()) {
+			for (String err : compiler.getCompilerOutput()) {
+				System.err.println(err);
+			}
 			throw new IOException("Error compiling EasySandbox shared library");
 		}
 		
@@ -68,7 +98,7 @@ public class EasySandboxSharedLibrary {
 	/**
 	 * Get the path of the shared library.
 	 * 
-	 * @return the path of the shared library
+	 * @return the path of the shared library, or null if the shared library is not available
 	 */
 	public String getSharedLibraryPath() {
 		return sharedLibraryPath;
