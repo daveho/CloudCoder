@@ -56,6 +56,7 @@ public class EasySandboxSharedLibrary {
 		compiler.addModule("malloc.c", source2);
 		compiler.addFlag("-fPIC");
 		compiler.addFlag("-shared");
+		compiler.addEndFlag("-ldl");
 		
 		if (!compiler.compile()) {
 			throw new IOException("Error compiling EasySandbox shared library");

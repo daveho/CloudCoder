@@ -34,7 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Compile a C/C++ program.
+ * Compile a C/C++ program consisting of one or more source files
+ * into an executable or shared library.
  * FIXME: currently is hard-coded to use gcc.  Would be nice to support other compilers.
  * 
  * @author David Hovemeyer
@@ -58,6 +59,7 @@ public class Compiler {
 	private String progName;
 	private File workDir;
 	private List<String> flags;
+	private List<String> endFlags;
 	private List<Module> modules;
 	private String statusMessage;
 	private List<String> compilerOutput;
@@ -87,6 +89,7 @@ public class Compiler {
 		this.progName = progName;
 		this.workDir = workDir;
 		this.flags = new ArrayList<String>();
+		this.endFlags = new ArrayList<String>();
 		this.modules = new ArrayList<Module>();
 		this.statusMessage = "";
 		this.compilerOutput = new LinkedList<String>();
@@ -94,11 +97,24 @@ public class Compiler {
 	
 	/**
 	 * Add a compiler flag.
+	 * The added flag will appear after the compile, but before the
+	 * option that specifies the name of the executable.
 	 * 
 	 * @param flag the flag to add
 	 */
 	public void addFlag(String flag) {
 		flags.add(flag);
+	}
+	
+	/**
+	 * Add a compiler flag to be added to the end of the compiler command.
+	 * This is useful for specifying linker options such as libraries
+	 * (e.g., "-ldl").
+	 * 
+	 * @param endFlag the flag to add at the end
+	 */
+	public void addEndFlag(String endFlag) {
+		endFlags.add(endFlag);
 	}
 	
 	/**
@@ -179,6 +195,7 @@ public class Compiler {
 		for (Module m : modules) {
 			cmd.add(m.sourceFileName);
 		}
+		cmd.addAll(endFlags);
 		return cmd.toArray(new String[cmd.size()]);
 	}
 
