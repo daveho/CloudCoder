@@ -42,6 +42,7 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 import org.cloudcoder.builder2.server.Builder2;
+import org.cloudcoder.builder2.server.Builder2Server;
 import org.cloudcoder.daemon.IOUtil;
 
 /**
@@ -64,6 +65,7 @@ public class BatchMain {
 	private List<String> sourceFileList;
 	private LinkedBlockingQueue<String> sourceQueue;
 	private LinkedBlockingQueue<Result> resultQueue;
+	private Builder2 builder2;
 	
 	private class Worker implements Runnable {
 		volatile boolean done = false;
@@ -84,7 +86,7 @@ public class BatchMain {
 						
 						// Test the submission
 						SubmissionResult result =
-								Builder2.testSubmission(exercise.getProblem(), exercise.getTestCaseData(), programText);
+								builder2.testSubmission(exercise.getProblem(), exercise.getTestCaseData(), programText);
 						
 						resultQueue.put(new Result(sourceFile, result));
 					} catch (IOException e) {
@@ -154,6 +156,16 @@ public class BatchMain {
 	}
 	
 	public void execute() throws IOException, InterruptedException {
+		builder2 = new Builder2();
+		try {
+			builder2.prepare();
+			doExecute();
+		} finally {
+			builder2.cleanup();
+		}
+	}
+
+	private void doExecute() throws InterruptedException {
 		Map<String, String> resultMap = new HashMap<String, String>();
 		
 		TestCase[] testCaseList = exercise.getTestCaseList();

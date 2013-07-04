@@ -40,9 +40,9 @@ public class Builder2Daemon implements IDaemon {
 	private List<BuilderAndThread> builderAndThreadList;
 
 	private static class BuilderAndThread {
-		final Builder2 builder;
+		final Builder2Server builder;
 		final Thread thread;
-		public BuilderAndThread(Builder2 builder, Thread thread) {
+		public BuilderAndThread(Builder2Server builder, Thread thread) {
 			this.builder = builder;
 			this.thread = thread;
 		}
@@ -122,7 +122,7 @@ public class Builder2Daemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder2 builder_ = new Builder2(webappSocketFactory);
+			Builder2Server builder_ = new Builder2Server(webappSocketFactory);
 			Thread thread_ = new Thread(builder_);
 	
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
