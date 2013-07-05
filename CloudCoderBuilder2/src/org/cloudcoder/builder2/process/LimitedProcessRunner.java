@@ -19,6 +19,7 @@
 package org.cloudcoder.builder2.process;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +41,9 @@ import org.slf4j.LoggerFactory;
 public class LimitedProcessRunner extends ProcessRunner {
 	private static Logger logger = LoggerFactory.getLogger(LimitedProcessRunner.class);
 	
+	private static final byte[] EASYSANDBOX_OUTPUT_PREFIX =
+			"<<entering SECCOMP mode>>\n".getBytes(Charset.forName("UTF-8"));
+	
 	private static final Map<CommandLimit, Integer> DEFAULT_LIMIT_MAP = new HashMap<CommandLimit, Integer>();
 	static {
 		// Set default limits: these serve as reasonable defaults
@@ -57,6 +61,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 	}
 	
 	private Map<CommandLimit, Integer> limitMap;
+	private boolean easySandboxEnabled;
 
 	/**
 	 * Constructor.
@@ -64,6 +69,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 	public LimitedProcessRunner() {
 		limitMap = new HashMap<CommandLimit, Integer>();
 		limitMap.putAll(DEFAULT_LIMIT_MAP);
+		easySandboxEnabled = false;
 	}
 
 	/**
@@ -126,6 +132,8 @@ public class LimitedProcessRunner extends ProcessRunner {
 				Integer heapSize = limitMap.get(CommandLimit.SANDBOX_HEAP_SIZE_BYTES);
 				logger.info("Setting CC_EASYSANDBOX_HEAPSIZE to {}", heapSize);
 				allEnvVars.add("CC_EASYSANDBOX_HEAPSIZE=" + heapSize);
+				
+				easySandboxEnabled = true;
 			}
 		}
 		
@@ -134,6 +142,12 @@ public class LimitedProcessRunner extends ProcessRunner {
 
 	@Override
 	protected IOutputCollector createOutputCollector(InputStream inputStream) {
+		// If EasySandbox is enabled, then we will need to strip the
+		// "<<entering SECCOMP mode>>" string from stdout and stderr.
+		if (easySandboxEnabled) {
+			inputStream = new StripPrefixInputStream(inputStream, EASYSANDBOX_OUTPUT_PREFIX);
+		}
+		
 		LimitedOutputCollector collector = new LimitedOutputCollector(inputStream);
 		
 		collector.setMaxBytesAllowed(limitMap.get(CommandLimit.OUTPUT_MAX_BYTES));
