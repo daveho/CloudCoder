@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -84,16 +85,6 @@ public class Builder2Daemon implements IDaemon {
 	 */
 	@Override
 	public void start(String instanceName) {
-		try {
-			doStart();
-		} finally {
-			// Ensure that if the EasySandbox shared library was built,
-			// that its directory is deleted before the daemon exits.
-			EasySandboxSharedLibrary.getInstance().cleanup();
-		}
-	}
-
-	private void doStart() {
 		// If embedded configuration properties exist, read them
 		Properties config;
 		try {
@@ -129,13 +120,13 @@ public class Builder2Daemon implements IDaemon {
 		logger.info("appHost={}", options.getAppHost());
 		logger.info("appPort={}", options.getAppPort());
 		logger.info("numThreads={}", options.getNumThreads());
-
+		
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
 			Builder2Server builder_ = new Builder2Server(webappSocketFactory);
 			Thread thread_ = new Thread(builder_);
-	
+		
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);
 			builderAndThreadList.add(builderAndThread);
 			
@@ -167,6 +158,10 @@ public class Builder2Daemon implements IDaemon {
 				e.printStackTrace();
 			}
 		}
+
+		// Ensure that if the EasySandbox shared library was built,
+		// that its directory is deleted before the daemon exits.
+		EasySandboxSharedLibrary.getInstance().cleanup();
 	}
 
 }
