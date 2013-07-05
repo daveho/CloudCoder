@@ -57,7 +57,7 @@ public class SingeThreadedBuildTester
         logger.info("appPort={}", options.getAppPort());
         logger.info("numThreads={}", options.getNumThreads());
 
-        Builder2Server builder=new Builder2Server(webappSocketFactory);
+        Builder2Server builder=new Builder2Server(webappSocketFactory, config);
         
         Scanner scan=new Scanner(System.in);
         while(true) {

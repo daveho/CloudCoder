@@ -27,6 +27,7 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -47,6 +48,7 @@ public class Builder2Server implements Runnable {
 
     private static final Logger logger=LoggerFactory.getLogger(Builder2Server.class);
 
+    private Properties config;
     private volatile boolean shutdownRequested;
     private volatile boolean working;
     private NoConnectTimer noConnectTimer;
@@ -63,14 +65,15 @@ public class Builder2Server implements Runnable {
      * 
      * @param webappSocketFactory the {@link WebappSocketFactory} that will create socket
      *                            connections to the webapp
+     * @param config              configuration properties: i.e., properties from cloudcoder.properties file
      */
-    public Builder2Server(WebappSocketFactory webappSocketFactory) {
+    public Builder2Server(WebappSocketFactory webappSocketFactory, Properties config) {
         this.shutdownRequested = false;
         this.noConnectTimer = new NoConnectTimer();
         this.webappSocketFactory = webappSocketFactory;
         this.problemIdToProblemMap = new HashMap<Integer, Problem>();
         this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
-        this.builder2 = new Builder2();
+        this.builder2 = new Builder2(config);
     }
 
     /**

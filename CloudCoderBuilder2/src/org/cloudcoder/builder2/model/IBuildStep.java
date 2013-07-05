@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.model;
 
+import java.util.Properties;
+
 /**
  * Interface describing an object which implements one step of
  * building an testing a {@link BuilderSubmission}.
@@ -31,6 +33,7 @@ public interface IBuildStep {
 	 * of the submission has completed (either successfully or with an error.)
 	 * 
 	 * @param submission the {@link BuilderSubmission}
+     * @param config     configuration properties: i.e., properties from cloudcoder.properties file
 	 */
-	public void execute(BuilderSubmission submission);
+	public void execute(BuilderSubmission submission, Properties config);
 }

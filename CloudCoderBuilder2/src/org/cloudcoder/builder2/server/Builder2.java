@@ -20,6 +20,7 @@ package org.cloudcoder.builder2.server;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -48,10 +49,15 @@ import org.slf4j.LoggerFactory;
 public class Builder2 {
 	private static final Logger logger=LoggerFactory.getLogger(Builder2.class);
 	
+	private Properties config;
+	
 	/**
 	 * Constructor.
+	 * 
+     * @param config configuration properties: i.e., properties from cloudcoder.properties file
 	 */
-	public Builder2() {
+	public Builder2(Properties config) {
+		this.config = config;
 	}
 
 	/**
@@ -81,7 +87,7 @@ public class Builder2 {
 
 		  try {
 			 // Build and test
-			 tester.execute(submission);
+			 tester.execute(submission, config);
 
 			 // Get the SubmissionResult
 			 result = submission.getArtifact(SubmissionResult.class);

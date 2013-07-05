@@ -94,6 +94,10 @@ public class Builder2Daemon implements IDaemon {
 		} catch (IllegalStateException e) {
 			logger.warn("Could not load cloudcoder.properties, using default config properties");
 			config = new Properties();
+			
+			// Enable EasySandbox by default
+			config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
+			config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
 		}
 		
 		Options options = new Options(config);
@@ -124,7 +128,7 @@ public class Builder2Daemon implements IDaemon {
 		// Start Builder threads
 		this.builderAndThreadList = new ArrayList<BuilderAndThread>();
 		for (int i = 0; i < options.getNumThreads(); i++) {
-			Builder2Server builder_ = new Builder2Server(webappSocketFactory);
+			Builder2Server builder_ = new Builder2Server(webappSocketFactory, config);
 			Thread thread_ = new Thread(builder_);
 		
 			BuilderAndThread builderAndThread = new BuilderAndThread(builder_, thread_);

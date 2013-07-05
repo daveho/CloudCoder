@@ -118,10 +118,11 @@ public class LimitedProcessRunner extends ProcessRunner {
 		allEnvVars.add(limits);
 		
 		// Also, if the ENABLE_SANDBOX limit is set to a non-zero value,
-		// then use the EasySandbox library for sandboxing.
-		// FIXME: make this conditional on configuration properties
+		// then use the EasySandbox library for sandboxing
+		// (by setting appopriate environment variables to be handled
+		// by runProcess.sh.)
 		Integer enableSandbox = limitMap.get(CommandLimit.ENABLE_SANDBOX);
-		if (enableSandbox != null && enableSandbox != 0) {
+		if (enableSandbox.intValue() != 0) {
 			String easySandboxShlib = EasySandboxSharedLibrary.getInstance().getSharedLibraryPath();
 			if (easySandboxShlib == null) {
 				logger.error("Sandboxing requested, but EasySandbox.so is not available");

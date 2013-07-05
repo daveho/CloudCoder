@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.javaprogram;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.BytecodeExecutable;
@@ -36,7 +37,7 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 public class JavaProgramToCommandForEachCommandInputBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		BytecodeExecutable bytecodeExe = submission.getArtifact(BytecodeExecutable.class);
 		if (bytecodeExe == null) {
 			throw new InternalBuilderException(this.getClass(), "No BytecodeExecutable");

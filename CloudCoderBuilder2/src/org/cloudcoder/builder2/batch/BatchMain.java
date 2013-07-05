@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.io.IOUtils;
@@ -156,7 +157,14 @@ public class BatchMain {
 	}
 	
 	public void execute() throws IOException, InterruptedException {
-		builder2 = new Builder2();
+		Properties config = new Properties();
+		
+		// Configuration properties
+		// TODO: allow these to be specified via a properties file
+		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
+		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
+		
+		builder2 = new Builder2(config);
 		
 		Map<String, String> resultMap = new HashMap<String, String>();
 		

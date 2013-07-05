@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.cfunction;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -39,7 +41,7 @@ import org.cloudcoder.builder2.util.TestResultUtil;
 public class CheckCFunctionCommandResultsBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		CommandResult[] commandResultList = submission.getArtifact(CommandResult[].class);
 		if (commandResultList == null) {
 			throw new InternalBuilderException(this.getClass(), "No CommandResult list");

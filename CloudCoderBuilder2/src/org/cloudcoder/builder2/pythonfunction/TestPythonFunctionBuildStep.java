@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -64,7 +65,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 	public static final long TIMEOUT_LIMIT=2000;
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		Tester tester = new Tester();
 		SubmissionResult result = tester.testSubmission(submission);
 		submission.addArtifact(result);
