@@ -56,7 +56,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_LINE_MAX_CHARS, 200);
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_MAX_BYTES, 10000);
 		DEFAULT_LIMIT_MAP.put(CommandLimit.OUTPUT_MAX_LINES, 50);
-		DEFAULT_LIMIT_MAP.put(CommandLimit.ENABLE_SANDBOX, 1);
+		DEFAULT_LIMIT_MAP.put(CommandLimit.ENABLE_SANDBOX, 0);
 		DEFAULT_LIMIT_MAP.put(CommandLimit.SANDBOX_HEAP_SIZE_BYTES, 8*1024*1024);
 	}
 	
