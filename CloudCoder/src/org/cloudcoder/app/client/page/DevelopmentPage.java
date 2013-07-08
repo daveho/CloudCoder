@@ -48,7 +48,6 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
-import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
@@ -469,7 +468,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		}
 
 		private void createEditor(Language language) {
-			aceEditor = new AceEditor(true);
+			aceEditor = new AceEditor();
 			aceEditor.setSize("100%", "100%");
 			centerLayoutPanel.add(aceEditor);
 			aceEditor.startEditor();
