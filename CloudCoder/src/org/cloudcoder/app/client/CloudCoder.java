@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.page.PlaygroundPage;
 import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.QuizPage;
 import org.cloudcoder.app.client.page.StatisticsPage;
@@ -202,6 +203,9 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		case USER_PROBLEM_SUBMISSIONS:
 			page = new UserProblemSubmissionsPage();
 			break;
+		case PLAYGROUND_PAGE:
+		    page = new PlaygroundPage();
+		    break;
 		default:
 			// This shouldn't happen (can't find page for Activity),
 			// but if it does, go to the courses and problems page.
