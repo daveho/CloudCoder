@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.rubymethod;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -37,7 +39,7 @@ import org.cloudcoder.builder2.util.StringUtil;
 public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		Problem problem = submission.getArtifact(Problem.class);
 		if (problem == null) {
 			throw new InternalBuilderException(this.getClass(), "No Problem");

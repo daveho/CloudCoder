@@ -20,6 +20,7 @@ package org.cloudcoder.builder2.javamethod;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -40,7 +41,7 @@ import org.cloudcoder.builder2.util.ArrayUtil;
 public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
 		if (testCaseList == null) {
 			throw new InternalBuilderException(this.getClass(), "No TestCase list");

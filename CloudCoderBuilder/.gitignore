@@ -1,9 +1,0 @@
-/log
-/builder
-/*.fifo
-/*.pid
-/bin
-/log.txt
-/testfiles/workdir
-/lib/cloudcoderBuilder.jar
-cloudcoderBuilder.jar

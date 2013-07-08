@@ -52,7 +52,7 @@ public class EditStringFieldWithAceEditor<ModelObjectType>
 			
 			panel.add(getErrorLabel());
 
-			editor = new AceEditor(true);
+			editor = new AceEditor();
 			editor.setSize("600px", "300px");
 			panel.add(editor);
 			editorStarted = false;

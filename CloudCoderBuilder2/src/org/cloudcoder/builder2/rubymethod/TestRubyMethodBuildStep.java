@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.rubymethod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -69,7 +70,7 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	}
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");

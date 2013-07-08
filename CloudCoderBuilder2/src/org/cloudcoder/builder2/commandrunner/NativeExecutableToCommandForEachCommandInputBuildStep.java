@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.commandrunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -48,7 +49,7 @@ public class NativeExecutableToCommandForEachCommandInputBuildStep implements IB
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
 		if (commandInputList == null) {
 			throw new InternalBuilderException(this.getClass(), "No CommandInput list");

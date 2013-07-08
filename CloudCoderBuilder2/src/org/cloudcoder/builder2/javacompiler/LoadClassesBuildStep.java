@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.javacompiler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -39,7 +40,7 @@ import org.cloudcoder.builder2.util.SubmissionResultUtil;
 public class LoadClassesBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		Bytecode[] bytecodeList = submission.getArtifact(Bytecode[].class);
 		if (bytecodeList == null) {
 			throw new InternalBuilderException(this.getClass(), "No Bytecode list");

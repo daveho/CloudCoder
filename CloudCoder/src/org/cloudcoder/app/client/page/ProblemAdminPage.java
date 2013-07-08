@@ -17,8 +17,8 @@
 
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -292,6 +292,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 
 							if (value.isSuccess()) {
 								getSession().add(StatusMessage.goodNews(value.getMessage()));
+								
+								// Reload the problems so that the shared flag is updated
+								// for the problem the user just shared
+								reloadProblems(getCurrentCourse());
 							} else {
 								getSession().add(StatusMessage.error(value.getMessage()));
 							}

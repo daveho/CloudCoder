@@ -84,6 +84,12 @@ askprop("How many threads should the Builder use? (suggestion: 1 per core)",
 askprop("What port will the CloudCoder webapp use to listen for connections from\n" .
 	"Builders?",
 	"cloudcoder.submitsvc.oop.port", "47374");
+askprop("Should the builder use EasySandbox for C/C++ submissions? (recommended)",
+	"cloudcoder.submitsvc.oop.easysandbox.enable", "true");
+if ((lc $properties{"cloudcoder.submitsvc.oop.easysandbox.enable"}) eq 'true') {
+	askprop("What should the default EasySandbox heap size be in bytes?\n",
+		"cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
+}
 
 section("TLS/SSL (secure communication between webapp and builder(s)");
 

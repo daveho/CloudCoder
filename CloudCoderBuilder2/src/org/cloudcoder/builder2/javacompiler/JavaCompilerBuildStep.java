@@ -20,6 +20,7 @@ package org.cloudcoder.builder2.javacompiler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -44,7 +45,7 @@ import org.cloudcoder.builder2.util.SubmissionResultUtil;
 public class JavaCompilerBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");

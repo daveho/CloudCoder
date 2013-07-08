@@ -17,8 +17,8 @@
 
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.view.PageNavPanel;

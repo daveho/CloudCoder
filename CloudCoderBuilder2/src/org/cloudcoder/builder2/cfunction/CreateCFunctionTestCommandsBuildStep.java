@@ -1,5 +1,7 @@
 package org.cloudcoder.builder2.cfunction;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -21,7 +23,7 @@ import org.cloudcoder.builder2.model.NativeExecutable;
 public class CreateCFunctionTestCommandsBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
 		if (testCaseList == null) {
 			throw new InternalBuilderException(this.getClass(), "No TestCase list");

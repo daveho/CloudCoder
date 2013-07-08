@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.cfunction;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -30,7 +32,7 @@ import org.cloudcoder.builder2.model.IBuildStep;
 public class CreateSecretSuccessAndFailureCodesBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		submission.addArtifact(SecretSuccessAndFailureCodes.create());
 	}
 

@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandInput;
@@ -35,7 +37,7 @@ public class CreateCommandInputsForEachTestCaseBuildStep implements IBuildStep {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
 		if (testCaseList == null) {
 			throw new InternalBuilderException(this.getClass(), "No TestCase list");

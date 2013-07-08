@@ -77,7 +77,7 @@ public class Builder2DaemonController extends DaemonController {
 		};
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		if (args.length >= 1 && args[0].equals("configure")) {
 			// Allow the builder jarfile to be updated
 			// (e.g., to add/replace cloudcoder.properties or keystore.jks)
