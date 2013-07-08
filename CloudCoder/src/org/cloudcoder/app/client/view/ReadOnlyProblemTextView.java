@@ -43,7 +43,7 @@ public class ReadOnlyProblemTextView extends ResizeComposite implements SessionO
 	private AceEditor editor;
 
 	public ReadOnlyProblemTextView() {
-		this.editor = new AceEditor(true);
+		this.editor = new AceEditor();
 		initWidget(editor);
 	}
 	
