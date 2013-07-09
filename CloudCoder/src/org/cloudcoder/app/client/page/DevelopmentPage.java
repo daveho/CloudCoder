@@ -195,8 +195,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
-			// the testResultListView still needs to be initialize in the activate() method
-			this.testResultListView=new TestResultListView(getSession().get(Problem.class));
+			this.testResultListView=new TestResultListView();
 			addResultsTab(this.testResultListView, "Test results");
 			
 			this.compilerDiagnosticListView = new CompilerDiagnosticListView();
