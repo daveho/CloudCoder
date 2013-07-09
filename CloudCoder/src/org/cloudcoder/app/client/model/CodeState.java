@@ -26,10 +26,10 @@ package org.cloudcoder.app.client.model;
  */
 public enum CodeState {
 	/** The {@link Problem} has not been set yet. */
-	NO_PROBLEM(false),
+	NO_PROBLEM(false, true),
 	
 	/** The {@link Problem} has been set, but there is no program text yet. */
-	NO_PROGRAM_TEXT(false),
+	NO_PROGRAM_TEXT(false, true),
 	
 	/** Code is editable, and there are no unsaved changes. */
 	EDITABLE_CLEAN(true),
@@ -38,19 +38,25 @@ public enum CodeState {
 	EDITABLE_DIRTY(true),
 	
 	/** Saving of unsaved changes has been initiated, but is not complete. */
-	SAVE_CHANGES_PENDING(false),
+	SAVE_CHANGES_PENDING(false, true),
 	
 	/** A submission is in progress, but is not complete. */
-	SUBMIT_PENDING(false),
+	SUBMIT_PENDING(false, true),
 	
 	/** Edits are no longer allowed: for example, because a quiz has ended. */
-	PREVENT_EDITS(false),
+	PREVENT_EDITS(false, false),
 	;
 	
 	private final boolean editingAllowed;
+	private final boolean pendingOperation;
 	
-	private CodeState(boolean editingAllowed) {
+	private CodeState(boolean editingAllowed, boolean pendingOperation) {
 		this.editingAllowed = editingAllowed;
+		this.pendingOperation = pendingOperation;
+	}
+
+	private CodeState(boolean editingAllowed) {
+		this(editingAllowed, false);
 	}
 
 	/**
@@ -58,5 +64,12 @@ public enum CodeState {
 	 */
 	public boolean isEditingAllowed() {
 		return editingAllowed;
+	}
+	
+	/**
+	 * @return true if this state is one where an asynchronous operation is pending
+	 */
+	public boolean isPendingOperation() {
+		return pendingOperation;
 	}
 }

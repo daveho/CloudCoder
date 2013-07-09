@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.CodeStateManager;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
+import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -40,7 +41,9 @@ import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Language;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.User;
@@ -54,7 +57,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -186,6 +188,26 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			
 			// Create AceEditor
 			createEditor(problem.getProblemType().getLanguage());
+			
+			// Add logout and back handlers.
+			// We use the CodeStateManager to ensure that there are no
+			// pending operations before we attempt to leave the page.
+			pageNavPanel.setLogoutHandler(new Runnable() {
+				@Override
+				public void run() {
+					codeStateManager.runWhen(
+							CodeStateManager.NO_PENDING_OPERATION,
+							new LogoutHandler(getSession()));
+				}
+			});
+			pageNavPanel.setBackHandler(new Runnable() {
+				@Override
+				public void run() {
+					codeStateManager.runWhen(
+							CodeStateManager.NO_PENDING_OPERATION,
+							new PageBackHandler(getSession()));
+				}
+			});
 			
 			// Set problem in server session, load program text, etc.
 			beginProblem();
@@ -330,12 +352,21 @@ public class DevelopmentPage2 extends CloudCoderPage {
 
 	@Override
 	public void activate() {
+		addSessionObject(new NamedTestResult[0]);
+		addSessionObject(new CompilerDiagnostic[0]);
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
+		
+		// If the user was working on a quiz, remove the problem
+		// from the session.
+		if (getSession().get(QuizInProgress.class) != null) {
+			getSession().remove(QuizInProgress.class);
+			getSession().remove(Problem.class);
+		}
 	}
 
 	@Override

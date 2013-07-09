@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.IFunction;
 import org.cloudcoder.app.shared.model.Problem;
 
 /**
@@ -33,17 +34,24 @@ import org.cloudcoder.app.shared.model.Problem;
  * @author David Hovemeyer
  */
 public class CodeStateManager {
+	/**
+	 * Code state predicate matching states where there is no
+	 * asynchronous operation pending.
+	 */
+	public static IFunction<CodeState, Boolean> NO_PENDING_OPERATION = new IFunction<CodeState, Boolean>() {
+		@Override
+		public Boolean invoke(CodeState arg) {
+			return !arg.isPendingOperation();
+		}
+	};
+	
 	private static class StateChangeCallback {
-		CodeState state;
+		IFunction<CodeState, Boolean> predicate;
 		Runnable f;
 		
-		StateChangeCallback(CodeState state, Runnable f) {
-			this.state = state;
+		StateChangeCallback(IFunction<CodeState, Boolean> predicate, Runnable f) {
+			this.predicate = predicate;
 			this.f = f;
-		}
-		
-		boolean match(CodeState state) {
-			return this.state == state;
 		}
 	}
 	
@@ -72,7 +80,7 @@ public class CodeStateManager {
 		Iterator<StateChangeCallback> i = callbackList.iterator();
 		while (i.hasNext()) {
 			StateChangeCallback callback = i.next();
-			if (callback.match(nextState)) {
+			if (callback.predicate.invoke(state)) {
 				callback.f.run();
 				i.remove();
 			}
@@ -86,12 +94,28 @@ public class CodeStateManager {
 	 * @param state the {@link CodeState} at which the callback should run
 	 * @param f     the callback function
 	 */
-	public void addStateChangeCallback(CodeState state, Runnable f) {
-		if (this.state == state) {
-			// In this state now, so callback can run right away
+	public void runInState(final CodeState state, Runnable f) {
+		runWhen(new IFunction<CodeState, Boolean>() {
+			@Override
+			public Boolean invoke(CodeState arg) {
+				return state == arg;
+			}
+		}, f);
+	}
+
+	/**
+	 * Register a callback to run when an arbitrary predicate function
+	 * returns true for the the current {@link CodeState}.
+	 *  
+	 * @param predicate the predicate function
+	 * @param f         callback to execute
+	 */
+	public void runWhen(IFunction<CodeState, Boolean> predicate, Runnable f) {
+		if (predicate.invoke(state)) {
+			// Current state matches predicate, so run now
 			f.run();
 		} else {
-			callbackList.add(new StateChangeCallback(state, f));
+			callbackList.add(new StateChangeCallback(predicate, f));
 		}
 	}
 	
