@@ -21,8 +21,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 /**
  * Interface implemented by widgets that are placed in
- * results tabs: for example, {@link TestResultListView),
- * {@link CompilerDiagnosticListView), etc.
+ * results tabs: for example, {@link TestResultListView},
+ * {@link CompilerDiagnosticListView}, etc.
  * 
  * @author David Hovemeyer
  */
