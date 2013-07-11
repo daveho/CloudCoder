@@ -178,8 +178,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			page = new CoursesAndProblemsPage2();
 			break;
 		case DEVELOPMENT:
-//		    page = new DevelopmentPage();
-		    page = new DevelopmentPage2();
+		    page = new DevelopmentPage();
+//		    page = new DevelopmentPage2();
 			break;
 		case PROBLEM_ADMIN:
 			page = new ProblemAdminPage();
