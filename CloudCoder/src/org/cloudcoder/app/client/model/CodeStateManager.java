@@ -228,4 +228,11 @@ public class CodeStateManager {
 	public boolean startedEditing() {
 		return state.ordinal() >= CodeState.EDITABLE_CLEAN.ordinal();
 	}
+
+	/**
+	 * @return true if the code is in a state where a submission is possible
+	 */
+	public boolean canSubmit() {
+		return startedEditing() && state != CodeState.PREVENT_EDITS;
+	}
 }

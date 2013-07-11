@@ -49,7 +49,11 @@ public enum CodeState {
 	 */
 	SUBMIT_PENDING(false, true),
 	
-	/** Edits are no longer allowed: for example, because a quiz has ended. */
+	/**
+	 * Edits are no longer allowed: for example, because a quiz has ended,
+	 * a catastrophic error has occurred, etc.  This is a terminal
+	 * state.
+	 */
 	PREVENT_EDITS(false, false),
 	;
 	
