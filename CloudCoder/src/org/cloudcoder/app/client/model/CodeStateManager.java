@@ -29,19 +29,20 @@ import org.cloudcoder.app.shared.model.Problem;
  * Object to manage the state of the code that the user is working
  * on.  Maintains the {@link ChangeList}, and manages the
  * current {@link CodeState}.  Takes care of running callbacks which should
- * be fired when a particular {@link CodeState} is reached.
+ * be fired when a {@link CodeState} satisfying a specified predicate
+ * is reached.
  * 
  * @author David Hovemeyer
  */
 public class CodeStateManager {
 	/**
-	 * Code state predicate matching states where there is no
-	 * asynchronous operation pending.
+	 * Code state predicate matching states where the editor
+	 * is not dirty and there is no pending operation.
 	 */
-	public static IFunction<CodeState, Boolean> NO_PENDING_OPERATION = new IFunction<CodeState, Boolean>() {
+	public static IFunction<CodeState, Boolean> NOT_DIRTY_AND_NO_PENDING_OPERATION = new IFunction<CodeState, Boolean>() {
 		@Override
 		public Boolean invoke(CodeState arg) {
-			return !arg.isPendingOperation();
+			return !(arg == CodeState.EDITABLE_DIRTY || arg.isPendingOperation());
 		}
 	};
 	
@@ -174,7 +175,7 @@ public class CodeStateManager {
 	/**
 	 * Initiate saving of any unsaved {@link Change}s (code edits).
 	 * This method may only be called from the {@link CodeState#EDITABLE_DIRTY}
-	 * state.
+	 * state.  The state will change to {@link CodeState#SAVE_CHANGES_PENDING}.
 	 * 
 	 * @return list of changes that need to be saved
 	 */
@@ -219,5 +220,12 @@ public class CodeStateManager {
 	 */
 	public void preventEdits() {
 		changeState(CodeState.PREVENT_EDITS);
+	}
+
+	/**
+	 * @return true if a state where editing was allowed was reached
+	 */
+	public boolean startedEditing() {
+		return state.ordinal() >= CodeState.EDITABLE_CLEAN.ordinal();
 	}
 }

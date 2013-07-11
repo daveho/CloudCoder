@@ -196,28 +196,43 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			// Create AceEditor
 			createEditor(problem.getProblemType().getLanguage());
 			
-			// Add logout and back handlers.
-			// We use the CodeStateManager to ensure that there are no
-			// pending operations before we attempt to leave the page.
+			// Add logout and back handlers, taking care that all code
+			// is saved and pending operations are complete.
 			pageNavPanel.setLogoutHandler(new Runnable() {
 				@Override
 				public void run() {
-					codeStateManager.runWhen(
-							CodeStateManager.NO_PENDING_OPERATION,
-							new LogoutHandler(getSession()));
+					leavePage(new LogoutHandler(getSession()));
 				}
 			});
 			pageNavPanel.setBackHandler(new Runnable() {
 				@Override
 				public void run() {
-					codeStateManager.runWhen(
-							CodeStateManager.NO_PENDING_OPERATION,
-							new PageBackHandler(getSession()));
+					leavePage(new PageBackHandler(getSession()));
 				}
 			});
 			
 			// Set problem in server session, load program text, etc.
 			beginProblem();
+		}
+
+		/**
+		 * Execute a runnable that causes navigation away from this page.
+		 * Ensures that changes are saved, pending operations are completed,
+		 * etc.
+		 * 
+		 * @param action the action to run to navigate away from the page
+		 */
+		private void leavePage(Runnable action) {
+			if (!codeStateManager.startedEditing()) {
+				// We never reached a state where the user was actually editing
+				// the code, so we can navigate away now.
+				action.run();
+			} else {
+				// Ensure all code has been saved before navigating away.
+				aceEditor.setReadOnly(true);
+				flushPendingChanges();
+				codeStateManager.runWhen(CodeStateManager.NOT_DIRTY_AND_NO_PENDING_OPERATION, action);
+			}
 		}
 		
 		public void deactivate() {
