@@ -37,10 +37,16 @@ public enum CodeState {
 	/** Code is editable, but there are unsaved changes. */
 	EDITABLE_DIRTY(true),
 	
-	/** Saving of unsaved changes has been initiated, but is not complete. */
-	SAVE_CHANGES_PENDING(false, true),
+	/**
+	 * Saving of unsaved changes has been initiated, but is not complete.
+	 * Note that editing <em>is</em> allowed in this state.
+	 */
+	SAVE_CHANGES_PENDING(true, true),
 	
-	/** A submission is in progress, but is not complete. */
+	/**
+	 * A submission is in progress, but is not complete.
+	 * Edits are not allowed in this state.
+	 */
 	SUBMIT_PENDING(false, true),
 	
 	/** Edits are no longer allowed: for example, because a quiz has ended. */

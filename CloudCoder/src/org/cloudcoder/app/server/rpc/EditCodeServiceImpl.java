@@ -175,6 +175,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	    		return new ProblemText(textDocument.getText(), false);
     		} catch (RuntimeException e) {
     			// FIXME: should do something smarter than this 
+    			logger.warn("Exception applying deltas to program text", e);
     			return new ProblemText(fullText != null ? fullText.getText() : "", false);
     		}
     	}

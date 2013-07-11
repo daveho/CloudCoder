@@ -158,30 +158,31 @@ public class CodeStateManager {
 
 	/**
 	 * Add a {@link Change} representing a code edit.
-	 * This is only allowed if the current state allows editing.
 	 * 
 	 * @param change the {@link Change} to add
 	 */
 	public void addChange(Change change) {
 		if (!state.isEditingAllowed()) {
-			throw new IllegalStateException("Editing is not allowed in the " + state + " state");
+			throw new IllegalStateException("Edits are not allowed in " + state + " state");
 		}
 		changeList.addChange(change);
-		state = CodeState.EDITABLE_DIRTY;
+		if (state == CodeState.EDITABLE_CLEAN) {
+			changeState(CodeState.EDITABLE_DIRTY);
+		}
 	}
 	
 	/**
 	 * Initiate saving of any unsaved {@link Change}s (code edits).
 	 * This method may only be called from the {@link CodeState#EDITABLE_DIRTY}
-	 * state.  The callback object should call the
+	 * state.
 	 * 
-	 * @param callback callback object to receive the unsaved changes
+	 * @return list of changes that need to be saved
 	 */
-	public void saveChanges(ISaveChanges callback) {
+	public Change[] saveChanges() {
 		requireState(CodeState.EDITABLE_DIRTY);
 		changeState(CodeState.SAVE_CHANGES_PENDING);
 		Change[] unsaved = changeList.beginTransmit();
-		callback.saveChanges(unsaved);
+		return unsaved;
 	}
 	
 	/**
@@ -191,11 +192,23 @@ public class CodeStateManager {
 	 * It is expected that some amount of time will elapse between
 	 * when saving changes is initiated and when this method is called. 
 	 * 
-	 * @param successful true if changes were saved successfully, false otherwise
+	 * @param success true if changes were saved successfully, false otherwise
 	 */
-	public void finishSavingChanges(boolean successful) {
+	public void finishSavingChanges(boolean success) {
 		requireState(CodeState.SAVE_CHANGES_PENDING);
-		changeState(successful ? CodeState.EDITABLE_CLEAN : CodeState.EDITABLE_DIRTY);
+		changeList.endTransmit(success);
+		
+		if (!success) {
+			// Changes weren't sent successfully, so editor is definitely still
+			// dirty at this point
+			changeState(CodeState.EDITABLE_DIRTY);
+		} else {
+			// Changes were sent successfully.  However,
+			// if other changes have accumulated in the meantime,
+			// then the editor might still be dirty.
+			changeState(changeList.getState() == ChangeList.State.CLEAN
+					? CodeState.EDITABLE_CLEAN : CodeState.EDITABLE_DIRTY);
+		}
 	}
 
 	/**

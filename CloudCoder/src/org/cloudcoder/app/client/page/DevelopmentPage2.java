@@ -21,6 +21,7 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
+import org.cloudcoder.app.client.model.CodeState;
 import org.cloudcoder.app.client.model.CodeStateManager;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
@@ -46,6 +47,7 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
@@ -55,6 +57,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -78,6 +81,9 @@ public class DevelopmentPage2 extends CloudCoderPage {
 	public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
 	public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
 	
+	// Flush pending changes (edits) every 5 seconds.
+	private static int FLUSH_PENDING_CHANGES_INTERVAL_MS = 5000;
+	
 	private class UI extends Composite implements SessionObserver {
 		private LayoutPanel northLayoutPanel;
 		private ProblemDescriptionView problemDescriptionView;
@@ -96,6 +102,7 @@ public class DevelopmentPage2 extends CloudCoderPage {
 		
 		private CodeStateManager codeStateManager;
 		private AceEditor aceEditor;
+		private Timer flushPendingChangesTimer;
 
 		public UI() {
 			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
@@ -212,6 +219,12 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			// Set problem in server session, load program text, etc.
 			beginProblem();
 		}
+		
+		public void deactivate() {
+			if (flushPendingChangesTimer != null) {
+				flushPendingChangesTimer.cancel();
+			}
+		}
 
 		private void createEditor(Language language) {
 			aceEditor = new AceEditor();
@@ -312,6 +325,7 @@ public class DevelopmentPage2 extends CloudCoderPage {
 					// If program text is new, schedule the insertion of the skeleton to be
 					// sent as the first Change
 					if (result.isNew()) {
+						GWT.log("Scheduling initial change for new program text");
 						Change initialChange = new Change(
 								ChangeType.FULL_TEXT,
 								0, 0, 0, 0,
@@ -338,8 +352,55 @@ public class DevelopmentPage2 extends CloudCoderPage {
 					// Not sure if this is still necessary, but it's not harmful,
 					// and might be beneficial for users running old/buggy browsers.
 					aceEditor.redisplay();
+					
+					// State a timer to periodically flush pending changes.
+					flushPendingChangesTimer = new Timer() {
+						@Override
+						public void run() {
+							flushPendingChanges();
+						}
+					};
+					flushPendingChangesTimer.scheduleRepeating(FLUSH_PENDING_CHANGES_INTERVAL_MS);
 				}
 			});
+		}
+		
+		private void flushPendingChanges() {
+			if (codeStateManager.getState() == CodeState.EDITABLE_DIRTY) {
+				GWT.log("Flush changes");
+				Change[] changes = codeStateManager.saveChanges();
+				GWT.log("Sending " + changes.length + " changes");
+				RPC.editCodeService.logChange(changes, System.currentTimeMillis(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									 // Try again
+									flushPendingChanges();
+								}
+							});
+						} else if (caught instanceof QuizEndedException) {
+							doEndQuiz();
+						} else {
+							getSession().add(StatusMessage.error("Could not save code changes", caught));
+							codeStateManager.finishSavingChanges(false);
+						}
+					}
+
+					@Override
+					public void onSuccess(Boolean result) {
+						codeStateManager.finishSavingChanges(true);
+						GWT.log("Changes saved successfully");
+					}
+				});
+			}
+		}
+
+		protected void doEndQuiz() {
+			getSession().add(StatusMessage.information("Quiz has ended"));
+			codeStateManager.preventEdits();
 		}
 	}
 	
@@ -367,6 +428,8 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			getSession().remove(QuizInProgress.class);
 			getSession().remove(Problem.class);
 		}
+		
+		ui.deactivate();
 	}
 
 	@Override
