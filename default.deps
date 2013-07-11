@@ -109,3 +109,5 @@ http://repo1.maven.org/maven2/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar
   CloudCoder/war/WEB-INF/lib/opencsv-2.3.jar
 http://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.3.26/aws-java-sdk-1.3.26.jar
   CloudCoderTools/lib/aws-java-sdk-1.3.26.jar
+https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/SyncProxy-0.4.jar
+  CloudCoderLoadTester/lib/SyncProxy-0.4.jar
