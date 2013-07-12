@@ -18,14 +18,14 @@ public class CaptureEditSequence {
 	private int problemId;
 	private int minEventId;
 	private int maxEventId;
-	private List<Change> changeList;
+	private EditSequence editSequence;
 	
 	/**
 	 * Constructor.
 	 * Setters must be called before the object is used.
 	 */
 	public CaptureEditSequence() {
-		
+		editSequence = new EditSequence();
 	}
 	
 	/**
@@ -64,9 +64,12 @@ public class CaptureEditSequence {
 		this.maxEventId = maxEventId;
 	}
 	
-	public void capture() {
+	/**
+	 * Capture the sequence of edits from the database.
+	 */
+	public void captureFromDB() {
 		IDatabase db = Database.getInstance();
 		List<Change> captured = db.loadChanges(userId, problemId, minEventId, maxEventId);
-		changeList.addAll(captured);
+		editSequence.setChangeList(captured);
 	}
 }
