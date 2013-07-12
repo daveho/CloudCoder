@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -148,7 +149,25 @@ public interface IDatabase {
 	 */
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course, User forUser, Module module);
 	
+	/**
+	 * Store a sequence of {@link Change}s representing a {@link User}'s work on
+	 * a {@link Problem}.
+	 * 
+	 * @param changeList the sequence of changes to store
+	 */
 	public void storeChanges(Change[] changeList);
+	
+	/**
+	 * Load a sequence of {@link Change}s for given user on given problem,
+	 * within a specified range of event ids.
+	 * 
+	 * @param userId     the user id
+	 * @param problemId  the problem id
+	 * @param minEventId the minimum event id (inclusive)
+	 * @param maxEventId the maximum event id (inclusive)
+	 * @return sequence of {@link Change}s matching the specified criteria, sorted by event id
+	 */
+	public List<Change> loadChanges(int userId, int problemId, int minEventId, int maxEventId);
 	
 	/**
 	 * Get List of {@link TestCase}s for {@link Problem} with given id.

@@ -5,7 +5,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoder"/>
 	<classpathentry kind="lib" path="lib/SyncProxy-0.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
-	<classpathentry kind="lib" path="/CloudCoder/war/WEB-INF/lib/gwt-servlet-deps.jar"/>
 	<classpathentry kind="lib" path="/CloudCoder/war/WEB-INF/lib/gwt-servlet.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -67,6 +68,7 @@ import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
+import org.cloudcoder.app.server.persist.txn.LoadChanges;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
@@ -120,6 +122,7 @@ import org.slf4j.LoggerFactory;
  * Implementation of IDatabase using JDBC.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class JDBCDatabase implements IDatabase {
 	static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
@@ -253,6 +256,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public void storeChanges(final Change[] changeList) {
 		databaseRun(new StoreChanges(changeList));
+	}
+	
+	@Override
+	public List<Change> loadChanges(int userId, int problemId, int minEventId, int maxEventId) {
+		return databaseRun(new LoadChanges(userId, problemId, minEventId, maxEventId));
 	}
 	
 	@Override
