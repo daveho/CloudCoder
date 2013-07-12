@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.TestResultUtil;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -81,7 +82,7 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 	private static class InputColumn extends TextColumn<NamedTestResult> {
 	    @Override
 	    public String getValue(NamedTestResult object) {
-	        return object.getTestResult().getInput();
+	    	return TestResultUtil.getInput(object.getTestResult());
 	    }
 	}
 	
@@ -96,20 +97,20 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
                 return TestOutcome.FAILED_FROM_TIMEOUT.toString();
             }
             if (outcome==TestOutcome.FAILED_WITH_EXCEPTION) {
-                String actualOutput=object.getTestResult().getActualOutput();
+            	String actualOutput = TestResultUtil.getActualOutput(object.getTestResult());
                 if (actualOutput!=null && !actualOutput.equals("")) {
                     return actualOutput;
                 }
                 return TestOutcome.FAILED_WITH_EXCEPTION.toString();
             }
-            return object.getTestResult().getActualOutput();
+            return TestResultUtil.getActualOutput(object.getTestResult());
         }
     }
 	
 	private static class ExpectedOutputColumn extends TextColumn<NamedTestResult> {
         @Override
         public String getValue(NamedTestResult object) {
-            return object.getTestResult().getExpectedOutput();
+        	return TestResultUtil.getExpectedOutput(object.getTestResult());
         }
     }
 	

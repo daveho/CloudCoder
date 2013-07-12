@@ -19,9 +19,6 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
-import com.google.gwt.regexp.shared.MatchResult;
-import com.google.gwt.regexp.shared.RegExp;
-
 /**
  * A TestResult represents the outcome of a particular
  * {@link TestCase} on a particular {@link Submission}.
@@ -100,7 +97,9 @@ public class TestResult implements Serializable, IModelObject<TestResult>
 	public static final ModelObjectSchema<TestResult> SCHEMA = SCHEMA_V1;
     
     public TestResult() {
-    	
+    	input = "";
+    	expectedOutput = "";
+    	actualOutput = "";
     }
     
     @Override
@@ -109,6 +108,7 @@ public class TestResult implements Serializable, IModelObject<TestResult>
     }
     
     public TestResult(TestOutcome outcome, String message) {
+    	this();
     	this.id = -1;
     	this.submissionReceiptEventId = -1;
         this.outcome=outcome;
@@ -132,6 +132,7 @@ public class TestResult implements Serializable, IModelObject<TestResult>
         String stdout,
         String stderr)
     {
+    	this();
         this.outcome=outcome;
         this.input=input;
         this.actualOutput=actualOutput;
@@ -140,77 +141,29 @@ public class TestResult implements Serializable, IModelObject<TestResult>
         this.stderr=stderr;
     }
     
-    private static final RegExp pass=RegExp.compile("Test passed for input \\(([^)]*)\\), expected output=(.*)");
-    private static final RegExp fail=RegExp.compile("Test failed for input \\(([^)]*)\\), expected output=(.*), actual output=(.*)");
-    private static final RegExp exception=RegExp.compile("Failed for input \\(([^)]*)\\), expected output=(.*), exception (.*)");
-
-    private static String group(RegExp pattern, int num, String text) {
-        MatchResult m=pattern.exec(text);
-        boolean found=m!=null;
-        if (found) {
-            return m.getGroup(num);
-        }
-        return "";
-    }
-    
     /**
-     * Get the input.  If input is null, will try to parse the input from the
-     * message.
-     * @return The input, or an empty string if the input is missing or cannot
-     *      be determined.
+     * Get the input.
+     * 
+     * @return the input
      */
     public String getInput() {
-        if (input!=null) {
-            return input;
-        }
-        if (getOutcome()==TestOutcome.PASSED) {
-            return group(pass, 1, getMessage());
-        }
-        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
-            return group(fail, 1, getMessage());
-        }
-        if (getOutcome()==TestOutcome.FAILED_WITH_EXCEPTION) {
-            //XXX Exception doesn't necessarily work
-            return group(exception, 1, getMessage());
-        }
-        // Nothing else to cover here
-        return "";
+    	return input;
     }
     /**
-     * Get the actual output from this test case.  If it's null, try to parse
-     * it out of the message.
-     * @return The actual output for this test case, or an empty string if the actual
-     *      output is missing or cannot be determined.
+     * Get the actual output from this test result.
+     * 
+     * @return the actual output
      */
     public String getActualOutput() {
-        if (actualOutput!=null) {
-            return actualOutput;
-        }
-        if (getOutcome()==TestOutcome.PASSED) {
-            return group(fail, 1, getMessage());
-        }
-        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
-            return group(fail, 3, getMessage());
-        }
-        return "";
+    	return actualOutput;
     }
     /**
-     * Get the expected output for this test case.  If it's null, try to parse
-     * it out of the message.
-     * @return The expected output for this test case, or an empty string if the
-     *      expected output is missing or cannot be determined.
+     * Get the expected output for this test result.
+     * 
+     * @return the expected output
      */
     public String getExpectedOutput() {
-        if (expectedOutput!=null){
-            return expectedOutput;
-        }
-        if (getOutcome()==TestOutcome.PASSED) {
-            return group(pass, 2, getMessage());
-        }
-        if (getOutcome()==TestOutcome.FAILED_ASSERTION) {
-            return group(fail, 2, getMessage());
-        }
-        return "";
+    	return expectedOutput;
     }
     
     /**
