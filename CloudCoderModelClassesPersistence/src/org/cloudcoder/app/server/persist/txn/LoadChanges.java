@@ -88,7 +88,10 @@ public class LoadChanges extends AbstractDatabaseRunnableNoAuthException<List<Ch
 			Change change = new Change();
 			
 			int index = DBUtil.loadModelObjectFields(event, Event.SCHEMA, resultSet);
-			DBUtil.loadModelObjectFields(change, Change.SCHEMA, resultSet, index);
+			
+			// Change objects require special code to load, due to the way the change
+			// text is stored at the database level
+			Queries.load(change, resultSet, index);
 			
 			change.setEvent(event);
 			
