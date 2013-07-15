@@ -82,11 +82,13 @@ public class PlayEditSequence {
 	 */
 	public void setup() throws CloudCoderAuthenticationException {
 		// Fix up all of the Change objects by resetting the event id
-		// to the default (0) value.
+		// to the default (0) value and changing the user id to that of the
+		// logged-in user.
 		List<Change> changeList = editSequence.getChangeList();
 		for (Change change : changeList) {
 			change.getEvent().setId(0);
 			change.setEventId(0);
+			change.getEvent().setUserId(client.getUser().getId());
 		}
 		
 		// Find the Problem (exercise)
