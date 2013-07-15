@@ -3,6 +3,7 @@ package org.cloudcoder.app.loadtester;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
@@ -88,12 +89,16 @@ public class CaptureEditSequence {
 		final Properties config = DBUtil.getConfigProperties();
 		JDBCDatabaseConfig.createFromProperties(config);
 		
-		// FIXME: don't hardcode ids
+		Scanner keyboard = new Scanner(System.in);
 		CaptureEditSequence ces = new CaptureEditSequence();
-		ces.setUserId(1);
-		ces.setProblemId(3);
-		ces.setMinEventId(182);
-		ces.setMaxEventId(309);
+		int userId = ask(keyboard, "User id");
+		int problemId = ask(keyboard, "Problem id");
+		int minEventId = ask(keyboard, "Min event id");
+		int maxEventId = ask(keyboard, "Max event id");
+		ces.setUserId(userId);
+		ces.setProblemId(problemId);
+		ces.setMinEventId(minEventId);
+		ces.setMaxEventId(maxEventId);
 		
 		ces.captureFromDB();
 		System.out.println("Edits captured successfully");
@@ -102,5 +107,11 @@ public class CaptureEditSequence {
 		
 		editSequence.saveToFile("edits.dat");
 		System.out.println("Edits saved successfully");
+	}
+	
+	private static int ask(Scanner keyboard, String prompt) {
+		System.out.print(prompt);
+		System.out.print(": ");
+		return keyboard.nextInt();
 	}
 }
