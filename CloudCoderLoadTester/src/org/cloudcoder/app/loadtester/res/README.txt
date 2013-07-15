@@ -1,4 +1,0 @@
-Captured edit sequence files, and the corresponding exercise hashes:
-dayNumbers.dat: b5a9968781e7c4f602e66cfde6ded9745b06eff7
-whichAndHowMany.dat: b89ba215e53343923a07d005cb03116ae07a31fb
-countAB.dat: 86bc02a726f8b86bc49e53e9777590f56219776d
