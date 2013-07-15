@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.util.Properties;
+
 /**
  * JDBCDatabase configuration properties singleton.
  * Must be initialized using the create() method before
@@ -85,6 +87,42 @@ public class JDBCDatabaseConfig {
 			}
 			instance = new JDBCDatabaseConfig(configProperties);
 		}
+	}
+	
+	/**
+	 * Create the singleton instance of JDBCDatabaseConfig, using given
+	 * {@link Properties} object as the source.  The assumption is that the
+	 * {@link Properties} are be loaded from a cloudcoder.properties file.
+	 * 
+	 * @param config the {@link Properties} containing the database configuration information
+	 */
+	public static void createFromProperties(final Properties config) {
+		create(new JDBCDatabaseConfig.ConfigProperties() {
+			@Override
+			public String getUser() {
+				return config.getProperty("cloudcoder.db.user", "root");
+			}
+			
+			@Override
+			public String getPortStr() {
+				return config.getProperty("cloudcoder.db.portStr", "");
+			}
+			
+			@Override
+			public String getPasswd() {
+				return config.getProperty("cloudcoder.db.passwd", "root");
+			}
+			
+			@Override
+			public String getHost() {
+				return config.getProperty("cloudcoder.db.host", "localhost");
+			}
+			
+			@Override
+			public String getDatabaseName() {
+				return config.getProperty("cloudcoder.db.databaseName", "cloudcoderdb");
+			}
+		});
 	}
 	
 	/**

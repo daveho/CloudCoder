@@ -86,34 +86,7 @@ public class CaptureEditSequence {
 	
 	public static void main(String[] args) throws IOException {
 		final Properties config = DBUtil.getConfigProperties();
-		JDBCDatabaseConfig.ConfigProperties configProps = new JDBCDatabaseConfig.ConfigProperties() {
-			@Override
-			public String getUser() {
-				return config.getProperty("cloudcoder.db.user", "root");
-			}
-			
-			@Override
-			public String getPortStr() {
-				return config.getProperty("cloudcoder.db.portStr", "");
-			}
-			
-			@Override
-			public String getPasswd() {
-				return config.getProperty("cloudcoder.db.passwd", "root");
-			}
-			
-			@Override
-			public String getHost() {
-				return config.getProperty("cloudcoder.db.host", "localhost");
-			}
-			
-			@Override
-			public String getDatabaseName() {
-				return config.getProperty("cloudcoder.db.databaseName", "cloudcoderdb");
-			}
-		};
-		
-		JDBCDatabaseConfig.create(configProps);
+		JDBCDatabaseConfig.createFromProperties(config);
 		
 		// FIXME: don't hardcode ids
 		CaptureEditSequence ces = new CaptureEditSequence();
