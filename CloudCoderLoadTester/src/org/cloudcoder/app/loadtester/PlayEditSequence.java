@@ -145,7 +145,7 @@ public class PlayEditSequence {
 				// We're basically emulating the repeating timer that the
 				// webapp's client-side javascript code uses to flush
 				// accumulated Changes periodically.
-				long delay = System.currentTimeMillis() - nextSend;
+				long delay = nextSend - System.currentTimeMillis();
 				if (delay > 0L) {
 					Thread.sleep(delay);
 				}
