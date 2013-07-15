@@ -1,8 +1,8 @@
 package org.cloudcoder.app.loadtester;
 
 import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.HashMap;
-import java.util.List;
 
 import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
@@ -49,7 +49,7 @@ public class Client {
 		this.port = port;
 		this.contextPath = contextPath;
 		this.serviceMap = new HashMap<Class<?>, Object>();
-		this.cookieManager = new CookieManager();
+		this.cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 	}
 	
 	private<E extends RemoteService> E getService(Class<E> cls) {
