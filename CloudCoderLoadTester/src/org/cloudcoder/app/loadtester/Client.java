@@ -2,14 +2,17 @@ package org.cloudcoder.app.loadtester;
 
 import java.net.CookieManager;
 import java.util.HashMap;
+import java.util.List;
 
 import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.client.rpc.LoginService;
+import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.User;
 
 import com.gdevelop.gwt.syncrpc.SyncProxy;
@@ -127,5 +130,17 @@ public class Client {
 	public void setProblem(Problem problem) throws CloudCoderAuthenticationException {
 		EditCodeService editCodeSvc = getService(EditCodeService.class);
 		editCodeSvc.setProblem(problem.getProblemId());
+	}
+
+	/**
+	 * Send a batch of {@link Change}s.
+	 * 
+	 * @param arr batch of {@link Change}s to send
+	 * @throws CloudCoderAuthenticationException
+	 * @throws QuizEndedException
+	 */
+	public void sendChanges(Change[] arr) throws CloudCoderAuthenticationException, QuizEndedException {
+		EditCodeService editCodeSvc = getService(EditCodeService.class);
+		editCodeSvc.logChange(arr, System.currentTimeMillis());
 	}
 }
