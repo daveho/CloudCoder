@@ -170,6 +170,9 @@ public class TestResult implements Serializable, IModelObject<TestResult>
      * @param input The input to set
      */
     public void setInput(String input) {
+    	if (input == null) {
+    		throw new IllegalArgumentException("Setting null as input in TestResult");
+    	}
         this.input = input;
     }
 
@@ -177,6 +180,9 @@ public class TestResult implements Serializable, IModelObject<TestResult>
      * @param expectedOutput The expected output to set
      */
     public void setExpectedOutput(String expectedOutput) {
+    	if (expectedOutput == null) {
+    		throw new IllegalArgumentException("Setting null as expectedOutput in TestResult");
+    	}
         this.expectedOutput = expectedOutput;
     }
 
@@ -184,6 +190,9 @@ public class TestResult implements Serializable, IModelObject<TestResult>
      * @param actualOutput The actual output to set
      */
     public void setActualOutput(String actualOutput) {
+    	if (actualOutput == null) {
+    		throw new IllegalArgumentException("Setting null as actualOutput in TestResult");
+    	}
         this.actualOutput = actualOutput;
     }
 
