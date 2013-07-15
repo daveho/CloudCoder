@@ -25,6 +25,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  * synchronous.
  * 
  * @author David Hovemeyer
+ * @see https://code.google.com/p/gwt-syncproxy/
  */
 public class Client {
 	private String protocol;
