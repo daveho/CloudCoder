@@ -10,7 +10,8 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
-		Client client = new Client("http", "localhost", 8081, "cloudcoder/cloudcoder");
+		HostConfig hostConfig = HostConfigDatabase.forName("default");
+		Client client = new Client(hostConfig);
 		client.login("user2", "muffin");
 		
 		EditSequence editSequence = new EditSequence();

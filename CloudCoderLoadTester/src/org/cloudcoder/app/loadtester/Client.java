@@ -31,27 +31,39 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  * @see https://code.google.com/p/gwt-syncproxy/
  */
 public class Client {
-	private String protocol;
-	private String host;
-	private int port;
-	private String contextPath;
+//	private String protocol;
+//	private String host;
+//	private int port;
+//	private String contextPath;
+	private HostConfig hostConfig;
 	private HashMap<Class<?>, Object> serviceMap;
 	private User user;
 	private CookieManager cookieManager;
 
+//	/**
+//	 * Constructor.
+//	 * 
+//	 * @param protocol    protocol for CloudCoder webapp (e.g., "http" or "https")
+//	 * @param host        hostname of CloudCoder webapp
+//	 * @param port        port of CloudCoder webapp
+//	 * @param contextPath context path of CloudCoder webapp
+//	 */
+//	public Client(String protocol, String host, int port, String contextPath) {
+//		this.protocol = protocol;
+//		this.host = host;
+//		this.port = port;
+//		this.contextPath = contextPath;
+//		this.serviceMap = new HashMap<Class<?>, Object>();
+//		this.cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
+//	}
+	
 	/**
 	 * Constructor.
 	 * 
-	 * @param protocol    protocol for CloudCoder webapp (e.g., "http" or "https")
-	 * @param host        hostname of CloudCoder webapp
-	 * @param port        port of CloudCoder webapp
-	 * @param contextPath context path of CloudCoder webapp
+	 * @param hostConfig the {@link HostConfig} (how to connect to the webapp)
 	 */
-	public Client(String protocol, String host, int port, String contextPath) {
-		this.protocol = protocol;
-		this.host = host;
-		this.port = port;
-		this.contextPath = contextPath;
+	public Client(HostConfig hostConfig) {
+		this.hostConfig = hostConfig;
 		this.serviceMap = new HashMap<Class<?>, Object>();
 		this.cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 	}
@@ -60,10 +72,27 @@ public class Client {
 		Object obj = serviceMap.get(cls);
 		if (obj == null) {
 			String relativePath = getRelativePath(cls);
-			obj = SyncProxy.newProxyInstance(cls, protocol + "://" + host + ":" + port + "/" + contextPath + "/", relativePath, this.cookieManager);
+			obj = SyncProxy.newProxyInstance(cls, createModuleBaseUrl(), relativePath, this.cookieManager);
 			serviceMap.put(cls, obj);
 		}
 		return cls.cast(obj);
+	}
+
+	private String createModuleBaseUrl() {
+		StringBuilder buf = new StringBuilder();
+		
+		buf.append(hostConfig.getProtocol());
+		buf.append("://");
+		buf.append(hostConfig.getHostname());
+		if (hostConfig.getPort() > 0) {
+			buf.append(":");
+			buf.append(hostConfig.getPort());
+		}
+		buf.append("/");
+		buf.append(hostConfig.getContextPath());
+		buf.append("/");
+		
+		return buf.toString();
 	}
 	
 	private static<E extends RemoteService> String getRelativePath(Class<E> svcClass) {
