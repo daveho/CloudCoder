@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.Problem;
 
 /**
  * A sequence of {@link Change}s: a series of edits to program

@@ -7,12 +7,15 @@ import java.util.HashMap;
 import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.client.rpc.LoginService;
+import org.cloudcoder.app.client.rpc.SubmitService;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.QuizEndedException;
+import org.cloudcoder.app.shared.model.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.User;
 
 import com.gdevelop.gwt.syncrpc.SyncProxy;
@@ -143,5 +146,36 @@ public class Client {
 	public void sendChanges(Change[] arr) throws CloudCoderAuthenticationException, QuizEndedException {
 		EditCodeService editCodeSvc = getService(EditCodeService.class);
 		editCodeSvc.logChange(arr, System.currentTimeMillis());
+	}
+
+	/**
+	 * Submit code.  The {@link #setProblem(Problem)} method must be called
+	 * first to establish which problem (exercise) the client is working on.
+	 * Note that the code submission API is inherently asynchronous, in that
+	 * the client is expected to explicitly poll to get the {@link SubmissionResult}.
+	 * This method does that polling.
+	 * 
+	 * @param problemId      the problem id
+	 * @param code           the code to submit
+	 * @param pollIntervalMs interval at which to poll to get the {@link SubmissionResult},
+	 *                       in milliseconds
+	 * @return the {@link SubmissionResult}
+	 * @throws QuizEndedException 
+	 * @throws SubmissionException 
+	 * @throws CloudCoderAuthenticationException 
+	 * @throws InterruptedException 
+	 */
+	public SubmissionResult submitCode(int problemId, String code, long pollIntervalMs)
+			throws CloudCoderAuthenticationException, SubmissionException, QuizEndedException, InterruptedException {
+		SubmitService submitSvc = getService(SubmitService.class);
+		submitSvc.submit(problemId, code);
+		while (true) {
+			SubmissionResult result = null;
+			result = submitSvc.checkSubmission();
+			if (result != null) {
+				return result;
+			}
+			Thread.sleep(pollIntervalMs);
+		}
 	}
 }

@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.QuizEndedException;
+import org.cloudcoder.app.shared.model.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 
 /**
  * Play an {@link EditSequence}.
@@ -22,16 +25,28 @@ public class PlayEditSequence {
 	 */
 	public static final long SEND_BATCH_INTERVAL_MS = 2000L;
 	
+	/**
+	 * Default interval for polling webapp to check whether a {@link SubmissionResult}
+	 * is ready following a code submission.
+	 */
+	public static final long POLL_SUBMISSION_INTERVAL_MS = 1000L;
+	
 	private Client client;
 	private EditSequence editSequence;
 	private Problem problem;
 	private long sendBatchIntervalMs;
+	private boolean submitOnFullTextChange;
+	private long pollSubmissionIntervalMs;
+	private ICallback<Change[]> onSend;
+	private ICallback<SubmissionResult> onSubmissionResult;
 	
 	/**
 	 * Constructor.
 	 */
 	public PlayEditSequence() {
 		this.sendBatchIntervalMs = SEND_BATCH_INTERVAL_MS;
+		this.submitOnFullTextChange = true;
+		this.pollSubmissionIntervalMs = POLL_SUBMISSION_INTERVAL_MS;
 	}
 	
 	/**
@@ -62,6 +77,50 @@ public class PlayEditSequence {
 	 */
 	public void setSendBatchIntervalMs(long sendBatchIntervalMs) {
 		this.sendBatchIntervalMs = sendBatchIntervalMs;
+	}
+	
+	/**
+	 * Set whether full text changes (other than the initial one that
+	 * sets the skeleton text) should be treated as submissions.
+	 * Defaults to true, since that is the most realistic behavior:
+	 * the webapp client-side javascript code issues a full text change
+	 * when the user submits.
+	 * 
+	 * @param submitOnFullTextChange true if full text changes should result in
+	 *                               a submission
+	 */
+	public void setSubmitOnFullTextChange(boolean submitOnFullTextChange) {
+		this.submitOnFullTextChange = submitOnFullTextChange;
+	}
+	
+	/**
+	 * Set the interval at which the client should poll for a
+	 * {@link SubmissionResult} following a code submission.
+	 * Defaults to {@link #POLL_SUBMISSION_INTERVAL_MS}.
+	 * 
+	 * @param pollSubmissionIntervalMs interval at which the client should poll for a
+	 *                                 {@link SubmissionResult} following a code submission
+	 */
+	public void setPollSubmissionIntervalMs(long pollSubmissionIntervalMs) {
+		this.pollSubmissionIntervalMs = pollSubmissionIntervalMs;
+	}
+	
+	/**
+	 * Set callback to be invoked when {@link Change}s are sent.
+	 * 
+	 * @param onSend callback when {@link Change}s are sent
+	 */
+	public void setOnSend(ICallback<Change[]> onSend) {
+		this.onSend = onSend;
+	}
+	
+	/**
+	 * Set callback to be invoked when a {@link SubmissionResult} is received.
+	 * 
+	 * @param onSubmissionResult callback when a {@link SubmissionResult} is received
+	 */
+	public void setOnSubmissionResult(ICallback<SubmissionResult> onSubmissionResult) {
+		this.onSubmissionResult = onSubmissionResult;
 	}
 
 	/**
@@ -109,8 +168,9 @@ public class PlayEditSequence {
 	 * @throws CloudCoderAuthenticationException
 	 * @throws InterruptedException 
 	 * @throws QuizEndedException 
+	 * @throws SubmissionException 
 	 */
-	public void play(ICallback<Change[]> onSend) throws CloudCoderAuthenticationException, InterruptedException, QuizEndedException {
+	public void play() throws CloudCoderAuthenticationException, InterruptedException, QuizEndedException, SubmissionException {
 		boolean done = false;
 		
 		// Schedule the first "timer" event where a batch of Changes
@@ -142,9 +202,24 @@ public class PlayEditSequence {
 
 				// If there is a batch of changes to send, send them
 				if (batch.size() > 0) {
+					// Send the batch of Changes
 					Change[] arr = batch.toArray(new Change[batch.size()]);
-					onSend.call(arr);
+					if (onSend != null) {
+						onSend.call(arr);
+					}
 					client.sendChanges(arr);
+
+					// Special case: if full text-changes are treated as submissions,
+					// and this batch is a single full-text change, then submit the code
+					if (submitOnFullTextChange && batch.get(0).getType() == ChangeType.FULL_TEXT) {
+						SubmissionResult submissionResult = client.submitCode(
+								problem.getProblemId(),
+								batch.get(0).getText(),
+								pollSubmissionIntervalMs);
+						if (onSubmissionResult != null) {
+							onSubmissionResult.call(submissionResult);
+						}
+					}
 				}
 
 				// Schedule the next send time
@@ -173,6 +248,9 @@ public class PlayEditSequence {
 	private long createBatch(long windowStart, List<Change> batch) {
 		// Assume that all changes have been sent
 		boolean allChangesSent = true;
+
+		// Next window start timestamp.
+		long nextWindowStart = windowStart + sendBatchIntervalMs;
 		
 		// Find Changes that are within the current window to add
 		// to the batch.  It is possible that there are none.
@@ -186,17 +264,43 @@ public class PlayEditSequence {
 				// the window start timestamp, so we haven't yet sent all of
 				// the Changes in the EditSequence
 				allChangesSent = false;
-				if (c.getEvent().getTimestamp() < windowStart + sendBatchIntervalMs) {
-					// This Change is within the current window, so add it to
-					// the batch
-					batch.add(c);
+				
+				if (c.getEvent().getTimestamp() >= windowStart + sendBatchIntervalMs) {
+					// Reached the end of the window
+					break;
 				}
+				
+				// Special case: if full text changes are being treated as
+				// submissions, then a full text change should always be
+				// isolated into a single-change batch.  In other words,
+				// each batch should contain either normal (delta) changes,
+				// or a single full text change, or nothing.
+				if (submitOnFullTextChange && c.getType() == ChangeType.FULL_TEXT) {
+					// Found a full text submission in the window
+					if (batch.isEmpty()) {
+						// This will be the only change in the batch
+						batch.add(c);
+						nextWindowStart = c.getEvent().getTimestamp() + 1;
+					} else {
+						// Batch already contains at least one normal (delta) change.
+						// Next window should start with just this full-text change.
+						nextWindowStart = c.getEvent().getTimestamp();
+					}
+					break;
+				}
+
+				// Normal (delta) change within the current window, so add it to
+				// the batch
+				batch.add(c);
 			}
 		}
 		
 		// Return the start time for the next window,
 		// or -1L if all of the Changes in the EditSequence have
 		// been sent
-		return allChangesSent ? -1L : windowStart + sendBatchIntervalMs;
+		if (allChangesSent) {
+			nextWindowStart = -1L;
+		}
+		return nextWindowStart;
 	}
 }
