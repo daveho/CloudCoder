@@ -12,6 +12,7 @@ public class Main {
 		
 		Mix mix = MixDatabase.forName("default");
 		
+		/*
 		Client client = new Client(hostConfig);
 		if (!client.login("user2", "user2")) {
 			throw new IllegalStateException("Could not login");
@@ -46,6 +47,16 @@ public class Main {
 		
 		player.setup();
 		player.play();
+		*/
+		
+		LoadTesterTask task = new LoadTesterTask();
+		task.setHostConfig(hostConfig);
+		task.setEditSequence(mix.get(0));
+		task.setUserName("user1");
+		task.setPassword("user1");
+		task.setRepeatCount(10);
+		task.run();
+		
 		System.out.println("Done!");
 	}
 }
