@@ -8,10 +8,13 @@ import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.client.rpc.LoginService;
 import org.cloudcoder.app.client.rpc.SubmitService;
+import org.cloudcoder.app.client.rpc.UserService;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionException;
@@ -31,31 +34,10 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  * @see https://code.google.com/p/gwt-syncproxy/
  */
 public class Client {
-//	private String protocol;
-//	private String host;
-//	private int port;
-//	private String contextPath;
 	private HostConfig hostConfig;
 	private HashMap<Class<?>, Object> serviceMap;
 	private User user;
 	private CookieManager cookieManager;
-
-//	/**
-//	 * Constructor.
-//	 * 
-//	 * @param protocol    protocol for CloudCoder webapp (e.g., "http" or "https")
-//	 * @param host        hostname of CloudCoder webapp
-//	 * @param port        port of CloudCoder webapp
-//	 * @param contextPath context path of CloudCoder webapp
-//	 */
-//	public Client(String protocol, String host, int port, String contextPath) {
-//		this.protocol = protocol;
-//		this.host = host;
-//		this.port = port;
-//		this.contextPath = contextPath;
-//		this.serviceMap = new HashMap<Class<?>, Object>();
-//		this.cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-//	}
 	
 	/**
 	 * Constructor.
@@ -206,5 +188,26 @@ public class Client {
 			}
 			Thread.sleep(pollIntervalMs);
 		}
+	}
+	
+	/**
+	 * Add user to given couse, creating if necessary.
+	 * 
+	 * @param user     the user
+	 * @param course   the course
+	 * @param regType  the user's registration type
+	 * @param section  the course section
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public void createUser(User user, Course course, CourseRegistrationType regType, int section) throws CloudCoderAuthenticationException {
+		UserService userSvc = getService(UserService.class);
+		
+		EditedUser editedUser = new EditedUser();
+		editedUser.setUser(user);
+		editedUser.setPassword(user.getPasswordHash());
+		editedUser.setRegistrationType(regType);
+		editedUser.setSection(section);
+		
+		userSvc.addUserToCourse(editedUser, course.getId());
 	}
 }
