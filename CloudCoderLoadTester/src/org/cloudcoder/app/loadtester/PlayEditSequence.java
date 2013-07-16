@@ -150,14 +150,20 @@ public class PlayEditSequence {
 					Thread.sleep(delay);
 				}
 
-				// Schedule the next send time
-				nextSend = System.currentTimeMillis() + sendBatchIntervalMs;
-
 				// If there is a batch of changes to send, send them
 				if (batch.size() > 0) {
 					Change[] arr = batch.toArray(new Change[batch.size()]);
 					onSend.call(arr);
 					client.sendChanges(arr);
+				}
+
+				// Schedule the next send time
+				nextSend += sendBatchIntervalMs;
+				long now = System.currentTimeMillis();
+				if (now > nextSend) {
+					// Sending the changes took more time than the send interval,
+					// so schedule the next send to happen immediately.
+					nextSend = now + 1; 
 				}
 			}
 		}
