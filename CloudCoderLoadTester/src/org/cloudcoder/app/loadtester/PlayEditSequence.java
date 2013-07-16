@@ -181,6 +181,10 @@ public class PlayEditSequence {
 		// to set the initial window for sending Changes
 		long windowStart = editSequence.getChangeList().get(0).getEvent().getTimestamp();
 		
+		// Keep track of how many full-text changes have been seen,
+		// since we don't want to treat the first one as a submission.
+		int fullTextChangeCount = 0;
+		
 		while (!done) {
 			// Get all Changes to be sent in the next batch.
 			// This will update the 
@@ -210,15 +214,19 @@ public class PlayEditSequence {
 					client.sendChanges(arr);
 
 					// Special case: if full text-changes are treated as submissions,
-					// and this batch is a single full-text change, then submit the code
+					// and this batch is a single full-text change (but not the first
+					// one, which is assumed to be the skeleton code), then submit the code
 					if (submitOnFullTextChange && batch.get(0).getType() == ChangeType.FULL_TEXT) {
-						SubmissionResult submissionResult = client.submitCode(
-								problem.getProblemId(),
-								batch.get(0).getText(),
-								pollSubmissionIntervalMs);
-						if (onSubmissionResult != null) {
-							onSubmissionResult.call(submissionResult);
+						if (fullTextChangeCount > 0) {
+							SubmissionResult submissionResult = client.submitCode(
+									problem.getProblemId(),
+									batch.get(0).getText(),
+									pollSubmissionIntervalMs);
+							if (onSubmissionResult != null) {
+								onSubmissionResult.call(submissionResult);
+							}
 						}
+						fullTextChangeCount++;
 					}
 				}
 
