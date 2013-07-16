@@ -1,7 +1,5 @@
 package org.cloudcoder.app.loadtester;
 
-import java.io.InputStream;
-
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
@@ -11,12 +9,16 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 public class Main {
 	public static void main(String[] args) throws Exception {
 		HostConfig hostConfig = HostConfigDatabase.forName("default");
-		Client client = new Client(hostConfig);
-		client.login("user2", "muffin");
 		
-		EditSequence editSequence = new EditSequence();
-		InputStream in = Main.class.getClassLoader().getResourceAsStream("org/cloudcoder/app/loadtester/res/b89ba215e53343923a07d005cb03116ae07a31fb.dat");
-		editSequence.loadFromInputStream(in);
+		Mix mix = MixDatabase.forName("default");
+		
+		Client client = new Client(hostConfig);
+		if (!client.login("user2", "user2")) {
+			throw new IllegalStateException("Could not login");
+		}
+		
+		EditSequence editSequence = mix.get(0);
+		System.out.println("Playing edit sequence for exercise " + editSequence.getExerciseName());
 
 		PlayEditSequence player = new PlayEditSequence();
 		player.setClient(client);

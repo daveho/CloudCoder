@@ -7,11 +7,13 @@ import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.User;
 
 /**
  * Play an {@link EditSequence}.
@@ -135,9 +137,12 @@ public class PlayEditSequence {
 		// logged-in user.
 		List<Change> changeList = editSequence.getChangeList();
 		for (Change change : changeList) {
-			change.getEvent().setId(0);
+			Event event = change.getEvent();
+			event.setId(0);
 			change.setEventId(0);
-			change.getEvent().setUserId(client.getUser().getId());
+			User user = client.getUser();
+			int userId = user.getId();
+			event.setUserId(userId);
 		}
 		
 		// Find the Problem (exercise)
