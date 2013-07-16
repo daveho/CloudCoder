@@ -10,6 +10,7 @@ import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.Problem;
 
 /**
  * Capture a series of edits ({@link Change}s) that were saved to the database.
@@ -81,6 +82,14 @@ public class CaptureEditSequence {
 	 */
 	public void captureFromDB() {
 		IDatabase db = Database.getInstance();
+		
+		// Retrieve the Problem, to get the exercise name
+		Problem problem = new Problem();
+		problem.setProblemId(problemId);
+		db.reloadModelObject(problem);
+		editSequence.setExerciseName(problem.getTestname());
+		
+		// Retrieve the Changes
 		List<Change> captured = db.loadChanges(userId, problemId, minEventId, maxEventId);
 		editSequence.setChangeList(captured);
 	}

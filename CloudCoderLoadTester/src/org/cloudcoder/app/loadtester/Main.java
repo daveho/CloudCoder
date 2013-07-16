@@ -20,7 +20,6 @@ public class Main {
 		PlayEditSequence player = new PlayEditSequence();
 		player.setClient(client);
 		player.setEditSequence(editSequence);
-		player.setExerciseName("which and how many?");
 		
 		player.setup();
 		player.play(new ICallback<Change[]>() {

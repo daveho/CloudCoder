@@ -23,7 +23,6 @@ public class PlayEditSequence {
 	public static final long SEND_BATCH_INTERVAL_MS = 2000L;
 	
 	private Client client;
-	private String exerciseName;
 	private EditSequence editSequence;
 	private Problem problem;
 	private long sendBatchIntervalMs;
@@ -43,15 +42,6 @@ public class PlayEditSequence {
 	 */
 	public void setClient(Client client) {
 		this.client = client;
-	}
-	
-	/**
-	 * Set the name of the exercise.
-	 * 
-	 * @param exerciseName the name of the exercise
-	 */
-	public void setExerciseName(String exerciseName) {
-		this.exerciseName = exerciseName;
 	}
 
 	/**
@@ -96,13 +86,13 @@ public class PlayEditSequence {
 		for (CourseAndCourseRegistration c : courses) {
 			Problem[] problems = client.getProblemsForCourse(c.getCourse());
 			for (Problem p : problems) {
-				if (p.getTestname().equals(exerciseName)) {
+				if (p.getTestname().equals(editSequence.getExerciseName())) {
 					this.problem = p;
 				}
 			}
 		}
 		if (this.problem == null) {
-			throw new RuntimeException("Could not find exercise " + exerciseName);
+			throw new RuntimeException("Could not find exercise " + editSequence.getExerciseName());
 		}
 		
 		// Set the Problem
