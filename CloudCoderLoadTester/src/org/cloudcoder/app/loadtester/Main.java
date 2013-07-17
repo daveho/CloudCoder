@@ -1,11 +1,5 @@
 package org.cloudcoder.app.loadtester;
 
-import org.cloudcoder.app.shared.model.Change;
-import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.CompilationOutcome;
-import org.cloudcoder.app.shared.model.ICallback;
-import org.cloudcoder.app.shared.model.SubmissionResult;
-
 public class Main {
 	public static void main(String[] args) throws Exception {
 		HostConfig hostConfig = HostConfigDatabase.forName("default");

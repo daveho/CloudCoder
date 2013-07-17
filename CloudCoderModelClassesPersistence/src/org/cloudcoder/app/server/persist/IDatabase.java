@@ -168,6 +168,15 @@ public interface IDatabase {
 	 * @return sequence of {@link Change}s matching the specified criteria, sorted by event id
 	 */
 	public List<Change> loadChanges(int userId, int problemId, int minEventId, int maxEventId);
+
+	/**
+	 * Load sequence of {@link Change}s for all users on given problem.
+	 * Changes are ordered by user id, and then by event id.
+	 * 
+	 * @param problemId the problem id
+	 * @return list of {@link Change}s for all uses on the problem
+	 */
+	public List<Change> loadChangesForAllUsersOnProblem(int problemId);
 	
 	/**
 	 * Get List of {@link TestCase}s for {@link Problem} with given id.

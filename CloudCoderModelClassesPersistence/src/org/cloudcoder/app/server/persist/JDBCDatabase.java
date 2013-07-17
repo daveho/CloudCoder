@@ -69,6 +69,7 @@ import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.LoadChanges;
+import org.cloudcoder.app.server.persist.txn.LoadChangesForAllUsersOnProblem;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
@@ -261,6 +262,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<Change> loadChanges(int userId, int problemId, int minEventId, int maxEventId) {
 		return databaseRun(new LoadChanges(userId, problemId, minEventId, maxEventId));
+	}
+
+	@Override
+	public List<Change> loadChangesForAllUsersOnProblem(int problemId) {
+		return databaseRun(new LoadChangesForAllUsersOnProblem(problemId));
 	}
 	
 	@Override
