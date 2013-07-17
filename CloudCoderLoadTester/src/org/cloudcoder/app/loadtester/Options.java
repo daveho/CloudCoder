@@ -11,6 +11,9 @@ public class Options {
 	public Options(String[] args) {
 		this.args = args;
 		this.optMap = new HashMap<String, String>();
+		
+		// Set some defaults
+		optMap.put("repeatCount", "1");
 	}
 	
 	public String getCommand() {
@@ -33,6 +36,10 @@ public class Options {
 			optMap.put(key, val);
 		}
 	}
+
+	public boolean hasOption(String key) {
+		return optMap.containsKey(key);
+	}
 	
 	public String getOptVal(String key) {
 		String val = optMap.get(key);
@@ -50,5 +57,6 @@ public class Options {
 		System.out.println("Usage: java -jar cloudcoderLoadTester.jar <command> [options]");
 		System.out.println("Commands:");
 		System.out.println("  captureAllEditSequences problemId=<problem id>");
+		System.out.println("  execute hostConfig=<host config name> mix=<mix name> [numThreads=<n>] [repeatCount=<n>]");
 	}
 }

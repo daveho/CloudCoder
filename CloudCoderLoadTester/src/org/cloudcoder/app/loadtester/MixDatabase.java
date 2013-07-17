@@ -17,6 +17,32 @@ public class MixDatabase {
 		EditSequence whichAndHowMany = load("b89ba215e53343923a07d005cb03116ae07a31fb");
 		
 		MIX_MAP.put("default", new Mix().add(whichAndHowMany).add(dayNumbers).add(countAB));
+
+		Mix skip3 = loadStudentData(4, 143, "6c0ba8b618beb177ef68588777287a30da1b02b0");
+		MIX_MAP.put("skip3", skip3);
+	}
+
+	/**
+	 * Load captured student data.
+	 * 
+	 * @param minUserId     minimum user id
+	 * @param maxUserId     maximum user id (inclusive)
+	 * @param exerciseHash  the exercise hash
+	 * @return the {@link Mix} containing the captured student data
+	 */
+	private static Mix loadStudentData(int minUserId, int maxUserId,
+			String exerciseHash) {
+		Mix skip3 = new Mix();
+		for (int i = minUserId; i <= maxUserId; i++) {
+			try {
+				String name = String.format(exerciseHash + "/%03d", i);
+				EditSequence seq = load(name);
+				skip3.add(seq);
+			} catch (RuntimeException e) {
+				// ignore: a student who didn't take the quiz
+			}
+		}
+		return skip3;
 	}
 	
 	private static EditSequence load(String hash) {

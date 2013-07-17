@@ -67,7 +67,8 @@ public class PlayEditSequence {
 	 * @param editSequence the {@link EditSequence}
 	 */
 	public void setEditSequence(EditSequence editSequence) {
-		this.editSequence = editSequence;
+		// Clone the EditSequence, because the setup() method will modify it
+		this.editSequence = editSequence.clone();
 	}
 	
 	/**

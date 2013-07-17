@@ -22,6 +22,28 @@ public class Main {
 			int problemId = opts.getOptValAsInt("problemId");
 			String outputDir = opts.getOptVal("outputDir");
 			CaptureAllEditSequencesForProblem.execute(problemId, outputDir);
+		} else if (command.equals("execute")) {
+			String hostConfigName = opts.getOptVal("hostConfig");
+			HostConfig hostConfig = HostConfigDatabase.forName(hostConfigName);
+			String mixName = opts.getOptVal("mix");
+			Mix mix = MixDatabase.forName(mixName);
+			int numThreads = mix.size();
+			if (opts.hasOption("numThreads")) {
+				opts.getOptValAsInt("numThreads");
+			}
+			int repeatCount = opts.getOptValAsInt("repeatCount");
+			
+			LoadTester loadTester = new LoadTester();
+			loadTester.setHostConfig(hostConfig);
+			loadTester.setMix(mix);
+			loadTester.setNumThreads(numThreads);
+			loadTester.setRepeatCount(repeatCount);
+			
+			loadTester.execute();
+		} else {
+			System.out.println("Unknown command: " + command);
+			opts.usage();
+			System.exit(1);
 		}
 	}
 }

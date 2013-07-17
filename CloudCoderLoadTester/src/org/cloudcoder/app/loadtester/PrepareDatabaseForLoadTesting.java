@@ -50,7 +50,7 @@ public class PrepareDatabaseForLoadTesting {
 			System.exit(1);
 		}
 		
-		for (int n = 1; n <= 10; n++) {
+		for (int n = 11; n <= 150; n++) {
 			User user = new User();
 			String testUserName = "user" + n;
 			user.setUsername(testUserName);

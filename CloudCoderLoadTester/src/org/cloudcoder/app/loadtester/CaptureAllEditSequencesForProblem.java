@@ -86,13 +86,13 @@ public class CaptureAllEditSequencesForProblem {
 	public void write() throws IOException {
 		List<EditSequence> editSequenceList = this.getEditSequenceList();
 		System.out.println("Captured " + editSequenceList.size() + " edit sequences");
-		int count = 0;
 		for (EditSequence seq : editSequenceList) {
-			System.out.print("User id=" + seq.getChangeList().get(0).getEvent().getUserId() + ", ");
+			int userId = seq.getChangeList().get(0).getEvent().getUserId();
+			System.out.print("User id=" + userId + ", ");
 			System.out.println(seq.getChangeList().size() + " changes");
-			
-			count++;
-			String outFile = outputDir + "/" + count + ".dat";
+
+			// Files are named by user id
+			String outFile = String.format("%s/%03d.dat", outputDir, userId);
 			seq.saveToFile(outFile);
 			System.out.println("Saved to file " + outFile);
 		}

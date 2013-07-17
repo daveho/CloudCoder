@@ -1,56 +1,106 @@
 package org.cloudcoder.app.loadtester;
 
+/**
+ * Load tester: creates {@link LoadTesterTask}s and runs them
+ * in as many threads as necessary to achieve the desired degree
+ * of concurrency.
+ * 
+ * @author David Hovemeyer
+ */
 public class LoadTester {
-	public static void main(String[] args) {
-		HostConfig hostConfig = HostConfigDatabase.forName("default");
+	
+	private HostConfig hostConfig;
+	private Mix mix;
+	private int numThreads;
+	private int repeatCount;
+
+	/**
+	 * Constructor.
+	 */
+	public LoadTester() {
 		
-		Mix mix = MixDatabase.forName("default");
+	}
+	
+	/**
+	 * Set the {@link HostConfig} specifying how to connect to the host webapp.
+	 * 
+	 * @param hostConfig the {@link HostConfig}
+	 */
+	public void setHostConfig(HostConfig hostConfig) {
+		this.hostConfig = hostConfig;
+	}
+	
+	/**
+	 * Set the {@link Mix} containing the {@link EditSequence}s that will be played.
+	 * 
+	 * @param mix the {@link Mix}
+	 */
+	public void setMix(Mix mix) {
+		this.mix = mix;
+	}
+	
+	/**
+	 * Set how many concurrent threads should be used.
+	 * 
+	 * @param numThreads number of concurrent threads
+	 */
+	public void setNumThreads(int numThreads) {
+		this.numThreads = numThreads;
+	}
+
+	/**
+	 * Set how many times each thread should repeat playing its edit sequence.
+	 * 
+	 * @param repeatCount how many times each thread should repeat playing its edit sequence
+	 */
+	public void setRepeatCount(int repeatCount) {
+		this.repeatCount = repeatCount;
+	}
+	
+	/**
+	 * Execute the tasks and wait for them to complete.
+	 */
+	public void execute() {
+		// Create tasks
+		LoadTesterTask[] tasks = new LoadTesterTask[numThreads];
 		
-		/*
-		Client client = new Client(hostConfig);
-		if (!client.login("user2", "user2")) {
-			throw new IllegalStateException("Could not login");
+		// EditSequences are assigned to tasks in round-robin order
+		int seqIndex = 0;
+		
+		for (int i = 0; i < numThreads; i++) {
+			tasks[i] = new LoadTesterTask();
+			
+			// We assume the test user accounts are "user1", "user2", etc.,
+			// with passwords matching the usernames.
+			String testUserName = "user" + (i+1);
+			tasks[i].setUserName(testUserName);
+			tasks[i].setPassword(testUserName);
+			tasks[i].setHostConfig(hostConfig);
+			tasks[i].setEditSequence(mix.get(seqIndex));
+			tasks[i].setRepeatCount(repeatCount);
+			
+			seqIndex++;
+			if (seqIndex >= mix.size()) {
+				seqIndex = 0;
+			}
 		}
 		
-		EditSequence editSequence = mix.get(0);
-		System.out.println("Playing edit sequence for exercise " + editSequence.getExerciseName());
-
-		PlayEditSequence player = new PlayEditSequence();
-		player.setClient(client);
-		player.setEditSequence(editSequence);
-		player.setSubmitOnFullTextChange(true);
-		player.setOnSend(new ICallback<Change[]>() {
-			@Override
-			public void call(Change[] value) {
-				if (value.length == 1 && value[0].getType() == ChangeType.FULL_TEXT) {
-					System.out.println("Sending full text for submission");
-				} else {
-					System.out.println("Sending " + value.length + " changes");
-				}
+		// Create threads to execute the tasks, and start them
+		Thread[] threads = new Thread[numThreads];
+		for (int i = 0; i < numThreads; i++) {
+			threads[i] = new Thread(tasks[i]);
+			threads[i].start();
+		}
+		
+		// Wait for tasks to complete
+		for (int i = 0; i < numThreads; i++) {
+			try {
+				threads[i].join();
+			} catch (InterruptedException e) {
+				System.err.println("InterruptedException waiting for thread " + i);
 			}
-		});
-		player.setOnSubmissionResult(new ICallback<SubmissionResult>() {
-			public void call(SubmissionResult value) {
-				if (value.getCompilationResult().getOutcome() != CompilationOutcome.SUCCESS) {
-					System.out.println("Code did not compile");
-				} else {
-					System.out.println("Passed " + value.getNumTestsPassed() + "/" + value.getNumTestsAttempted() + " tests");
-				}
-			}
-		});
+		}
 		
-		player.setup();
-		player.play();
-		*/
-		
-		LoadTesterTask task = new LoadTesterTask();
-		task.setHostConfig(hostConfig);
-		task.setEditSequence(mix.get(0));
-		task.setUserName("user1");
-		task.setPassword("user1");
-		task.setRepeatCount(10);
-		task.run();
-		
-		System.out.println("Done!");
+		System.out.println("\nLoading testing complete");
 	}
 }
