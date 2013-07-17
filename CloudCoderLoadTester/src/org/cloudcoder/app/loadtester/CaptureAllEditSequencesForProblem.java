@@ -18,6 +18,7 @@
 
 package org.cloudcoder.app.loadtester;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -76,12 +77,16 @@ public class CaptureAllEditSequencesForProblem {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Properties config = DBUtil.getConfigProperties();
-		JDBCDatabaseConfig.createFromProperties(config);
-		
+		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 		System.out.print("Problem id: ");
 		int problemId = keyboard.nextInt();
+		execute(problemId);
+	}
+
+	public static void execute(int problemId) throws IOException {
+		Properties config = DBUtil.getConfigProperties();
+		JDBCDatabaseConfig.createFromProperties(config);
 		
 		CaptureAllEditSequencesForProblem cesp = new CaptureAllEditSequencesForProblem();
 		cesp.setProblemId(problemId);

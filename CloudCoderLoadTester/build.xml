@@ -37,6 +37,10 @@
 			classpathref="loadtester.classpath"
 			srcdir="src"
 			destdir="bin"/>
+		<!-- Copy all non-source files as resources. -->
+		<copy todir="bin">
+			<fileset dir="src" excludes="**/*.java"/>
+		</copy>
 	</target>
 	
 	<target name="jar" depends="javac">
@@ -50,7 +54,12 @@
 			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoder/war/WEB-INF/lib/gwt-servlet.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoder/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderLoadTester/lib/SyncProxy-0.4.jar" excludes="META-INF/**"/>
+			
+			<!-- Include cloudcoder.properties -->
+			<fileset dir=".." includes="cloudcoder.properties"/>
+			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.app.loadtester.Main" />
 			</manifest>

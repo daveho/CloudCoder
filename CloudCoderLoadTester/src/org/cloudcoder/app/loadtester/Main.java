@@ -1,56 +1,26 @@
 package org.cloudcoder.app.loadtester;
 
+/**
+ * Entry point for load tester.
+ * 
+ * @author David Hovemeyer
+ */
 public class Main {
 	public static void main(String[] args) throws Exception {
-		HostConfig hostConfig = HostConfigDatabase.forName("default");
+		Options opts = new Options(args);
 		
-		Mix mix = MixDatabase.forName("default");
-		
-		/*
-		Client client = new Client(hostConfig);
-		if (!client.login("user2", "user2")) {
-			throw new IllegalStateException("Could not login");
+		try {
+			opts.parse();
+		} catch (IllegalArgumentException e) {
+			System.out.println("Error: " + e.getMessage());
+			opts.usage();
+			System.exit(1);
 		}
 		
-		EditSequence editSequence = mix.get(0);
-		System.out.println("Playing edit sequence for exercise " + editSequence.getExerciseName());
-
-		PlayEditSequence player = new PlayEditSequence();
-		player.setClient(client);
-		player.setEditSequence(editSequence);
-		player.setSubmitOnFullTextChange(true);
-		player.setOnSend(new ICallback<Change[]>() {
-			@Override
-			public void call(Change[] value) {
-				if (value.length == 1 && value[0].getType() == ChangeType.FULL_TEXT) {
-					System.out.println("Sending full text for submission");
-				} else {
-					System.out.println("Sending " + value.length + " changes");
-				}
-			}
-		});
-		player.setOnSubmissionResult(new ICallback<SubmissionResult>() {
-			public void call(SubmissionResult value) {
-				if (value.getCompilationResult().getOutcome() != CompilationOutcome.SUCCESS) {
-					System.out.println("Code did not compile");
-				} else {
-					System.out.println("Passed " + value.getNumTestsPassed() + "/" + value.getNumTestsAttempted() + " tests");
-				}
-			}
-		});
-		
-		player.setup();
-		player.play();
-		*/
-		
-		LoadTesterTask task = new LoadTesterTask();
-		task.setHostConfig(hostConfig);
-		task.setEditSequence(mix.get(0));
-		task.setUserName("user1");
-		task.setPassword("user1");
-		task.setRepeatCount(10);
-		task.run();
-		
-		System.out.println("Done!");
+		String command = opts.getCommand();
+		if (command.equals("captureAllEditSequences")) {
+			int problemId = opts.getOptValAsInt("problemId");
+			CaptureAllEditSequencesForProblem.execute(problemId);
+		}
 	}
 }
