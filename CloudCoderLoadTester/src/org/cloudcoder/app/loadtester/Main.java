@@ -20,7 +20,8 @@ public class Main {
 		String command = opts.getCommand();
 		if (command.equals("captureAllEditSequences")) {
 			int problemId = opts.getOptValAsInt("problemId");
-			CaptureAllEditSequencesForProblem.execute(problemId);
+			String outputDir = opts.getOptVal("outputDir");
+			CaptureAllEditSequencesForProblem.execute(problemId, outputDir);
 		}
 	}
 }

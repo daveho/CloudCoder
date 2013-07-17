@@ -18,12 +18,14 @@
 
 package org.cloudcoder.app.loadtester;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
 import org.cloudcoder.app.server.persist.util.DBUtil;
@@ -38,6 +40,7 @@ import org.cloudcoder.app.shared.model.Problem;
  */
 public class CaptureAllEditSequencesForProblem {
 	private int problemId;
+	private String outputDir;
 	private List<EditSequence> editSequenceList;
 	
 	public CaptureAllEditSequencesForProblem() {
@@ -46,6 +49,10 @@ public class CaptureAllEditSequencesForProblem {
 	
 	public void setProblemId(int problemId) {
 		this.problemId = problemId;
+	}
+	
+	public void setOutputDir(String outputDir) {
+		this.outputDir = outputDir;
 	}
 	
 	public List<EditSequence> getEditSequenceList() {
@@ -75,29 +82,41 @@ public class CaptureAllEditSequencesForProblem {
 			seq.getChangeList().add(change);
 		}
 	}
+
+	public void write() throws IOException {
+		List<EditSequence> editSequenceList = this.getEditSequenceList();
+		System.out.println("Captured " + editSequenceList.size() + " edit sequences");
+		int count = 0;
+		for (EditSequence seq : editSequenceList) {
+			System.out.print("User id=" + seq.getChangeList().get(0).getEvent().getUserId() + ", ");
+			System.out.println(seq.getChangeList().size() + " changes");
+			
+			count++;
+			String outFile = outputDir + "/" + count + ".dat";
+			seq.saveToFile(outFile);
+			System.out.println("Saved to file " + outFile);
+		}
+	}
 	
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 		System.out.print("Problem id: ");
 		int problemId = keyboard.nextInt();
-		execute(problemId);
+		System.out.print("Output dir: " );
+		String outputDir = keyboard.nextLine();
+		execute(problemId, outputDir);
 	}
 
-	public static void execute(int problemId) throws IOException {
+	public static void execute(int problemId, String outputDir) throws IOException {
 		Properties config = DBUtil.getConfigProperties();
 		JDBCDatabaseConfig.createFromProperties(config);
 		
 		CaptureAllEditSequencesForProblem cesp = new CaptureAllEditSequencesForProblem();
 		cesp.setProblemId(problemId);
+		cesp.setOutputDir(outputDir);
 		
 		cesp.capture();
-		
-		List<EditSequence> editSequenceList = cesp.getEditSequenceList();
-		System.out.println("Captured " + editSequenceList.size() + " edit sequences");
-		for (EditSequence seq : editSequenceList) {
-			System.out.print("User id=" + seq.getChangeList().get(0).getEvent().getUserId() + ", ");
-			System.out.println(seq.getChangeList().size() + " changes");
-		}
+		cesp.write();
 	}
 }
