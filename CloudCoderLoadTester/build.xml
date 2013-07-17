@@ -1,20 +1,15 @@
-<project name="CloudCoderLoadTester" default="javac">
+<project name="CloudCoderLoadTester" default="jar">
 	<property name="jarfile" value="cloudcoderLoadTester.jar"/>
-
 	
 	<path id="loadtester.classpath">
-		<fileset dir="..">
-			<!-- All jarfiles that the load tester needs. -->
-			<patternset id="loadtester.classpath.files">
-				<include name="CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
-				<include name="CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
-				<include name="CloudCoderLogging/lib/log4j*.jar"/>
-				<include name="CloudCoderLogging/lib/slf4j*.jar"/>
-				<include name="CloudCoder/war/WEB-INF/lib/gwt-servlet.jar"/>
-				<include name="CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar"/>
-				<include name="CloudCoderLoadTester/lib/SyncProxy-0.4.jar"/>
-			</patternset>
-		</fileset>
+		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+		<pathelement location="../CloudCoderLogging/lib/log4j-1.2.16.jar"/>
+		<pathelement location="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar"/>
+		<pathelement location="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar"/>
+		<pathelement location="../CloudCoder/war/WEB-INF/lib/gwt-servlet.jar"/>
+		<pathelement location="../CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar"/>
+		<pathelement location="../CloudCoderLoadTester/lib/SyncProxy-0.4.jar"/>
 		 <!-- for RPC service interfaces -->
 		<pathelement location="../CloudCoder/war/WEB-INF/classes"/>
 	</path>
@@ -42,6 +37,24 @@
 			classpathref="loadtester.classpath"
 			srcdir="src"
 			destdir="bin"/>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarfile}">
+			<fileset dir="bin" includes="**"/>
+			<fileset dir="../CloudCoder/war/WEB-INF/classes" includes="org/cloudcoder/app/client/rpc/*Service.class"/>
+			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/log4j-1.2.16.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoder/war/WEB-INF/lib/gwt-servlet.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLoadTester/lib/SyncProxy-0.4.jar" excludes="META-INF/**"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.app.loadtester.Main" />
+			</manifest>
+		</jar>
 	</target>
 	
 	<target name="clean">
