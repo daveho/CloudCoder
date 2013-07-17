@@ -1,0 +1,53 @@
+<project name="CloudCoderLoadTester" default="javac">
+	<property name="jarfile" value="cloudcoderLoadTester.jar"/>
+
+	
+	<path id="loadtester.classpath">
+		<fileset dir="..">
+			<!-- All jarfiles that the load tester needs. -->
+			<patternset id="loadtester.classpath.files">
+				<include name="CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+				<include name="CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+				<include name="CloudCoderLogging/lib/log4j*.jar"/>
+				<include name="CloudCoderLogging/lib/slf4j*.jar"/>
+				<include name="CloudCoder/war/WEB-INF/lib/gwt-servlet.jar"/>
+				<include name="CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar"/>
+				<include name="CloudCoderLoadTester/lib/SyncProxy-0.4.jar"/>
+			</patternset>
+		</fileset>
+		 <!-- for RPC service interfaces -->
+		<pathelement location="../CloudCoder/war/WEB-INF/classes"/>
+	</path>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="modelClassesPersist">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="rpcservices">
+		<ant dir="../CloudCoder" target="javac" inheritall="false"/>
+	</target>
+	
+	<target name="deps" depends="modelClasses,modelClassesPersist,rpcservices"/>
+	
+	<target name="javac" depends="deps">
+		<mkdir dir="bin"/>
+		<javac
+			source="1.6"
+			target="1.6"
+			debug="true"
+			classpathref="loadtester.classpath"
+			srcdir="src"
+			destdir="bin"/>
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="${jarfile}"/>
+	</target>
+</project>
