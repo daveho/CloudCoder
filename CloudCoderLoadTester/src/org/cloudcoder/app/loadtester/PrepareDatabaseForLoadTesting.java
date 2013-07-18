@@ -7,6 +7,12 @@ import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
 
+/**
+ * Prepare the webapp database for load testing.
+ * Right now, this just creates test user accounts.
+ * 
+ * @author David Hovemeyer
+ */
 public class PrepareDatabaseForLoadTesting {
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
@@ -20,14 +26,14 @@ public class PrepareDatabaseForLoadTesting {
 		Client client = new Client(hostConfig);
 		
 		// Must be logged in using an instructor account
-		System.out.println("Instructor username: ");
+		System.out.print("Instructor username: ");
 		String userName = keyboard.nextLine();
-		System.out.println("Instructor password: ");
+		System.out.print("Instructor password: ");
 		String password = keyboard.nextLine();
 		
 		client.login(userName, password);
 		
-		System.out.println("Course name: ");
+		System.out.print("Course name: ");
 		String courseName = keyboard.nextLine();
 
 		// Find the course and make sure user is really an instructor
@@ -50,7 +56,12 @@ public class PrepareDatabaseForLoadTesting {
 			System.exit(1);
 		}
 		
-		for (int n = 11; n <= 150; n++) {
+		System.out.print("Start user number: ");
+		int startUserNum = keyboard.nextInt();
+		System.out.print("End user number: ");
+		int endUserNum = keyboard.nextInt();
+		
+		for (int n = startUserNum; n <= endUserNum; n++) {
 			User user = new User();
 			String testUserName = "user" + n;
 			user.setUsername(testUserName);
