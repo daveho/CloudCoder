@@ -35,10 +35,10 @@ public class EditSequence implements Cloneable, Serializable {
 	}
 	
 	@Override
-	protected EditSequence clone() {
+	public EditSequence clone() {
 		try {
-			EditSequence dup = (EditSequence) super.clone();
-			dup.copyFrom(this);
+			EditSequence dup = (EditSequence) super.clone(); // shallow copy
+			dup.copyFrom(this); // deep copy!
 			return dup;
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Should not happen", e);
@@ -52,11 +52,19 @@ public class EditSequence implements Cloneable, Serializable {
 	 */
 	public void copyFrom(EditSequence other) {
 		this.exerciseName = other.exerciseName;
+		
+		// Create a completely independent change list, with cloned Change/Event objects
 		if (other.changeList == null) {
 			this.changeList = null;
 		} else {
 			this.changeList = new ArrayList<Change>();
-			this.changeList.addAll(other.changeList);
+			// Very important: clone all of the Change objects, so that we have a true deep copy.
+			// Otherwise, the clone will share the Change/Event objects, which is bad
+			// if any of them are modified.
+			for (Change c : other.changeList) {
+				this.changeList.add(c.duplicate());
+			}
+			
 		}
 	}
 

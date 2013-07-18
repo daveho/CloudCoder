@@ -84,4 +84,18 @@ public class ModelObjectUtil {
 			throw new IllegalArgumentException("Don't know how to convert string to " + cls.getName());
 		}
 	}
+
+	/**
+	 * Copy all field values from one object to another.
+	 * 
+	 * @param src   the source object
+	 * @param dest  the destination object
+	 */
+	public static<E extends IModelObject<E>> void copy(E src, E dest) {
+		ModelObjectSchema<? super E> schema = src.getSchema();
+		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
+			Object val = field.get(src);
+			field.setUntyped(dest, val);
+		}
+	}
 }

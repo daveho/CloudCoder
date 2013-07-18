@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionResult;
