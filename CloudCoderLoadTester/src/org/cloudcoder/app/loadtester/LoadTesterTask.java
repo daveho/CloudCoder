@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -41,13 +42,16 @@ public class LoadTesterTask implements Runnable {
 			doRun();
 		} catch (Exception e) {
 			System.err.println("LoadTesterTask caught exception: " + e.toString());
+			e.printStackTrace(System.err);
 		}
 	}
 
 	private void doRun() throws Exception {
 		Client client = new Client(hostConfig);
 		
-		client.login(userName, password);
+		if (!client.login(userName, password)) {
+			throw new RuntimeException("Could not log into " + userName + " account");
+		}
 		
 		PlayEditSequence player = new PlayEditSequence();
 		player.setClient(client);
