@@ -7,6 +7,7 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.User;
 
 public class LoadTesterTask implements Runnable {
 	private HostConfig hostConfig;
@@ -14,6 +15,7 @@ public class LoadTesterTask implements Runnable {
 	private String password;
 	private EditSequence editSequence;
 	private int repeatCount;
+	private Client client;
 
 	public void setHostConfig(HostConfig hostConfig) {
 		this.hostConfig = hostConfig;
@@ -40,13 +42,20 @@ public class LoadTesterTask implements Runnable {
 		try {
 			doRun();
 		} catch (Exception e) {
-			System.err.println("LoadTesterTask caught exception: " + e.toString());
+			StringBuilder buf = new StringBuilder();
+			buf.append("LoadTesterTask");
+			if (client != null && client.getUser() != null) {
+				buf.append(" (user=");
+				buf.append(client.getUser().getUsername());
+				buf.append(")");
+			}
+			buf.append(" caught exception: " + e.toString());
 			e.printStackTrace(System.err);
 		}
 	}
 
 	private void doRun() throws Exception {
-		Client client = new Client(hostConfig);
+		this.client = new Client(hostConfig);
 		
 		if (!client.login(userName, password)) {
 			throw new RuntimeException("Could not log into " + userName + " account");
