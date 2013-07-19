@@ -1,8 +1,11 @@
 package org.cloudcoder.app.loadtester;
 
+import java.io.IOException;
 import java.net.CookieManager;
-import java.net.CookiePolicy;
+import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.client.rpc.EditCodeService;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
@@ -23,21 +26,44 @@ import org.cloudcoder.app.shared.model.User;
 
 import com.gdevelop.gwt.syncrpc.SyncProxy;
 import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A client that can communicate with a CloudCoder webapp via
  * GWT RPC.  Note that unlike normal GWT RPC, this client is
- * synchronous.
+ * synchronous.  Uses {@link LoadTesterCookieHandler} to
+ * force per-thread cookie management.  This means that a single
+ * Client object must only be used by one thread, but that
+ * it is safe to use many Clients in many threads.
+ * (Which, of course, is the whole point of load testing!)
  * 
  * @author David Hovemeyer
  * @see https://code.google.com/p/gwt-syncproxy/
  */
 public class Client {
+	/**
+	 * A {@link CookieManager} that <em>always</em> delegates to
+	 * {@link LoadTesterCookieHandler}, which in turn is guaranteed to
+	 * a thread-local {@link CookieManager}.
+	 */
+	private static class ClientCookieManager extends CookieManager {
+		@Override
+		public Map<String, List<String>> get(URI uri,
+				Map<String, List<String>> requestHeaders)
+				throws IOException {
+			return LoadTesterCookieHandler.getInstance().get(uri, requestHeaders);
+		}
+
+		@Override
+		public void put(URI uri,
+				Map<String, List<String>> responseHeaders)
+				throws IOException {
+			LoadTesterCookieHandler.getInstance().put(uri, responseHeaders);
+		}
+	}
+
 	private HostConfig hostConfig;
 	private HashMap<Class<?>, Object> serviceMap;
 	private User user;
-	private CookieManager cookieManager;
 	
 	/**
 	 * Constructor.
@@ -47,14 +73,12 @@ public class Client {
 	public Client(HostConfig hostConfig) {
 		this.hostConfig = hostConfig;
 		this.serviceMap = new HashMap<Class<?>, Object>();
-		this.cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 	}
 	
 	private<E extends RemoteService> E getService(Class<E> cls) {
 		Object obj = serviceMap.get(cls);
 		if (obj == null) {
-			String relativePath = getRelativePath(cls);
-			obj = SyncProxy.newProxyInstance(cls, createModuleBaseUrl(), relativePath, this.cookieManager);
+			obj = SyncProxy.newProxyInstance(cls, createModuleBaseUrl(), new ClientCookieManager());
 			serviceMap.put(cls, obj);
 		}
 		return cls.cast(obj);
@@ -75,14 +99,6 @@ public class Client {
 		buf.append("/");
 		
 		return buf.toString();
-	}
-	
-	private static<E extends RemoteService> String getRelativePath(Class<E> svcClass) {
-		RemoteServiceRelativePath p = svcClass.getAnnotation(RemoteServiceRelativePath.class);
-		if (p == null) {
-			throw new IllegalStateException(svcClass.getName() + " has no @RemoteServiceRelativePath annotation");
-		}
-		return p.value();
 	}
 	
 	/**

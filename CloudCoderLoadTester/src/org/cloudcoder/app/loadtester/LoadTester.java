@@ -1,5 +1,7 @@
 package org.cloudcoder.app.loadtester;
 
+import java.net.CookieHandler;
+
 /**
  * Load tester: creates {@link LoadTesterTask}s and runs them
  * in as many threads as necessary to achieve the desired degree
@@ -76,6 +78,12 @@ public class LoadTester {
 	 * Execute the tasks and wait for them to complete.
 	 */
 	public void execute() {
+		// Set LoadTesterCookieHandler singleton instance as the global
+		// default cookie handler.  This will create per-thread
+		// CookieManagers, so that each load tester task thread will
+		// have its own cookie store.
+		CookieHandler.setDefault(LoadTesterCookieHandler.getInstance());
+		
 		// If a max pause time was set, compress the edit sequences
 		if (maxPause > 0) {
 			for (EditSequence seq : mix.getEditSequenceList()) {
