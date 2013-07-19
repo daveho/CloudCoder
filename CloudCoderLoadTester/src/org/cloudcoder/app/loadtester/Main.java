@@ -40,6 +40,8 @@ public class Main {
 			loadTester.setRepeatCount(repeatCount);
 			
 			loadTester.execute();
+		} else if (command.equals("createTestUsers")) {
+			CreateTestUsers.createTestUserAccounts();
 		} else {
 			System.out.println("Unknown command: " + command);
 			opts.usage();

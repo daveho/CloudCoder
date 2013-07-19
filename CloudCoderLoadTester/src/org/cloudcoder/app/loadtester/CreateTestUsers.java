@@ -8,19 +8,25 @@ import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
 
 /**
- * Prepare the webapp database for load testing.
- * Right now, this just creates test user accounts.
+ * Create test user accounts for load testing.
  * 
  * @author David Hovemeyer
  */
-public class PrepareDatabaseForLoadTesting {
-	public static void main(String[] args) throws Exception {
-		Scanner keyboard = new Scanner(System.in);
-		createTestUserAccounts(keyboard);
-	}
-
-	private static void createTestUserAccounts(Scanner keyboard)
+public class CreateTestUsers {
+	/**
+	 * Interactively create test user accounts for load testing.
+	 * User will be prompted to enter username, password (for an instructor
+	 * account), course name, and minumum and maximum test user
+	 * numbers.  Each account will be named "userN", where N is
+	 * an integer in the specified range, and the password for
+	 * each account will be the same as the username.
+	 *  
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public static void createTestUserAccounts()
 			throws CloudCoderAuthenticationException {
+		@SuppressWarnings("resource")
+		Scanner keyboard = new Scanner(System.in);
 		HostConfig hostConfig = HostConfigDatabase.forName("default");
 		
 		Client client = new Client(hostConfig);
