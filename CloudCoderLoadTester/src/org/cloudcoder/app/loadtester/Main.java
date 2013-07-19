@@ -29,7 +29,7 @@ public class Main {
 			Mix mix = MixDatabase.forName(mixName);
 			int numThreads = mix.size();
 			if (opts.hasOption("numThreads")) {
-				opts.getOptValAsInt("numThreads");
+				numThreads = opts.getOptValAsInt("numThreads");
 			}
 			int repeatCount = opts.getOptValAsInt("repeatCount");
 			
