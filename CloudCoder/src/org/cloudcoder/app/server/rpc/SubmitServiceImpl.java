@@ -128,9 +128,11 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 				(Change) session.getAttribute(SessionAttributeKeys.FULL_TEXT_CHANGE_KEY);
 		
 		if (future == null) {
+			logger.warn("checkSubmission: No pending submission in session for user {}", user.getUsername());
 			throw new SubmissionException("No pending submission in session");
 		}
 		if (fullTextChange == null) {
+			logger.warn("checkSubmission: No full-text change in session for user {}", user.getUsername());
 			throw new SubmissionException("No full-text change for pending submission in session");
 		}
 		
@@ -141,6 +143,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 		} catch (SubmissionException e) {
 			// If poll() throws an exception, the submission completed
 			// with an error, but it did complete, so clear the session objects.
+			logger.warn("checkSubmission: exception polling for submission result", e);
 			clearSessionObjects(session);
 			throw e;
 		}

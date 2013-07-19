@@ -213,6 +213,10 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// Make sure all Changes have proper user id
 		for (Change change : changeList) {
 			if (change.getEvent().getUserId() != user.getId()) {
+				logger.warn(
+						"logChange: Submitted change for user {} has incorrect user id {}",
+						user.getUsername()+":"+user.getId(),
+						change.getEvent().getUserId());
 				throw new CloudCoderAuthenticationException();
 			}
 		}
