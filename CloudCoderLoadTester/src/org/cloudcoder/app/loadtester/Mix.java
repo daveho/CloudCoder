@@ -8,7 +8,7 @@ import java.util.List;
  * 
  * @author David Hovemeyer
  */
-public class Mix {
+public class Mix implements Cloneable {
 	private List<EditSequence> editSequenceList;
 	
 	/**
@@ -16,6 +16,30 @@ public class Mix {
 	 */
 	public Mix() {
 		this.editSequenceList = new ArrayList<EditSequence>();
+	}
+	
+	/**
+	 * @return the list of {@link EditSequence}s
+	 */
+	public List<EditSequence> getEditSequenceList() {
+		return editSequenceList;
+	}
+	
+	@Override
+	public Mix clone() {
+		try {
+			Mix dup = (Mix) super.clone();
+			
+			// Deep copy all of the EditSequences in the Mix
+			dup.editSequenceList = new ArrayList<EditSequence>();
+			for (EditSequence seq : this.editSequenceList) {
+				dup.editSequenceList.add(seq.clone());
+			}
+			
+			return dup;
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Should not happen");
+		}
 	}
 	
 	/**

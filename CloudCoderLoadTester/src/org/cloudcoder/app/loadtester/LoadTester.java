@@ -13,6 +13,7 @@ public class LoadTester {
 	private Mix mix;
 	private int numThreads;
 	private int repeatCount;
+	private long maxPause;
 
 	/**
 	 * Constructor.
@@ -36,7 +37,9 @@ public class LoadTester {
 	 * @param mix the {@link Mix}
 	 */
 	public void setMix(Mix mix) {
-		this.mix = mix;
+		// Make a clone of the Mix, since we may modify the EditSequences
+		// (e.g., to set a minimim pause time)
+		this.mix = mix.clone();
 	}
 	
 	/**
@@ -56,11 +59,32 @@ public class LoadTester {
 	public void setRepeatCount(int repeatCount) {
 		this.repeatCount = repeatCount;
 	}
+
+	/**
+	 * Set the maximum pause between events, in milliseconds.
+	 * If the max pause time is set to 0, then there will be no maximum
+	 * pause time (and the {@link EditSequence}s will be played back
+	 * using their original timing).
+	 * 
+	 * @param maxPause the max pause between events, in milliseconds
+	 */
+	public void setMaxPause(long maxPause) {
+		this.maxPause = maxPause;
+	}
 	
 	/**
 	 * Execute the tasks and wait for them to complete.
 	 */
 	public void execute() {
+		// If a max pause time was set, compress the edit sequences
+		if (maxPause > 0) {
+			for (EditSequence seq : mix.getEditSequenceList()) {
+				CompressEditSequence c = new CompressEditSequence();
+				c.setMaxPauseTime(maxPause);
+				c.compress(seq);
+			}
+		}
+		
 		// Create tasks
 		LoadTesterTask[] tasks = new LoadTesterTask[numThreads];
 		
