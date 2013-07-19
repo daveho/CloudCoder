@@ -58,7 +58,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	@Override
 	public void submit(int problemId, String programText) throws CloudCoderAuthenticationException, SubmissionException, QuizEndedException {
 		// Make sure that client is authenticated and has permission to edit the given problem
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		HttpSession session = getThreadLocalRequest().getSession();
 
@@ -111,7 +111,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
 	@Override
 	public SubmissionResult checkSubmission() throws CloudCoderAuthenticationException, SubmissionException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		HttpSession session = getThreadLocalRequest().getSession();
 
