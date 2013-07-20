@@ -46,6 +46,7 @@ import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
@@ -651,5 +652,13 @@ public interface IDatabase {
 	 * @return the test results, or an empty list if the user isn't permitted to access them
 	 */
 	public NamedTestResult[] getTestResultsForSubmission(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
+	
+	/**
+	 * Get list of {@link RepoProblemRating}s for a given repository problem (exercise).
+	 * 
+	 * @param repoProblemId the unique id of a repository problem (exercise)
+	 * @return list of {@link RepoProblemRating}s for the exercise
+	 */
+	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId);
 
 }

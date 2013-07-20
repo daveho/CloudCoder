@@ -54,6 +54,7 @@ import org.cloudcoder.app.server.persist.txn.GetOrAddLatestSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsForUserInCourse;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
+import org.cloudcoder.app.server.persist.txn.GetRatingsForRepoProblem;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
@@ -106,6 +107,7 @@ import org.cloudcoder.app.shared.model.ProblemSummary;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
@@ -500,6 +502,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public NamedTestResult[] getTestResultsForSubmission(final User authenticatedUser, final Problem problem, final SubmissionReceipt receipt) {
 		return databaseRun(new GetTestResultsForSubmission(receipt, authenticatedUser, problem));
+	}
+	
+	@Override
+	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId) {
+		return databaseRun(new GetRatingsForRepoProblem(repoProblemId));
 	}
 
 	/**
