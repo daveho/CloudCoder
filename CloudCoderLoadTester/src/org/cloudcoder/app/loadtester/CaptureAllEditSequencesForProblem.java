@@ -18,14 +18,12 @@
 
 package org.cloudcoder.app.loadtester;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
 import org.cloudcoder.app.server.persist.util.DBUtil;
