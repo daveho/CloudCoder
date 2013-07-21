@@ -18,11 +18,9 @@
 
 package org.cloudcoder.app.loadtester;
 
-import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cloudcoder.app.shared.model.Change;
-import org.cloudcoder.app.shared.model.ChangeType;
-import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 
@@ -32,12 +30,40 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
  * @author David Hovemeyer
  */
 public class LoadTesterTask implements Runnable {
+	private static final ThreadLocal<LoadTesterTask> threadLocalTask = new ThreadLocal<LoadTesterTask>();
+	
+	private static final AtomicInteger sequence = new AtomicInteger(0);
+	
+	private int sequenceNumber;
 	private HostConfig hostConfig;
 	private String userName;
 	private String password;
 	private EditSequence editSequence;
 	private int repeatCount;
 	private Client client;
+	private ICallback<Change[]> onSend;
+	private ICallback<SubmissionResult> onSubmissionResult;
+	
+	/**
+	 * Constructor.
+	 */
+	public LoadTesterTask() {
+		this.sequenceNumber = sequence.incrementAndGet();
+	}
+	
+	/**
+	 * @return the task running in the current thread
+	 */
+	public static LoadTesterTask getCurrent() {
+		return threadLocalTask.get();
+	}
+	
+	/**
+	 * @return the sequence number of this task
+	 */
+	public int getSequenceNumber() {
+		return sequenceNumber;
+	}
 
 	/**
 	 * Set the {@link HostConfig} (how to connect to the webapp).
@@ -84,9 +110,29 @@ public class LoadTesterTask implements Runnable {
 		this.repeatCount = repeatCount;
 	}
 	
+	/**
+	 * Set the on send callback, invoked when {@link Change}s are sent.
+	 * 
+	 * @param onSend the on send callback
+	 */
+	public void setOnSend(ICallback<Change[]> onSend) {
+		this.onSend = onSend;
+	}
+	
+	/**
+	 * Set the on submission result callback, invoked when a {@link SubmissionResult}
+	 * is received.
+	 * 
+	 * @param onSubmissionResult the on submission result callback
+	 */
+	public void setOnSubmissionResult(ICallback<SubmissionResult> onSubmissionResult) {
+		this.onSubmissionResult = onSubmissionResult;
+	}
+	
 	@Override
 	public void run() {
 		try {
+			threadLocalTask.set(this);
 			doRun();
 		} catch (Exception e) {
 			StringBuilder buf = new StringBuilder();
@@ -114,32 +160,8 @@ public class LoadTesterTask implements Runnable {
 		player.setEditSequence(editSequence);
 		player.setSubmitOnFullTextChange(true);
 		
-		player.setOnSend(new ICallback<Change[]>() {
-			@Override
-			public void call(Change[] value) {
-				if (value.length == 1 && value[0].getType() == ChangeType.FULL_TEXT) {
-					System.out.print("\u2191");
-				} else {
-					char[] a = new char[value.length];
-					Arrays.fill(a, '.');
-					System.out.print(new String(a));
-				}
-				System.out.flush();
-			}
-		});
-		player.setOnSubmissionResult(new ICallback<SubmissionResult>() {
-			public void call(SubmissionResult value) {
-				char c;
-				if (value.getCompilationResult().getOutcome() != CompilationOutcome.SUCCESS
-						|| value.getNumTestsPassed() < value.getNumTestsAttempted()) {
-					c = '\u2639';
-				} else {
-					c = '\u263A';
-				}
-				System.out.print(String.valueOf(c));
-				System.out.flush();
-			}
-		});
+		player.setOnSend(onSend);
+		player.setOnSubmissionResult(onSubmissionResult);
 		
 		player.setup();
 		

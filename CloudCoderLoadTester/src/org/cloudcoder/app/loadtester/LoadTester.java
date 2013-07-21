@@ -96,6 +96,9 @@ public class LoadTester {
 	 * Execute the tasks and wait for them to complete.
 	 */
 	public void execute() {
+		// Ensure that the activity reporter's monitor thread is running
+		LoadTesterActivityReporter.getInstance().start();
+		
 		// Set LoadTesterCookieHandler singleton instance as the global
 		// default cookie handler.  This will create per-thread
 		// CookieManagers, so that each load tester task thread will
@@ -128,6 +131,8 @@ public class LoadTester {
 			tasks[i].setHostConfig(hostConfig);
 			tasks[i].setEditSequence(mix.get(seqIndex));
 			tasks[i].setRepeatCount(repeatCount);
+			tasks[i].setOnSend(LoadTesterActivityReporter.getInstance().getOnSendCallback());
+			tasks[i].setOnSubmissionResult(LoadTesterActivityReporter.getInstance().getOnSubmissionResultCallback());
 			
 			seqIndex++;
 			if (seqIndex >= mix.size()) {
