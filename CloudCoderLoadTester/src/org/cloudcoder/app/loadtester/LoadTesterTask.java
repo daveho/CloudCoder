@@ -26,6 +26,11 @@ import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 
+/**
+ * Runnable for running a single {@link LoadTester} thread.
+ * 
+ * @author David Hovemeyer
+ */
 public class LoadTesterTask implements Runnable {
 	private HostConfig hostConfig;
 	private String userName;
@@ -34,22 +39,47 @@ public class LoadTesterTask implements Runnable {
 	private int repeatCount;
 	private Client client;
 
+	/**
+	 * Set the {@link HostConfig} (how to connect to the webapp).
+	 * 
+	 * @param hostConfig the {@link HostConfig}
+	 */
 	public void setHostConfig(HostConfig hostConfig) {
 		this.hostConfig = hostConfig;
 	}
 	
+	/**
+	 * Set username of the test user account to use for this thread.
+	 * 
+	 * @param userName the username
+	 */
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
 	
+	/**
+	 * Set the password of the test user account to use for this thread.
+	 * 
+	 * @param password the password
+	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 	
+	/**
+	 * Set the {@link EditSequence} to play.
+	 * 
+	 * @param editSequence the {@link EditSequence}
+	 */
 	public void setEditSequence(EditSequence editSequence) {
 		this.editSequence = editSequence;
 	}
 	
+	/**
+	 * Set the repeat count: how many times to repeat playing the {@link EditSequence}.
+	 * 
+	 * @param repeatCount the repeat count
+	 */
 	public void setRepeatCount(int repeatCount) {
 		this.repeatCount = repeatCount;
 	}
@@ -67,6 +97,7 @@ public class LoadTesterTask implements Runnable {
 				buf.append(")");
 			}
 			buf.append(" caught exception: " + e.toString());
+			System.err.println(buf.toString());
 			e.printStackTrace(System.err);
 		}
 	}
