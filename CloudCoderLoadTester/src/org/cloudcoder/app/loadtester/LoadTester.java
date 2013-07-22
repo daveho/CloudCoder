@@ -160,6 +160,8 @@ public class LoadTester {
 		
 		long end = System.currentTimeMillis();
 		
-		System.out.println("\nLoad testing completed in " + (end-begin) + " milliseconds");
+		System.out.println("\nLoad testing completed in " + (end-begin)/1000L + " seconds");
+		System.out.println(LoadTesterActivityReporter.getInstance().getRecoverableExceptionCount() + " recoverable exceptions");
+		System.out.println(LoadTesterActivityReporter.getInstance().getUnrecoverableExceptionCount() + " unrecoverable exceptions");
 	}
 }

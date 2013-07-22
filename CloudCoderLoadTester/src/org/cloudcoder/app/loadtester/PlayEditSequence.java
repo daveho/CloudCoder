@@ -20,6 +20,7 @@ package org.cloudcoder.app.loadtester;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -148,9 +149,9 @@ public class PlayEditSequence {
 	 * Prepare to play the {@link EditSequence}.
 	 * This should be called once, before the first call to {@link #play()}.
 	 * 
-	 * @throws CloudCoderAuthenticationException
+	 * @throws Exception
 	 */
-	public void setup() throws CloudCoderAuthenticationException {
+	public void setup() throws Exception {
 		// Fix up all of the Change objects by resetting the event id
 		// to the default (0) value and changing the user id to that of the
 		// logged-in user.
@@ -165,7 +166,7 @@ public class PlayEditSequence {
 		}
 		
 		// Find the Problem (exercise)
-		CourseAndCourseRegistration[] courses = client.getRegisteredCourses();
+		CourseAndCourseRegistration[] courses = doGetCourses();
 		for (CourseAndCourseRegistration c : courses) {
 			Problem[] problems = client.getProblemsForCourse(c.getCourse());
 			for (Problem p : problems) {
@@ -179,7 +180,26 @@ public class PlayEditSequence {
 		}
 		
 		// Set the Problem
-		client.setProblem(problem);
+		doSetProblem();
+	}
+
+	private CourseAndCourseRegistration[] doGetCourses() throws Exception {
+		return Util.doRPC(new Callable<CourseAndCourseRegistration[]>() {
+			@Override
+			public CourseAndCourseRegistration[] call() throws Exception {
+				return client.getRegisteredCourses();
+			}
+		});
+	}
+
+	private void doSetProblem() throws Exception {
+		Util.doRPC(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				client.setProblem(problem);
+				return true;
+			}
+		});
 	}
 	
 	/**
@@ -189,12 +209,9 @@ public class PlayEditSequence {
 	 * and can be called any number of times.
 	 * 
 	 * @param onSend callback to invoke when Changes are sent
-	 * @throws CloudCoderAuthenticationException
-	 * @throws InterruptedException 
-	 * @throws QuizEndedException 
-	 * @throws SubmissionException 
+	 * @throws Exception
 	 */
-	public void play() throws CloudCoderAuthenticationException, InterruptedException, QuizEndedException, SubmissionException {
+	public void play() throws Exception {
 		boolean done = false;
 		
 		// Schedule the first "timer" event where a batch of Changes
@@ -235,17 +252,14 @@ public class PlayEditSequence {
 					if (onSend != null) {
 						onSend.call(arr);
 					}
-					client.sendChanges(arr);
+					doSendChanges(arr);
 
 					// Special case: if full text-changes are treated as submissions,
 					// and this batch is a single full-text change (but not the first
 					// one, which is assumed to be the skeleton code), then submit the code
 					if (submitOnFullTextChange && batch.get(0).getType() == ChangeType.FULL_TEXT) {
 						if (fullTextChangeCount > 0) {
-							SubmissionResult submissionResult = client.submitCode(
-									problem.getProblemId(),
-									batch.get(0).getText(),
-									pollSubmissionIntervalMs);
+							SubmissionResult submissionResult = doSubmitCode(batch);
 							if (onSubmissionResult != null) {
 								onSubmissionResult.call(submissionResult);
 							}
@@ -264,6 +278,28 @@ public class PlayEditSequence {
 				}
 			}
 		}
+	}
+
+	private void doSendChanges(final Change[] arr) throws Exception {
+		Util.doRPC(new Callable<Boolean>(){
+			@Override
+			public Boolean call() throws Exception {
+				client.sendChanges(arr);
+				return true;
+			}
+		});
+	}
+
+	private SubmissionResult doSubmitCode(final List<Change> batch) throws Exception {
+		return Util.doRPC(new Callable<SubmissionResult>(){
+			@Override
+			public SubmissionResult call() throws Exception {
+				return client.submitCode(
+						problem.getProblemId(),
+						batch.get(0).getText(),
+						pollSubmissionIntervalMs);
+			}
+		});
 	}
 
 	/**

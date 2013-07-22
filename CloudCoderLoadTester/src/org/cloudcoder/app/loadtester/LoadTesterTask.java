@@ -18,6 +18,8 @@
 
 package org.cloudcoder.app.loadtester;
 
+import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cloudcoder.app.shared.model.Change;
@@ -135,6 +137,7 @@ public class LoadTesterTask implements Runnable {
 			threadLocalTask.set(this);
 			doRun();
 		} catch (Exception e) {
+			LoadTesterActivityReporter.getInstance().reportUnrecoverableException(e);
 			StringBuilder buf = new StringBuilder();
 			buf.append("LoadTesterTask");
 			if (client != null && client.getUser() != null) {
@@ -151,7 +154,16 @@ public class LoadTesterTask implements Runnable {
 	private void doRun() throws Exception {
 		this.client = new Client(hostConfig);
 		
-		if (!client.login(userName, password)) {
+		// Random delay to avoid all of the LoadTesterTasks logging in at exactly the same time
+		randomDelay(0, 10000);
+		
+		boolean loginSucceeded = Util.doRPC(new Callable<Boolean>() { 
+			@Override
+			public Boolean call() throws Exception {
+				return client.login(userName, password);
+			}
+		});
+		if (!loginSucceeded) {
 			throw new RuntimeException("Could not log into " + userName + " account");
 		}
 		
@@ -168,6 +180,13 @@ public class LoadTesterTask implements Runnable {
 		for (int i = 0; i < repeatCount; i++) {
 			player.play();
 		}
+	}
+
+	private static Random delayRNG = new Random();
+	
+	private static void randomDelay(int min, int max) throws InterruptedException {
+		long delay = min + delayRNG.nextInt(max - min);
+		Thread.sleep(delay);
 	}
 
 }

@@ -21,6 +21,7 @@ package org.cloudcoder.app.loadtester;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -31,7 +32,9 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 /**
  * Singleton class to report load tester activity to the terminal
  * using colors and text characters.  Assumes that the terminal
- * is capable of displaying 256 colors.
+ * is capable of displaying 256 colors.  Also keeps track of some
+ * useful stats such as the number of exceptions (recoverable and
+ * unrecoverable).
  * 
  * @author David Hovemeyer
  */
@@ -67,12 +70,19 @@ public class LoadTesterActivityReporter {
 		}
 	}
 	
+	private static class RecoverableExceptionItem extends Item {
+		public RecoverableExceptionItem(int taskNumber) {
+			super(taskNumber);
+		}
+	}
+	
 	private class MonitorTask implements Runnable {
 		private static final String FULL_TEXT = "\u2191"; // up arrow
 		private static final String UNSUCCESSFUL_SUBMISSION = "\u2717"; // ballot X
 		private static final String SUCCESSFUL_SUBMISSION = "\u2713";   // check mark
 //		private static final String UNSUCCESSFUL_SUBMISSION = "\u2639"; // frowney
 //		private static final String SUCCESSFUL_SUBMISSION = "\u263A";   // smiley
+		private static final String RECOVERABLE_EXCEPTION = "\u2620"; // skull and crossbones
 
 		@Override
 		public void run() {
@@ -86,6 +96,8 @@ public class LoadTesterActivityReporter {
 						onSend(item.taskNumber, ((SendItem)item).numChanges);
 					} else if (item instanceof SubmissionResultItem) {
 						onSubmissionResult(item.taskNumber, ((SubmissionResultItem)item).success);
+					} else if (item instanceof RecoverableExceptionItem) {
+						onRecoverableException(item.taskNumber);
 					}
 				} catch (InterruptedException e) {
 					done = true;
@@ -105,6 +117,10 @@ public class LoadTesterActivityReporter {
 
 		private void onSubmissionResult(int taskNumber, boolean success) {
 			out(taskNumber, success ? SUCCESSFUL_SUBMISSION : UNSUCCESSFUL_SUBMISSION);
+		}
+
+		private void onRecoverableException(int taskNumber) {
+			out(taskNumber, RECOVERABLE_EXCEPTION);
 		}
 
 		private void out(int taskNumber, String str) {
@@ -156,8 +172,26 @@ public class LoadTesterActivityReporter {
 	
 	private AtomicBoolean started = new AtomicBoolean();
 	
+	private AtomicInteger recoverableExceptionCount;
+	private AtomicInteger unrecoverableExceptionCount;
+	
 	private LoadTesterActivityReporter() {
-		
+		recoverableExceptionCount = new AtomicInteger(0);
+		unrecoverableExceptionCount = new AtomicInteger(0);
+	}
+	
+	/**
+	 * @return the recoverable exception count
+	 */
+	public int getRecoverableExceptionCount() {
+		return recoverableExceptionCount.get();
+	}
+	
+	/**
+	 * @return the unrecoverable exception count
+	 */
+	public int getUnrecoverableExceptionCount() {
+		return unrecoverableExceptionCount.get();
 	}
 	
 	/**
@@ -192,5 +226,22 @@ public class LoadTesterActivityReporter {
 	 */
 	public ICallback<SubmissionResult> getOnSubmissionResultCallback() {
 		return ON_SUBMISISON_RESULT_CALLBACK;
+	}
+
+	/**
+	 * Report the occurrence of a recoverable exception.
+	 * @param ex the exception
+	 */
+	public void reportRecoverableException(Exception ex) {
+		activityQueue.add(new RecoverableExceptionItem(LoadTesterTask.getCurrent().getSequenceNumber()));
+		recoverableExceptionCount.incrementAndGet();
+	}
+	
+	/**
+	 * Report the occurrence of an unrecoverable exception.
+	 * @param ex the exception
+	 */
+	public void reportUnrecoverableException(Exception ex) {
+		unrecoverableExceptionCount.incrementAndGet();
 	}
 }
