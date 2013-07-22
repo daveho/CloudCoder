@@ -10,13 +10,34 @@ Load testing experiments
   Result:             worked fine?
 
   Mix:                skip3
+  Num threads:        250
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion: 744 seconds
+  Result:             some connection timeouts initially;
+                      clean run after adding random delay prior to login
+                      (see below)
+  Notes:              modified load LoadTesterTask/PlayEditSequence to add a
+                      0-10 second random delay prior to login (to avoid a
+                      thundering herd situation), and to retry all RPC
+                      operations (up to 3 attempts total)
+
+  Mix:                skip3
   Num threads:        351
   Max pause (ms):     5000
   Webapp server:      lobsang (3-core AMD, 8GB RAM)
   MySQL:              local, local filesystem
   Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
-  Time to completion:
-  Result:             some connection timeouts initially
+  Time to completion: 1008 seconds
+  Result:             clean run
+  Notes:              CPU utilization around 40% (bursting to 50%): workload on
+                      webapp/MySQL enough to saturate one CPU core.  From running
+                      top, the webapp and MySQL seem to be consuming CPU about
+                      equally.  The build server is quite heavily loaded (close
+                      to 100% CPU utilization); should try experiment using
+                      multiple build servers.
 
   Mix:                skip3
   Num threads:        117
