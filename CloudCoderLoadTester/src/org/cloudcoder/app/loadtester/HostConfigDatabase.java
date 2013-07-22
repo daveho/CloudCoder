@@ -21,11 +21,18 @@ package org.cloudcoder.app.loadtester;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Database of {@link HostConfig}s specifying how the {@link LoadTester}
+ * should connect to the webapp.
+ * 
+ * @author David Hovemeyer
+ */
 public class HostConfigDatabase {
 	private static final Map<String, HostConfig> HOST_CONFIG_MAP = new HashMap<String, HostConfig>();
 	static {
 		HOST_CONFIG_MAP.put("default", new HostConfig("http", "localhost", 8081, "cloudcoder/cloudcoder"));
 		HOST_CONFIG_MAP.put("ycp", new HostConfig("https", "cs.ycp.edu", 0, "cloudcoder/cloudcoder"));
+		HOST_CONFIG_MAP.put("lobsang", new HostConfig("http", "172.31.15.49", 8081, "cloudcoder/cloudcoder"));
 	}
 	
 	public static HostConfig forName(String name) {

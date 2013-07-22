@@ -68,6 +68,12 @@ public class LoadTesterActivityReporter {
 	}
 	
 	private class MonitorTask implements Runnable {
+		private static final String FULL_TEXT = "\u2191"; // up arrow
+		private static final String UNSUCCESSFUL_SUBMISSION = "\u2717"; // ballot X
+		private static final String SUCCESSFUL_SUBMISSION = "\u2713";   // check mark
+//		private static final String UNSUCCESSFUL_SUBMISSION = "\u2639"; // frowney
+//		private static final String SUCCESSFUL_SUBMISSION = "\u263A";   // smiley
+
 		@Override
 		public void run() {
 			boolean done = false;
@@ -88,7 +94,7 @@ public class LoadTesterActivityReporter {
 		}
 
 		private void onFullText(int taskNumber) {
-			out(taskNumber, "\u2191");
+			out(taskNumber, FULL_TEXT);
 		}
 
 		private void onSend(int taskNumber, int numChanges) {
@@ -98,7 +104,7 @@ public class LoadTesterActivityReporter {
 		}
 
 		private void onSubmissionResult(int taskNumber, boolean success) {
-			out(taskNumber, success ? "\u263A" : "\u2639");
+			out(taskNumber, success ? SUCCESSFUL_SUBMISSION : UNSUCCESSFUL_SUBMISSION);
 		}
 
 		private void out(int taskNumber, String str) {
@@ -118,7 +124,7 @@ public class LoadTesterActivityReporter {
 
 		private void unsetColor() {
 			// Restore to default terminal color
-			System.out.printf("%c[39m", 27);
+			System.out.printf("%c[0m", 27);
 			System.out.flush();
 		}
 	}

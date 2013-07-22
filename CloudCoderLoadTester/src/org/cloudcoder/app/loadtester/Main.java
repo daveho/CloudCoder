@@ -59,7 +59,17 @@ public class Main {
 
 	private static void doExecute(Options opts) {
 		String hostConfigName = opts.getOptVal("hostConfig");
-		HostConfig hostConfig = HostConfigDatabase.forName(hostConfigName);
+		HostConfig hostConfig;
+		if (hostConfigName.indexOf(",") >= 0) {
+			// Host config is specified in the form
+			//    protocol,hostname,port,contextPath
+			String[] fields = hostConfigName.split(",");
+			hostConfig = new HostConfig(fields[0], fields[1], Integer.parseInt(fields[2]), fields[3]);
+		} else {
+			// Host config is one of the named configs in HostConfigDatabase
+			hostConfig = HostConfigDatabase.forName(hostConfigName);
+		}
+
 		String mixName = opts.getOptVal("mix");
 		Mix mix = MixDatabase.forName(mixName);
 		int numThreads = mix.size();

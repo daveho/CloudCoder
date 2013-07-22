@@ -140,6 +140,8 @@ public class LoadTester {
 			}
 		}
 		
+		long begin = System.currentTimeMillis();
+		
 		// Create threads to execute the tasks, and start them
 		Thread[] threads = new Thread[numThreads];
 		for (int i = 0; i < numThreads; i++) {
@@ -156,6 +158,8 @@ public class LoadTester {
 			}
 		}
 		
-		System.out.println("\nLoading testing complete");
+		long end = System.currentTimeMillis();
+		
+		System.out.println("\nLoad testing completed in " + (end-begin) + " milliseconds");
 	}
 }
