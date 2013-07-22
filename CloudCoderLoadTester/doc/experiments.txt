@@ -1,0 +1,40 @@
+Load testing experiments
+
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion: 508 seconds
+  Result:             worked fine?
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion:
+  Result:             some connection timeouts initially
+
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      EC2 micro instance
+  MySQL:              local on default root EBS volume
+  Builder:            8-core 
+  Time to completion: 
+  Result:
+
+
+
+
+  Mix: 
+  Num threads:
+  Max pause (ms):
+  Webapp server:
+  MySQL:
+  Builder: 
+  Time to completion:
+  Result:
