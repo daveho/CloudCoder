@@ -90,6 +90,13 @@ public abstract class JettyDaemon implements IDaemon {
 		 *         be used as-is
 		 */
 		public Properties getContextParamOverrides();
+		
+		/**
+		 * Get the number of threads that Jetty should use to handle requests.
+		 * 
+		 * @return number of threads
+		 */
+		public int getNumThreads();
 	}
 
 	private Server server;
@@ -203,7 +210,8 @@ public abstract class JettyDaemon implements IDaemon {
 		server.setHandler(handler);
 
 		// Other misc. options
-		server.setThreadPool(new QueuedThreadPool(20));
+		int numThreads = jettyConfig.getNumThreads();
+		server.setThreadPool(new QueuedThreadPool(numThreads));
 
 		// And start it up
 		System.out.println("Starting up the server...");

@@ -82,6 +82,11 @@ public class CloudCoderRepositoryDaemon extends JettyDaemon {
 			public String getContext() {
 				return configProperties.getProperty("cloudcoder.repoapp.webserver.contextpath", "/repo");
 			}
+			
+			@Override
+			public int getNumThreads() {
+				return Integer.parseInt(configProperties.getProperty("cloudcoder.repoapp.webserver.numThreads", "20"));
+			}
 		};
 	}
 
