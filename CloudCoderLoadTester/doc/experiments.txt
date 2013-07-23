@@ -40,6 +40,16 @@ Load testing experiments
                       multiple build servers.
 
   Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 623
+  Result:             clean run
+  Notes:              Multiple build servers are definitely helpful
+
+  Mix:                skip3
   Num threads:        117
   Max pause (ms):     5000
   Webapp server:      EC2 micro instance
