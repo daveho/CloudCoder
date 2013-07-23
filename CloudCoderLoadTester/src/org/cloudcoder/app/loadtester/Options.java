@@ -114,6 +114,6 @@ public class Options {
 		System.out.println("Commands:");
 		System.out.println("  captureAllEditSequences problemId=<problem id>");
 		System.out.println("  execute hostConfig=<host config name> mix=<mix name> [numThreads=<n>] [repeatCount=<n>] [maxPause=<ms>]");
-		System.out.println("  createTestUsers");
+		System.out.println("  createTestUsers [hostConfig=<host config name>]");
 	}
 }

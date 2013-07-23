@@ -38,14 +38,14 @@ public class CreateTestUsers {
 	 * numbers.  Each account will be named "userN", where N is
 	 * an integer in the specified range, and the password for
 	 * each account will be the same as the username.
-	 *  
+	 * 
+	 * @param hostConfig the {@link HostConfig} specifying how to connect to the webapp
 	 * @throws CloudCoderAuthenticationException
 	 */
-	public static void createTestUserAccounts()
+	public static void createTestUserAccounts(HostConfig hostConfig)
 			throws CloudCoderAuthenticationException {
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
-		HostConfig hostConfig = HostConfigDatabase.forName("default");
 		
 		Client client = new Client(hostConfig);
 		

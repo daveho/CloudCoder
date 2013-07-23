@@ -50,14 +50,18 @@ Load testing experiments
   Notes:              Multiple build servers are definitely helpful
 
   Mix:                skip3
-  Num threads:        117
+  Num threads:        60
   Max pause (ms):     5000
   Webapp server:      EC2 micro instance
   MySQL:              local on default root EBS volume
-  Builder:            8-core 
-  Time to completion: 
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 618
   Result:
-
+  Notes:              Very slow to start up, java (webapp) process consuming near 100%
+                      of CPU.  Are we triggering the bug where Jetty runs poorly on
+                      EC2?  Upgrade to more recent version of Jetty?
+                      During the run CPU utilization is more reasonable.
+                      Interestingly, mysql CPU utilization remains fairly low.
 
 
 
