@@ -25,15 +25,21 @@ public class Util {
 	 * Attempt to perform RPC, retrying up to 3 times if an exception occurs.
 	 * 
 	 * @param f the RPC operation to perform
+	 * @param key the key that will be used to identify this RPC operation
+	 *            for timing statistics collection/reporting
 	 * @return the result of the RPC operation
 	 * @throws Exception
 	 */
-	public static<E> E doRPC(Callable<E> f) throws Exception {
+	public static<E> E doRPC(Callable<E> f, Object key) throws Exception {
+		long begin = System.currentTimeMillis();
 		int retryCount = 0;
 		Exception e = null;
 		while (retryCount < 3) {
 			try {
-				return f.call();
+				E result = f.call();
+				long end = System.currentTimeMillis();
+				LoadTesterActivityReporter.getInstance().getStatsCollector().addStat(key, end - begin);
+				return result;
 			} catch (Exception ex) {
 				e = ex;
 				retryCount++;

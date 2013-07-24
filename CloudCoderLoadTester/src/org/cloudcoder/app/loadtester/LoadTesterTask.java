@@ -162,7 +162,7 @@ public class LoadTesterTask implements Runnable {
 			public Boolean call() throws Exception {
 				return client.login(userName, password);
 			}
-		});
+		}, "Login");
 		if (!loginSucceeded) {
 			throw new RuntimeException("Could not log into " + userName + " account");
 		}

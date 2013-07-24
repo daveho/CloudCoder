@@ -69,7 +69,7 @@ Load testing experiments
   Webapp server:      EC2 micro instance
   MySQL:              local on default root EBS volume
   Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
-  Time to completion: 878
+  Time to completion: 878, 536 (variation due to CPU availability?)
   Result:             clean run
   Notes:              CPU utilization by the webapp (not mysql!)
                       is extremely high in the startup phase.  Need to investigate.
@@ -87,6 +87,34 @@ Load testing experiments
   Notes:              same issue as others: very slow startup with high CPU
                       utilization from webapp
 
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 
+  Result:
+  Notes:
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 
+  Result:
+  Notes:
+    Load testing completed in 512 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=22, max=19749, mean=9714, median=9782
+    Login: min=4097, max=24306, mean=13449, median=13711
+    PollSubmissionResult: min=1064, max=12251, mean=1901, median=1073
+    SendChanges: min=21, max=576, mean=27, median=26
+    SetProblem: min=40, max=1503, mean=1066, median=1135
+
 
   Mix: 
   Num threads:
@@ -96,3 +124,4 @@ Load testing experiments
   Builder: 
   Time to completion:
   Result:
+  Notes:

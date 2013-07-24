@@ -19,6 +19,9 @@
 package org.cloudcoder.app.loadtester;
 
 import java.net.CookieHandler;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Load tester: creates {@link LoadTesterTask}s and runs them
@@ -97,7 +100,8 @@ public class LoadTester {
 	 */
 	public void execute() {
 		// Ensure that the activity reporter's monitor thread is running
-		LoadTesterActivityReporter.getInstance().start();
+		LoadTesterActivityReporter r = LoadTesterActivityReporter.getInstance();
+		r.start();
 		
 		// Set LoadTesterCookieHandler singleton instance as the global
 		// default cookie handler.  This will create per-thread
@@ -131,8 +135,8 @@ public class LoadTester {
 			tasks[i].setHostConfig(hostConfig);
 			tasks[i].setEditSequence(mix.get(seqIndex));
 			tasks[i].setRepeatCount(repeatCount);
-			tasks[i].setOnSend(LoadTesterActivityReporter.getInstance().getOnSendCallback());
-			tasks[i].setOnSubmissionResult(LoadTesterActivityReporter.getInstance().getOnSubmissionResultCallback());
+			tasks[i].setOnSend(r.getOnSendCallback());
+			tasks[i].setOnSubmissionResult(r.getOnSubmissionResultCallback());
 			
 			seqIndex++;
 			if (seqIndex >= mix.size()) {
@@ -161,7 +165,40 @@ public class LoadTester {
 		long end = System.currentTimeMillis();
 		
 		System.out.println("\nLoad testing completed in " + (end-begin)/1000L + " seconds");
-		System.out.println(LoadTesterActivityReporter.getInstance().getRecoverableExceptionCount() + " recoverable exceptions");
-		System.out.println(LoadTesterActivityReporter.getInstance().getUnrecoverableExceptionCount() + " unrecoverable exceptions");
+		System.out.println(r.getRecoverableExceptionCount() + " recoverable exceptions");
+		System.out.println(r.getUnrecoverableExceptionCount() + " unrecoverable exceptions");
+
+		List<Object> keys = r.getStatsCollector().getSortedKeys();
+		for (Object key : keys) {
+			List<Long> data = r.getStatsCollector().getData(key);
+			reportStats(key, data);
+		}
+	}
+
+	private void reportStats(Object key, List<Long> data) {
+		Long min = Collections.min(data);
+		Long max = Collections.max(data);
+		Long mean = findMean(data);
+		Long median = findMedian(data);
+		System.out.printf("%s: min=%d, max=%d, mean=%d, median=%d\n", key.toString(), min, max, mean, median);
+	}
+
+	private Long findMean(List<Long> data) {
+		long sum = 0;
+		for (Long l : data) {
+			sum += l;
+		}
+		return sum / data.size();
+	}
+
+	private Long findMedian(List<Long> data) {
+		Long[] a = data.toArray(new Long[data.size()]);
+		Arrays.sort(a);
+		int mid = a.length / 2;
+		if (a.length % 2 == 1) {
+			return a[mid];
+		} else {
+			return (a[mid-1] + a[mid]) / 2;
+		}
 	}
 }

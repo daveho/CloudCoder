@@ -174,10 +174,12 @@ public class LoadTesterActivityReporter {
 	
 	private AtomicInteger recoverableExceptionCount;
 	private AtomicInteger unrecoverableExceptionCount;
+	private StatsCollector statsCollector;
 	
 	private LoadTesterActivityReporter() {
 		recoverableExceptionCount = new AtomicInteger(0);
 		unrecoverableExceptionCount = new AtomicInteger(0);
+		statsCollector = new StatsCollector();
 	}
 	
 	/**
@@ -192,6 +194,13 @@ public class LoadTesterActivityReporter {
 	 */
 	public int getUnrecoverableExceptionCount() {
 		return unrecoverableExceptionCount.get();
+	}
+	
+	/**
+	 * @return the {@link StatsCollector}
+	 */
+	public StatsCollector getStatsCollector() {
+		return statsCollector;
 	}
 	
 	/**

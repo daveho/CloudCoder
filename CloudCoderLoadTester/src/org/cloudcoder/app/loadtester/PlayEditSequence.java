@@ -189,7 +189,7 @@ public class PlayEditSequence {
 			public CourseAndCourseRegistration[] call() throws Exception {
 				return client.getRegisteredCourses();
 			}
-		});
+		}, "GetRegisteredCourses");
 	}
 
 	private void doSetProblem() throws Exception {
@@ -199,7 +199,7 @@ public class PlayEditSequence {
 				client.setProblem(problem);
 				return true;
 			}
-		});
+		}, "SetProblem");
 	}
 	
 	/**
@@ -287,7 +287,7 @@ public class PlayEditSequence {
 				client.sendChanges(arr);
 				return true;
 			}
-		});
+		}, "SendChanges");
 	}
 
 	private SubmissionResult doSubmitCode(final List<Change> batch) throws Exception {
@@ -299,7 +299,7 @@ public class PlayEditSequence {
 						batch.get(0).getText(),
 						pollSubmissionIntervalMs);
 			}
-		});
+		}, "PollSubmissionResult");
 	}
 
 	/**
