@@ -127,6 +127,26 @@ Load testing experiments
     GetRegisteredCourses seems to be a performance issue.
     Consider optimizing it.
 
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 684 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=23, max=84807, mean=41905, median=44663
+    Login: min=5234, max=117782, mean=49711, median=48128
+    PollSubmissionResult: min=1067, max=39731, mean=13823, median=14278
+    SendChanges: min=21, max=5340, mean=96, median=29
+    SetProblem: min=91, max=6014, mean=4037, median=4208
+  Notes:
+    This run was testing the addition of an index on the user_id field
+    of cc_course_registrations.  Did not seem to improve startup performance.
+
   Mix: 
   Num threads:
   Max pause (ms):
