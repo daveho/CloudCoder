@@ -147,6 +147,45 @@ Load testing experiments
     This run was testing the addition of an index on the user_id field
     of cc_course_registrations.  Did not seem to improve startup performance.
 
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 690 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=25, max=87190, mean=43307, median=44118
+    Login: min=9538, max=114801, mean=52506, median=51189
+    PollSubmissionResult: min=1068, max=39774, mean=13976, median=14277
+    SendChanges: min=21, max=4738, mean=73, median=28
+    SetProblem: min=56, max=6936, mean=4926, median=5112
+  Notes:
+    Running with cloudcoder.webserver.numThreads=40 (normal default is 20)
+    Does not seem to improve performance.
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 696 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=37, max=47795, mean=20863, median=6385
+    Login: min=41257, max=125388, mean=73907, median=82404
+    PollSubmissionResult: min=1068, max=37693, mean=13205, median=12299
+    SendChanges: min=22, max=5651, mean=632, median=40
+    SetProblem: min=306, max=7683, mean=4826, median=4987
+  Notes:
+    Running with cloudcoder.webserver.numThreads=150 (normal default is 20)
+
   Mix: 
   Num threads:
   Max pause (ms):
