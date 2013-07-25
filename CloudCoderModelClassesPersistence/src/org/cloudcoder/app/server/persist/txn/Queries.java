@@ -196,7 +196,7 @@ public class Queries {
 	
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"select c.*, t.*, r.* from " + Course.SCHEMA.getDbTableName() + " as c, " + Term.SCHEMA.getDbTableName() + " as t, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
+				"select c.*, t.*, r.* from cc_courses as c, cc_terms as t, cc_course_registrations as r " +
 				" where c.id = r.course_id " + 
 				"   and c.term_id = t.id " +
 				"   and r.user_id = ? " +

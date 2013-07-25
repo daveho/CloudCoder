@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -66,14 +67,29 @@ public class CourseRegistration implements Serializable, IModelObject<CourseRegi
 	};
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<CourseRegistration> SCHEMA = new ModelObjectSchema<CourseRegistration>("course_registration")
+	public static final ModelObjectSchema<CourseRegistration> SCHEMA_V0 = new ModelObjectSchema<CourseRegistration>("course_registration")
 		.add(ID)
 		.add(COURSE_ID)
 		.add(USER_ID)
 		.add(REGISTRATION_TYPE)
 		.add(SECTION);
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<CourseRegistration> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+		// Add an index on user id: this is important for the initial query
+		// when a user logs in to retrieve the courses for which the
+		// user is registered.
+		.addIndexDelta(new ModelObjectIndex<CourseRegistration>(ModelObjectIndexType.NON_UNIQUE).addField(USER_ID))
+		.finishDelta();
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<CourseRegistration> SCHEMA = SCHEMA_V1;
 	
 	/**
 	 * Constructor.

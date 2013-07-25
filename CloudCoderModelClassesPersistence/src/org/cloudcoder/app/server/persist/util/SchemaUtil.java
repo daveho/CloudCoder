@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -28,6 +29,7 @@ import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.AddFieldDelta;
+import org.cloudcoder.app.shared.model.ModelObjectSchema.AddIndexToFieldDelta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.Delta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.DeltaType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.IncreaseFieldSizeDelta;
@@ -190,6 +192,8 @@ public class SchemaUtil {
 						applyDelta(conn, (PersistModelObjectDelta<?, ?>)delta_);
 					} else if (delta_ instanceof IncreaseFieldSizeDelta) {
 						applyDelta(conn, table, (IncreaseFieldSizeDelta<? super E>) delta_);
+					} else if (delta_ instanceof AddIndexToFieldDelta) {
+						applyDelta(conn, table, (AddIndexToFieldDelta<? super E>) delta_);
 					}
 				}
 			}
@@ -297,6 +301,11 @@ public class SchemaUtil {
 			throw new IllegalStateException("Unknown delta type " + delta.getType());
 		}
 	}
+	
+	public static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, AddIndexToFieldDelta<? super E> delta) throws SQLException {
+		DBUtil.createIndex(conn, schema, delta.getIndex());
+	}
+
 
 	/*
 	public static void main(String[] args) throws Exception {
