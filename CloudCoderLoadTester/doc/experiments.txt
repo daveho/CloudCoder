@@ -95,17 +95,6 @@ Load testing experiments
   Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
   Time to completion: 
   Result:
-  Notes:
-
-  Mix:                skip3
-  Num threads:        351
-  Max pause (ms):     5000
-  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
-  MySQL:              local on default root EBS volume
-  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
-  Time to completion: 
-  Result:
-  Notes:
     Load testing completed in 512 seconds
     0 recoverable exceptions
     0 unrecoverable exceptions
@@ -114,7 +103,29 @@ Load testing experiments
     PollSubmissionResult: min=1064, max=12251, mean=1901, median=1073
     SendChanges: min=21, max=576, mean=27, median=26
     SetProblem: min=40, max=1503, mean=1066, median=1135
+  Notes:
 
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 675 seconds
+  Result:
+    Load testing completed in 675 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=20, max=79263, mean=38865, median=40404
+    Login: min=4622, max=99446, mean=44754, median=44457
+    PollSubmissionResult: min=1061, max=40710, mean=13865, median=13274
+    SendChanges: min=20, max=2099, mean=36, median=25
+    SetProblem: min=32, max=2958, mean=2368, median=2419
+  Notes:
+    CPU for both java/webapp and mysql fairly high toward beginning of run.
+    The startup delay is still pretty reasonable.
+    GetRegisteredCourses seems to be a performance issue.
+    Consider optimizing it.
 
   Mix: 
   Num threads:
