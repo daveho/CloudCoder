@@ -32,6 +32,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JettyDaemon is an implementation of {@link IDaemon} specialized for
@@ -46,6 +48,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
  * @see http://brandontilley.com/2010/03/27/serving-a-gwt-application-with-an-embedded-jetty-server.html
  */
 public abstract class JettyDaemon implements IDaemon {
+	private static final Logger logger = LoggerFactory.getLogger(JettyDaemon.class);
+	
 	private String webappUrl;
 	private String extraClasspath;
 	
@@ -192,7 +196,7 @@ public abstract class JettyDaemon implements IDaemon {
 		handler.setContextPath(jettyConfig.getContext());
 		if (extraClasspath != null) {
 			handler.setExtraClasspath(extraClasspath);
-			System.out.println("Extra classpath entries: " + extraClasspath);
+			logger.info("Extra classpath entries: {}", extraClasspath);
 		}
 		
 		if (overrideWebXml != null) {
@@ -211,14 +215,15 @@ public abstract class JettyDaemon implements IDaemon {
 
 		// Other misc. options
 		int numThreads = jettyConfig.getNumThreads();
+		logger.info("Creating thread pool with {} threads", numThreads);
 		server.setThreadPool(new QueuedThreadPool(numThreads));
 
 		// And start it up
-		System.out.println("Starting up the server...");
+		logger.info("Starting up the server...");
 		try {
 			server.start();
 		} catch (Exception e) {
-			System.err.println("Could not start server: " + e.getMessage());
+			logger.error("Could not start server", e);
 		}
 	}
 	
@@ -258,14 +263,13 @@ public abstract class JettyDaemon implements IDaemon {
 	@Override
 	public void shutdown() {
 		try {
-			System.out.println("Stopping the server...");
+			logger.info("Stopping the server...");
 			server.stop();
-			System.out.println("Waiting for server to finish...");
+			logger.info("Waiting for server to finish...");
 			server.join();
-			System.out.println("Server is finished");
+			logger.info("Server is finished");
 		} catch (Exception e) {
-			System.out.println("Exception shutting down Jetty server");
-			e.printStackTrace(System.out);
+			logger.error("Exception shutting down Jetty server", e);
 		}
 	}
 
