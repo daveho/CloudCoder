@@ -20,7 +20,6 @@ package org.cloudcoder.app.server.persist;
 
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -54,10 +53,10 @@ import org.cloudcoder.app.server.persist.txn.GetOrAddLatestSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetProblemAndSubscriptionReceiptsForUserInCourse;
 import org.cloudcoder.app.server.persist.txn.GetProblemForProblemId;
 import org.cloudcoder.app.server.persist.txn.GetProblemForUser;
-import org.cloudcoder.app.server.persist.txn.GetRatingsForRepoProblem;
-import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
 import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
+import org.cloudcoder.app.server.persist.txn.GetRatingsForRepoProblem;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
+import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
 import org.cloudcoder.app.server.persist.txn.GetSectionsForCourse;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionText;
@@ -69,6 +68,7 @@ import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
+import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
 import org.cloudcoder.app.server.persist.txn.LoadChanges;
 import org.cloudcoder.app.server.persist.txn.LoadChangesForAllUsersOnProblem;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
@@ -76,12 +76,11 @@ import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
-import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
-import org.cloudcoder.app.server.persist.txn.StudentStartOrContinueQuiz;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.txn.StoreProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
+import org.cloudcoder.app.server.persist.txn.StudentStartOrContinueQuiz;
 import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
@@ -130,11 +129,12 @@ import org.slf4j.LoggerFactory;
 public class JDBCDatabase implements IDatabase {
 	static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 
-	private String jdbcUrl;
+//	private String jdbcUrl;
+	private IConnectionPool connectionPool;
 	
 	public JDBCDatabase() {
 		JDBCDatabaseConfig.ConfigProperties config = JDBCDatabaseConfig.getInstance().getConfigProperties();
-		jdbcUrl = "jdbc:mysql://" +
+		String jdbcUrl = "jdbc:mysql://" +
 				config.getHost() + config.getPortStr() +
 				"/" +
 				config.getDatabaseName() +
@@ -142,47 +142,7 @@ public class JDBCDatabase implements IDatabase {
 				config.getUser() +
 				"&password=" + config.getPasswd();
 		logger.info("Database URL: "+jdbcUrl);
-	}
-	
-	static {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not load mysql jdbc driver", e);
-		}
-	}
-
-	private static class InUseConnection {
-		Connection conn;
-		int refCount;
-	}
-	
-	/*
-	 * Need to consider how to do connection management better.
-	 * For now, just use something simple that works.
-	 */
-
-	private ThreadLocal<InUseConnection> threadLocalConnection = new ThreadLocal<InUseConnection>();
-	
-	private Connection getConnection() throws SQLException {
-		InUseConnection c = threadLocalConnection.get();
-		if (c == null) {
-			c = new InUseConnection();
-			c.conn = DriverManager.getConnection(jdbcUrl);
-			c.refCount = 0;
-			threadLocalConnection.set(c);
-		}
-		c.refCount++;
-		return c.conn;
-	}
-	
-	private void releaseConnection() throws SQLException {
-		InUseConnection c = threadLocalConnection.get();
-		c.refCount--;
-		if (c.refCount == 0) {
-			c.conn.close();
-			threadLocalConnection.set(null);
-		}
+		this.connectionPool = new MysqlConnectionPool(jdbcUrl);
 	}
 	
 	@Override
@@ -558,7 +518,7 @@ public class JDBCDatabase implements IDatabase {
 			
 			// Attempt to get a connection
 			try {
-				conn = getConnection();
+				conn = connectionPool.getConnection();
 				origAutocommit = conn.getAutoCommit();
 			} catch (SQLException e) {
 				throw new PersistenceException("SQLException", e);
@@ -602,7 +562,7 @@ public class JDBCDatabase implements IDatabase {
 				// Restore the original autocommit value and release the connection.
 				try {
 					conn.setAutoCommit(origAutocommit);
-					releaseConnection();
+					connectionPool.releaseConnection();
 				} catch (SQLException e) {
 					throw new PersistenceException("SQLException (releasing connection)", e);
 				}
