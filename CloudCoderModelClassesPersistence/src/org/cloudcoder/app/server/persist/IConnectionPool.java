@@ -46,4 +46,10 @@ public interface IConnectionPool {
 	 * @throws SQLException
 	 */
 	public void releaseConnection() throws SQLException;
+	
+	/**
+	 * Clean up all resources associated with this connection pool.
+	 * @throws SQLException 
+	 */
+	public void destroy() throws SQLException;
 }

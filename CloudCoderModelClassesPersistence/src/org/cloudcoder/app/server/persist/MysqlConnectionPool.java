@@ -22,12 +22,22 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.server.persist.JDBCDatabaseConfig.ConfigProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Implementation of {@link IConnectionPool} for MySQL.
+ * This class replicates the original behavior, where connections
+ * and other JDBC objects were never reused, except connections
+ * being reused if multiple requests were made by the same
+ * thread.
  * 
  * @author David Hovemeyer
  */
 public class MysqlConnectionPool implements IConnectionPool {
+	private static final Logger logger = LoggerFactory.getLogger(MysqlConnectionPool.class);
+	
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -47,11 +57,19 @@ public class MysqlConnectionPool implements IConnectionPool {
 	/**
 	 * Constructor.
 	 * 
-	 * @param jdbcUrl the JDBC URL of the MySQL database
+	 * @param config the database configuration properties
 	 */
-	public MysqlConnectionPool(String jdbcUrl) {
+	public MysqlConnectionPool(ConfigProperties config) {
 		this.threadLocalConnection = new ThreadLocal<InUseConnection>(); 
-		this.jdbcUrl = jdbcUrl;
+		this.jdbcUrl =
+				"jdbc:mysql://" +
+				config.getHost() + config.getPortStr() +
+				"/" +
+				config.getDatabaseName() +
+				"?user=" +
+				config.getUser() +
+				"&password=" + config.getPasswd();
+		logger.debug("Database URL: "+jdbcUrl);
 	}
 
 	@Override
@@ -75,5 +93,10 @@ public class MysqlConnectionPool implements IConnectionPool {
 			c.conn.close();
 			threadLocalConnection.set(null);
 		}
+	}
+	
+	@Override
+	public void destroy() {
+		// We don't actually do anything here
 	}
 }

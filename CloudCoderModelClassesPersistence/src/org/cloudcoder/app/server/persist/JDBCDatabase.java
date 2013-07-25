@@ -129,20 +129,12 @@ import org.slf4j.LoggerFactory;
 public class JDBCDatabase implements IDatabase {
 	static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 
-//	private String jdbcUrl;
 	private IConnectionPool connectionPool;
 	
-	public JDBCDatabase() {
+	public JDBCDatabase() throws SQLException {
 		JDBCDatabaseConfig.ConfigProperties config = JDBCDatabaseConfig.getInstance().getConfigProperties();
-		String jdbcUrl = "jdbc:mysql://" +
-				config.getHost() + config.getPortStr() +
-				"/" +
-				config.getDatabaseName() +
-				"?user=" +
-				config.getUser() +
-				"&password=" + config.getPasswd();
-		logger.info("Database URL: "+jdbcUrl);
-		this.connectionPool = new MysqlConnectionPool(jdbcUrl);
+//		this.connectionPool = new MysqlConnectionPool(config);
+		this.connectionPool = new C3P0ConnectionPool(config);
 	}
 	
 	@Override

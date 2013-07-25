@@ -440,6 +440,11 @@ public class Queries {
 	public static void doInsertTestResults(TestResult[] testResultList,
 			int submissionReceiptId, Connection conn,
 			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
+		if (testResultList.length == 0) {
+			// If there are no test results, there is nothing to do
+			return;
+		}
+		
 		for (TestResult testResult : testResultList) {
 			testResult.setSubmissionReceiptEventId(submissionReceiptId);
 		}
