@@ -84,7 +84,9 @@ public class CloudCoderRepositoryInteractiveLauncher {
 		String[] entries = classpath.split(File.pathSeparator);
 		StringBuilder buf = new StringBuilder();
 		for (String entry : entries) {
-			if (!entry.endsWith(".jar")) {
+			if (!entry.endsWith(".jar") && !entry.endsWith("/")) {
+				// Jetty's WebAppContext wants directories in the extra classpath
+				// to end with a slash.
 				entry = entry + "/";
 			}
 			if (buf.length() > 0) {
