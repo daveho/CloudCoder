@@ -137,6 +137,8 @@ sub ReadDeps {
 		chomp;
 		if (/^\s*#/) {
 			# Comment: ignore
+		} elsif (/^\s*$/) {
+			# Blank line: ignore
 		} elsif (/^(\S+)/) {
 			# Download
 			if (defined $download) {

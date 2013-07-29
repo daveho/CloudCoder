@@ -44,7 +44,7 @@ public class CloudCoderRepositoryInteractiveLauncher {
 		// We need this because some classes needed by the repository webapp
 		// (such as model classes and persistence) are in separate Eclipse
 		// projects.
-		daemon.setExtraClasspath(System.getProperty("java.class.path").replace(File.pathSeparatorChar, ','));
+		daemon.setExtraClasspath(getExtraClasspath());
 		
 		// Assume that valid config properties can be found in ../cloudcoder.properties
 		Properties config = new Properties();
@@ -77,5 +77,21 @@ public class CloudCoderRepositoryInteractiveLauncher {
 		System.out.flush();
 		daemon.shutdown();
 		System.out.println("done");
+	}
+
+	private static String getExtraClasspath() {
+		String classpath = System.getProperty("java.class.path");
+		String[] entries = classpath.split(File.pathSeparator);
+		StringBuilder buf = new StringBuilder();
+		for (String entry : entries) {
+			if (!entry.endsWith(".jar")) {
+				entry = entry + "/";
+			}
+			if (buf.length() > 0) {
+				buf.append(",");
+			}
+			buf.append(entry);
+		}
+		return buf.toString();
 	}
 }
