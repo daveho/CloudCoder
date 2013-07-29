@@ -153,7 +153,7 @@ Load testing experiments
   Webapp server:      EC2 c1.medium (2 cores, high-CPU)
   MySQL:              local on default root EBS volume
   Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
-  Time to completion: 684 seconds
+  Time to completion: 690 seconds
   Result:
     Load testing completed in 690 seconds
     0 recoverable exceptions
@@ -173,7 +173,7 @@ Load testing experiments
   Webapp server:      EC2 c1.medium (2 cores, high-CPU)
   MySQL:              local on default root EBS volume
   Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
-  Time to completion: 684 seconds
+  Time to completion: 696 seconds
   Result:
     Load testing completed in 696 seconds
     0 recoverable exceptions
@@ -185,6 +185,29 @@ Load testing experiments
     SetProblem: min=306, max=7683, mean=4826, median=4987
   Notes:
     Running with cloudcoder.webserver.numThreads=150 (normal default is 20)
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 684 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=19, max=77567, mean=20810, median=5692
+    Login: min=5020, max=105699, mean=69027, median=81309
+    PollSubmissionResult: min=1055, max=40817, mean=13505, median=13264
+    SendChanges: min=17, max=2501, mean=52, median=22
+    SetProblem: min=37, max=5307, mean=2654, median=2902
+  Notes:
+    Running with cloudcoder.webserver.numThreads=150 (normal default is 20)
+    Using C3P0ConnectionPool rather than default connection pool:
+    does seem to possibly increase performance, although Login and GetRegisteredCourses
+    are still quite slow
+
 
   Mix: 
   Num threads:
