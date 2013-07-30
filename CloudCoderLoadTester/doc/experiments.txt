@@ -231,6 +231,27 @@ Load testing experiments
     The median delay for polling for a submission result seems high:
     perhaps more build server capacity is needed?
 
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            3 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion: 590
+  Result:             clean run
+    Load testing completed in 504 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=27, max=1427, mean=852, median=1015
+    Login: min=270, max=1979, mean=1296, median=1440
+    PollSubmissionResult: min=234, max=22146, mean=5169, median=2272
+    SendChanges: min=23, max=1494, mean=114, median=65
+    SetProblem: min=67, max=1418, mean=752, median=900
+  Notes:
+    Same as above, except 3 build servers instead of 2.  Time to poll
+    submission result significantly decreased.
+    Note: both this test and above test were done with
+    cloudcoder.webserver.numThreads=150.
 
   Mix: 
   Num threads:
