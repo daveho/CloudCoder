@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
  * 
  * @author David Hovemeyer
  */
-public class MysqlConnectionPool implements IConnectionPool {
+public class MysqlConnectionPool extends AbstractConnectionPool {
 	private static final Logger logger = LoggerFactory.getLogger(MysqlConnectionPool.class);
-	
+
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -45,13 +45,7 @@ public class MysqlConnectionPool implements IConnectionPool {
 			throw new IllegalStateException("Could not load mysql jdbc driver", e);
 		}
 	}
-
-	private static class InUseConnection {
-		Connection conn;
-		int refCount;
-	}
-
-	private ThreadLocal<InUseConnection> threadLocalConnection;
+	
 	private String jdbcUrl;
 	
 	/**
@@ -60,7 +54,6 @@ public class MysqlConnectionPool implements IConnectionPool {
 	 * @param config the database configuration properties
 	 */
 	public MysqlConnectionPool(ConfigProperties config) {
-		this.threadLocalConnection = new ThreadLocal<InUseConnection>(); 
 		this.jdbcUrl =
 				"jdbc:mysql://" +
 				config.getHost() + config.getPortStr() +
@@ -71,28 +64,15 @@ public class MysqlConnectionPool implements IConnectionPool {
 				"&password=" + config.getPasswd();
 		logger.debug("Database URL: "+jdbcUrl);
 	}
-
+	
 	@Override
-	public Connection getConnection() throws SQLException {
-		InUseConnection c = threadLocalConnection.get();
-		if (c == null) {
-			c = new InUseConnection();
-			c.conn = DriverManager.getConnection(jdbcUrl);
-			c.refCount = 0;
-			threadLocalConnection.set(c);
-		}
-		c.refCount++;
-		return c.conn;
+	protected Connection createConnection() throws SQLException {
+		return DriverManager.getConnection(jdbcUrl);
 	}
-
+	
 	@Override
-	public void releaseConnection() throws SQLException {
-		InUseConnection c = threadLocalConnection.get();
-		c.refCount--;
-		if (c.refCount == 0) {
-			c.conn.close();
-			threadLocalConnection.set(null);
-		}
+	protected void closeConnection(Connection conn) throws SQLException {
+		conn.close();
 	}
 	
 	@Override
