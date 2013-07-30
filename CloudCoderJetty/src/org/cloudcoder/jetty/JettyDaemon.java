@@ -30,6 +30,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.cloudcoder.daemon.IDaemon;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,17 +161,14 @@ public abstract class JettyDaemon implements IDaemon {
 			}
 		}
 		
+		// Find number of Jetty threads specified in configuration
+		int numThreads = jettyConfig.getNumThreads();
+		logger.info("Creating thread pool with {} threads", numThreads);
+		
 		// Create an embedded Jetty server
-		this.server = new Server();
+		this.server = new Server(new QueuedThreadPool(numThreads));
 		
 		// Create a connector
-//		SelectChannelConnector connector = new SelectChannelConnector();
-//		connector.setPort(jettyConfig.getPort());
-//		if (jettyConfig.isLocalhostOnly()) {
-//		    //System.out.println("happening?");
-//			connector.setHost("localhost");
-//		}
-//		server.addConnector(connector);
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(jettyConfig.getPort());
 		if (jettyConfig.isLocalhostOnly()) {
@@ -217,13 +215,6 @@ public abstract class JettyDaemon implements IDaemon {
 
 		// Add it to the server
 		server.setHandler(handler);
-
-		// Other misc. options
-		/*
-		int numThreads = jettyConfig.getNumThreads();
-		logger.info("Creating thread pool with {} threads", numThreads);
-		server.setThreadPool(new QueuedThreadPool(numThreads));
-		*/
 
 		// And start it up
 		logger.info("Starting up the server...");
