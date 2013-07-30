@@ -208,6 +208,29 @@ Load testing experiments
     does seem to possibly increase performance, although Login and GetRegisteredCourses
     are still quite slow
 
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 590
+  Result:             clean run
+    Load testing completed in 590 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=162, max=2734, mean=1611, median=1723
+    Login: min=299, max=6278, mean=2003, median=2016
+    PollSubmissionResult: min=542, max=41235, mean=13524, median=13163
+    SendChanges: min=23, max=2730, mean=126, median=62
+    SetProblem: min=368, max=2731, mean=1377, median=1132
+  Notes:
+    THIS SEEMS TO HAVE ELIMINATED THE HIGH CPU LOAD ON STARTUP!!!
+    The change was to reduce the bcrypt log2 hash rounds from 12 to 10
+    (10 is the default, but we were using 12.)
+    The median delay for polling for a submission result seems high:
+    perhaps more build server capacity is needed?
+
 
   Mix: 
   Num threads:
