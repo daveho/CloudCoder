@@ -56,7 +56,7 @@
 			<zipfileset src="../CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoder/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderLoadTester/lib/SyncProxy-0.4.jar" excludes="META-INF/**"/>
-			<zipfileset src="../CloudCoderJetty/lib/jetty/servlet-api-2.5.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderJetty/lib/jetty/servlet-api-3.0.jar" excludes="META-INF/**"/>
 			
 			<!-- Include cloudcoder.properties -->
 			<fileset dir=".." includes="cloudcoder.properties"/>
