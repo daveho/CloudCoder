@@ -27,10 +27,24 @@ package org.cloudcoder.app.server.persist;
  * @author David Hovemeyer
  */
 public class PasswordUtil {
+	/**
+	 * Convert a plaintext password to a hashed password.
+	 * 
+	 * @param plaintext a plaintext password
+	 * @return the hashed password
+	 */
 	public static String hashPassword(String plaintext) {
 		return BCrypt.hashpw(plaintext, BCrypt.gensalt());
 	}
 	
+	/**
+	 * Determine if the given plaintext password matches a
+	 * given hashed password.
+	 * 
+	 * @param plaintext a plaintext password
+	 * @param hashed    a hashed password
+	 * @return true if they match, false otherwise
+	 */
 	public static boolean matches(String plaintext, String hashed) {
 		return BCrypt.checkpw(plaintext, hashed);
 	}
