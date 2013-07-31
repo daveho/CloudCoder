@@ -253,6 +253,77 @@ Load testing experiments
     Note: both this test and above test were done with
     cloudcoder.webserver.numThreads=150.
 
+  Mix:                 skip3
+  Num threads:         600
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             3 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  795 seconds
+  Result:
+    Load testing completed in 795 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=23, max=7064, mean=3452, median=3586
+    GetRegisteredCourses: min=2853, max=124262, mean=53090, median=66401
+    Login: min=4871, max=167175, mean=102442, median=90389
+    PollSubmissionResult: min=1053, max=43841, mean=17230, median=19349
+    SendChanges: min=16, max=3725, mean=40, median=21
+    SetProblem: min=1566, max=16598, mean=4758, median=4596
+  Notes:
+    One change to load tester: clients call getProblemText() on the
+    EditCodeService to get the initial problem text.
+    It seems as though for this many clients 24 builder cores is
+    insufficient.  Need to try more.  Also, setting bcrypt log2 rounds to 10
+    still causes a significant CPU spike as the clients log in.
+    Try going down to 9 or 8.
+
+  Mix:                 skip3
+  Num threads:         600
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  538 seconds
+  Result:
+    Load testing completed in 538 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=653, max=12080, mean=6006, median=6330
+    GetRegisteredCourses: min=1130, max=12687, mean=6832, median=6970
+    Login: min=146, max=17106, mean=10507, median=10912
+    PollSubmissionResult: min=1053, max=22455, mean=5303, median=3106
+    SendChanges: min=16, max=6419, mean=56, median=22
+    SetProblem: min=2310, max=13341, mean=6192, median=6069
+  Notes:
+    Set bcrypt log2 rounds to 9. Better login times, but still a bit
+    slow.  Try 8.
+    40 builder cores appear to be sufficient for this workload.
+
+  Mix:                 skip3
+  Num threads:         700
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  562 seconds
+  Result:
+    Load testing completed in 562 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=42, max=12486, mean=7466, median=7641
+    GetRegisteredCourses: min=804, max=6755, mean=4301, median=4511
+    Login: min=151, max=38831, mean=6029, median=6141
+    PollSubmissionResult: min=1054, max=32576, mean=8422, median=7181
+    SendChanges: min=16, max=8070, mean=81, median=23
+    SetProblem: min=79, max=11183, mean=6892, median=6819
+  Notes:
+    Successful test with 700 simulated users!!!
+    This is with bcrypt log2 rounds set to 8.  I think we'll use this
+    as the default.
+    Build servers are a bit backlogged, but response times are
+    fairly reasonable.
+
   Mix: 
   Num threads:
   Max pause (ms):

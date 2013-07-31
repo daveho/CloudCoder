@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -28,13 +29,25 @@ package org.cloudcoder.app.server.persist;
  */
 public class PasswordUtil {
 	/**
+	 * Base 2 log of the number of rounds of hashing to apply.
+	 * If a lot of clients log into CloudCoder at the same time,
+	 * a significant CPU consumption spike can occur if this is
+	 * too high.  So, we specify a value that we can show
+	 * (by benchmarking) does not cause excessive CPU consumption.
+	 * Choosing a lower value does make dictionary attacks more
+	 * feasible, but we have to balance that with the need to
+	 * run the webapp on affordable server hardware.
+	 */
+	private static final int LOG2_ROUNDS = 8;
+	
+	/**
 	 * Convert a plaintext password to a hashed password.
 	 * 
 	 * @param plaintext a plaintext password
 	 * @return the hashed password
 	 */
 	public static String hashPassword(String plaintext) {
-		return BCrypt.hashpw(plaintext, BCrypt.gensalt());
+		return BCrypt.hashpw(plaintext, BCrypt.gensalt(LOG2_ROUNDS));
 	}
 	
 	/**
