@@ -37,6 +37,7 @@ import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -243,5 +244,17 @@ public class Client {
 		editedUser.setSection(section);
 		
 		userSvc.addUserToCourse(editedUser, course.getId());
+	}
+
+	/**
+	 * Loads the user's current text for the current problem
+	 * (as set with previous call to {@link #setProblem(Problem)}.
+	 * 
+	 * @return the {@link ProblemText}
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public ProblemText loadCurrentText() throws CloudCoderAuthenticationException {
+		EditCodeService editCodeSvc = getService(EditCodeService.class);
+		return editCodeSvc.loadCurrentText();
 	}
 }

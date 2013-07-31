@@ -28,6 +28,7 @@ import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.User;
 
@@ -178,6 +179,10 @@ public class PlayEditSequence {
 		
 		// Set the Problem
 		doSetProblem();
+		
+		// Get the program text: not necessary per se, but accurately emulates
+		// the client javascript code
+		doGetProgramText();
 	}
 
 	private CourseAndCourseRegistration[] doGetCourses() throws Exception {
@@ -197,6 +202,16 @@ public class PlayEditSequence {
 				return true;
 			}
 		}, "SetProblem");
+	}
+
+	private ProblemText doGetProgramText() throws Exception {
+		
+		return Util.doRPC(new Callable<ProblemText>() {
+			@Override
+			public ProblemText call() throws Exception {
+				return client.loadCurrentText();
+			}
+		}, "GetProblemText");
 	}
 	
 	/**
