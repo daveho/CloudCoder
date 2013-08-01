@@ -324,6 +324,53 @@ Load testing experiments
     Build servers are a bit backlogged, but response times are
     fairly reasonable.
 
+  Mix:                 skip3
+  Num threads:         700
+  Max pause (ms):      5000
+  Webapp server:       DigitalOcean 2 cores 2GB RAM
+  MySQL:               local on SSD
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  547 seconds
+  Result:
+    Load testing completed in 547 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=21, max=4743, mean=980, median=1029
+    GetRegisteredCourses: min=22, max=6492, mean=2611, median=2884
+    Login: min=138, max=19631, mean=5691, median=5203
+    PollSubmissionResult: min=1064, max=32832, mean=8630, median=7261
+    SendChanges: min=20, max=3039, mean=33, median=25
+    SetProblem: min=26, max=5255, mean=1835, median=1601
+  Notes:
+    Same configuration as previous test (on EC2 c1.medium).
+    150 Jetty threads.  Performance on DigitalOcean servers is very
+    impressive, considering that this server is 1/5 the cost of the
+    equivalent EC2 server.
+
+  Mix:                 skip3
+  Num threads:         700
+  Max pause (ms):      5000
+  Webapp server:       DigitalOcean 1 core 1GB RAM
+  MySQL:               local on SSD
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  547 seconds
+  Result:
+    Load testing completed in 559 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=22, max=8854, mean=1818, median=1960
+    GetRegisteredCourses: min=21, max=12623, mean=6206, median=6214
+    Login: min=477, max=35631, mean=12761, median=11898
+    PollSubmissionResult: min=1067, max=33887, mean=8624, median=7301
+    SendChanges: min=20, max=3222, mean=59, median=30
+    SetProblem: min=26, max=12007, mean=2887, median=2819
+  Notes:
+    Wow, the **single core** server at DigitalOcean easily handles the
+    load for the 700 user test.  Login delay is noticibly higher, although
+    with 700 users logging in within a 15 second window, not unexpected,
+    and probably not something that would happen in practice.
+    This is a $10/month server!
+
   Mix: 
   Num threads:
   Max pause (ms):
