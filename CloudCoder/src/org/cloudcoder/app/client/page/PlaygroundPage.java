@@ -18,12 +18,13 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -32,8 +33,8 @@ import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.PlaygroundActionsPanel;
+import org.cloudcoder.app.client.view.PlaygroundResultListView;
 import org.cloudcoder.app.client.view.StatusMessageView;
-import org.cloudcoder.app.client.view.TestResultListView;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
@@ -41,12 +42,12 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Language;
-import org.cloudcoder.app.shared.model.NamedTestResult;
+import org.cloudcoder.app.shared.model.PlaygroundTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -61,7 +62,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -129,7 +129,7 @@ public class PlaygroundPage extends CloudCoderPage
         private StatusMessageView statusMessageView;
 
         private TabLayoutPanel resultsTabPanel;
-        private TestResultListView testResultListView;
+        private PlaygroundResultListView playgroundResultListView;
         private CompilerDiagnosticListView compilerDiagnosticListView;
         private List<IResultsTabPanelWidget> resultsTabPanelWidgetList;
 
@@ -180,10 +180,9 @@ public class PlaygroundPage extends CloudCoderPage
             southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 
             this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
-            // the testResultListView still needs to be initialize in the activate() method
-            //XXX need to replace this with an appropriate place to store results
-            //this.testResultListView=new TestResultListView(getSession().get(Problem.class));
-            //addResultsTab(this.testResultListView, "Test results");
+            // the playgroundResultListView still needs to be initialize in the activate() method
+            this.playgroundResultListView=new PlaygroundResultListView();
+            addResultsTab(this.playgroundResultListView, "Run results");
 
             this.compilerDiagnosticListView = new CompilerDiagnosticListView();
             addResultsTab(this.compilerDiagnosticListView, "Compiler errors");
@@ -209,15 +208,13 @@ public class PlaygroundPage extends CloudCoderPage
         }
 
         public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
-            //final Problem problem = session.get(Problem.class);
-
             mode = Mode.LOADING;
 
             // Activate views
-            //XXX replace the testResultListView with another way of representing outputs
-            //testResultListView.activate(session, subscriptionRegistrar);
+            // playground results
+            playgroundResultListView.activate(session, subscriptionRegistrar);
+
             statusMessageView.activate(session, subscriptionRegistrar);
-            //quizIndicatorView.activate(session, subscriptionRegistrar);
             //testOutcomeSummaryView.activate(session, subscriptionRegistrar);
             compilerDiagnosticListView.activate(session, subscriptionRegistrar);
 
@@ -257,6 +254,7 @@ public class PlaygroundPage extends CloudCoderPage
                     });
                 }
             });
+            createCheckPendingSubmissionTimer();
         }
 
         @Override
@@ -330,28 +328,46 @@ public class PlaygroundPage extends CloudCoderPage
             //Problem problem = getSession().get(Problem.class);
             String text = aceEditor.getText();
             
-            //doSubmitRPC(problem, text);
-            //TODO add new RPC for running code
-            //doRunRPC(language, text);
-            DialogBox box = new DialogBox();
-            box.setText("Pretend I'm running the code");
-            box.center();
+            // Create a fake problem to send to the server
+            Problem fakeProblem=new Problem();
+            fakeProblem.setProblemType(ProblemType.JAVA_PROGRAM);
+            fakeProblem.setProblemId(1);
+            addSessionObject(fakeProblem);
+            
+            List<TestCase> testCaseList=new LinkedList<TestCase>();
+            // TODO pull test cases out of the GUI
+            // this will either be in the session, or it will
+            // be an instance variable in this class
+            // XXX unclear relationship between list of TestCase
+            // that must be sent to the Builder, and the 
+            // PlaygroundTestResult that we create when we receive
+            // the results
+            // probably want to invalidate displayed results
+            // whenever input cases are edited
+            TestCase t1=new TestCase();
+            t1.setInput("");
+            t1.setTestCaseId(1);
+            t1.setProblemId(fakeProblem.getProblemId());
+            t1.setOutput("");
+            testCaseList.add(t1);
+            
+            doRunRPC(fakeProblem, text, testCaseList);
         }
 
-        protected void doSubmitRPC(final Problem problem, final String text) {
+        protected void doRunRPC(final Problem problem, final String text, final List<TestCase> testCaseList) {
             // Do not allow submit if edits are disallowed
             if (mode == Mode.PREVENT_EDITS) {
                 return;
             }
 
-            RPC.submitService.submit(problem.getProblemId(), text, new AsyncCallback<Void>() {
+            RPC.runService.run(problem, text, testCaseList, new AsyncCallback<Void>() {
                 @Override
                 public void onFailure(Throwable caught) {
                     if (caught instanceof CloudCoderAuthenticationException) {
                         recoverFromServerSessionTimeout(new Runnable(){
                             public void run() {
                                 // Try again!
-                                doSubmitRPC(problem, text);
+                                doRunRPC(problem, text, testCaseList);
                             }
                         });
                     } else {
@@ -365,6 +381,7 @@ public class PlaygroundPage extends CloudCoderPage
                 @Override
                 public void onSuccess(Void result) {
                     // Start polling for the SubmissionResult
+                    // TODO should I re-enable the editor here?
                     checkPendingSubmissionTimer.scheduleRepeating(POLL_SUBMISSION_RESULT_INTERVAL_MS);
                 }
             });
@@ -552,7 +569,7 @@ public class PlaygroundPage extends CloudCoderPage
                 }
 
                 protected void checkSubmissionRPC() {
-                    RPC.submitService.checkSubmission(new AsyncCallback<SubmissionResult>() {
+                    RPC.runService.checkSubmission(new AsyncCallback<SubmissionResult>() {
                         /* (non-Javadoc)
                          * @see com.google.gwt.user.client.rpc.AsyncCallback#onFailure(java.lang.Throwable)
                          */
@@ -595,7 +612,7 @@ public class PlaygroundPage extends CloudCoderPage
             aceEditor.clearAnnotations();
             if (result==null){
                 addSessionObject(StatusMessage.error("Results from Builder are empty"));
-                addSessionObject(new NamedTestResult[0]);
+                addSessionObject(new PlaygroundTestResult[0]);
                 addSessionObject(new CompilerDiagnostic[0]);
 
             } else {
@@ -615,12 +632,12 @@ public class PlaygroundPage extends CloudCoderPage
                         result.getCompilationResult().getOutcome()==CompilationOutcome.BUILDER_ERROR)
                 {
                     // ?
-                    addSessionObject(StatusMessage.error("Error testing submission"));
-                    addSessionObject(new NamedTestResult[0]);
+                    addSessionObject(StatusMessage.error("Error running code"));
+                    addSessionObject(new PlaygroundTestResult[0]);
                 } else if (result.getCompilationResult().getOutcome()==CompilationOutcome.FAILURE) {
                     // Code did not compile
                     addSessionObject(StatusMessage.error("Error compiling submission"));
-                    addSessionObject(new NamedTestResult[0]);
+                    addSessionObject(new PlaygroundTestResult[0]);
                     // mark the ACE editor with compiler errors
                     for (CompilerDiagnostic d : compilerDiagnosticList) {
                         aceEditor.addAnnotation((int)d.getStartLine()-1, (int)d.getStartColumn()-1, d.getMessage(), AceAnnotationType.ERROR);
@@ -631,13 +648,7 @@ public class PlaygroundPage extends CloudCoderPage
 
                     // Display the test results
                     displayTestResults(result);
-
-                    // Add a status message about the results
-                    if (result.isAllTestsPassed()) {
-                        addSessionObject(StatusMessage.goodNews("All tests passed! You rock."));
-                    } else {
-                        addSessionObject(StatusMessage.error("At least one test failed: check test results"));
-                    }
+                    addSessionObject(StatusMessage.goodNews("Brilliant!  Code compiled and ran!  Check output below"));
                 }
 
                 if (compilerDiagnosticList.length > 0) {
@@ -645,7 +656,7 @@ public class PlaygroundPage extends CloudCoderPage
                     resultsTabPanel.selectTab(compilerDiagnosticListView);
                 } else {
                     // show the test results tab
-                    resultsTabPanel.selectTab(testResultListView);
+                    resultsTabPanel.selectTab(playgroundResultListView);
                 }
 
                 // Can resume editing now
@@ -656,61 +667,21 @@ public class PlaygroundPage extends CloudCoderPage
 
         /**
          * Display the test results from given {@link SubmissionResult}.
-         * This is complicated slightly by the requirement to display
-         * test case names, which must be loaded via RPC.
+         * 
+         * For playground mode, we don't care about the names of the TestCases.
+         * (We <i>do</i> care about the test case names in the analogous method to this
+         * one in {@link DevelopmentPage})
          * 
          * @param submissionResult the {@link SubmissionResult} containing the
          *        test results to display
          */
         private void displayTestResults(final SubmissionResult submissionResult) {
-            if (this.testCaseNames == null || this.testCaseNames.length != submissionResult.getTestResults().length) {
-                // Need to load test case names via RPC
-                RPC.getCoursesAndProblemsService.getTestCaseNamesForProblem(getSession().get(Problem.class).getProblemId(), new AsyncCallback<String[]>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        // Hmm, couldn't get the test case names
-                        getSession().add(StatusMessage.error("Could not get test case names", caught));
-
-                        // Add fake test case names
-                        createFakeTestCaseNames(submissionResult.getTestResults());
-                        displayNamedTestResults(submissionResult.getTestResults());
-                    }
-                    @Override
-                    public void onSuccess(String[] result) {
-                        if (result.length != submissionResult.getTestResults().length) {
-                            // It is possible to receive an empty array if the user is
-                            // not authorized to see this problem
-                            createFakeTestCaseNames(submissionResult.getTestResults());
-                        } else {
-                            // Great, we have the test case names
-                            testCaseNames = result;
-                        }
-                        displayNamedTestResults(submissionResult.getTestResults());
-                    }
-                });
-            } else {
-                displayNamedTestResults(submissionResult.getTestResults());
+            // add a simplified version of the TestResults for display in our table
+            PlaygroundTestResult[] playgroundTestResults=new PlaygroundTestResult[submissionResult.getTestResults().length];
+            for (int i=0; i<submissionResult.getTestResults().length; i++) {
+                playgroundTestResults[i]=new PlaygroundTestResult(submissionResult.getTestResults()[i]);
             }
-
-        }
-
-        /**
-         * @param results
-         */
-        private void displayNamedTestResults(TestResult[] results) {
-            NamedTestResult[] namedTestResults = new NamedTestResult[results.length];
-            for (int i = 0; i < results.length; i++) {
-                namedTestResults[i] = new NamedTestResult(testCaseNames[i], results[i]);
-            }
-            addSessionObject(namedTestResults);
-        }
-
-        private void createFakeTestCaseNames(TestResult[] testResults) {
-            testCaseNames = new String[testResults.length];
-            int count = 0;
-            for (int i = 0; i < testResults.length; i++) {
-                testCaseNames[i] = "t" + (count++);
-            }
+            addSessionObject(playgroundTestResults);
         }
     }
 
@@ -728,7 +699,7 @@ public class PlaygroundPage extends CloudCoderPage
     @Override
     public void activate() {
         addSessionObject(new ChangeList());
-        addSessionObject(new NamedTestResult[0]);
+        addSessionObject(new PlaygroundTestResult[0]);
         addSessionObject(new CompilerDiagnostic[0]);
         ui.activate(getSession(), getSubscriptionRegistrar());
     }

@@ -20,9 +20,8 @@ package org.cloudcoder.app.server.rpc;
 import java.util.List;
 
 import org.cloudcoder.app.client.rpc.EditCodeService;
-import org.cloudcoder.app.server.model.ApplyChangeToTextDocument;
-import org.cloudcoder.app.server.model.TextDocument;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.ApplyChangeToTextDocument;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -33,6 +32,7 @@ import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.TextDocument;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
