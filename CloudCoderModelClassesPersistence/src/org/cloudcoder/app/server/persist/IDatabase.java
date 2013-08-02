@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -45,6 +46,7 @@ import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
@@ -148,7 +150,34 @@ public interface IDatabase {
 	 */
 	public List<ProblemAndSubmissionReceipt> getProblemAndSubscriptionReceiptsInCourse(User user, Course course, User forUser, Module module);
 	
+	/**
+	 * Store a sequence of {@link Change}s representing a {@link User}'s work on
+	 * a {@link Problem}.
+	 * 
+	 * @param changeList the sequence of changes to store
+	 */
 	public void storeChanges(Change[] changeList);
+	
+	/**
+	 * Load a sequence of {@link Change}s for given user on given problem,
+	 * within a specified range of event ids.
+	 * 
+	 * @param userId     the user id
+	 * @param problemId  the problem id
+	 * @param minEventId the minimum event id (inclusive)
+	 * @param maxEventId the maximum event id (inclusive)
+	 * @return sequence of {@link Change}s matching the specified criteria, sorted by event id
+	 */
+	public List<Change> loadChanges(int userId, int problemId, int minEventId, int maxEventId);
+
+	/**
+	 * Load sequence of {@link Change}s for all users on given problem.
+	 * Changes are ordered by user id, and then by event id.
+	 * 
+	 * @param problemId the problem id
+	 * @return list of {@link Change}s for all uses on the problem
+	 */
+	public List<Change> loadChangesForAllUsersOnProblem(int problemId);
 	
 	/**
 	 * Get List of {@link TestCase}s for {@link Problem} with given id.
@@ -623,5 +652,13 @@ public interface IDatabase {
 	 * @return the test results, or an empty list if the user isn't permitted to access them
 	 */
 	public NamedTestResult[] getTestResultsForSubmission(User authenticatedUser, Problem problem, SubmissionReceipt receipt);
+	
+	/**
+	 * Get list of {@link RepoProblemRating}s for a given repository problem (exercise).
+	 * 
+	 * @param repoProblemId the unique id of a repository problem (exercise)
+	 * @return list of {@link RepoProblemRating}s for the exercise
+	 */
+	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId);
 
 }

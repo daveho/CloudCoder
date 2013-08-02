@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -31,6 +32,7 @@ import java.util.List;
 public class ModelObjectIndex<ModelObjectType> {
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final ModelObjectIndexType indexType;
+	private int indexNumber;
 	
 	/**
 	 * Constructor.
@@ -40,6 +42,7 @@ public class ModelObjectIndex<ModelObjectType> {
 	public ModelObjectIndex(ModelObjectIndexType indexType) {
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType,?>>();
 		this.indexType = indexType;
+		this.indexNumber = -1;
 	}
 	
 	/**
@@ -68,5 +71,19 @@ public class ModelObjectIndex<ModelObjectType> {
 	 */
 	public ModelObjectIndexType getIndexType() {
 		return indexType;
+	}
+	
+	/**
+	 * Get the index number. The index numbers are assigned sequentially
+	 * within the schema the index belongs to.
+	 * 
+	 * @return the index number
+	 */
+	public int getIndexNumber() {
+		return indexNumber;
+	}
+	
+	void setIndexNumber(int indexNumber) {
+		this.indexNumber = indexNumber;
 	}
 }

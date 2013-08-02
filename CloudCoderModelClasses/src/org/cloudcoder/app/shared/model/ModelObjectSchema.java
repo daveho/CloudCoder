@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -47,6 +48,11 @@ public class ModelObjectSchema<ModelObjectType> {
 		 * Increase the size of a field.
 		 */
 		INCREASE_FIELD_SIZE,
+		
+		/**
+		 * Add an index.
+		 */
+		ADD_INDEX,
 	}
 	
 	/**
@@ -164,13 +170,29 @@ public class ModelObjectSchema<ModelObjectType> {
 			return obj;
 		}
 	}
+
+	/**
+	 * A {@link Delta} specifying an index to be added to the schema.
+	 */
+	public static class AddIndexToFieldDelta<ModelObjectType> extends Delta<ModelObjectType> {
+		private ModelObjectIndex<? super ModelObjectType> index;
+
+		public AddIndexToFieldDelta(ModelObjectIndex<? super ModelObjectType> index) {
+			super(DeltaType.ADD_INDEX);
+			this.index = index;
+		}
+		
+		public ModelObjectIndex<? super ModelObjectType> getIndex() {
+			return index;
+		}
+	}
 	
 	private final ModelObjectSchema<ModelObjectType> previous;
 	private final int version;
 	private final String name;
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
 	private final Map<String, ModelObjectField<? super ModelObjectType, ?>> nameToFieldList;
-	private final List<ModelObjectIndex<ModelObjectType>> indexList;
+	private final List<ModelObjectIndex<? super ModelObjectType>> indexList;
 	private final List<Delta<? super ModelObjectType>> deltaList;
 	private final Map<ModelObjectField<? super ModelObjectType, ?>, ModelObjectIndexType> indexTypeOverrideMap;
 
@@ -197,7 +219,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		this.name = name;
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
 		this.nameToFieldList = new HashMap<String, ModelObjectField<? super ModelObjectType,?>>();
-		this.indexList = new ArrayList<ModelObjectIndex<ModelObjectType>>();
+		this.indexList = new ArrayList<ModelObjectIndex<? super ModelObjectType>>();
 		this.deltaList = new ArrayList<Delta<? super ModelObjectType>>();
 		this.indexTypeOverrideMap = new HashMap<ModelObjectField<? super ModelObjectType,?>, ModelObjectIndexType>();
 	}
@@ -318,12 +340,20 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * Add a {@link ModelObjectIndex} to the schema.
 	 * Returns a reference to the schema object, so calls
 	 * can be chained.
+	 * <em>Important</em>: this method should only be used when creating
+	 * a new (non-derived) schema.
 	 * 
 	 * @param index the index to add
 	 * @return a reference to this object
 	 */
-	public ModelObjectSchema<ModelObjectType> addIndex(ModelObjectIndex<ModelObjectType> index) {
+	public ModelObjectSchema<ModelObjectType> addIndex(ModelObjectIndex<? super ModelObjectType> index) {
+		// Set the index number
+		int indexNumber = indexList.size();
+		index.setIndexNumber(indexNumber);
+		
+		// Add it to the index list
 		indexList.add(index);
+		
 		return this;
 	}
 
@@ -382,7 +412,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * Get list of indices.
 	 * @return the list of indices
 	 */
-	public List<ModelObjectIndex<ModelObjectType>> getIndexList() {
+	public List<ModelObjectIndex<? super ModelObjectType>> getIndexList() {
 		return indexList;
 	}
 	
@@ -472,6 +502,7 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * model object should be persisted.
 	 * 
 	 * @param obj the model object to persist
+	 * @return this object, for method chaining
 	 */
 	public<E extends IModelObject<E>> ModelObjectSchema<ModelObjectType> addPersistedModelObject(E obj) {
 		deltaList.add(new PersistModelObjectDelta<ModelObjectType, E>(obj));
@@ -484,9 +515,22 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * 
 	 * @param field the field with the increased size: will replace identically-named
 	 *              field from previous schema version
+	 * @return this object, for method chaining
 	 */
 	public ModelObjectSchema<ModelObjectType> increaseFieldSize(ModelObjectField<? super ModelObjectType, ?> field) {
 		deltaList.add(new IncreaseFieldSizeDelta<ModelObjectType>(field));
+		return this;
+	}
+
+	/**
+	 * Add an index to the table as a delta.
+	 * This method should only be called when creating a derived schema.
+	 * 
+	 * @param index the index to add
+	 * @return this object, for method chaining
+	 */
+	public ModelObjectSchema<ModelObjectType> addIndexDelta(ModelObjectIndex<? super ModelObjectType> index) {
+		deltaList.add(new AddIndexToFieldDelta<ModelObjectType>(index));
 		return this;
 	}
 
@@ -511,8 +555,8 @@ public class ModelObjectSchema<ModelObjectType> {
 					AddFieldDelta<? super ModelObjectType> delta = (AddFieldDelta<? super ModelObjectType>)delta_;
 					int index = fieldList.indexOf(delta.getPreviousField());
 					fieldList.add(index + 1, delta.getField());
-					break;
 				}
+				break;
 				
 			case PERSIST_MODEL_OBJECT:
 				// This kind of delta requires no changes to the ModelObjectSchema object
@@ -525,6 +569,16 @@ public class ModelObjectSchema<ModelObjectType> {
 					int index = fieldList.indexOf(getFieldByName(delta.getField().getName()));
 					fieldList.set(index, delta.getField());
 				}
+				break;
+				
+			case ADD_INDEX:
+				// Add the index to the index list.
+				{
+					AddIndexToFieldDelta<? super ModelObjectType> delta = (AddIndexToFieldDelta<? super ModelObjectType>)delta_;
+//					indexList.add(delta.getIndex());
+					addIndex(delta.getIndex());
+				}
+				break;
 			}
 		}
 		

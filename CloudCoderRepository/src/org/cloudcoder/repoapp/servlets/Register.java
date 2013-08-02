@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.cloudcoder.app.server.persist.BCrypt;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.server.persist.PasswordUtil;
 import org.cloudcoder.app.shared.model.ConvertBytesToHex;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectUtil;
@@ -133,7 +133,7 @@ public class Register extends HttpServlet {
 		// Get password. No need to check confirmation, since that's checked on
 		// the client side.
 		String password = ServletUtil.getRequiredParam(req, "u_password");
-		request.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt(12)));
+		request.setPasswordHash(PasswordUtil.hashPassword(password));
 		
 		// Generate a secret.
 		SHA1 computeHash = new SHA1();

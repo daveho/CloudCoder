@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class EasySandboxSharedLibrary {
-	private Logger logger = LoggerFactory.getLogger(EasySandboxSharedLibrary.class);
+	private static Logger logger = LoggerFactory.getLogger(EasySandboxSharedLibrary.class);
 	
 	private static EasySandboxSharedLibrary instance = new EasySandboxSharedLibrary();
 	

@@ -80,6 +80,15 @@ public class Event implements Serializable, IModelObject<Event> {
 		this.type = type;
 		this.timestamp = timestamp;
 	}
+	
+	/**
+	 * @return an exact copy of this object
+	 */
+	public Event duplicate() {
+		Event dup = new Event();
+		ModelObjectUtil.copy(this, dup);
+		return dup;
+	}
 
 	public void setId(int id) {
 		this.id = id;

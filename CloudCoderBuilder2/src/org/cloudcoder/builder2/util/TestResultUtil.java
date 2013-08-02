@@ -158,10 +158,6 @@ public class TestResultUtil {
 	public static TestResult createResultForPassedTest(Problem problem, TestCase testCase) {
 		return createTestResult(null, problem, TestOutcome.PASSED, testCase);
 	}
-	
-	public static TestResult createExtendedResultForPassedTest(Problem problem, TestCase testCase) {
-        return createTestResult(null, problem, TestOutcome.PASSED, testCase);
-    }
 
 	/**
 	 * Create a generic {@link TestResult} for a failed test.
@@ -203,12 +199,25 @@ public class TestResultUtil {
 				"Took too long!  Check for infinite loops, or recursion without a proper base case");
 	}
 
+	/**
+	 * Helper method to create a standard test result when
+	 * the actual method output is unknown.
+	 * If a {@link CommandResult} is passed, its stdout/stderr will be
+	 * added to the test result.
+	 * 
+	 * @param p         the {@link CommandResult} (null if the test was not executed as a {@link Command})
+	 * @param problem   the {@link Problem}
+	 * @param outcome   the {@link TestOutcome}
+	 * @param testCase  the {@link TestCase}
+	 * @return the {@link TestResult}
+	 */
 	private static TestResult createTestResult(CommandResult p, Problem problem, TestOutcome outcome, TestCase testCase) {
 	    return createTestResult(p, problem, outcome, testCase, null);
 	}
 	
 	/**
-	 * Helper method to create a standard test result.
+	 * Helper method to create a standard test result when the actual method
+	 * output is (possibly) known.
 	 * If a {@link CommandResult} is passed, its stdout/stderr will be
 	 * added to the test result.
 	 * 
@@ -240,7 +249,8 @@ public class TestResultUtil {
 		if (type.isOutputLiteral() && !testCase.isSecret()) {
 		    testResult.setInput(testCase.getInput());
 		    testResult.setExpectedOutput(testCase.getOutput());
-		    testResult.setActualOutput(output);
+		    // Important: at the database level, actual output cannot be null
+		    testResult.setActualOutput(output != null ? output : "");
 		}
 
 		if (p != null) {

@@ -25,7 +25,7 @@ import java.util.Arrays;
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-public class Change implements Serializable, IContainsEvent, IModelObject<Change> {
+public class Change implements Serializable, IContainsEvent, IModelObject<Change>, Cloneable {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -144,6 +144,24 @@ public class Change implements Serializable, IContainsEvent, IModelObject<Change
 		}
 		buf.append(textToAdopt[textToAdopt.length-1]);
 		this.text = buf.toString();
+	}
+	
+	/**
+	 * @return an exact deep copy of this object
+	 */
+	public Change duplicate() {
+		Change dup = new Change();
+	
+		// Shallow copy
+		ModelObjectUtil.copy(this, dup);
+		
+		// If there is an Event object, make a duplicate
+		dup.event = this.event; // transient field, not copied by ModelObjectUtil.copy()
+		if (dup.event != null) {
+			dup.event = this.event.duplicate();
+		}
+		
+		return dup;
 	}
 
 	public ChangeType getType() {

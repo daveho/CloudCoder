@@ -79,7 +79,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Course[] getCourses() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("Loading courses for user " + user.getUsername());
 		
@@ -105,7 +105,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("Loading courses and registrations for user " + user.getUsername());
 		
@@ -132,7 +132,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		List<Problem> resultList = Database.getInstance().getProblemsInCourse(user, course).getProblemList();
 		for (Problem p : resultList) {
@@ -161,7 +161,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
 			Course course, User forUser, Module module) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("getting submission receipts for authenticated user "+user.getUsername());
 		
@@ -175,7 +175,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem, int section) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Return best submission receipts for each user in course
 		List<UserAndSubmissionReceipt> result = Database.getInstance().getBestSubmissionReceipts(problem, section, user);
@@ -188,7 +188,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public TestCase[] getTestCasesForProblem(int problemId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().getTestCasesForProblem(user, true, problemId);
 	}
@@ -199,7 +199,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public String[] getTestCaseNamesForProblem(int problemId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		TestCase[] testCaseList = Database.getInstance().getTestCasesForProblem(user, false, problemId);
 		String[] result = new String[testCaseList.length];
 		for (int i = 0; i < testCaseList.length; i++) {
@@ -215,7 +215,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course)
 			throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Store in database
 		Database.getInstance().storeProblemAndTestCaseList(problemAndTestCaseList, course, user);
@@ -233,7 +233,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
 
 		// Only a course instructor may share an exercise.
-		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		Course course = new Course();
 		course.setId(exercise.getProblem().getCourseId());
 		Database.getInstance().reloadModelObject(course);
@@ -306,7 +306,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		}
 		
 		// Make sure a user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Find user's registration in the course: if user is not instructor,
 		// import is not allowed
@@ -374,7 +374,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public OperationResult deleteProblem(Course course, Problem problem) throws CloudCoderAuthenticationException {
 		// Make sure a user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		boolean result = Database.getInstance().deleteProblem(user, course, problem);
 		return new OperationResult(result, result ? "Problem deleted successfully" : "Could not delete problem");
 	}
@@ -385,7 +385,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Quiz startQuiz(Problem problem, int section) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		return Database.getInstance().startQuiz(user, problem, section);
 	}
 	
@@ -395,7 +395,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Quiz findCurrentQuiz(Problem problem) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Find current quiz (if any)
 		Quiz quiz = Database.getInstance().findCurrentQuiz(user, problem);
@@ -415,7 +415,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Boolean endQuiz(Quiz quiz) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		return Database.getInstance().endQuiz(user, quiz);
 	}
@@ -426,7 +426,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Module[] getModulesForCourse(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		Module[] modulesForCourse = Database.getInstance().getModulesForCourse(user, course);
 		
@@ -442,7 +442,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Module setModule(Problem problem, String moduleName) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().setModule(user, problem, moduleName);
 	}
@@ -450,7 +450,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().getSectionsForCourse(course, user);
 	}
@@ -458,7 +458,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Make sure authenticated user is an instructor
 		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, problem.getCourseId());
@@ -471,7 +471,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	
 	@Override
 	public NamedTestResult[] getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
-		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		return Database.getInstance().getTestResultsForSubmission(authenticatedUser, problem, receipt);
 	}
 }

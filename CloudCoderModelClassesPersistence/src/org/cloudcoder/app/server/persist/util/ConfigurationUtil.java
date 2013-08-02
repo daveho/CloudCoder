@@ -33,7 +33,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.cloudcoder.app.server.persist.BCrypt;
+import org.cloudcoder.app.server.persist.PasswordUtil;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.User;
@@ -187,7 +187,7 @@ public class ConfigurationUtil
                 user.setEmail(email);
             }
             if (password.length()>0) {
-                user.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt(12)));
+                user.setPasswordHash(PasswordUtil.hashPassword(password));
             }
             // update all the fields other than id and username
             updateUserById(conn, user);
@@ -221,13 +221,15 @@ public class ConfigurationUtil
             user.setFirstname(firstname);
             user.setLastname(lastname);
             user.setEmail(email);
-            if (ccPassword.length()!=60 && !ccPassword.startsWith("$2a$12$")) {
-                //XXX hack alert!  Not sure how to know if we've been
-                // given a hashed password or a fresh password to be
-                // hashed.  So I'm relying on two things:
+            if (ccPassword.length()!=60 || !ccPassword.startsWith("$2a$")) {
+                // Sanity check to avoid re-hashing an already-hashed password:
                 // 1) hashed passwords are of length 60
-                // 2) hashed passwords start with $2a$12$
-                user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+                // 2) hashed passwords start with $2a$
+            	// If either of these isn't true, then we has the password.
+            	// In general, no one should be passing anything other than a
+            	// plaintext password to this method, so in theory this is
+            	// unnecessary.
+                user.setPasswordHash(PasswordUtil.hashPassword(ccPassword));
             }
             // update all the fields other than id and username
             updateUserByUsername(conn, user);
@@ -238,7 +240,7 @@ public class ConfigurationUtil
             user.setFirstname(firstname);
             user.setLastname(lastname);
             user.setEmail(email);
-            user.setPasswordHash(BCrypt.hashpw(ccPassword, BCrypt.gensalt(12)));
+            user.setPasswordHash(PasswordUtil.hashPassword(ccPassword));
             user.setWebsite(ccWebsite);
             DBUtil.storeModelObject(conn, user);
             return user.getId();
@@ -264,13 +266,15 @@ public class ConfigurationUtil
     			DBUtil.closeQuietly(resultSet);
     			DBUtil.closeQuietly(stmt);
     		}
-    	} else if (user.getPasswordHash().length()!=60 || !user.getPasswordHash().startsWith("$2")) {
-            //XXX hack alert!  Not sure how to know if we've been
-            // given a hashed password or a fresh password to be
-            // hashed.  So I'm relying on two things:
+    	} else if (user.getPasswordHash().length()!=60 || !user.getPasswordHash().startsWith("$2a$")) {
+            // Sanity check to avoid re-hashing an already-hashed password:
             // 1) hashed passwords are of length 60
-            // 2) hashed passwords start with $2a$12$
-            user.setPasswordHash(BCrypt.hashpw(user.getPasswordHash(), BCrypt.gensalt(12)));
+            // 2) hashed passwords start with $2a$
+        	// If either of these isn't true, then we has the password.
+        	// In general, no one should be passing anything other than a
+        	// plaintext password to this method, so in theory this is
+        	// unnecessary.
+            user.setPasswordHash(PasswordUtil.hashPassword(user.getPasswordHash()));
         }
         
         String update="update " + User.SCHEMA.getDbTableName() +

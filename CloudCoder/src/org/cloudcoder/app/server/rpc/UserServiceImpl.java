@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.cloudcoder.app.client.rpc.UserService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
@@ -51,7 +51,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     {
         //logger.warn("Getting all users in course "+course.getName());
         GWT.log("Getting all users in courseId "+courseId);
-        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
         logger.debug(user.getUsername() + " listing all users");
         // TODO: how to authenticate that this is an instructor?
         List<User> resultList = Database.getInstance().getUsersInCourse(courseId, sectionNumber);
@@ -66,7 +66,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     @Override
     public Boolean addUserToCourse(EditedUser editedUser, int courseId) throws CloudCoderAuthenticationException {
     	// make sure user is logged in
-    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
     	
     	// Add the EditedUser to the database
         User user = editedUser.getUser();
@@ -81,7 +81,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     throws CloudCoderAuthenticationException
     {
         logger.warn("Editing userid "+user.getId()+", username "+user.getUsername());
-        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
         // FIXME: need to ensure that the authenticated user has permission to edit the user
         Database.getInstance().editUser(user);
         return true;
@@ -89,7 +89,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     
     @Override
     public Boolean editUser(EditedUser editedUser, Course course) throws CloudCoderAuthenticationException {
-    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
     	
     	CourseRegistrationList authUserRegList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
     	if (!authUserRegList.isInstructor()) {
@@ -115,7 +115,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
     throws CloudCoderAuthenticationException
     {
         logger.warn("Editing registration type of "+userId+" in course "+courseId);
-        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
         CourseRegistrationList authUserRegList = Database.getInstance().findCourseRegistrations(authenticatedUser, courseId);
         if (!authUserRegList.isInstructor()) {
         	logger.warn("Attempt by non-instructor {} to edit registrations for {}", authenticatedUser.getId(), userId);
@@ -126,7 +126,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 
     @Override
     public CourseRegistrationList getUserCourseRegistrationList(Course course, User user) throws CloudCoderAuthenticationException {
-    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
     	
     	// Check that the authenticated user is an instructor in the course
     	CourseRegistrationList authUserRegList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);

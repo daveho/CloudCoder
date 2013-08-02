@@ -1,0 +1,335 @@
+Load testing experiments
+
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion: 508 seconds
+  Result:             worked fine?
+
+  Mix:                skip3
+  Num threads:        250
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion: 744 seconds
+  Result:             some connection timeouts initially;
+                      clean run after adding random delay prior to login
+                      (see below)
+  Notes:              modified load LoadTesterTask/PlayEditSequence to add a
+                      0-10 second random delay prior to login (to avoid a
+                      thundering herd situation), and to retry all RPC
+                      operations (up to 3 attempts total)
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            8-core AMD, 32GB RAM (YCP CS cluster head node)
+  Time to completion: 1008 seconds
+  Result:             clean run
+  Notes:              CPU utilization around 40% (bursting to 50%): workload on
+                      webapp/MySQL enough to saturate one CPU core.  From running
+                      top, the webapp and MySQL seem to be consuming CPU about
+                      equally.  The build server is quite heavily loaded (close
+                      to 100% CPU utilization); should try experiment using
+                      multiple build servers.
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 623
+  Result:             clean run
+  Notes:              Multiple build servers are definitely helpful
+
+  Mix:                skip3
+  Num threads:        60
+  Max pause (ms):     5000
+  Webapp server:      EC2 micro instance
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 618
+  Result:             clean run
+  Notes:              Very slow to start up, java (webapp) process consuming near 100%
+                      of CPU.  Are we triggering the bug where Jetty runs poorly on
+                      EC2?  Upgrade to more recent version of Jetty?
+                      During the run CPU utilization is more reasonable.
+                      Interestingly, mysql CPU utilization remains fairly low.
+
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      EC2 micro instance
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 878, 536 (variation due to CPU availability?)
+  Result:             clean run
+  Notes:              CPU utilization by the webapp (not mysql!)
+                      is extremely high in the startup phase.  Need to investigate.
+                      Perhaps some of it is the requests for the Javascript code
+                      and other static resources?
+
+  Mix:                skip3
+  Num threads:        175
+  Max pause (ms):     5000
+  Webapp server:      EC2 micro instance
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 987
+  Result:             clean run
+  Notes:              same issue as others: very slow startup with high CPU
+                      utilization from webapp
+
+  Mix:                skip3
+  Num threads:        117
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 
+  Result:
+    Load testing completed in 512 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=22, max=19749, mean=9714, median=9782
+    Login: min=4097, max=24306, mean=13449, median=13711
+    PollSubmissionResult: min=1064, max=12251, mean=1901, median=1073
+    SendChanges: min=21, max=576, mean=27, median=26
+    SetProblem: min=40, max=1503, mean=1066, median=1135
+  Notes:
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 675 seconds
+  Result:
+    Load testing completed in 675 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=20, max=79263, mean=38865, median=40404
+    Login: min=4622, max=99446, mean=44754, median=44457
+    PollSubmissionResult: min=1061, max=40710, mean=13865, median=13274
+    SendChanges: min=20, max=2099, mean=36, median=25
+    SetProblem: min=32, max=2958, mean=2368, median=2419
+  Notes:
+    CPU for both java/webapp and mysql fairly high toward beginning of run.
+    The startup delay is still pretty reasonable.
+    GetRegisteredCourses seems to be a performance issue.
+    Consider optimizing it.
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 684 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=23, max=84807, mean=41905, median=44663
+    Login: min=5234, max=117782, mean=49711, median=48128
+    PollSubmissionResult: min=1067, max=39731, mean=13823, median=14278
+    SendChanges: min=21, max=5340, mean=96, median=29
+    SetProblem: min=91, max=6014, mean=4037, median=4208
+  Notes:
+    This run was testing the addition of an index on the user_id field
+    of cc_course_registrations.  Did not seem to improve startup performance.
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 690 seconds
+  Result:
+    Load testing completed in 690 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=25, max=87190, mean=43307, median=44118
+    Login: min=9538, max=114801, mean=52506, median=51189
+    PollSubmissionResult: min=1068, max=39774, mean=13976, median=14277
+    SendChanges: min=21, max=4738, mean=73, median=28
+    SetProblem: min=56, max=6936, mean=4926, median=5112
+  Notes:
+    Running with cloudcoder.webserver.numThreads=40 (normal default is 20)
+    Does not seem to improve performance.
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 696 seconds
+  Result:
+    Load testing completed in 696 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=37, max=47795, mean=20863, median=6385
+    Login: min=41257, max=125388, mean=73907, median=82404
+    PollSubmissionResult: min=1068, max=37693, mean=13205, median=12299
+    SendChanges: min=22, max=5651, mean=632, median=40
+    SetProblem: min=306, max=7683, mean=4826, median=4987
+  Notes:
+    Running with cloudcoder.webserver.numThreads=150 (normal default is 20)
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      EC2 c1.medium (2 cores, high-CPU)
+  MySQL:              local on default root EBS volume
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 684 seconds
+  Result:
+    Load testing completed in 684 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=19, max=77567, mean=20810, median=5692
+    Login: min=5020, max=105699, mean=69027, median=81309
+    PollSubmissionResult: min=1055, max=40817, mean=13505, median=13264
+    SendChanges: min=17, max=2501, mean=52, median=22
+    SetProblem: min=37, max=5307, mean=2654, median=2902
+  Notes:
+    Running with cloudcoder.webserver.numThreads=150 (normal default is 20)
+    Using C3P0ConnectionPool rather than default connection pool:
+    does seem to possibly increase performance, although Login and GetRegisteredCourses
+    are still quite slow
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            2 x 8-core AMD, 16GB RAM (each) (2 cscluster compute nodes)
+  Time to completion: 590
+  Result:             clean run
+    Load testing completed in 590 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=162, max=2734, mean=1611, median=1723
+    Login: min=299, max=6278, mean=2003, median=2016
+    PollSubmissionResult: min=542, max=41235, mean=13524, median=13163
+    SendChanges: min=23, max=2730, mean=126, median=62
+    SetProblem: min=368, max=2731, mean=1377, median=1132
+  Notes:
+    THIS SEEMS TO HAVE ELIMINATED THE HIGH CPU LOAD ON STARTUP!!!
+    The change was to reduce the bcrypt log2 hash rounds from 12 to 10
+    (10 is the default, but we were using 12.)
+    The median delay for polling for a submission result seems high:
+    perhaps more build server capacity is needed?
+
+  Mix:                skip3
+  Num threads:        351
+  Max pause (ms):     5000
+  Webapp server:      lobsang (3-core AMD, 8GB RAM)
+  MySQL:              local, local filesystem
+  Builder:            3 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion: 590
+  Result:             clean run
+    Load testing completed in 504 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetRegisteredCourses: min=27, max=1427, mean=852, median=1015
+    Login: min=270, max=1979, mean=1296, median=1440
+    PollSubmissionResult: min=234, max=22146, mean=5169, median=2272
+    SendChanges: min=23, max=1494, mean=114, median=65
+    SetProblem: min=67, max=1418, mean=752, median=900
+  Notes:
+    Same as above, except 3 build servers instead of 2.  Time to poll
+    submission result significantly decreased.
+    Note: both this test and above test were done with
+    cloudcoder.webserver.numThreads=150.
+
+  Mix:                 skip3
+  Num threads:         600
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             3 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  795 seconds
+  Result:
+    Load testing completed in 795 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=23, max=7064, mean=3452, median=3586
+    GetRegisteredCourses: min=2853, max=124262, mean=53090, median=66401
+    Login: min=4871, max=167175, mean=102442, median=90389
+    PollSubmissionResult: min=1053, max=43841, mean=17230, median=19349
+    SendChanges: min=16, max=3725, mean=40, median=21
+    SetProblem: min=1566, max=16598, mean=4758, median=4596
+  Notes:
+    One change to load tester: clients call getProblemText() on the
+    EditCodeService to get the initial problem text.
+    It seems as though for this many clients 24 builder cores is
+    insufficient.  Need to try more.  Also, setting bcrypt log2 rounds to 10
+    still causes a significant CPU spike as the clients log in.
+    Try going down to 9 or 8.
+
+  Mix:                 skip3
+  Num threads:         600
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  538 seconds
+  Result:
+    Load testing completed in 538 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=653, max=12080, mean=6006, median=6330
+    GetRegisteredCourses: min=1130, max=12687, mean=6832, median=6970
+    Login: min=146, max=17106, mean=10507, median=10912
+    PollSubmissionResult: min=1053, max=22455, mean=5303, median=3106
+    SendChanges: min=16, max=6419, mean=56, median=22
+    SetProblem: min=2310, max=13341, mean=6192, median=6069
+  Notes:
+    Set bcrypt log2 rounds to 9. Better login times, but still a bit
+    slow.  Try 8.
+    40 builder cores appear to be sufficient for this workload.
+
+  Mix:                 skip3
+  Num threads:         700
+  Max pause (ms):      5000
+  Webapp server:       EC2 c1.medium (2 cores, high-CPU)
+  MySQL:               local on default root EBS volume
+  Builder:             5 x 8-core AMD, 16GB RAM (each) (3 cscluster compute nodes)
+  Time to completion:  562 seconds
+  Result:
+    Load testing completed in 562 seconds
+    0 recoverable exceptions
+    0 unrecoverable exceptions
+    GetProblemText: min=42, max=12486, mean=7466, median=7641
+    GetRegisteredCourses: min=804, max=6755, mean=4301, median=4511
+    Login: min=151, max=38831, mean=6029, median=6141
+    PollSubmissionResult: min=1054, max=32576, mean=8422, median=7181
+    SendChanges: min=16, max=8070, mean=81, median=23
+    SetProblem: min=79, max=11183, mean=6892, median=6819
+  Notes:
+    Successful test with 700 simulated users!!!
+    This is with bcrypt log2 rounds set to 8.  I think we'll use this
+    as the default.
+    Build servers are a bit backlogged, but response times are
+    fairly reasonable.
+
+  Mix: 
+  Num threads:
+  Max pause (ms):
+  Webapp server:
+  MySQL:
+  Builder: 
+  Time to completion:
+  Result:
+  Notes:

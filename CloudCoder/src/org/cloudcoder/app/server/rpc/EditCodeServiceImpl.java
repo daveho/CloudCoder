@@ -51,7 +51,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	@Override
 	public Problem setProblem(int problemId) throws CloudCoderAuthenticationException {
 		// make sure client is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), EditCodeServiceImpl.class);
 
 		// Get the problem
 		Pair<Problem, Quiz> pair = Database.getInstance().getProblem(user, problemId);
@@ -101,7 +101,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
     @Override
     public ProblemText loadCurrentText() throws CloudCoderAuthenticationException {
     	// make sure client is authenticated
-    	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+    	User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), EditCodeServiceImpl.class);
     	
     	// make sure a problem has been loaded
     	Problem problem = (Problem) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.PROBLEM_KEY);
@@ -175,6 +175,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 	    		return new ProblemText(textDocument.getText(), false);
     		} catch (RuntimeException e) {
     			// FIXME: should do something smarter than this 
+    			logger.warn("Exception applying deltas to program text", e);
     			return new ProblemText(fullText != null ? fullText.getText() : "", false);
     		}
     	}
@@ -186,7 +187,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		long serverSubmitTime = System.currentTimeMillis();
 
 		// make sure client is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), EditCodeServiceImpl.class);
 		
 		// if there is a quiz, check whether it has ended
 		Quiz quiz = (Quiz) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.QUIZ_KEY);
@@ -212,6 +213,10 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 		// Make sure all Changes have proper user id
 		for (Change change : changeList) {
 			if (change.getEvent().getUserId() != user.getId()) {
+				logger.warn(
+						"logChange: Submitted change for user {} has incorrect user id {}",
+						user.getUsername()+":"+user.getId(),
+						change.getEvent().getUserId());
 				throw new CloudCoderAuthenticationException();
 			}
 		}
@@ -240,7 +245,7 @@ public class EditCodeServiceImpl extends RemoteServiceServlet implements EditCod
 
 	@Override
 	public ProblemText getSubmissionText(User submitter, Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
-		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), EditCodeServiceImpl.class);
 		
 		return Database.getInstance().getSubmissionText(authenticatedUser, submitter, problem, receipt);
 	}

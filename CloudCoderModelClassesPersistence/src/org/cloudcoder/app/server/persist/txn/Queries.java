@@ -196,7 +196,7 @@ public class Queries {
 	
 		PreparedStatement stmt = databaseRunnable.prepareStatement(
 				conn,
-				"select c.*, t.*, r.* from " + Course.SCHEMA.getDbTableName() + " as c, " + Term.SCHEMA.getDbTableName() + " as t, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
+				"select c.*, t.*, r.* from cc_courses as c, cc_terms as t, cc_course_registrations as r " +
 				" where c.id = r.course_id " + 
 				"   and c.term_id = t.id " +
 				"   and r.user_id = ? " +
@@ -440,6 +440,11 @@ public class Queries {
 	public static void doInsertTestResults(TestResult[] testResultList,
 			int submissionReceiptId, Connection conn,
 			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
+		if (testResultList.length == 0) {
+			// If there are no test results, there is nothing to do
+			return;
+		}
+		
 		for (TestResult testResult : testResultList) {
 			testResult.setSubmissionReceiptEventId(submissionReceiptId);
 		}

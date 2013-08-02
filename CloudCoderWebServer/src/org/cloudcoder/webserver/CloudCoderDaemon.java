@@ -55,6 +55,11 @@ public class CloudCoderDaemon extends JettyDaemon {
 			}
 			
 			@Override
+			public int getNumThreads() {
+				return Integer.parseInt(configProperties.getProperty("cloudcoder.webserver.numThreads", "20"));
+			}
+			
+			@Override
 			public String getWebappResourcePath() {
 				return "/war";
 			}

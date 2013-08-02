@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -256,9 +257,8 @@ public class DBUtil {
 		}
 		
 		// Indices
-		int indexCount = 0;
-		for (ModelObjectIndex<E> index : schema.getIndexList()) {
-			String indexName = schema.getName() + "_idx_" + (indexCount++);
+		for (ModelObjectIndex<? super E> index : schema.getIndexList()) {
+			String indexName = getIndexName(schema, index.getIndexNumber());
 
 			String keyType = getKeyType(index.getIndexType());
 			
@@ -286,6 +286,20 @@ public class DBUtil {
 		sql.append("\n) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 		
 		return sql.toString();
+	}
+
+	/**
+	 * Get an index name.
+	 * 
+	 * @param schema     the table
+	 * @param indexNumber the index number
+	 * @return the index name
+	 */
+	private static <E> String getIndexName(ModelObjectSchema<E> schema, int indexNumber) {
+		if (indexNumber < 0) {
+			throw new IllegalArgumentException("Invalid index number " + indexNumber + " for table " + schema.getDbTableName());
+		}
+		return schema.getName() + "_idx_" + (indexNumber);
 	}
 
 	private static String getKeyType(ModelObjectIndexType indexType) {
@@ -956,5 +970,44 @@ public class DBUtil {
 	 */
 	public static<E extends IModelObject<E>> void loadModelObject(Connection conn, E obj) throws SQLException {
 		loadModelObject(conn, obj, obj.getSchema());
+	}
+	
+	/**
+	 * Create an index on an existing table.
+	 * 
+	 * @param conn    the connection to the database
+	 * @param schema  the existing table
+	 * @param index   the index to create
+	 * @throws SQLException 
+	 */
+	public static<E> void createIndex(Connection conn, ModelObjectSchema<E> schema, ModelObjectIndex<? super E> index) throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("alter table ");
+		sql.append(schema.getDbTableName());
+		sql.append(" add index ");
+		sql.append(getIndexName(schema, index.getIndexNumber()));
+		sql.append(" ");
+		sql.append(getKeyType(index.getIndexType()));
+		sql.append(" (");
+		int fieldCount = 0;
+		for (ModelObjectField<? super E, ?> field : index.getFieldList()) {
+			if (fieldCount > 0) {
+				sql.append(", ");
+			}
+			fieldCount++;
+			sql.append(field.getName());
+		}
+		sql.append(")");
+		
+		PreparedStatement stmt = null;
+		try {
+			String stmtSql = sql.toString();
+			logger.info("Adding index: {}", stmtSql);
+			stmt = conn.prepareStatement(stmtSql);
+			stmt.executeUpdate();
+		} finally {
+			DBUtil.closeQuietly(stmt);
+		}
 	}
 }

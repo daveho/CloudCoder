@@ -20,7 +20,7 @@ package org.cloudcoder.app.server.persist.txn;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.cloudcoder.app.server.persist.BCrypt;
+import org.cloudcoder.app.server.persist.PasswordUtil;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.User;
 
@@ -51,7 +51,7 @@ public class AuthenticateUser extends AbstractDatabaseRunnableNoAuthException<Us
 			return null;
 		}
 		
-		if (BCrypt.checkpw(password, user.getPasswordHash())) {
+		if (PasswordUtil.matches(password, user.getPasswordHash())) {
 			// Plaintext password matches hash: authentication succeeded
 			return user;
 		} else {

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.TestResultUtil;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -49,48 +50,8 @@ import com.google.gwt.user.client.ui.ResizeComposite;
 public class TestResultListView extends ResizeComposite implements SessionObserver, Subscriber, IResultsTabPanelWidget {
 	private DataGrid<NamedTestResult> cellTable;
 	
-	public TestResultListView(Problem problem) {
+	public TestResultListView() {
 		cellTable = new DataGrid<NamedTestResult>();
-		
-		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
-		cellTable.addColumn(testCaseNameColumn, "Test name");
-		cellTable.setColumnWidth(testCaseNameColumn, "160px");
-		
-		OutcomeColumn outcomeColumn = new OutcomeColumn();
-		cellTable.addColumn(outcomeColumn, "Outcome");
-		cellTable.setColumnWidth(outcomeColumn, "160px");
-		
-		ProblemType type=null;
-		if (problem!=null) {
-		    type=problem.getProblemType();
-		}
-		if (type.isOutputLiteral()) {
-		    // appropriate for function/methods where we know the inputs, the expected output,
-		    // and the actual output.
-		    // Unclear if C functions can be made to fit this category...
-		    cellTable.addColumn(new InputColumn(), "Input");
-		    cellTable.addColumn(new ExpectedOutputColumn(), "Expected Output");
-		    cellTable.addColumn(new ActualOutputColumn(), "Actual Output");
-		    
-		} else {
-		    // appropriate for whole-program exercises that use regexps to check 
-		    // correctness of outputs
-		    cellTable.addColumn(new MessageColumn(), "Message");
-		}
-		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
-			@Override
-			public String getOutputText(NamedTestResult testResult) {
-				return testResult.getTestResult().getStdout();
-			}
-		}), "Output");
-		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
-			@Override
-			public String getOutputText(NamedTestResult testResult) {
-				return testResult.getTestResult().getStderr();
-			}
-		}), "Error output");
 		
 		initWidget(cellTable);
 	}
@@ -121,7 +82,7 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 	private static class InputColumn extends TextColumn<NamedTestResult> {
 	    @Override
 	    public String getValue(NamedTestResult object) {
-	        return object.getTestResult().getInput();
+	    	return TestResultUtil.getInput(object.getTestResult());
 	    }
 	}
 	
@@ -136,20 +97,20 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
                 return TestOutcome.FAILED_FROM_TIMEOUT.toString();
             }
             if (outcome==TestOutcome.FAILED_WITH_EXCEPTION) {
-                String actualOutput=object.getTestResult().getActualOutput();
+            	String actualOutput = TestResultUtil.getActualOutput(object.getTestResult());
                 if (actualOutput!=null && !actualOutput.equals("")) {
                     return actualOutput;
                 }
                 return TestOutcome.FAILED_WITH_EXCEPTION.toString();
             }
-            return object.getTestResult().getActualOutput();
+            return TestResultUtil.getActualOutput(object.getTestResult());
         }
     }
 	
 	private static class ExpectedOutputColumn extends TextColumn<NamedTestResult> {
         @Override
         public String getValue(NamedTestResult object) {
-            return object.getTestResult().getExpectedOutput();
+        	return TestResultUtil.getExpectedOutput(object.getTestResult());
         }
     }
 	
@@ -228,9 +189,53 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 			return object;
 		}
 	}
+
+	private void initColumns(Problem problem) {
+		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
+		cellTable.addColumn(testCaseNameColumn, "Test name");
+		cellTable.setColumnWidth(testCaseNameColumn, "160px");
+		
+		OutcomeColumn outcomeColumn = new OutcomeColumn();
+		cellTable.addColumn(outcomeColumn, "Outcome");
+		cellTable.setColumnWidth(outcomeColumn, "160px");
+		
+		ProblemType type = problem.getProblemType();
+		if (type.isOutputLiteral()) {
+		    // appropriate for function/methods where we know the inputs, the expected output,
+		    // and the actual output.
+		    // Unclear if C functions can be made to fit this category...
+		    cellTable.addColumn(new InputColumn(), "Input");
+		    cellTable.addColumn(new ExpectedOutputColumn(), "Expected Output");
+		    cellTable.addColumn(new ActualOutputColumn(), "Actual Output");
+		    
+		} else {
+		    // appropriate for whole-program exercises that use regexps to check 
+		    // correctness of outputs
+		    cellTable.addColumn(new MessageColumn(), "Message");
+		}
+		
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+			@Override
+			public String getOutputText(NamedTestResult testResult) {
+				return testResult.getTestResult().getStdout();
+			}
+		}), "Output");
+		
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+			@Override
+			public String getOutputText(NamedTestResult testResult) {
+				return testResult.getTestResult().getStderr();
+			}
+		}), "Error output");
+	}
 	
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
+		Problem problem = session.get(Problem.class);
+		
+		// Create the columns - they are dependent on the problem type
+		initColumns(problem);
 		
 		NamedTestResult[] testResultList = session.get(NamedTestResult[].class);
 		if (testResultList != null) {
