@@ -54,7 +54,7 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
     public void run(Problem problem, String programText, List<TestCase> testCaseList) throws CloudCoderAuthenticationException, SubmissionException
     {
         // Make sure that client is authenticated and has permission to edit the given problem
-        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), RunServiceImpl.class);
 
         HttpSession session = getThreadLocalRequest().getSession();
 
@@ -85,7 +85,7 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
     public SubmissionResult checkSubmission() throws CloudCoderAuthenticationException, SubmissionException
     {
      // Make sure user is authenticated
-        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+        User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), RunServiceImpl.class);
 
         HttpSession session = getThreadLocalRequest().getSession();
         

@@ -23,5 +23,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderBuilder2"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
+	<classpathentry kind="lib" path="lib/diffutils-1.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
