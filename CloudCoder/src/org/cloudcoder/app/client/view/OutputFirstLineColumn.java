@@ -15,21 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestCase;
+import com.google.gwt.user.cellview.client.TextColumn;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
+abstract class OutputFirstLineColumn<T> extends TextColumn<T> {
+	@Override
+	public String getValue(T object) {
+		return firstLine(getText(object));
+	}
 
-/**
- * @author jaimespacco
- *
- */
-public interface RunServiceAsync
-{
-    public void run(Problem problem, String programText, TestCase[] testCaseList, AsyncCallback<Void> callback);
-    
-    public void checkSubmission(AsyncCallback<SubmissionResult> callback);
+	protected abstract String getText(T object);
+	
+	private static String firstLine(String s) {
+		int eol = s.indexOf('\n');
+		return (eol < 0) ? s : s.substring(0, eol);
+	}
 }

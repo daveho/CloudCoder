@@ -17,7 +17,9 @@
 
 package org.cloudcoder.app.client.view;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
@@ -26,6 +28,9 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.cell.client.CompositeCell;
+import com.google.gwt.cell.client.HasCell;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.ResizeComposite;
@@ -44,8 +49,18 @@ public class PlaygroundResultListView extends ResizeComposite implements Session
         cellTable = new DataGrid<PlaygroundTestResult>();
         cellTable.addColumn(new TestNumberColumn(), "Test Number");
         cellTable.addColumn(new InputColumn(), "Input");
-        cellTable.addColumn(new StdoutColumn(), "Output");
-        cellTable.addColumn(new StderrColumn(), "Error Output");
+        cellTable.addColumn(new OutputColumn(new ExtractOutputText<PlaygroundTestResult>() {
+            @Override
+            public String getOutputText(PlaygroundTestResult testResult) {
+                return testResult.getStdout();
+            }
+        }), "Output");
+        cellTable.addColumn(new OutputColumn(new ExtractOutputText<PlaygroundTestResult>() {
+            @Override
+            public String getOutputText(PlaygroundTestResult testResult) {
+                return testResult.getStderr();
+            }
+        }), "Error Output");
         initWidget(cellTable);
     }
 
@@ -62,6 +77,7 @@ public class PlaygroundResultListView extends ResizeComposite implements Session
         }
     }
     private static class StdoutColumn extends TextColumn<PlaygroundTestResult> {
+        
         @Override
         public String getValue(PlaygroundTestResult object) {
             return object.getStdout();
@@ -73,7 +89,33 @@ public class PlaygroundResultListView extends ResizeComposite implements Session
             return object.getStderr();
         }
     }
-    
+    private static class OutputColumn extends Column<PlaygroundTestResult, PlaygroundTestResult> {
+        public OutputColumn(ExtractOutputText<PlaygroundTestResult> extractor) {
+            super(new CompositeCell<PlaygroundTestResult>(getCells(extractor)));
+        }
+        
+        private static List<HasCell<PlaygroundTestResult, ?>> getCells(final ExtractOutputText<PlaygroundTestResult> extractor) {
+            List<HasCell<PlaygroundTestResult, ?>> result = new ArrayList<HasCell<PlaygroundTestResult, ?>>();
+            result.add(new ShowFullOutputButtonColumn<PlaygroundTestResult>(){
+                @Override
+                protected String getText(PlaygroundTestResult object) {
+                    return extractor.getOutputText(object);
+                }
+            });
+            result.add(new OutputFirstLineColumn<PlaygroundTestResult>() {
+                @Override
+                protected String getText(PlaygroundTestResult object) {
+                    return extractor.getOutputText(object);
+                }
+            });
+            return result;
+        }
+
+        @Override
+        public PlaygroundTestResult getValue(PlaygroundTestResult object) {
+            return object;
+        }
+    }
     
     @Override
     public void eventOccurred(Object key, Publisher publisher, Object hint) {
