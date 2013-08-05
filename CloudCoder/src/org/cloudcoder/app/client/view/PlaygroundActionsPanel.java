@@ -47,6 +47,29 @@ public class PlaygroundActionsPanel extends Composite
     private Runnable changeLanguageHandler;
     private ListBox selectLanguage;
     
+    public void setSelectedLanguage(Language lang) {
+        switch(lang) {
+        case JAVA:
+            selectLanguage.setSelectedIndex(1);
+            break;
+        case PYTHON:
+            selectLanguage.setSelectedIndex(2);
+            break;
+        case C:
+            selectLanguage.setSelectedIndex(3);
+            break;
+        case CPLUSPLUS:
+            selectLanguage.setSelectedIndex(4);
+            break;
+        case RUBY:
+            selectLanguage.setSelectedIndex(5);
+            break;
+        default:
+            // default to Java (1)
+            selectLanguage.setSelectedIndex(1);
+        }
+    }
+    
     /**
      * Constructor.
      */
@@ -58,10 +81,10 @@ public class PlaygroundActionsPanel extends Composite
         
         selectLanguage = new ListBox();
         selectLanguage.addItem(Language.JAVA.toString());
-        selectLanguage.addItem(Language.PYTHON.toString());
         selectLanguage.addItem(Language.C.toString());
         selectLanguage.addItem(Language.CPLUSPLUS.toString());
-        selectLanguage.addItem(Language.RUBY.toString());
+        //selectLanguage.addItem(Language.PYTHON.toString());
+        //selectLanguage.addItem(Language.RUBY.toString());
         //selectLanguage.addItem("OCaml (coming soon!)");
         // setting to 1 turns makes a drop-down list
         selectLanguage.setVisibleItemCount(1);

@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.server.rpc;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -30,6 +31,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
     private static final Logger logger=LoggerFactory.getLogger(RunServiceImpl.class);
     
     @Override
-    public void run(Problem problem, String programText, List<TestCase> testCaseList) throws CloudCoderAuthenticationException, SubmissionException
+    public void run(Problem problem, String programText, TestCase[] testCases) throws CloudCoderAuthenticationException, SubmissionException
     {
         // Make sure that client is authenticated and has permission to edit the given problem
         User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), RunServiceImpl.class);
@@ -72,7 +74,13 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
 
         logger.info("Passing submission to submit service...");
         
-        IFutureSubmissionResult future = submitService.submitAsync(problem, testCaseList, programText);
+        // Convert TestCase[] to List<TestCase> to match ISubmitService
+        List<TestCase> listTestCases=new LinkedList<TestCase>();
+        for (TestCase tc : testCases) {
+            listTestCases.add(tc);
+        }
+        
+        IFutureSubmissionResult future = submitService.submitAsync(problem, listTestCases, programText);
 
         // put the future into the session
         session.setAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY, future);
@@ -104,11 +112,21 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
         } catch (SubmissionException e) {
             // If poll() throws an exception, the submission completed
             // with an error, but it did complete, so clear the session objects.
-            session.removeAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY);            throw e;
+            session.removeAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY);
+            throw e;
         }
         if (result == null) {
             // submission result not ready yet
             return null;
+        }
+        
+        // Re-number the test results
+        // The Builder thinks it is returning database keys
+        // which it doesn't know so it sets everything to -1
+        int i=1;
+        for (TestResult r : result.getTestResults()) {
+            r.setId(i);
+            i++;
         }
         
         // We are just trusting that the submission result is for the

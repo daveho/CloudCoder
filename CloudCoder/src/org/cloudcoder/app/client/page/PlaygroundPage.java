@@ -18,14 +18,11 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
-import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -36,30 +33,25 @@ import org.cloudcoder.app.client.view.PlaygroundActionsPanel;
 import org.cloudcoder.app.client.view.PlaygroundResultListView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.ViewUtil;
-import org.cloudcoder.app.shared.model.Change;
-import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.PlaygroundTestResult;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Element;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -69,7 +61,6 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceAnnotationType;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
-import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 
@@ -79,7 +70,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  */
 public class PlaygroundPage extends CloudCoderPage
 {
-    private enum Mode {
+    public enum Mode {
         /** Loading problem and current text - editing not allowed. */
         LOADING,
 
@@ -108,6 +99,10 @@ public class PlaygroundPage extends CloudCoderPage
     }
 
     private UI ui;
+    
+    public static native void clickElement(Element elem) /*-{
+       elem.click();
+    }-*/;
 
     /**
      * UI class for DevelopmentPage.
@@ -115,9 +110,7 @@ public class PlaygroundPage extends CloudCoderPage
     private class UI extends Composite implements Subscriber {
         public static final double NORTH_PANEL_HEIGHT_PX = 50.0;
         public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
-        public static final double BUTTONS_PANEL_WIDTH_PX = 600.0;
 
-        public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
         private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
 
         private LayoutPanel northLayoutPanel;
@@ -125,7 +118,6 @@ public class PlaygroundPage extends CloudCoderPage
         private PlaygroundActionsPanel playgroundActionsPanel;
         private LayoutPanel southLayoutPanel;
         private LayoutPanel centerLayoutPanel;
-        private LayoutPanel buttonsLayoutPanel;
         private StatusMessageView statusMessageView;
 
         private TabLayoutPanel resultsTabPanel;
@@ -134,11 +126,9 @@ public class PlaygroundPage extends CloudCoderPage
         private List<IResultsTabPanelWidget> resultsTabPanelWidgetList;
 
         private AceEditor aceEditor;
-        private Timer flushPendingChangeEventsTimer;
         private Mode mode;
         private Timer checkPendingSubmissionTimer;
         private Runnable onCleanCallback;
-        private String[] testCaseNames;
 
         public UI() {
             SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
@@ -155,6 +145,23 @@ public class PlaygroundPage extends CloudCoderPage
                     mode=Mode.PREVENT_EDITS;
                     aceEditor.setReadOnly(true);
                     Language lang=playgroundActionsPanel.getLanguage();
+                    switch(lang) {
+                    case JAVA:
+                        addSessionObject(StatusMessage.information("Language set to "+lang));
+                        break;
+                    case C:
+                        addSessionObject(StatusMessage.information("Language set to "+lang));
+                        break;
+                    case CPLUSPLUS:
+                        addSessionObject(StatusMessage.information("Language set to "+lang));
+                        break;
+                    case PYTHON:
+                    case RUBY:
+                    default:
+                        addSessionObject(StatusMessage.information(lang+" not yet supported; defaulting to Java"));
+                        lang=Language.JAVA;
+                        playgroundActionsPanel.setSelectedLanguage(Language.JAVA);
+                    }
                     if (lang!=null && aceEditor!=null) {
                         setEditorLanguage(lang);
                     }
@@ -211,14 +218,13 @@ public class PlaygroundPage extends CloudCoderPage
             mode = Mode.LOADING;
 
             // Activate views
-            // playground results
             playgroundResultListView.activate(session, subscriptionRegistrar);
 
             statusMessageView.activate(session, subscriptionRegistrar);
-            //testOutcomeSummaryView.activate(session, subscriptionRegistrar);
             compilerDiagnosticListView.activate(session, subscriptionRegistrar);
 
             // Subscribe to ChangeList events
+            // XXX Still necessary?
             session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, subscriptionRegistrar);
 
             // Create AceEditor instance
@@ -330,31 +336,39 @@ public class PlaygroundPage extends CloudCoderPage
             
             // Create a fake problem to send to the server
             Problem fakeProblem=new Problem();
-            fakeProblem.setProblemType(ProblemType.JAVA_PROGRAM);
+            //TODO get the language out of the session, or wherever we end up storing it
+            
+            Language lang=playgroundActionsPanel.getLanguage();
+            ProblemType type=ProblemType.JAVA_PROGRAM;
+            switch(lang) {
+            case JAVA:
+                type=ProblemType.JAVA_PROGRAM;
+                break;
+            case C:
+            case CPLUSPLUS:
+                type=ProblemType.C_PROGRAM;
+                break;
+            case PYTHON:
+                //FIXME Add PYTHON_METHOD and RUBY_METHOD to problem types
+                //type=ProblemType.PYTHON_FUNCTION;
+                //break;
+            case RUBY:
+                //type=ProblemType.RUBY_METHOD;
+                //break;
+            default:
+                type=ProblemType.JAVA_PROGRAM;
+                addSessionObject(StatusMessage.information("Language not yet supported; default to Java"));
+            }
+            fakeProblem.setProblemType(type);
             fakeProblem.setProblemId(1);
             addSessionObject(fakeProblem);
             
-            List<TestCase> testCaseList=new LinkedList<TestCase>();
-            // TODO pull test cases out of the GUI
-            // this will either be in the session, or it will
-            // be an instance variable in this class
-            // XXX unclear relationship between list of TestCase
-            // that must be sent to the Builder, and the 
-            // PlaygroundTestResult that we create when we receive
-            // the results
-            // probably want to invalidate displayed results
-            // whenever input cases are edited
-            TestCase t1=new TestCase();
-            t1.setInput("");
-            t1.setTestCaseId(1);
-            t1.setProblemId(fakeProblem.getProblemId());
-            t1.setOutput("");
-            testCaseList.add(t1);
+            TestCase[] testCaseList=getSession().get(TestCase[].class);
             
             doRunRPC(fakeProblem, text, testCaseList);
         }
 
-        protected void doRunRPC(final Problem problem, final String text, final List<TestCase> testCaseList) {
+        protected void doRunRPC(final Problem problem, final String text, final TestCase[] testCaseList) {
             // Do not allow submit if edits are disallowed
             if (mode == Mode.PREVENT_EDITS) {
                 return;
@@ -397,7 +411,7 @@ public class PlaygroundPage extends CloudCoderPage
         }
         
         private void createEditor(Language language) {
-            aceEditor = new AceEditor(true);
+            aceEditor = new AceEditor();
             aceEditor.setSize("100%", "100%");
             centerLayoutPanel.add(aceEditor);
             aceEditor.startEditor();
@@ -410,150 +424,7 @@ public class PlaygroundPage extends CloudCoderPage
             aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
             aceEditor.setShowPrintMargin(false);
         }
-
-        private void addEditorChangeEventHandler(final Session session, final Problem problem) {
-            final User user = session.get(User.class);
-            final ChangeList changeList = session.get(ChangeList.class);
-            aceEditor.addOnChangeHandler(new AceEditorCallback() {
-                @Override
-                public void invokeAceCallback(JavaScriptObject obj) {
-                    try {
-                        // If the initial problem text hasn't been loaded yet,
-                        // then don't send any changes.  Otherwise we will send the
-                        // initial text as a change, which is definitely not what
-                        // we want.
-                        if (mode == Mode.LOADING) {
-                            return;
-                        }
-
-                        int userId = user.getId();
-                        Integer problemId = problem.getProblemId();
-                        Change change = ChangeFromAceOnChangeEvent.convert(obj, userId, problemId);
-                        changeList.addChange(change);
-                    } catch (Exception e) {
-                        GWT.log("Exception adding change", e);
-                        Window.alert("Caught exception! " + e.getMessage());
-                    }
-                }
-            });
-        }
-
-        private void asyncLoadCurrentProblemText() {
-            RPC.editCodeService.loadCurrentText(new AsyncCallback<ProblemText>() {
-                @Override
-                public void onSuccess(ProblemText result) {
-                    // If the ProblemText is new (meaning that this is the first time the
-                    // user is working on this problem), and if the problem text is
-                    // non-empty, insert the initial problem text
-                    // into the change list as a full-text change.  This handles the
-                    // case where the problem has a skeleton.
-                    if (result.isNew() && !result.getText().equals("")) {
-                        User user = getSession().get(User.class);
-                        Problem problem = getSession().get(Problem.class);
-
-                        Change initialChange = new Change(
-                                ChangeType.FULL_TEXT,
-                                0, 0, 0, 0,
-                                System.currentTimeMillis(),
-                                user.getId(),
-                                problem.getProblemId(),
-                                result.getText()
-                                );
-
-                        getSession().get(ChangeList.class).addChange(initialChange);
-                    }
-
-                    // Check to see if this problem is a quiz.
-                    if (result.isQuiz()) {
-                        getSession().add(new QuizInProgress());
-                    }
-
-                    // Now we can start editing
-                    aceEditor.setText(result.getText());
-                    aceEditor.setReadOnly(false);
-                    mode = Mode.EDITING;
-
-                    // Force a redisplay: work around weirdness when an AceEditor
-                    // is embedded in a LayoutPanel (or in this case,
-                    // a DockLayoutPanel).
-                    // Update 1/24/2012 DHH - this no longer seems necessary, but I'm leaving it
-                    // in on the theory that it causes no harm, and if the bug was actually a
-                    // browser bug, there might be some users out there with old browsers
-                    // who could still possibly be affected by it.
-                    aceEditor.redisplay();
-                }
-
-                @Override
-                public void onFailure(Throwable caught) {
-                    if (caught instanceof CloudCoderAuthenticationException) {
-                        recoverFromServerSessionTimeout(new Runnable() {
-                            public void run() {
-                                // Try again!
-                                asyncLoadCurrentProblemText();
-                            }
-                        });
-                    } else {
-                        GWT.log("Couldn't get current text for problem", caught);
-                        addSessionObject(StatusMessage.error("Could not get problem text", caught));
-                    }
-                }
-            });
-        }
-
-        private void startTransmitPendingChangeTimer(final Session session) {
-            // Create timer to flush unsent change events periodically.
-            this.flushPendingChangeEventsTimer = new Timer() {
-                @Override
-                public void run() {
-                    if (mode == Mode.PREVENT_EDITS) {
-                        return; // no further edits are allowed
-                    }
-
-                    final ChangeList changeList = session.get(ChangeList.class);
-
-                    if (changeList == null) {
-                        // paranoia
-                        return;
-                    }
-
-                    if (changeList.getState() == ChangeList.State.UNSENT) {
-                        Change[] changeBatch = changeList.beginTransmit();
-                        logChangeRPC(changeList, changeBatch);
-                    }
-                }
-
-                protected void logChangeRPC(final ChangeList changeList, final Change[] changeBatch) {
-                    if (mode == Mode.PREVENT_EDITS) {
-                        return; // no further edits are allowed
-                    }
-                    RPC.editCodeService.logChange(changeBatch, System.currentTimeMillis(), new AsyncCallback<Boolean>() {
-                        @Override
-                        public void onFailure(Throwable caught) {
-                            GWT.log("Error sending change batch", caught);
-                            if (caught instanceof CloudCoderAuthenticationException) {
-                                GWT.log("Starting recovery from server session timeout...");
-                                recoverFromServerSessionTimeout(new Runnable(){
-                                    public void run() {
-                                        // Try again!
-                                        logChangeRPC(changeList, changeBatch);
-                                    }
-                                });
-                            } else {
-                                changeList.endTransmit(false);
-                                addSessionObject(StatusMessage.error("Could not save code to server", caught));
-                            }
-                        }
-
-                        @Override
-                        public void onSuccess(Boolean result) {
-                            changeList.endTransmit(true);
-                        }
-                    });
-                }
-            };
-            flushPendingChangeEventsTimer.scheduleRepeating(FLUSH_CHANGES_INTERVAL_MS);
-        }
-
+        
         private void createCheckPendingSubmissionTimer() {
             // Create, but do not start, the timer that we will be used to
             // poll for a pending SubmissionResult.
@@ -677,11 +548,7 @@ public class PlaygroundPage extends CloudCoderPage
          */
         private void displayTestResults(final SubmissionResult submissionResult) {
             // add a simplified version of the TestResults for display in our table
-            PlaygroundTestResult[] playgroundTestResults=new PlaygroundTestResult[submissionResult.getTestResults().length];
-            for (int i=0; i<submissionResult.getTestResults().length; i++) {
-                playgroundTestResults[i]=new PlaygroundTestResult(submissionResult.getTestResults()[i]);
-            }
-            addSessionObject(playgroundTestResults);
+            addSessionObject(PlaygroundTestResult.convertTestResult(submissionResult.getTestResults()));
         }
     }
 
@@ -699,7 +566,17 @@ public class PlaygroundPage extends CloudCoderPage
     @Override
     public void activate() {
         addSessionObject(new ChangeList());
-        addSessionObject(new PlaygroundTestResult[0]);
+        // create default test case
+        TestCase t1=new TestCase();
+        t1.setInput("");
+        t1.setTestCaseId(1);
+        t1.setProblemId(1);
+        t1.setOutput("");
+        TestCase[] testCases=new TestCase[1];
+        testCases[0]=t1;
+        addSessionObject(testCases);
+        
+        addSessionObject(PlaygroundTestResult.convertTestCase(testCases));
         addSessionObject(new CompilerDiagnostic[0]);
         ui.activate(getSession(), getSubscriptionRegistrar());
     }

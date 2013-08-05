@@ -15,21 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.rpc;
+package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.SubmissionResult;
-import org.cloudcoder.app.shared.model.TestCase;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
-/**
- * @author jaimespacco
- *
- */
-public interface RunServiceAsync
-{
-    public void run(Problem problem, String programText, TestCase[] testCaseList, AsyncCallback<Void> callback);
-    
-    public void checkSubmission(AsyncCallback<SubmissionResult> callback);
+public interface ExtractOutputText<T> {
+	public String getOutputText(T testResult);
 }

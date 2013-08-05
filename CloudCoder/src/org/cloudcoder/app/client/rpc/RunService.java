@@ -17,10 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import java.util.List;
-
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
-import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -36,7 +33,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("run")
 public interface RunService extends RemoteService
 {
-    public void run(Problem problem, String programText, List<TestCase> testCaseList) throws CloudCoderAuthenticationException, SubmissionException;
+    public void run(Problem problem, String programText, TestCase[] testCaseList) throws CloudCoderAuthenticationException, SubmissionException;
     
     public SubmissionResult checkSubmission()  throws CloudCoderAuthenticationException, SubmissionException;
 }
