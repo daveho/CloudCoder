@@ -1,0 +1,32 @@
+<project name="CloudCoderSubmissionQueue" default="jar">
+	<property name="jarname" value="cloudcoderSubmissionQueue.jar"/>
+    <property name="model.class.jar" value="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+
+	<path id="CloudCoderSubmissionQueue.classpath">
+		<pathelement location="${model.class.jar}"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		<fileset dir="../CloudCoderJetty/lib/jetty" includes="servlet-api-2.5.jar"/>
+	</path>
+	
+    <!-- make sure model classes jar file is built -->
+    <target name="modelClasses">
+    	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar" />
+    </target>
+	
+	<target name="javac" depends="modelClasses">
+		<javac srcdir="src" destdir="bin" classpathref="CloudCoderSubmissionQueue.classpath" source="1.6" target="1.6" debug="true"/>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarname}">
+			<fileset dir="bin" includes="**/*.class"/>
+		</jar>
+	</target>
+
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="${jarname}"/>
+    </target>
+</project>
