@@ -77,9 +77,7 @@ public abstract class JettyWebappDaemon extends JettyDaemon<JettyWebappDaemonCon
 	}
 	
 	@Override
-	protected void onCreateServer(Server server) {
-		JettyWebappDaemonConfig jettyConfig = getJettyConfig();
-		
+	protected void onCreateServer(Server server, JettyWebappDaemonConfig jettyConfig) {
 		// Create an override-web.xml to override context parameters specified in the
 		// webapp's web.xml.  Its web.xml contains configuration values appropriate
 		// for development (which is useful), but we want the configuration values

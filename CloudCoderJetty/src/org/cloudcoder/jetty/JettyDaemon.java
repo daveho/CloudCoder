@@ -62,8 +62,9 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 	 * Downcall method to configure the Jetty {@link Server} object.
 	 * 
 	 * @param server the server object
+	 * @param config the configuration object
 	 */
-	protected abstract void onCreateServer(Server server);
+	protected abstract void onCreateServer(Server server, ConfigType config);
 
 	@Override
 	public void start(String instanceName) {
@@ -85,7 +86,7 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 		server.addConnector(connector);
 
 		// Configure the Server by setting up handlers
-		onCreateServer(server);
+		onCreateServer(server, jettyConfig);
 	
 		// Other misc. options
 		int numThreads = jettyConfig.getNumThreads();

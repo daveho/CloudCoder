@@ -11,9 +11,10 @@ my @propertyNames = ();
 my %properties = ();
 my %prior = ();
 my $configRepoWebapp = 0;
+my $configBuilderWebService = 0;
 my $useDefaultKeystore = 0;
 
-if (scalar(@ARGV) >= 1) {
+while (scalar(@ARGV) >= 1) {
 	# If the "--repo" command-line argument is specified, then
 	# include configuration for the repository webapp (and its
 	# webserver).
@@ -21,6 +22,9 @@ if (scalar(@ARGV) >= 1) {
 	if ($arg eq '--repo') {
 		$configRepoWebapp = 1;
 		print "Configuring for CloudCoder exercise repository\n\n";
+	} elsif ($arg eq '--bws') {
+		$configBuilderWebService = 1;
+		print "Configuring for CloudCoder builder web service\n\n";
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -121,6 +125,9 @@ askprop("What context path should the webapp use?",
 askprop("Should the CloudCoder web server accept connections only from localhost?\n" .
 	"(Set this to 'true' if using a reverse proxy, which is recommended)",
 	"cloudcoder.webserver.localhostonly", "true");
+askprop("How many request handling threads should the webapp use?\n" .
+	"(Suggestion: 1/2 expected number of concurrent users)",
+	"cloudcoder.webserver.numThreads", "80");
 
 if ($configRepoWebapp) {
 	section("Database configuration (repository webapp)");
@@ -146,6 +153,9 @@ if ($configRepoWebapp) {
 	askprop("Should the exercise repository web server accept connections only from localhost?\n" .
 		"(Set this to 'true' if using a reverse proxy, which is recommended)",
 		"cloudcoder.repoapp.webserver.localhostonly", "true");
+	askprop("How many request handling threads should the repository webapp use?\n" .
+		"(Suggestion: 1/2 expected number of concurrent users)",
+		"cloudcoder.repoapp.webserver.numThreads", "80");
 	askprop("What SMTP server should the repo webapp use to send mail?",
 		"cloudcoder.repoapp.smtp.host", "smtp.1and1.com");
 	askprop("What SMTP port should the repo webapp use to send mail?",
@@ -154,6 +164,21 @@ if ($configRepoWebapp) {
 		"cloudcoder.repoapp.smtp.user", undef);
 	askprop("What SMTP password should the repo webapp use?",
 		"cloudcoder.repoapp.smtp.passwd", undef);
+}
+
+if ($configBuilderWebService) {
+	section("Webserver configuration (builder web service)");
+
+	askprop("What port will the builder web service listen on?",
+		"cloudcoder.builderwebservice.port", "8083");
+	askprop("What context path should the builder web service use?",
+		"cloudcoder.builderwebservice.contextpath", "/repo");
+	askprop("Should the builder web service accept connections only from localhost?\n" .
+		"(Set this to 'true' if using a reverse proxy, which is recommended)",
+		"cloudcoder.builderwebservice.localhostonly", "true");
+	askprop("How many request handling threads should the builder web service use?\n" .
+		"(Suggestion: 1/2 expected number of concurrent users)",
+		"cloudcoder.builderwebservice.numThreads", "80");
 }
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
