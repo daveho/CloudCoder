@@ -30,6 +30,7 @@ import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

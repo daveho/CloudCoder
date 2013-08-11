@@ -48,6 +48,7 @@ import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.UserRegistrationRequestStatus;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

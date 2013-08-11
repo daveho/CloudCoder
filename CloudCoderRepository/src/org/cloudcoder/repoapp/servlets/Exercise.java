@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.webservice.util.ServletUtil;
 
 /**
  * Servlet to display an exercise in human-readable form.
