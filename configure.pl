@@ -172,13 +172,18 @@ if ($configBuilderWebService) {
 	askprop("What port will the builder web service listen on?",
 		"cloudcoder.builderwebservice.port", "8083");
 	askprop("What context path should the builder web service use?",
-		"cloudcoder.builderwebservice.contextpath", "/repo");
+		"cloudcoder.builderwebservice.contextpath", "/bws");
 	askprop("Should the builder web service accept connections only from localhost?\n" .
 		"(Set this to 'true' if using a reverse proxy, which is recommended)",
 		"cloudcoder.builderwebservice.localhostonly", "true");
 	askprop("How many request handling threads should the builder web service use?\n" .
 		"(Suggestion: 1/2 expected number of concurrent users)",
 		"cloudcoder.builderwebservice.numThreads", "80");
+
+	askprop("What username should the client provide?",
+		"cloudcoder.builderwebservice.clientusername");
+	askprop("What password should the client provide?",
+		"cloudcoder.builderwebservice.clientpassword");
 }
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
