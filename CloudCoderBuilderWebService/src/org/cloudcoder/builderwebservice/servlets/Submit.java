@@ -31,6 +31,7 @@ import org.cloudcoder.webservice.util.AuthenticationException;
 import org.cloudcoder.webservice.util.BadRequestException;
 import org.cloudcoder.webservice.util.Credentials;
 import org.cloudcoder.webservice.util.ServletUtil;
+import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
@@ -73,13 +74,21 @@ public class Submit extends HttpServlet {
 			
 			// Read the request JSON object
 			JSONParser parser = new JSONParser();
-			Object requestObj = parser.parse(req.getReader());
+			Object requestObj_ = parser.parse(req.getReader());
+			Map<?, ?> requestObj = expectObject(requestObj_);
 			
-			if (!(requestObj instanceof Map)) {
-				throw new BadRequestException("Invalid JSON request object (not an object)");
-			}
+			// The Data field should contain the code execution request
+			Map<?, ?> data = expectObject(requiredField(requestObj, "Data"));
 			
-			// TODO: decode the request, initiate compilation and testing
+			// Extract field values
+			String language = expect(String.class, requiredField(data, "Language"));
+			Integer executionType = expectInteger(requiredField(data, "ExecutionType"));
+			JSONArray codeArray = expect(JSONArray.class, requiredField(data, "Code"));
+			Integer testcaseType = expectInteger(requiredField(data, "TestcaseType"));
+			Boolean trace = expect(Boolean.class, requiredField(data, "Trace"));
+			Boolean stdout = expect(Boolean.class, requiredField(data, "Stdout"));
+			Boolean returnValue = expect(Boolean.class, requiredField(data, "ReturnValue"));
+			JSONArray testcases = expect(JSONArray.class, requiredField(data, "Testcases"));
 			
 			// This is just for testing
 			ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "All right!");
@@ -95,4 +104,35 @@ public class Submit extends HttpServlet {
 		}
 	}
 
+	private Map<?, ?> expectObject(Object jsonValue) throws BadRequestException {
+		if (!(jsonValue instanceof Map)) {
+			throw new BadRequestException("Expected JSON object");
+		}
+		return (Map<?, ?>) jsonValue;
+	}
+	
+	private<E> E expect(Class<E> cls, Object jsonValue) throws BadRequestException {
+		if (!cls.isAssignableFrom(jsonValue.getClass())) {
+			throw new BadRequestException("Expected " + cls.getSimpleName() + ", saw " + jsonValue.getClass().getSimpleName());
+		}
+		return cls.cast(jsonValue);
+	}
+	
+	private Integer expectInteger(Object jsonValue) throws BadRequestException {
+		if (jsonValue instanceof Integer) {
+			return (Integer) jsonValue;
+		}
+		if (jsonValue instanceof Long) {
+			return Integer.valueOf((int) ((Long)jsonValue).longValue());
+		}
+		throw new BadRequestException("Expected Integer, saw " + jsonValue.getClass().getSimpleName());
+	}
+	
+	private Object requiredField(Map<?, ?> jsonObj, String fieldName) throws BadRequestException {
+		Object value = jsonObj.get(fieldName);
+		if (value == null) {
+			throw new BadRequestException("Missing field: " + fieldName);
+		}
+		return value;
+	}
 }
