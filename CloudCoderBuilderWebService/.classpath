@@ -5,5 +5,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderJetty"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueue"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderWebServiceUtil"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

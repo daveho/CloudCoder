@@ -19,11 +19,22 @@
 package org.cloudcoder.builderwebservice.servlets;
 
 import java.io.IOException;
+import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.cloudcoder.webservice.util.AuthenticationException;
+import org.cloudcoder.webservice.util.BadRequestException;
+import org.cloudcoder.webservice.util.Credentials;
+import org.cloudcoder.webservice.util.ServletUtil;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Servlet to accept submissions and deliver submission results
@@ -34,13 +45,54 @@ import javax.servlet.http.HttpServletResponse;
 public class Submit extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	private static final Logger logger = LoggerFactory.getLogger(Submit.class);
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		// Just for debugging...
-		resp.setContentType("text/plain");
-		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.getWriter().println("Hello there");
+		ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "Hey there!");
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		ServletContext context = getServletContext();
+		
+		// FIXME: this is pretty cheesy - think about implementing a more flexible mechanism for authentication
+		String expectedUsername = context.getInitParameter("cloudcoder.builderwebservice.clientusername");
+		String expectedPassword = context.getInitParameter("cloudcoder.builderwebservice.clientpassword");
+		
+		try {
+			// Get the Credentials
+			Credentials credentials = ServletUtil.getBasicAuthenticationCredentials(req);
+			
+			// Check the credentials
+			if (!(credentials.getUsername().equals(expectedUsername) && credentials.getPassword().equals(expectedPassword))) {
+				throw new AuthenticationException("Invalid username/password");
+			}
+			
+			// Read the request JSON object
+			JSONParser parser = new JSONParser();
+			Object requestObj = parser.parse(req.getReader());
+			
+			if (!(requestObj instanceof Map)) {
+				throw new BadRequestException("Invalid JSON request object (not an object)");
+			}
+			
+			// TODO: decode the request, initiate compilation and testing
+			
+			// This is just for testing
+			ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "All right!");
+			
+		} catch (ParseException e) {
+			ServletUtil.badRequest(resp, "Invalid JSON request object: " + e.getMessage());
+			logger.warn("Exception parsing request", e);
+		} catch (BadRequestException e) {
+			ServletUtil.badRequest(resp, e.getMessage());
+			logger.warn("Exception interpreting request", e);
+		} catch (AuthenticationException e) {
+			ServletUtil.authorizationRequired(resp, e.getMessage(), "BuilderWebService");
+		}
 	}
 
 }
