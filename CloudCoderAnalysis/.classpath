@@ -17,5 +17,16 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.osgi.util_3.2.200.v20110110.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.text_3.5.101.r371_v20110810-0800.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/asm-all-4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://asm.ow2.org/asm40/javadoc/user/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderBuilder2"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
+	<classpathentry kind="lib" path="lib/diffutils-1.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

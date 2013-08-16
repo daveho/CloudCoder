@@ -148,9 +148,21 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 					handleAccountButtonClicked();
 				}
 			});
+			
 			eastPanel.add(accountButton);
 			eastPanel.setWidgetRightWidth(accountButton, 0.0, Unit.PX, 120.0, Unit.PX);
 			eastPanel.setWidgetTopHeight(accountButton, PageNavPanel.HEIGHT_PX, Style.Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+			
+			Button playgroundButton=new Button("Playground");
+            playgroundButton.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                    getSession().get(PageStack.class).push(PageId.PLAYGROUND_PAGE);
+                }
+            });
+            eastPanel.add(playgroundButton);
+            eastPanel.setWidgetRightWidth(playgroundButton, 0.0, Unit.PX, 120.0, Unit.PX);
+            eastPanel.setWidgetTopHeight(playgroundButton, 2*PageNavPanel.HEIGHT_PX, Style.Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 
 			dockLayoutPanel.addEast(eastPanel, 200);
 
@@ -203,7 +215,10 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			problemListPanel.add(refreshProblemListButton);
 			problemListPanel.setWidgetTopHeight(refreshProblemListButton, 0, Unit.PX, COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 			problemListPanel.setWidgetRightWidth(refreshProblemListButton, 0, Unit.PX, REFRESH_PROBLEM_LIST_BUTTON_WIDTH_PX, Unit.PX);
-			centerSplit.add(problemListPanel);
+            centerSplit.add(problemListPanel);
+			
+			
+			
 
 			centerPanel.add(centerSplit);
 			centerPanel.setWidgetTopBottom(centerSplit, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);

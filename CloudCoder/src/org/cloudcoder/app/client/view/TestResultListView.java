@@ -32,10 +32,8 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.CompositeCell;
-import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.HasCell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
@@ -121,61 +119,20 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		}
 	}
 	
-	private static abstract class ShowFullOutputButtonColumn extends Column<NamedTestResult, String> {
-		public ShowFullOutputButtonColumn() {
-			super(new ButtonCell());
-
-			// Set a FieldUpdater to handle the button click
-			setFieldUpdater(new FieldUpdater<NamedTestResult, String>() {
-				@Override
-				public void update(int index, NamedTestResult object, String value) {
-					// Show the TestResultOutputDialog.
-					TestResultOutputDialog dialog = new TestResultOutputDialog(getText(object));
-					dialog.center();
-				}
-			});
-		}
-
-		protected abstract String getText(NamedTestResult object);
-
-		@Override
-		public String getValue(NamedTestResult object) {
-			return "Show all";
-		}
-	}
-	
-	private static abstract class OutputFirstLineColumn extends TextColumn<NamedTestResult> {
-		@Override
-		public String getValue(NamedTestResult object) {
-			return firstLine(getText(object));
-		}
-
-		protected abstract String getText(NamedTestResult object);
-		
-		private static String firstLine(String s) {
-			int eol = s.indexOf('\n');
-			return (eol < 0) ? s : s.substring(0, eol);
-		}
-	}
-	
-	private interface ExtractOutputText {
-		public String getOutputText(NamedTestResult testResult);
-	}
-	
 	private static class OutputColumn extends Column<NamedTestResult, NamedTestResult> {
-		public OutputColumn(ExtractOutputText extractor) {
+		public OutputColumn(ExtractOutputText<NamedTestResult> extractor) {
 			super(new CompositeCell<NamedTestResult>(getCells(extractor)));
 		}
 		
-		private static List<HasCell<NamedTestResult, ?>> getCells(final ExtractOutputText extractor) {
+		private static List<HasCell<NamedTestResult, ?>> getCells(final ExtractOutputText<NamedTestResult> extractor) {
 			List<HasCell<NamedTestResult, ?>> result = new ArrayList<HasCell<NamedTestResult, ?>>();
-			result.add(new ShowFullOutputButtonColumn(){
+			result.add(new ShowFullOutputButtonColumn<NamedTestResult>(){
 				@Override
 				protected String getText(NamedTestResult object) {
 					return extractor.getOutputText(object);
 				}
 			});
-			result.add(new OutputFirstLineColumn() {
+			result.add(new OutputFirstLineColumn<NamedTestResult>() {
 				@Override
 				protected String getText(NamedTestResult object) {
 					return extractor.getOutputText(object);
@@ -214,14 +171,14 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		    cellTable.addColumn(new MessageColumn(), "Message");
 		}
 		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText<NamedTestResult>() {
 			@Override
 			public String getOutputText(NamedTestResult testResult) {
 				return testResult.getTestResult().getStdout();
 			}
 		}), "Output");
 		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText<NamedTestResult>() {
 			@Override
 			public String getOutputText(NamedTestResult testResult) {
 				return testResult.getTestResult().getStderr();

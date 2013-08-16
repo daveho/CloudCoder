@@ -245,6 +245,11 @@
 	display: inline;
 }
 
+/* Padding for a HorizontalPanel */
+.paddedHorizontalPanel {
+    margin-left: 40px !important;
+}
+
 /* I'm just fudging the position of the slider. */
 #ccSubSlider {
 	position: relative;

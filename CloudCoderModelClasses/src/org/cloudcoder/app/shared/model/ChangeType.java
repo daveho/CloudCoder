@@ -39,4 +39,21 @@ public enum ChangeType {
 	 * point for incremental changes.
 	 */
 	FULL_TEXT;
+	
+	public static ChangeType valueOf(int type) {
+	    switch (type) {
+        case 0:
+            return INSERT_TEXT;
+        case 1:
+            return REMOVE_TEXT;
+        case 2: 
+            return INSERT_LINES;
+        case 3:
+            return REMOVE_LINES;
+        case 4:
+            return FULL_TEXT;
+        default:
+            throw new IllegalStateException("Unknown ChangeType int value: " + type);
+	    }
+	}
 }
