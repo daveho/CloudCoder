@@ -101,8 +101,6 @@ public class ExternalLibraryCache {
 		}
 		
 		public ExternalLibrary get() throws InterruptedException {
-			boolean doDownload = false;
-			
 			synchronized (entryLock) {
 				// If ExternalLibrary object is available, return it
 				if (obj != null) {
