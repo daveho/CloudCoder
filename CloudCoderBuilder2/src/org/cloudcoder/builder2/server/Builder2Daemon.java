@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cloudcoder.builder2.csandbox.EasySandboxSharedLibrary;
+import org.cloudcoder.builder2.extlib.ExternalLibraryCache;
 import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
 import org.cloudcoder.daemon.IDaemon;
@@ -166,6 +167,9 @@ public class Builder2Daemon implements IDaemon {
 		// Ensure that if the EasySandbox shared library was built,
 		// that its directory is deleted before the daemon exits.
 		EasySandboxSharedLibrary.getInstance().cleanup();
+		
+		// Delete directories/files used by the ExternalLibraryCache
+		ExternalLibraryCache.getInstance().cleanup();
 	}
 
 }

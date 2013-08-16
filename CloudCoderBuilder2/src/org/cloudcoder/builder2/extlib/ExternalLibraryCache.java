@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.cloudcoder.app.shared.model.ConvertBytesToHex;
 import org.cloudcoder.builder2.model.ExternalLibrary;
+import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
 import org.cloudcoder.daemon.IOUtil;
 import org.slf4j.Logger;
@@ -165,6 +166,14 @@ public class ExternalLibraryCache {
 		}
 		
 		return entry.get();
+	}
+	
+	/**
+	 * Clean up any files or directories being used by
+	 * the cache.
+	 */
+	public void cleanup() {
+		new DeleteDirectoryRecursively(tmpDir).delete();
 	}
 	
 	private static final Pattern VALID_MD5 = Pattern.compile("^[A-Fa-f0-9]*$"); 
