@@ -164,6 +164,28 @@ public abstract class EditProblemAdapter implements IProblem {
 	public String getParentHash() {
 		return delegate.getParentHash();
 	}
+	
+	@Override
+	public void setExternalLibraryUrl(String externalLibraryUrl) {
+		delegate.setExternalLibraryUrl(externalLibraryUrl);
+		onChange();
+	}
+	
+	@Override
+	public String getExternalLibraryUrl() {
+		return delegate.getExternalLibraryUrl();
+	}
+	
+	@Override
+	public void setExternalLibraryMD5(String md5Hash) {
+		delegate.setExternalLibraryMD5(md5Hash);
+		onChange();
+	}
+	
+	@Override
+	public String getExternalLibraryMD5() {
+		return delegate.getExternalLibraryMD5();
+	}
 
 	@Override
 	public Integer getProblemId() {

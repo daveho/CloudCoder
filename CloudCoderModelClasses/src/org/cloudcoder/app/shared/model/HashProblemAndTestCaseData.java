@@ -84,7 +84,9 @@ public class HashProblemAndTestCaseData<
 		updateString(problemData.getLicense().toString());
 		*/
 		
-		// TODO: based on schema version, may need to digest additional fields
+		// Digest external library URL and MD5 if they are present
+		updateStringIfNonEmpty(problemData.getExternalLibraryUrl());
+		updateStringIfNonEmpty(problemData.getExternalLibraryMD5());
 	}
 
 	private void hashTestCaseData(ITestCaseData testCaseData) {
@@ -103,16 +105,26 @@ public class HashProblemAndTestCaseData<
 			throw new IllegalStateException("Can't convert string to UTF-8 bytes?");
 		}
 	}
+
+	private void updateStringIfNonEmpty(String s) {
+		if (s == null) {
+			return;
+		}
+		if (s.equals("")) {
+			return;
+		}
+		updateString(s);
+	}
 	
 	private void updateInt(int value) {
 		// Digest an integer value by first converting it to a string.
 		updateString(String.valueOf(value));
 	}
 	
-	private void updateLong(long value) {
-		// Digest an integer value by first converting it to a string.
-		updateString(String.valueOf(value));
-	}
+//	private void updateLong(long value) {
+//		// Digest an integer value by first converting it to a string.
+//		updateString(String.valueOf(value));
+//	}
 
 	private void updateBoolean(boolean value) {
 		// Digest a boolean value by first converting it to a string.
