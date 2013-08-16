@@ -1,13 +1,10 @@
 package org.cloudcoder.analysis.tracing.rewriter.java;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import experimental.IVariableStore;
-
-public class VariableStore implements IVariableStore
+public class VariableStore
 {
     /*
      * TODO: handle previous and next links
