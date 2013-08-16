@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
+import org.cloudcoder.webservice.util.ServletUtil;
 
 /**
  * Common base class for servlets whose GET methods

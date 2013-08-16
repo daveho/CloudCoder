@@ -34,5 +34,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-api-1.6.4.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-log4j12-1.6.4.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/commons-fileupload-1.2.2.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueue"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

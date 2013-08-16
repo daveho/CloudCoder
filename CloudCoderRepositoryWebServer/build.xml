@@ -26,7 +26,11 @@
 	<target name="modelClassesJSON">
 		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
 	</target>
-	
+
+	<target name="webServiceUtil">
+		<ant inheritall="false" dir="../CloudCoderWebServiceUtil" target="jar"/>
+	</target>
+
 	<target name="repoWebapp">
 		<ant dir="../CloudCoderRepository" target="build" inheritall="false"/>
 	</target>
@@ -38,7 +42,7 @@
 		</javac>
 	</target>
 	
-	<target name="jar" depends="javac,modelClasses,modelClassesPersist,modelClassesJSON,repoWebapp">
+	<target name="jar" depends="javac,modelClasses,modelClassesPersist,modelClassesJSON,webServiceUtil,repoWebapp">
 		<jar destfile="${jarfile}">
 			<!-- Copy classes  from the bin directory. -->
 			<fileset dir="bin" includes="**"/>
@@ -71,6 +75,11 @@
 			<zipfileset
 				file="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderModelClassesJSON.jar"/>
+
+			<!-- Include web service util jarfile. -->
+			<zipfileset
+				file="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderWebServiceUtil.jar"/>
 			
 			<!-- Include libraries needed for JSON serialization. -->
 			<zipfileset

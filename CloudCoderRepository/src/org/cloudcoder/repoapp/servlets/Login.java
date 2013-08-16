@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.webservice.util.ServletUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -30,6 +30,9 @@ import org.cloudcoder.app.shared.model.RepoTestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.app.shared.model.json.ReflectionFactory;
+import org.cloudcoder.webservice.util.AuthenticationException;
+import org.cloudcoder.webservice.util.Credentials;
+import org.cloudcoder.webservice.util.ServletUtil;
 
 /**
  * Servlet to import/export exercises (problem and its test cases) as JSON.

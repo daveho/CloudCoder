@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.webservice.util.ServletUtil;
 
 /**
  * Logout servlet.

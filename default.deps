@@ -17,6 +17,7 @@ http://repo1.maven.org/maven2/commons-io/commons-io/2.1/commons-io-2.1.jar
   CloudCoderBuilder2/lib/commons-io-2.1.jar
   CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar
   CloudCoderLoadTester/lib/commons-io-2.1.jar
+  CloudCoderLogging/lib/commons-io-2.1.jar
 http://search.maven.org/remotecontent?filepath=org/python/jython/2.5.3/jython-2.5.3.jar
   CloudCoderBuilder2/lib/jython-2.5.3.jar
 https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/daemon-0.5.jar
@@ -112,8 +113,10 @@ https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/SyncProxy-0.4.jar
 http://repo1.maven.org/maven2/com/mchange/c3p0/0.9.2.1/c3p0-0.9.2.1.jar
   CloudCoderModelClassesPersistence/lib/c3p0-0.9.2.1.jar
   CloudCoder/war/WEB-INF/lib/c3p0-0.9.2.1.jar
+  CloudCoderRepository/war/WEB-INF/lib/c3p0-0.9.2.1.jar
 http://repo1.maven.org/maven2/com/mchange/mchange-commons-java/0.2.3.4/mchange-commons-java-0.2.3.4.jar
   CloudCoderModelClassesPersistence/lib/mchange-commons-java-0.2.3.4.jar
   CloudCoder/war/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar
-http://java-diff-utils.googlecode.com/files/diffutils-1.2.1.jar
+  CloudCoderRepository/war/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar
+https://java-diff-utils.googlecode.com/files/diffutils-1.2.1.jar
   CloudCoderAnalysis/lib/diffutils-1.2.1.jar

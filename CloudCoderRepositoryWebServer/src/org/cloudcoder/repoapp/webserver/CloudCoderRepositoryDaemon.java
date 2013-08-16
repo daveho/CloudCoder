@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,8 +20,10 @@ package org.cloudcoder.repoapp.webserver;
 
 import java.util.Properties;
 
+import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.Util;
-import org.cloudcoder.jetty.JettyDaemon;
+import org.cloudcoder.jetty.JettyWebappDaemon;
+import org.cloudcoder.jetty.JettyWebappDaemonConfig;
 
 /**
  * Implementation of {@link IDaemon} for launching, handling commands,
@@ -28,7 +31,7 @@ import org.cloudcoder.jetty.JettyDaemon;
  * 
  * @author David Hovemeyer
  */
-public class CloudCoderRepositoryDaemon extends JettyDaemon {
+public class CloudCoderRepositoryDaemon extends JettyWebappDaemon {
 	private Properties configProperties;
 
 	/**
@@ -46,13 +49,13 @@ public class CloudCoderRepositoryDaemon extends JettyDaemon {
 	}
 
 	@Override
-	protected Config getJettyConfig() {
+	protected JettyWebappDaemonConfig getJettyConfig() {
 		if (this.configProperties == null) {
 			this.configProperties = loadProperties("cloudcoder.properties");
 		}
 		final Properties log4jProperties = loadProperties("log4j.properties");
 		
-		return new Config() {
+		return new JettyWebappDaemonConfig() {
 			@Override
 			public boolean isLocalhostOnly() {
 				return Boolean.parseBoolean(configProperties.getProperty("cloudcoder.repoapp.webserver.localhostonly", "true"));

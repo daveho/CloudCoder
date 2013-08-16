@@ -63,6 +63,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndModule> grid;
 	private Session session;
+	// TODO replace with MultiSelectionModel to make problem selection for bulk uploads easier
 	private SingleSelectionModel<ProblemAndModule> selectionModel;
 	private ICallback<ProblemAndModule> editModuleNameCallback;
 	

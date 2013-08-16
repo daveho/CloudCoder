@@ -71,7 +71,9 @@ public class ProblemAdminPage extends CloudCoderPage {
 		SHARE("Share", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
 		MAKE_VISIBLE("Make visible", "Make selected exerise visible to students"),
 		MAKE_INVISIBLE("Make invisible", "Make selected exercise invisible to students"),
-		QUIZ("Quiz", "Give selected exercise as a quiz");
+		QUIZ("Quiz", "Give selected exercise as a quiz"),
+		SHARE_ALL("Quiz", "Share all unshared exercises you authored");
+		
 		
 		private final String name;
 		private final String tooltip;
@@ -238,6 +240,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 			case QUIZ:
 				handleQuiz();
 				break;
+				
+			case SHARE_ALL:
+			    doBulkShareProblems();
+			    break;
 			}
 		}
 
@@ -257,6 +263,21 @@ public class ProblemAdminPage extends CloudCoderPage {
 					updateProblem(value, course);
 				}
 			});
+		}
+		
+		private void doBulkShareProblems() {
+		    /*
+		     * TODO:
+		     * 
+		     * Look up the unshared exercises from the local database
+		     * 
+		     * Prompt for the username and password
+		     * 
+		     * Zip up all of the unshared exercises as zipped into JSON
+		     * 
+		     * Add a bulk upload feature to the Repository to receive the zipped JSON objects
+		     * 
+		     */
 		}
 
 		private void doShareProblem() {
