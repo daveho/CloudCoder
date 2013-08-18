@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.cloudcoder.app.shared.model.json.JSONUtil.*;
 import org.cloudcoder.webservice.util.AuthenticationException;
-import org.cloudcoder.webservice.util.BadRequestException;
 import org.cloudcoder.webservice.util.Credentials;
 import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONArray;
@@ -96,43 +96,11 @@ public class Submit extends HttpServlet {
 		} catch (ParseException e) {
 			ServletUtil.badRequest(resp, "Invalid JSON request object: " + e.getMessage());
 			logger.warn("Exception parsing request", e);
-		} catch (BadRequestException e) {
+		} catch (IllegalArgumentException e) {
 			ServletUtil.badRequest(resp, e.getMessage());
 			logger.warn("Exception interpreting request", e);
 		} catch (AuthenticationException e) {
 			ServletUtil.authorizationRequired(resp, e.getMessage(), "BuilderWebService");
 		}
-	}
-
-	private Map<?, ?> expectObject(Object jsonValue) throws BadRequestException {
-		if (!(jsonValue instanceof Map)) {
-			throw new BadRequestException("Expected JSON object");
-		}
-		return (Map<?, ?>) jsonValue;
-	}
-	
-	private<E> E expect(Class<E> cls, Object jsonValue) throws BadRequestException {
-		if (!cls.isAssignableFrom(jsonValue.getClass())) {
-			throw new BadRequestException("Expected " + cls.getSimpleName() + ", saw " + jsonValue.getClass().getSimpleName());
-		}
-		return cls.cast(jsonValue);
-	}
-	
-	private Integer expectInteger(Object jsonValue) throws BadRequestException {
-		if (jsonValue instanceof Integer) {
-			return (Integer) jsonValue;
-		}
-		if (jsonValue instanceof Long) {
-			return Integer.valueOf((int) ((Long)jsonValue).longValue());
-		}
-		throw new BadRequestException("Expected Integer, saw " + jsonValue.getClass().getSimpleName());
-	}
-	
-	private Object requiredField(Map<?, ?> jsonObj, String fieldName) throws BadRequestException {
-		Object value = jsonObj.get(fieldName);
-		if (value == null) {
-			throw new BadRequestException("Missing field: " + fieldName);
-		}
-		return value;
 	}
 }
