@@ -131,6 +131,7 @@ public class Submit extends HttpServlet {
 			// Build the request
 			RequestBuilder requestBuilder = new RequestBuilder(requestObj_);
 			Request request = requestBuilder.build();
+			logger.info("Successfully built request: testname={}", request.getTestname());
 			
 			// Build a Problem from the request
 			ProblemBuilder problemBuilder = new ProblemBuilder(request);

@@ -60,6 +60,9 @@ public class TestCaseBuilder {
 		String input = JSONUtil.expect(String.class, JSONUtil.requiredField(tc, "Input"));
 		
 		TestCase testCase = new TestCase();
+		
+		testCase.setTestCaseName("t" + index);
+		
 		testCase.setInput(input);
 		
 		// FIXME: we really need to modify the notion of TestCase to remove the requirement that there is expected output

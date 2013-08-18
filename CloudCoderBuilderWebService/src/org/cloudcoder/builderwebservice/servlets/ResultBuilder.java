@@ -38,6 +38,7 @@ public class ResultBuilder {
 		this.submissionResult = submissionResult;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Map<?, ?> build() {
 		Map<String, Object> obj = new HashMap<String, Object>();
 		
