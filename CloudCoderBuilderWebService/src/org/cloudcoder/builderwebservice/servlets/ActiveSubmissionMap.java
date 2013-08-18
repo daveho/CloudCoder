@@ -19,11 +19,15 @@
 package org.cloudcoder.builderwebservice.servlets;
 
 import java.security.SecureRandom;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singelton collection to keep track of all active submissions, accessed by a
@@ -32,7 +36,25 @@ import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
  * @author David Hovemeyer
  */
 public class ActiveSubmissionMap {
+	private static final Logger logger = LoggerFactory.getLogger(ActiveSubmissionMap.class);
+	
+	/**
+	 * The maximum age that a submission may reach before being reaped.
+	 * Currently, set to 2.5 minutes.
+	 */
+	private static final long MAX_SUBMISSION_AGE_MS = (5*(60*1000))/2;
+	
+	/**
+	 * How often the reaper thread should scan the active submissions and
+	 * reap the ones that are too old.  Currently set to 30 seconds.
+	 */
+	private static final long REAPER_INTERVAL_MS = 30*1000;
+
 	private static final ActiveSubmissionMap theInstance = new ActiveSubmissionMap();
+	static {
+		// Start up the reaper thread (to purge abandoned submissions)
+		theInstance.startReaperThread();
+	}
 	
 	/**
 	 * Get the singleton instance.
@@ -47,7 +69,7 @@ public class ActiveSubmissionMap {
 	
 	private Random rng;
 	private AtomicInteger next;
-	private ConcurrentHashMap<String, IFutureSubmissionResult> submissionMap;
+	private ConcurrentHashMap<String, ActiveSubmission> submissionMap;
 	
 	/**
 	 * Constructor.
@@ -59,7 +81,41 @@ public class ActiveSubmissionMap {
 		SecureRandom sr = new SecureRandom();
 		this.rng = new Random(sr.nextLong());
 		this.next = new AtomicInteger(1);
-		this.submissionMap = new ConcurrentHashMap<String, IFutureSubmissionResult>();
+		this.submissionMap = new ConcurrentHashMap<String, ActiveSubmission>();
+	}
+	
+	private void startReaperThread() {
+		Thread reaper = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				logger.info("reaper thread starting");
+				try {
+					while (true) {
+						Thread.sleep(REAPER_INTERVAL_MS);
+						reap();
+					}
+				} catch (InterruptedException e) {
+					logger.error("reaper thread interrupted unexpectedly", e);
+				}
+			}
+		});
+		reaper.setDaemon(true);
+		reaper.start();
+	}
+	
+	private void reap() {
+		//System.out.println("reaping stale submissions...");
+		
+		long now = System.currentTimeMillis();
+		
+		Iterator<Map.Entry<String, ActiveSubmission>> i = submissionMap.entrySet().iterator();
+		while (i.hasNext()) {
+			Map.Entry<String, ActiveSubmission> entry = i.next();
+			if (entry.getValue().getTimestamp() + MAX_SUBMISSION_AGE_MS < now) {
+				//System.out.println("reaper removing entry " + entry.getKey());
+				i.remove();
+			}
+		}
 	}
 	
 	/**
@@ -70,7 +126,7 @@ public class ActiveSubmissionMap {
 	 */
 	public String add(IFutureSubmissionResult result) {
 		String key = "" + String.format("%x", rng.nextLong()) + ":" + next.incrementAndGet();
-		submissionMap.put(key, result);
+		submissionMap.put(key, new ActiveSubmission(result, System.currentTimeMillis()));
 		return key;
 	}
 	
@@ -82,7 +138,8 @@ public class ActiveSubmissionMap {
 	 * @return the {@link IFutureSubmissionResult}, or null if the key is unknown
 	 */
 	public IFutureSubmissionResult get(String key) {
-		return submissionMap.get(key);
+		ActiveSubmission submission = submissionMap.get(key);
+		return (submission == null) ? null : submission.getResult();
 	}
 	
 	/**
