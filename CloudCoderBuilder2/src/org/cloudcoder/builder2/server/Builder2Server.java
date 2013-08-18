@@ -24,9 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.Problem;
@@ -48,13 +46,10 @@ public class Builder2Server implements Runnable {
 
     private static final Logger logger=LoggerFactory.getLogger(Builder2Server.class);
 
-    private Properties config;
     private volatile boolean shutdownRequested;
     private volatile boolean working;
     private NoConnectTimer noConnectTimer;
     private WebappSocketFactory webappSocketFactory;
-    private Map<Integer, Problem> problemIdToProblemMap;
-    private Map<Integer, List<TestCase>> problemIdToTestCaseListMap;
     private Builder2 builder2;
     private Socket socket;
     private ObjectInputStream in;
@@ -71,8 +66,6 @@ public class Builder2Server implements Runnable {
         this.shutdownRequested = false;
         this.noConnectTimer = new NoConnectTimer();
         this.webappSocketFactory = webappSocketFactory;
-        this.problemIdToProblemMap = new HashMap<Integer, Problem>();
-        this.problemIdToTestCaseListMap = new HashMap<Integer, List<TestCase>>();
         this.builder2 = new Builder2(config);
     }
 
@@ -106,20 +99,20 @@ public class Builder2Server implements Runnable {
                 return;
             }
 
-            Problem problem = problemIdToProblemMap.get(problemId);
-            List<TestCase> testCaseList = problemIdToTestCaseListMap.get(problemId);
-
-            // let the server know whether or not we have this
-            // problem cached
-            out.writeObject((Boolean) (problem != null));
+            // The protocol allows the builder to cache Problems and TestCases by their problem id,
+            // but this is a very bad idea, since the Problem and TestCases could change on the
+            // webapp side (for example, if an instructor is editing an exercise).
+            // For this reason, we ALWAYS claim not to have the Problem/TestCases, forcing
+            // the webapp to send the most up to date versions.  It's a small amount
+            // of data, and it's important for correct behavior.
+            
+            // Tell the webapp we don't have this Problem/TestCases
+            out.writeObject(Boolean.FALSE);
             out.flush();
 
-            // if we don't have the problem, the server will
-            // send it to us
-            if (problem == null) {
-                problem = safeReadObject();
-                testCaseList = safeReadObject();
-            }
+            // Receive the Problem and TestCases
+            Problem problem = safeReadObject();
+            List<TestCase> testCaseList = safeReadObject();
 
             // read program text
             String programText = safeReadObject();
