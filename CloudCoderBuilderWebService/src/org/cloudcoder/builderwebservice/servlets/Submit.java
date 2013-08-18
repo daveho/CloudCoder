@@ -28,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.cloudcoder.app.shared.model.json.JSONUtil.*;
+
 import org.cloudcoder.webservice.util.AuthenticationException;
+import org.cloudcoder.webservice.util.BadRequestException;
 import org.cloudcoder.webservice.util.Credentials;
 import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONArray;
@@ -75,20 +77,10 @@ public class Submit extends HttpServlet {
 			// Read the request JSON object
 			JSONParser parser = new JSONParser();
 			Object requestObj_ = parser.parse(req.getReader());
-			Map<?, ?> requestObj = expectObject(requestObj_);
-			
-			// The Data field should contain the code execution request
-			Map<?, ?> data = expectObject(requiredField(requestObj, "Data"));
-			
-			// Extract field values
-			String language = expect(String.class, requiredField(data, "Language"));
-			Integer executionType = expectInteger(requiredField(data, "ExecutionType"));
-			JSONArray codeArray = expect(JSONArray.class, requiredField(data, "Code"));
-			Integer testcaseType = expectInteger(requiredField(data, "TestcaseType"));
-			Boolean trace = expect(Boolean.class, requiredField(data, "Trace"));
-			Boolean stdout = expect(Boolean.class, requiredField(data, "Stdout"));
-			Boolean returnValue = expect(Boolean.class, requiredField(data, "ReturnValue"));
-			JSONArray testcases = expect(JSONArray.class, requiredField(data, "Testcases"));
+
+			// Build the request
+			RequestBuilder requestBuilder = new RequestBuilder(requestObj_);
+			Request request = requestBuilder.build();
 			
 			// This is just for testing
 			ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "All right!");
@@ -96,7 +88,7 @@ public class Submit extends HttpServlet {
 		} catch (ParseException e) {
 			ServletUtil.badRequest(resp, "Invalid JSON request object: " + e.getMessage());
 			logger.warn("Exception parsing request", e);
-		} catch (IllegalArgumentException e) {
+		} catch (BadRequestException e) {
 			ServletUtil.badRequest(resp, e.getMessage());
 			logger.warn("Exception interpreting request", e);
 		} catch (AuthenticationException e) {

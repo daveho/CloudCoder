@@ -26,13 +26,6 @@ package org.cloudcoder.webservice.util;
  */
 public class BadRequestException extends Exception {
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Constructor.
-	 */
-	public BadRequestException() {
-		
-	}
 	
 	/**
 	 * Constructor.
@@ -41,5 +34,15 @@ public class BadRequestException extends Exception {
 	 */
 	public BadRequestException(String msg) {
 		super(msg);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param msg reason for the exception 
+	 * @param e cause of the exception
+	 */
+	public BadRequestException(String msg, Throwable e) {
+		super(msg, e);
 	}
 }
