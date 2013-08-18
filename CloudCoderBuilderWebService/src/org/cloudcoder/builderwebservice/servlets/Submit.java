@@ -35,6 +35,7 @@ import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.json.JSONUtil;
 import org.cloudcoder.webservice.util.AuthenticationException;
@@ -49,7 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Servlet to accept submissions and deliver submission results
+ * Servlet to accept submissions (POST) and deliver submission results (GET)
  * back to the client.
  * 
  * @author David Hovemeyer
@@ -62,7 +63,47 @@ public class Submit extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "Hey there!");
+		try {
+			String key = req.getPathInfo();
+			if (key == null) {
+				throw new BadRequestException("Must specify the unique key of the submission");
+			}
+			
+			if (key.startsWith("/")) {
+				key = key.substring(1);
+			}
+			
+			IFutureSubmissionResult result = ActiveSubmissionMap.getInstance().get(key);
+			if (result == null) {
+				ServletUtil.notFound(resp, "No such unique key: " + key);
+				return;
+			}
+			
+			SubmissionResult submissionResult = result.poll();
+			
+			Map<String, Object> resultObj = new HashMap<String, Object>();
+			if (submissionResult == null) {
+				// Submission is still pending
+				resultObj.put("Status", "Pending");
+			} else {
+				// Submission is complete: encode the response and purge it from the ActiveSubmissionMap
+				ResultBuilder resultBuilder = new ResultBuilder(submissionResult);
+				resultObj.put("Status", "Complete");
+				resultObj.put("Data", resultBuilder.build());
+				ActiveSubmissionMap.getInstance().purge(key);
+			}
+			
+			resp.setStatus(HttpServletResponse.SC_OK);
+			resp.setContentType("application/json");
+			resp.getWriter().println(JSONObject.toJSONString(resultObj));
+			
+		} catch (BadRequestException e) {
+			logger.warn("Invalid submission request", e);
+			ServletUtil.badRequest(resp, e.getMessage());
+		} catch (SubmissionException e) {
+			logger.error("Error polling for submission result", e);
+			ServletUtil.internalServerError(resp, e.getMessage());
+		}
 	}
 	
 	@Override
@@ -122,6 +163,7 @@ public class Submit extends HttpServlet {
 			// Return the response JSON object containing the unique key that will
 			// be used to identify this submission's (eventual) result
 			Map<String, Object> resultObj = new HashMap<String, Object>();
+			resultObj.put("Status", "Pending");
 			resultObj.put("Key", key);
 			resp.setStatus(HttpServletResponse.SC_OK);
 			resp.setContentType("application/json");
