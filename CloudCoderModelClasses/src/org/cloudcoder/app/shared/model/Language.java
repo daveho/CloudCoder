@@ -66,4 +66,26 @@ public enum Language {
 		// have non-alphanumeric characters.)
 		return name().toLowerCase();
 	}
+
+	/**
+	 * Get a literal value that is legal to compare to any value.
+	 * 
+	 * @return literal value that is legal to compare to any value
+	 */
+	public String getLiteralCompareToAnyValue() {
+		switch (this) {
+		case JAVA:
+			return "new Object()";
+		case C:
+		case CPLUSPLUS:
+			// C/C++ don't really have this!!!
+			return "0";
+		case PYTHON:
+			return "None";
+		case RUBY:
+			return "nil";
+		default:
+			throw new IllegalStateException("No literal bottom value specified for language " + this);
+		}
+	}
 }

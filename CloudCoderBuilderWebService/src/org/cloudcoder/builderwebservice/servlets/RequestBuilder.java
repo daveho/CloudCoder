@@ -26,6 +26,7 @@ public class RequestBuilder {
 		try {
 			request.setLanguage(expect(String.class, requiredField(data, "Language")));
 			request.setExecutionType(expectInteger(requiredField(data, "ExecutionType")));
+			request.setTestname(expect(String.class, requiredField(data, "Testname")));
 			request.setCodeArray(expect(JSONArray.class, requiredField(data, "Code")));
 			request.setTestcaseType(expectInteger(requiredField(data, "TestcaseType")));
 			request.setTrace(expect(Boolean.class, requiredField(data, "Trace")));

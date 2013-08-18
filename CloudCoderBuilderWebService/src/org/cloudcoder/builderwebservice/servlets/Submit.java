@@ -19,7 +19,8 @@
 package org.cloudcoder.builderwebservice.servlets;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -27,8 +28,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.cloudcoder.app.shared.model.json.JSONUtil.*;
-
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.webservice.util.AuthenticationException;
 import org.cloudcoder.webservice.util.BadRequestException;
 import org.cloudcoder.webservice.util.Credentials;
@@ -81,6 +82,27 @@ public class Submit extends HttpServlet {
 			// Build the request
 			RequestBuilder requestBuilder = new RequestBuilder(requestObj_);
 			Request request = requestBuilder.build();
+			
+			// Build a Problem from the request
+			ProblemBuilder problemBuilder = new ProblemBuilder(request);
+			Problem problem = problemBuilder.build();
+			
+			// Build list of TestCases from the request
+			List<TestCase> testCaseList = new ArrayList<TestCase>();
+			JSONArray tcList = request.getTestcases();
+			int count = 1;
+			for (Object tc : tcList) {
+				TestCaseBuilder testCaseBuilder = new TestCaseBuilder(tc, problem.getProblemType(), count++);
+				TestCase testCase = testCaseBuilder.build();
+				testCaseList.add(testCase);
+			}
+			
+			// TODO: Extract the program text
+			String programText = "";
+			
+			// Build a BuilderSubmission
+//			ISubmitService submitSvc = DefaultSubmitService.getInstance();
+//			submitSvc.
 			
 			// This is just for testing
 			ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "All right!");

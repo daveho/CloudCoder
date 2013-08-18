@@ -11,6 +11,7 @@ import org.json.simple.JSONArray;
 public class Request {
 	private String language;
 	private Integer executionType;
+	private String testname;
 	private JSONArray codeArray;
 	private Integer testcaseType;
 	private Boolean trace;
@@ -28,6 +29,14 @@ public class Request {
 	
 	public void setExecutionType(Integer executionType) {
 		this.executionType = executionType;
+	}
+	
+	public void setTestname(String testname) {
+		this.testname = testname;
+	}
+	
+	public String getTestname() {
+		return testname;
 	}
 	
 	public Integer getExecutionType() {
