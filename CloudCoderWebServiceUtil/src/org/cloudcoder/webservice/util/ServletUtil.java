@@ -237,4 +237,15 @@ public class ServletUtil {
 		return path;
 	}
 
+	/**
+	 * Send an internal server error response.
+	 * 
+	 * @param resp     the HttpServletResponse
+	 * @param message  the message
+	 * @throws IOException
+	 */
+	public static void internalServerError(HttpServletResponse resp, String message) throws IOException {
+		sendResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
+	}
+
 }

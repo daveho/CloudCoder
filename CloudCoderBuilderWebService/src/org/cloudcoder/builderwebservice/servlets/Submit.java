@@ -20,7 +20,9 @@ package org.cloudcoder.builderwebservice.servlets;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -28,13 +30,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cloudcoder.app.server.submitsvc.DefaultSubmitService;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
+import org.cloudcoder.app.server.submitsvc.ISubmitService;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.json.JSONUtil;
 import org.cloudcoder.webservice.util.AuthenticationException;
 import org.cloudcoder.webservice.util.BadRequestException;
 import org.cloudcoder.webservice.util.Credentials;
 import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
@@ -97,15 +105,27 @@ public class Submit extends HttpServlet {
 				testCaseList.add(testCase);
 			}
 			
-			// TODO: Extract the program text
-			String programText = "";
+			// Extract the program text
+			JSONArray code = request.getCodeArray();
+			if (code.size() != 1) {
+				throw new BadRequestException("Only single source file submissions are supported");
+			}
+			String programText = JSONUtil.expect(String.class, code.get(0));
 			
 			// Build a BuilderSubmission
-//			ISubmitService submitSvc = DefaultSubmitService.getInstance();
-//			submitSvc.
+			ISubmitService submitSvc = DefaultSubmitService.getInstance();
+			IFutureSubmissionResult promise = submitSvc.submitAsync(problem, testCaseList, programText);
 			
-			// This is just for testing
-			ServletUtil.sendResponse(resp, HttpServletResponse.SC_OK, "All right!");
+			// Add the submission result to the ActiveSubmissionMap
+			String key = ActiveSubmissionMap.getInstance().add(promise);
+			
+			// Return the response JSON object containing the unique key that will
+			// be used to identify this submission's (eventual) result
+			Map<String, Object> resultObj = new HashMap<String, Object>();
+			resultObj.put("Key", key);
+			resp.setStatus(HttpServletResponse.SC_OK);
+			resp.setContentType("application/json");
+			resp.getWriter().println(JSONObject.toJSONString(resultObj));
 			
 		} catch (ParseException e) {
 			ServletUtil.badRequest(resp, "Invalid JSON request object: " + e.getMessage());
@@ -115,6 +135,9 @@ public class Submit extends HttpServlet {
 			logger.warn("Exception interpreting request", e);
 		} catch (AuthenticationException e) {
 			ServletUtil.authorizationRequired(resp, e.getMessage(), "BuilderWebService");
+		} catch (SubmissionException e) {
+			logger.error("Error handling submission", e);
+			ServletUtil.internalServerError(resp, e.getMessage());
 		}
 	}
 }
