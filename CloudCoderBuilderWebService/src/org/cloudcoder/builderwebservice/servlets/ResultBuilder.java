@@ -43,7 +43,7 @@ public class ResultBuilder {
 		Map<String, Object> obj = new HashMap<String, Object>();
 		
 		CompilationOutcome outcome = submissionResult.getCompilationResult().getOutcome();
-		obj.put("CompilationOutcome", outcome);
+		obj.put("CompilationOutcome", outcome.toString());
 		
 		JSONArray testcaseResponseArray = new JSONArray();
 		TestResult[] testResultList = submissionResult.getTestResults();
