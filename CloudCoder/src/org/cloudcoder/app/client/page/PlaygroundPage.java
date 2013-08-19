@@ -100,10 +100,6 @@ public class PlaygroundPage extends CloudCoderPage
 
     private UI ui;
     
-    public static native void clickElement(Element elem) /*-{
-       elem.click();
-    }-*/;
-
     /**
      * UI class for DevelopmentPage.
      */

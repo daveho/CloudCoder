@@ -7,3 +7,4 @@
 /addver.sh
 /*.fifo
 /*.pid
+/lib/cachedir
