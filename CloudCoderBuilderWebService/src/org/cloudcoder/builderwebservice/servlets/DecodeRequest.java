@@ -49,6 +49,9 @@ public class DecodeRequest {
 	static {
 		problemTypeMap.put(problemTypeKey(Language.JAVA, false), ProblemType.JAVA_PROGRAM);
 		problemTypeMap.put(problemTypeKey(Language.JAVA, true), ProblemType.JAVA_METHOD);
+		problemTypeMap.put(problemTypeKey(Language.PYTHON, true), ProblemType.PYTHON_FUNCTION);
+		problemTypeMap.put(problemTypeKey(Language.RUBY, true), ProblemType.RUBY_METHOD);
+		problemTypeMap.put(problemTypeKey(Language.CPLUSPLUS, false), ProblemType.C_PROGRAM);
 	}
 	
 	/**
