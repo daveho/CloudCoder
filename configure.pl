@@ -10,6 +10,7 @@ use FileHandle;
 my @propertyNames = ();
 my %properties = ();
 my %prior = ();
+my $configWebapp = 1;
 my $configRepoWebapp = 0;
 my $configBuilderWebService = 0;
 my $useDefaultKeystore = 0;
@@ -25,6 +26,9 @@ while (scalar(@ARGV) >= 1) {
 	} elsif ($arg eq '--bws') {
 		$configBuilderWebService = 1;
 		print "Configuring for CloudCoder builder web service\n\n";
+	} elsif ($arg eq '--nowebapp') {
+		print "NOT configuring CloudCoder webapp\n\n";
+		$configWebapp = 0;
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -51,30 +55,32 @@ if (-r "cloudcoder.properties") {
 	}
 }
 
-askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
-	"gwt.sdk", undef);
-
-section("Database configuration properties");
-
-askprop("What MySQL username will the webapp use to connect to the database?",
-	"cloudcoder.db.user", undef);
-askprop("What MySQL password will the webapp use to connect to the database?",
-	"cloudcoder.db.passwd", undef);
-askprop("What MySQL database will contain the CloudCoder tables?",
-	"cloudcoder.db.databaseName", "cloudcoderdb");
-askprop("What host will CloudCoder connect to to access the MySQL database?",
-	"cloudcoder.db.host", "localhost");
-askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
-	"Just hit enter if MySQL is running on the standard port.",
-	"cloudcoder.db.portStr", undef);
-
-section("Login service properties");
-
-askprop("Which login service do you want to use (imap or database)?",
-	"cloudcoder.login.service", "database");
-if ($properties{"cloudcoder.login.service"} eq 'imap') {
-	askprop("What is the hostname or IP address of your IMAP server?",
-		"cloudcoder.login.host", undef);
+if ($configWebapp) {
+	askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
+		"gwt.sdk", undef);
+	
+	section("Database configuration properties");
+	
+	askprop("What MySQL username will the webapp use to connect to the database?",
+		"cloudcoder.db.user", undef);
+	askprop("What MySQL password will the webapp use to connect to the database?",
+		"cloudcoder.db.passwd", undef);
+	askprop("What MySQL database will contain the CloudCoder tables?",
+		"cloudcoder.db.databaseName", "cloudcoderdb");
+	askprop("What host will CloudCoder connect to to access the MySQL database?",
+		"cloudcoder.db.host", "localhost");
+	askprop("If MySQL is running on a non-standard port, enter :XXXX (e.g, :8889 for MAMP).\n" .
+		"Just hit enter if MySQL is running on the standard port.",
+		"cloudcoder.db.portStr", undef);
+	
+	section("Login service properties");
+	
+	askprop("Which login service do you want to use (imap or database)?",
+		"cloudcoder.login.service", "database");
+	if ($properties{"cloudcoder.login.service"} eq 'imap') {
+		askprop("What is the hostname or IP address of your IMAP server?",
+			"cloudcoder.login.host", undef);
+	}
 }
 
 section("Builder properties");
@@ -116,18 +122,20 @@ if ($useDefaultKeystore) {
 		"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 }
 
-section("Web server properties (webapp)");
-
-askprop("What port will the CloudCoder web server listen on?",
-	"cloudcoder.webserver.port", "8081");
-askprop("What context path should the webapp use?",
-	"cloudcoder.webserver.contextpath", "/cloudcoder");
-askprop("Should the CloudCoder web server accept connections only from localhost?\n" .
-	"(Set this to 'true' if using a reverse proxy, which is recommended)",
-	"cloudcoder.webserver.localhostonly", "true");
-askprop("How many request handling threads should the webapp use?\n" .
-	"(Suggestion: 1/2 expected number of concurrent users)",
-	"cloudcoder.webserver.numThreads", "80");
+if ($configWebapp) {
+	section("Web server properties (webapp)");
+	
+	askprop("What port will the CloudCoder web server listen on?",
+		"cloudcoder.webserver.port", "8081");
+	askprop("What context path should the webapp use?",
+		"cloudcoder.webserver.contextpath", "/cloudcoder");
+	askprop("Should the CloudCoder web server accept connections only from localhost?\n" .
+		"(Set this to 'true' if using a reverse proxy, which is recommended)",
+		"cloudcoder.webserver.localhostonly", "true");
+	askprop("How many request handling threads should the webapp use?\n" .
+		"(Suggestion: 1/2 expected number of concurrent users)",
+		"cloudcoder.webserver.numThreads", "80");
+}
 
 if ($configRepoWebapp) {
 	section("Database configuration (repository webapp)");
