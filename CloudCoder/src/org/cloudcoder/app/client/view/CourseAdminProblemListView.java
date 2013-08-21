@@ -34,6 +34,7 @@ import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndModule;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -65,7 +66,6 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndModule> grid;
 	private Session session;
-	// TODO replace with MultiSelectionModel to make problem selection for bulk uploads easier
 	private MultiSelectionModel<ProblemAndModule> selectionModel;
 	private ICallback<ProblemAndModule> editModuleNameCallback;
 	
@@ -349,4 +349,21 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.setRowCount(result.length);
 		grid.setRowData(Arrays.asList(result));
 	}
+
+    /**
+     * @return
+     */
+    public boolean hasPotentialUnsharedExercises() {
+        for (ProblemAndModule problemAndModule : grid.getVisibleItems()) {  
+            Problem p=problemAndModule.getProblem();
+            if (!p.isShared() && (p.getProblemAuthorship()==ProblemAuthorship.ORIGINAL || 
+                    p.getProblemAuthorship()==ProblemAuthorship.IMPORTED_AND_MODIFIED))
+            {
+                // an unshared exercise that is original (i.e. new to this author)
+                // or has been imported and modified can be shared
+                return true;
+            }
+        }
+        return false;
+    }
 }

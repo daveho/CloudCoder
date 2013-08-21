@@ -30,7 +30,6 @@ import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareManyProblemsDialog;
-import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.dto.ShareExerciseStatus;
 import org.cloudcoder.app.shared.dto.ShareExercisesResult;
@@ -375,57 +374,6 @@ public class ProblemAdminPage extends CloudCoderPage {
 		    shareManyProblemsDialog.center();
 		}
 
-//		private void doShareProblem() {
-//		    //final List<Problem> chosenProblems=getSession().get(List<Problem>);
-//			final Problem chosen = getSession().get(Problem.class);
-//			
-//			if (!chosen.getLicense().isPermissive()) {
-//				OkDialogBox licenseDialog = new OkDialogBox(
-//						"Sharing requires a permissive license",
-//						"Sharing a problem requires a permissive license. Please edit the problem " +
-//						"and choose a permissive license such as Creative Commons or GNU FDL.");
-//				licenseDialog.center();
-//				return;
-//			}
-//			
-//			if (chosen.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
-//				OkDialogBox problemAuthorshipDialog = new OkDialogBox(
-//						"Sharing not allowed for unmodified problems",
-//						"This problem was imported from the exercise repository, but not modified. " +
-//						"You can share it if you make some changes first.");
-//				problemAuthorshipDialog.center();
-//				return;
-//			}
-//
-//			// Why do we look up the test cases here, using an RPC?
-//			// Why don't we wait 
-//			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
-//				@Override
-//				public void call(ProblemAndTestCaseList value) {
-//					ShareProblemDialog shareProblemDialog = new ShareProblemDialog();
-//					shareProblemDialog.setExercise(value);
-//					shareProblemDialog.setResultCallback(new ICallback<OperationResult>() {
-//						public void call(OperationResult value) {
-//							// Add a StatusMessage with the result of the operation
-//							GWT.log("share problem result: " + value.isSuccess() + ":" + value.getMessage());
-//
-//							if (value.isSuccess()) {
-//								getSession().add(StatusMessage.goodNews(value.getMessage()));
-//								
-//								// Reload the problems so that the shared flag is updated
-//								// for the problem the user just shared
-//								reloadProblems(getCurrentCourse());
-//							} else {
-//								getSession().add(StatusMessage.error(value.getMessage()));
-//							}
-//						}
-//					});
-//					
-//					shareProblemDialog.center();
-//				}
-//			});
-//		}
-
 		private void doImportProblem() {
 			ImportProblemDialog dialog = new ImportProblemDialog();
 			final Course course = getCurrentCourse();
@@ -593,6 +541,12 @@ public class ProblemAdminPage extends CloudCoderPage {
 			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			courseAdminProblemListView.activate(session, subscriptionRegistrar);
+			if (courseAdminProblemListView.hasPotentialUnsharedExercises())
+			{
+			    // polite nagging in the UI
+			    getSession().add(StatusMessage.information("You have unshared exercises! "+
+			            "Please consider sharing them to the cloudcoder exercise repository!"));
+			}
 			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a course
