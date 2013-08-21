@@ -44,6 +44,7 @@ import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
@@ -184,6 +185,15 @@ public class EditProblemPage extends CloudCoderPage {
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getCurrentCourse();
+
+			// imported exercises which are modified become imported_and_modified
+			// original exercises that are edited, and imported and modified exercises stay in the same state
+			if (problemAndTestCaseList.getProblem().getProblemAuthorship()==ProblemAuthorship.IMPORTED) {
+                problemAndTestCaseList.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED_AND_MODIFIED);
+			}
+			// Edited problems are no longer shared
+			problemAndTestCaseList.getProblem().setShared(false);
+			
 			saveProblem(problemAndTestCaseList, course, afterSave);
 		}
 

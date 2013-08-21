@@ -40,6 +40,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -230,7 +231,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws CloudCoderAuthenticationException  {
-		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
+		logger.warn("Sharing exercise: " + exercise.getProblem().getTestname());
 
 		// Only a course instructor may share an exercise.
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
@@ -298,6 +299,111 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			client.getConnectionManager().shutdown();
 		}
 	}
+	
+	@Override
+    public ShareExercisesResult submitExercises(Problem[] problems, String repoUsername, String repoPassword) 
+    throws CloudCoderAuthenticationException
+    {
+	    logger.warn("Sharing "+problems.length+" exercises");
+	    
+	    // create the result place holder
+	    ShareExercisesResult result=new ShareExercisesResult(problems.length);
+	    
+	    if (problems.length==0) {
+	        result.failAll("No problems to be shared!");
+	        return result;
+	    }
+
+        // Only a course instructor may share an exercise.
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+        Course course = new Course();
+        course.setId(problems[0].getCourseId());
+        Database.getInstance().reloadModelObject(course);
+        CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
+        if (!regList.isInstructor()) {
+            result.failAll("You must be an instructor to share an exercise");
+            return result;
+        }
+        
+        // Get the exercise repository URL
+        ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
+        if (repoUrlSetting == null) {
+            result.failAll("URL of exercise repository is not configured");
+            return result;
+        }
+        String repoUrl = repoUrlSetting.getValue();
+        if (repoUrl.endsWith("/")) {
+            repoUrl = repoUrl.substring(0, repoUrl.length()-1);
+        }
+        
+        HttpPost post = new HttpPost(repoUrl + "/exercisedata");
+        
+        // Encode an Authorization header using the provided repository username and password.
+        String authHeaderValue =
+                "Basic " +
+                DatatypeConverter.printBase64Binary((repoUsername + ":" + repoPassword).getBytes(Charset.forName("UTF-8")));
+        //System.out.println("Authorization: " + authHeaderValue);
+        post.addHeader("Authorization", authHeaderValue);
+        
+        // Now go through and upload each problem
+        // For now, we do this one at a time
+        // In the future we could send problems and test cases 
+        // to the repo in bulk, and add a new web service to handle it
+        
+        for (Problem p : problems) {
+            // Look up the test cases
+            List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(p.getProblemId());
+            ProblemAndTestCaseList exercise=new ProblemAndTestCaseList();
+            exercise.setProblem(p);
+            exercise.setTestCaseList(testCaseList);
+            
+            // Convert the exercise to a JSON string
+            StringEntity entity;
+            StringWriter sw = new StringWriter();
+            try {
+                JSONConversion.writeProblemAndTestCaseData(exercise, sw);
+                entity = new StringEntity(sw.toString(), ContentType.create("application/json", "UTF-8"));
+            } catch (IOException e) {
+                // fail remaining test cases and return our results thus far
+                // some exercises may have been successfully shared
+                result.failRemaining("Could not convert exercise to JSON: " + e.getMessage());
+                return result;
+            }
+            post.setEntity(entity);
+            
+            // POST the exercise to the repository
+            HttpClient client = new DefaultHttpClient();
+            try {
+                HttpResponse response = client.execute(post);
+            
+                StatusLine statusLine = response.getStatusLine();
+                
+                if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                    // Update the exercise's shared flag so we have a record that it was shared.
+                    exercise.getProblem().setShared(true);
+                    exercise.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED);
+                    Database.getInstance().storeProblemAndTestCaseList(exercise, course, authenticatedUser);
+                    result.success();
+                } else if (statusLine.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+                    result.failRemaining("Authentication with repository failed - incorrect username/password?");
+                    return result;
+                } else {
+                    result.failRemaining("Failed to publish exercise to repository: " + statusLine.getReasonPhrase());
+                    return result;
+                }
+            } catch (ClientProtocolException e) {
+                result.failRemaining("Error sending exercise to repository: " + e.getMessage());
+                return result;
+            } catch (IOException e) {
+                result.failRemaining("Error sending exercise to repository: " + e.getMessage());
+                return result;
+            } finally {
+                client.getConnectionManager().shutdown();
+            }
+        }
+        result.allSucceeded("Successfully uploaded "+problems.length+" exercise to repository.  Thanks!");
+        return result;
+    }
 	
 	@Override
 	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws CloudCoderAuthenticationException {
@@ -474,4 +580,6 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		return Database.getInstance().getTestResultsForSubmission(authenticatedUser, problem, receipt);
 	}
+
+    
 }

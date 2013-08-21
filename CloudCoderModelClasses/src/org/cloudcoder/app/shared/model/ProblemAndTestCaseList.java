@@ -151,4 +151,8 @@ public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCa
 		return ModelObjectUtil.equals(this.problem, other.problem)
 				&& this.testCaseList.equals(other.testCaseList);
 	}
+
+    public void setTestCaseList(List<TestCase> testCaseList) {
+        this.testCaseList=testCaseList;
+    }
 }
