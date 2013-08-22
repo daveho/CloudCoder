@@ -75,6 +75,22 @@ public class BuilderSubmission {
 	}
 	
 	/**
+	 * Require artifact of given type.
+	 * 
+	 * @param the class calling this method
+	 * @param type the artifact type
+	 * @return the artifact of the given type
+	 * @throws InternalBuilderException if there is no artifact of the required type
+	 */
+	public<E> E requireArtifact(Class<?> callerCls, Class<E> type) {
+		E obj = getArtifact(type);
+		if (obj == null) {
+			throw new InternalBuilderException(callerCls, "No " + type.getSimpleName());
+		}
+		return obj;
+	}
+	
+	/**
 	 * Check whether the submission has an artifact of the given type.
 	 * 
 	 * @param type the artifact type

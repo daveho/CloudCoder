@@ -286,6 +286,8 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditStringField<IProblem>("Author website", ProblemData.AUTHOR_WEBSITE));
 			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date", ProblemData.TIMESTAMP_UTC));
 			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
+			problemFieldEditorList.add(new EditStringField<IProblem>("URL of required external library", ProblemData.EXTERNAL_LIBRARY_URL));
+			problemFieldEditorList.add(new EditStringField<IProblem>("MD5 checksum of required external library", ProblemData.EXTERNAL_LIBRARY_MD5));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(

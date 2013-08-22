@@ -72,4 +72,17 @@ public class FileUtil {
 		return tempDir;
 	}
 
+	/**
+	 * Get a filename from a URL. For example, if the URL
+	 * is "http://example.com/foo/bar/baz.jar", the filename
+	 * is "baz.jar".
+	 * 
+	 * @param url a URL
+	 * @return the filename
+	 */
+	public static String getFileNameFromURL(String url) {
+		int lastSlash = url.lastIndexOf('/');
+		return lastSlash >= 0 ? url.substring(lastSlash + 1) : url;
+	}
+
 }

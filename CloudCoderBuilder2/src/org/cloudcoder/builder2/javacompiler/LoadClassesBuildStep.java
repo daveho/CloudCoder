@@ -17,6 +17,7 @@
 
 package org.cloudcoder.builder2.javacompiler;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -24,6 +25,7 @@ import java.util.Properties;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Bytecode;
+import org.cloudcoder.builder2.model.ExternalLibrary;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.LoadedClasses;
@@ -50,11 +52,25 @@ public class LoadClassesBuildStep implements IBuildStep {
 		for (Bytecode bytecode : bytecodeList) {
 			classes.put(bytecode.getClassName(), bytecode.getCode());
 		}
+		
+		// If there is an external library, then it must be on the classpath
+		// when the compiled code executes.
+		ExternalLibrary extlib = submission.getArtifact(ExternalLibrary.class);
+		ClassLoader classLoader;
+		if (extlib == null) {
+			classLoader = new ByteArrayClassLoader(classes);
+		} else {
+			try {
+				classLoader = new ByteArrayAndExternalLibraryClassLoader(classes, extlib.getFileName());
+			} catch (IOException e) {
+				throw new InternalBuilderException(LoadClassesBuildStep.class, "Could not read external library jarfile", e);
+			}
+		}
 
-		ByteArrayClassLoader classLoader = new ByteArrayClassLoader(classes);
-
-		// Load the classes.  We'll get a ClassNotFoundException if there were
-		// any unresolved references in the compiled classes.
+		// Load the classes.  We'll could get a ClassNotFoundException if there are
+		// any unresolved references in the compiled classes, but we are not
+		// guaranteed to (because some checks which throw ClassNotFoundException
+		// aren't detected until runtime.)
 		for (Bytecode bytecode : bytecodeList) {
 			try {
 				String className = bytecode.getClassName();

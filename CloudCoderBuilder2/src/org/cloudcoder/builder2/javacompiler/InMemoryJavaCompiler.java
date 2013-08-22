@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +18,9 @@
 
 package org.cloudcoder.builder2.javacompiler;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,6 +50,7 @@ public class InMemoryJavaCompiler
 	private JavaCompiler compiler;
 	private CompilationResult compileResult;
 	private List<JavaFileObject> sources;
+	private String extraClasspath;
 
 	/**
 	 * Constructor.
@@ -55,6 +59,16 @@ public class InMemoryJavaCompiler
 		compiler = ToolProvider.getSystemJavaCompiler();
 		fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
 		sources = new ArrayList<JavaFileObject>();
+	}
+	
+	/**
+	 * Set extra classpath entries to be added to the system classpath
+	 * when compiling.
+	 * 
+	 * @param extraClasspath extra classpath entries
+	 */
+	public void setExtraClasspath(String extraClasspath) {
+		this.extraClasspath = extraClasspath;
 	}
 
 	/**
@@ -76,8 +90,19 @@ public class InMemoryJavaCompiler
 	 */
 	public boolean compile() {
 		DiagnosticCollector<JavaFileObject> collector= new DiagnosticCollector<JavaFileObject>();
-
-		CompilationTask task = compiler.getTask(null, fm, collector, null, null, sources);
+		
+		// Prepare compiler options.
+		// We use this opportunity to set the classpath.
+		StringBuilder fullClasspath = new StringBuilder();
+		fullClasspath.append(System.getProperty("java.class.path"));
+		if (extraClasspath != null) {
+			fullClasspath.append(File.pathSeparatorChar);
+			fullClasspath.append(extraClasspath);
+		}
+		List<String> options = Arrays.asList("-classpath", fullClasspath.toString());
+		
+		CompilationTask task = compiler.getTask(null, fm, collector, options, null, sources);
+		
 		if (!task.call()) {
 			// Compiler error
 			compileResult=new CompilationResult(CompilationOutcome.FAILURE);
