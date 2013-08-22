@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.Module;
@@ -85,5 +86,8 @@ public interface GetCoursesAndProblemsServiceAsync {
 
 	void getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt,
 			AsyncCallback<NamedTestResult[]> callback);
+
+    void submitExercises(Problem[] problems, String repoUsername,
+        String repoPassword, AsyncCallback<ShareExercisesResult> asyncCallback);
 
 }

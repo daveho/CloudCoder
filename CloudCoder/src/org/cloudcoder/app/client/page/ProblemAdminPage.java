@@ -29,8 +29,10 @@ import org.cloudcoder.app.client.view.IButtonPanelAction;
 import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
-import org.cloudcoder.app.client.view.ShareProblemDialog;
+import org.cloudcoder.app.client.view.ShareManyProblemsDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
+import org.cloudcoder.app.shared.dto.ShareExerciseStatus;
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.ICallback;
@@ -40,6 +42,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndModule;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
+import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -68,12 +71,11 @@ public class ProblemAdminPage extends CloudCoderPage {
 		DELETE("Delete", "Delete the selected exercise"),
 		STATISTICS("Statistics", "See statistics on selected exercise"),
 		IMPORT("Import", "Import an exercise from the CloudCoder exercise repository"),
-		SHARE("Share", "Shared selected exercise by publishing it to the CloudCoder exercise repository"),
-		MAKE_VISIBLE("Make visible", "Make selected exerise visible to students"),
-		MAKE_INVISIBLE("Make invisible", "Make selected exercise invisible to students"),
-		QUIZ("Quiz", "Give selected exercise as a quiz"),
-		SHARE_ALL("Quiz", "Share all unshared exercises you authored");
-		
+		SHARE("Share", "Shared selected exercise(s) by publishing them to the CloudCoder exercise repository"),
+		MAKE_VISIBLE("Make visible", "Make selected exerise(s) visible to students"),
+		MAKE_INVISIBLE("Make invisible", "Make selected exercise(s) invisible to students"),
+		MAKE_PERMISSIVE("Make permissive", "Change license of exercises to a permissive Create Commons license"),
+		QUIZ("Quiz", "Give selected exercise as a quiz");
 		
 		private final String name;
 		private final String tooltip;
@@ -141,17 +143,37 @@ public class ProblemAdminPage extends CloudCoderPage {
 				 */
 				@Override
 				public boolean isEnabled(ProblemAction action) {
-					if (action == ProblemAction.MAKE_VISIBLE || action == ProblemAction.MAKE_INVISIBLE) {
-						Problem problem = getSession().get(Problem.class);
-						//    PV  MV  enable
-						//    t   t   f
-						//    t   f   t
-						//    f   t   t
-						//    f   f   f
-						return (problem != null) && problem.isVisible() != (action == ProblemAction.MAKE_VISIBLE);
-					} else {
-						return true;
-					}
+				    Problem[] problems=getSession().get(Problem[].class);
+				    if (problems==null) {
+				        return false;
+				    }
+				    int numSelected=problems.length;
+				    /*
+				     * New and Import don't affect selected problems so we don't
+				     * care how many problems are selected.
+				     * 
+				     * Sharing, Changing Visibility, and Making Permissive can work 
+				     * on multiple exercises
+				     * 
+				     * Delete, Edit, Quiz, and Statistics only work on one exercise at 
+				     * a time.
+				     */
+				    switch (action) {
+				    case NEW:
+				    case IMPORT:
+				    case MAKE_VISIBLE:
+				    case MAKE_INVISIBLE:
+                    case SHARE:
+                    case MAKE_PERMISSIVE:
+				        return true;
+                    case DELETE:
+                    case EDIT:
+                    case QUIZ:
+                    case STATISTICS:
+                        return (numSelected==1);
+                    default:
+                        return true;
+				    }
 				}
 			};
 			
@@ -225,7 +247,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 				break;
 				
 			case SHARE:
-				doShareProblem();
+				doShareProblem2();
 				break;
 				
 			case IMPORT:
@@ -237,95 +259,119 @@ public class ProblemAdminPage extends CloudCoderPage {
 				doChangeVisibility(action == ProblemAction.MAKE_VISIBLE);
 				break;
 				
+			case MAKE_PERMISSIVE:
+			    doMakePermissive();
+			    break;
+				
 			case QUIZ:
 				handleQuiz();
 				break;
-				
-			case SHARE_ALL:
-			    doBulkShareProblems();
-			    break;
 			}
 		}
 
 		private void doChangeVisibility(final boolean visible) {
-			Problem chosen = getSession().get(Problem.class);
+			Problem[] chosen = getSession().get(Problem[].class);
 			final Course course = getCurrentCourse();
 			
 			getSession().add(StatusMessage.pending("Changing visibility of problem..."));
 			
-			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
-				/* (non-Javadoc)
-				 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
-				 */
-				@Override
-				public void call(ProblemAndTestCaseList value) {
-					value.getProblem().setVisible(visible);
-					updateProblem(value, course);
-				}
-			});
+			// Would like to send problems in bulk and fetch test cases server-side
+			for (Problem problem : chosen) {
+			    loadProblemAndTestCaseList(problem, new ICallback<ProblemAndTestCaseList>() {
+	                /* (non-Javadoc)
+	                 * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
+	                 */
+	                @Override
+	                public void call(ProblemAndTestCaseList value) {
+	                    value.getProblem().setVisible(visible);
+	                    updateProblem(value, course);
+	                }
+	            });
+            }
 		}
 		
-		private void doBulkShareProblems() {
-		    /*
-		     * TODO:
-		     * 
-		     * Look up the unshared exercises from the local database
-		     * 
-		     * Prompt for the username and password
-		     * 
-		     * Zip up all of the unshared exercises as zipped into JSON
-		     * 
-		     * Add a bulk upload feature to the Repository to receive the zipped JSON objects
-		     * 
-		     */
+		private void doMakePermissive() {
+		    Problem[] chosen = getSession().get(Problem[].class);
+            final Course course = getCurrentCourse();
+            
+            getSession().add(StatusMessage.pending("Changing visibility of problem..."));
+            
+            // Would like to send problems in bulk and fetch test cases server-side
+            for (Problem problem : chosen) {
+                loadProblemAndTestCaseList(problem, new ICallback<ProblemAndTestCaseList>() {
+                    /* (non-Javadoc)
+                     * @see org.cloudcoder.app.shared.model.ICallback#call(java.lang.Object)
+                     */
+                    @Override
+                    public void call(ProblemAndTestCaseList value) {
+                        value.getProblem().setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
+                        updateProblem(value, course);
+                    }
+                });
+            }
 		}
+		
+		private void doShareProblem2() {
+		    final Problem[] chosen=getSession().get(Problem[].class);
+		    GWT.log("Selected "+chosen.length+" problems in the UI");
+		    // Filter the problems
+		    // We cannot upload anything that is not permissive, 
+		    // is imported but unchanged,
+		    // or has already been shared
+		    for (Problem p : chosen) {
+		        if (!p.getLicense().isPermissive()) {
+		            GWT.log("License: "+p.getLicense().toString()+" is not permissive, wtf?");
+		            OkDialogBox licenseDialog = new OkDialogBox(
+	                        "Sharing requires a permissive license",
+	                        "Sharing a problem requires a permissive license. Please ensure all problems " +
+	                        "have a permissive license such as Creative Commons or GNU FDL.");
+	                licenseDialog.center();
+	                return;
+		        } else if (p.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
+		            GWT.log("authorship is imported: "+p.getProblemAuthorship().toString());
+		            OkDialogBox problemAuthorshipDialog = new OkDialogBox(
+		                    "Sharing not allowed for unmodified problems",
+		                    "At least one problem was imported from, or shared to, the exercise repository, " +
+		                    "but has not been modified. There is no reason to share them until they are changed. " +
+		                    "You can share it if you make some changes first.");
+		            problemAuthorshipDialog.center();
+		            return;
+		        } else if (p.isShared()) {
+		            // XXX I'm pretty sure this case should never happen
+		            GWT.log("share status: "+p.isShared()+" and problem authorship: "+p.getProblemId());
+		            OkDialogBox problemSharingDialog = new OkDialogBox(
+                            "Sharing not allowed for problems that have already been shared",
+                            "This problem was imported from the exercise repository but not modified, " +
+                            "or exported to the repository and not modified. " +
+		                    "You can share it if you make some changes first.");
+                    problemSharingDialog.center();
+                    return;
+		        }
+		    }
+		    
+		    ShareManyProblemsDialog shareManyProblemsDialog=new ShareManyProblemsDialog();
+		    shareManyProblemsDialog.setExercise(chosen);
+		    shareManyProblemsDialog.setResultCallback(new ICallback<ShareExercisesResult>() {
+		        public void call(ShareExercisesResult result) {
+		            // Add a StatusMessage with the result of the operation
+		            GWT.log("share problem result: " + result.getStatus() + ":" + result.getMessage());
 
-		private void doShareProblem() {
-			final Problem chosen = getSession().get(Problem.class);
-			
-			if (!chosen.getLicense().isPermissive()) {
-				OkDialogBox licenseDialog = new OkDialogBox(
-						"Sharing requires a permissive license",
-						"Sharing a problem requires a permissive license. Please edit the problem " +
-						"and choose a permissive license such as Creative Commons or GNU FDL.");
-				licenseDialog.center();
-				return;
-			}
-			
-			if (chosen.getProblemAuthorship() == ProblemAuthorship.IMPORTED) {
-				OkDialogBox problemAuthorshipDialog = new OkDialogBox(
-						"Sharing not allowed for unmodified problems",
-						"This problem was imported from the exercise repository, but not modified. " +
-						"You can share it if you make some changes first.");
-				problemAuthorshipDialog.center();
-				return;
-			}
-
-			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
-				@Override
-				public void call(ProblemAndTestCaseList value) {
-					ShareProblemDialog shareProblemDialog = new ShareProblemDialog();
-					shareProblemDialog.setExercise(value);
-					shareProblemDialog.setResultCallback(new ICallback<OperationResult>() {
-						public void call(OperationResult value) {
-							// Add a StatusMessage with the result of the operation
-							GWT.log("share problem result: " + value.isSuccess() + ":" + value.getMessage());
-
-							if (value.isSuccess()) {
-								getSession().add(StatusMessage.goodNews(value.getMessage()));
-								
-								// Reload the problems so that the shared flag is updated
-								// for the problem the user just shared
-								reloadProblems(getCurrentCourse());
-							} else {
-								getSession().add(StatusMessage.error(value.getMessage()));
-							}
-						}
-					});
-					
-					shareProblemDialog.center();
-				}
-			});
+		            if (result.getStatus()==ShareExerciseStatus.ALL_OK) {
+		                getSession().add(StatusMessage.goodNews(result.getMessage()));
+		            } else {
+		                int numShared=result.getNumSharedSuccessfully();
+		                if (numShared>0) {
+		                    getSession().add(StatusMessage.error("Successfuly shared "+numShared+" results before error: "+result.getMessage()));
+		                } else {
+		                    getSession().add(StatusMessage.error(result.getMessage()));
+		                }
+		            }
+		            // Reload the problems so that the shared flag is updated
+                    // for the problem the user just shared
+                    reloadProblems(getCurrentCourse());
+		        }
+		    });
+		    shareManyProblemsDialog.center();
 		}
 
 		private void doImportProblem() {
@@ -351,6 +397,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 		private void handleEditProblem() {
 			// Get the full ProblemAndTestCaseList for the chosen Problem
 			final Problem chosen = getSession().get(Problem.class);
+			
+			if (chosen==null) {
+			    return;
+			}
 			
 			loadProblemAndTestCaseList(chosen, new ICallback<ProblemAndTestCaseList>() {
 				@Override
@@ -491,6 +541,12 @@ public class ProblemAdminPage extends CloudCoderPage {
 			pageNavPanel.setBackHandler(new PageBackHandler(session));
 			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			courseAdminProblemListView.activate(session, subscriptionRegistrar);
+			if (courseAdminProblemListView.hasPotentialUnsharedExercises())
+			{
+			    // polite nagging in the UI
+			    getSession().add(StatusMessage.information("You have unshared exercises! "+
+			            "Please consider sharing them to the cloudcoder exercise repository!"));
+			}
 			statusMessageView.activate(session, subscriptionRegistrar);
 			
 			// The session should contain a course
@@ -503,7 +559,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 		 */
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
-			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem)) {
+			if (key == Session.Event.ADDED_OBJECT && (hint instanceof Problem[])) {
 				// Problem selected: enable/disable buttons appropriately
 				buttonPanel.updateButtonEnablement();
 			}
@@ -569,9 +625,9 @@ public class ProblemAdminPage extends CloudCoderPage {
 			
 			// If a problem is selected, add it to the session
 			// (so the buttons are enabled/disable appropriately).
-			Problem currentProblem = courseAdminProblemListView.getSelected();
-			if (currentProblem != null) {
-				getSession().add(currentProblem);
+			Problem[] problems=courseAdminProblemListView.getSelected();
+			if (problems != null) {
+				getSession().add(problems);
 			}
 		}
 	}

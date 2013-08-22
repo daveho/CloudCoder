@@ -18,6 +18,8 @@
 package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -32,6 +34,7 @@ import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndModule;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -48,9 +51,9 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
-import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * View to show problems in the {@link ProblemAdminPage}.
@@ -63,8 +66,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndModule> grid;
 	private Session session;
-	// TODO replace with MultiSelectionModel to make problem selection for bulk uploads easier
-	private SingleSelectionModel<ProblemAndModule> selectionModel;
+	private MultiSelectionModel<ProblemAndModule> selectionModel;
 	private ICallback<ProblemAndModule> editModuleNameCallback;
 	
 	/**
@@ -79,16 +81,18 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.addColumn(new ProblemWhenAssignedColumn(), "Assigned");
 		grid.addColumn(new ProblemWhenDueColumn(), "Due");
 		grid.addColumn(new ProblemVisibleColumn(), "Visible");
+		grid.addColumn(new ProblemLicense(), "License");
 		grid.addColumn(new ProblemSharedColumn(), "Shared");
 		
 		grid.setColumnWidth(0, 12.5, Unit.PCT);
 		grid.setColumnWidth(1, 25.0, Unit.PCT);
 		grid.setColumnWidth(2, 12.5, Unit.PCT);
-		grid.setColumnWidth(3, 12.5, Unit.PCT);
-		grid.setColumnWidth(4, 12.5, Unit.PCT);
+		grid.setColumnWidth(3, 10.0, Unit.PCT);
+		grid.setColumnWidth(4, 10.0, Unit.PCT);
 		grid.setColumnWidth(5, 60.0, Unit.PX);
-		grid.setColumnWidth(6, 60.0, Unit.PX);
-		grid.setColumnWidth(7, 25.0, Unit.PCT);
+		grid.setColumnWidth(6, 10.0, Unit.PCT);
+		grid.setColumnWidth(7, 60.0, Unit.PX);
+		grid.setColumnWidth(8, 20.0, Unit.PCT);
 		
 		// The column displaying the module name allows editing, and invokes
 		// a callback when the module name changes.
@@ -143,7 +147,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		 */
 		@Override
 		public String getValue(ProblemAndModule object) {
-			return object.getProblem().getProblemType().toString();
+			return object.getProblem().getProblemType().toString().replace("_", " ");
 		}
 	}
 	
@@ -166,6 +170,25 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			return ViewUtil.formatDate(object.getProblem().getWhenDueAsDate());
 		}
 	}
+	
+	private static class ProblemLicense extends TextColumn<ProblemAndModule> {
+        /* (non-Javadoc)
+         * @see com.google.gwt.user.cellview.client.Column#getValue(java.lang.Object)
+         */
+        @Override
+        public String getValue(ProblemAndModule object) {
+            switch (object.getProblem().getLicense()) {
+            case CC_ATTRIB_SHAREALIKE_3_0:
+                return "CC";
+            case GNU_FDL_1_3_NO_EXCEPTIONS:
+                return "GFDL";
+            case NOT_REDISTRIBUTABLE:
+                return "not permissive";
+            default:
+                return "unknown";
+            }
+        }
+    }
 	
 	private static class ProblemVisibleColumn extends TextColumn<ProblemAndModule> {
 		/* (non-Javadoc)
@@ -222,14 +245,20 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		
 		// Set selection model.
 		// When a Problem is selected, it will be added to the Session.
-		this.selectionModel = new SingleSelectionModel<ProblemAndModule>();
+		this.selectionModel = new MultiSelectionModel<ProblemAndModule>();
 		selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent event) {
-				ProblemAndModule selected = selectionModel.getSelectedObject();
-				if (selected != null) {
-					session.add(selected.getProblem());
-				}
+			    Set<ProblemAndModule> problemModuleSet=selectionModel.getSelectedSet();
+			    Problem[] problems=getProblemsFromProblemAndModule(problemModuleSet);
+			    if (problems!=null) {
+			        session.add(problems);
+			        if (problems.length==1) {
+			            // If there's only one problem, add it by itself to the session
+			            // This makes the options that operate on a single problem work better
+			            session.add(problems[0]);
+			        }
+			    }
 			}
 		});
 		grid.setSelectionModel(selectionModel);
@@ -243,13 +272,23 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		loadProblems(session, course);
 	}
 	
+	public static Problem[] getProblemsFromProblemAndModule(Collection<ProblemAndModule> collection) {
+        Problem[] problems=new Problem[collection.size()];
+        int i=0;
+        for (ProblemAndModule pm : collection) {
+            problems[i]=pm.getProblem();
+            i++;
+        }
+        return problems;
+	}
+	
 	/**
-	 * Get the currently-selected {@link Problem}.
+	 * Get the currently-selected {@link Problem}s.
 	 * 
-	 * @return the currently-selected {@link Problem}
+	 * @return the currently-selected {@link Problem}s
 	 */
-	public Problem getSelected() {
-		return selectionModel.getSelectedObject().getProblem();
+	public Problem[] getSelected() {
+		return getProblemsFromProblemAndModule(selectionModel.getSelectedSet());
 	}
 
 	private void loadProblems(final Session session, final Course course) {
@@ -310,4 +349,21 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.setRowCount(result.length);
 		grid.setRowData(Arrays.asList(result));
 	}
+
+    /**
+     * @return
+     */
+    public boolean hasPotentialUnsharedExercises() {
+        for (ProblemAndModule problemAndModule : grid.getVisibleItems()) {  
+            Problem p=problemAndModule.getProblem();
+            if (!p.isShared() && (p.getProblemAuthorship()==ProblemAuthorship.ORIGINAL || 
+                    p.getProblemAuthorship()==ProblemAuthorship.IMPORTED_AND_MODIFIED))
+            {
+                // an unshared exercise that is original (i.e. new to this author)
+                // or has been imported and modified can be shared
+                return true;
+            }
+        }
+        return false;
+    }
 }

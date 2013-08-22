@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
@@ -32,6 +33,7 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -140,6 +142,20 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Submit an array of problems to the exercise repository.
+	 * This method uploads the problems to the server, which is then responsible
+	 * for lookup up the corresponding test cases, JSONifying the results,
+	 * and sending the JSON to the repository.
+	 * 
+	 * @param problems
+	 * @param repoUsername
+	 * @param repoPassword
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public ShareExercisesResult submitExercises(Problem[] problems, String repoUsername,
+	        String repoPassword) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Import an exercise (problem and testcases) from the exercise repository.
