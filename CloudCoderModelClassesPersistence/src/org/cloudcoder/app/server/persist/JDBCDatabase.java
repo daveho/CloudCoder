@@ -133,8 +133,8 @@ public class JDBCDatabase implements IDatabase {
 	
 	public JDBCDatabase() throws SQLException {
 		JDBCDatabaseConfig.ConfigProperties config = JDBCDatabaseConfig.getInstance().getConfigProperties();
-//		this.connectionPool = new MysqlConnectionPool(config);
-		this.connectionPool = new C3P0ConnectionPool(config);
+		this.connectionPool = new MysqlConnectionPool(config);
+//		this.connectionPool = new C3P0ConnectionPool(config);
 	}
 	
 	@Override
