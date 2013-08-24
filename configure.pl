@@ -75,11 +75,20 @@ if ($configWebapp) {
 	
 	section("Login service properties");
 	
-	askprop("Which login service do you want to use (imap or database)?",
+	askprop("Which login service do you want to use (imap, database, remoteuser)?",
 		"cloudcoder.login.service", "database");
 	if ($properties{"cloudcoder.login.service"} eq 'imap') {
 		askprop("What is the hostname or IP address of your IMAP server?",
 			"cloudcoder.login.host", undef);
+	} elsif ($properties{"cloudcoder.login.service"} eq 'remoteuser') {
+		print "You chose 'remoteuser' as your login service, meaning that\n";
+		print "user authentication is provided by having a proxy server\n";
+		print "set an X-Remote-User HTTP header that will be trusted by\n";
+		print "CloudCoder.  If an untrusted user can send HTTP messages\n";
+		print "to CloudCoder, then you have no security.  Proceed at your\n";
+		print "own risk!\n";
+
+		ask("Press enter to continue...");
 	}
 }
 

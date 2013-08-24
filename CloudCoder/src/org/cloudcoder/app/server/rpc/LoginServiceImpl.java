@@ -71,7 +71,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		User user=null;
 
 		// Get the configured ILoginProvider instance
-		ILoginProvider provider = LoginProviderServletContextListener.getInstance();
+		ILoginProvider provider = LoginProviderServletContextListener.getProviderInstance();
 		
 		// Try to log in
 		user = provider.login(userName, password, getThreadLocalRequest());

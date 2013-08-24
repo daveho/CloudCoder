@@ -40,7 +40,7 @@ public class LoginProviderServletContextListener implements ServletContextListen
 	 * 
 	 * @return the singleton {@link ILoginProvider} instance
 	 */
-	public static ILoginProvider getInstance() {
+	public static ILoginProvider getProviderInstance() {
 		return theInstance;
 	}
 
@@ -53,6 +53,8 @@ public class LoginProviderServletContextListener implements ServletContextListen
 				theInstance = new DatabaseLoginProvider();
 			} else if (providerType.equals("imap")) {
 				theInstance = new ImapLoginProvider(e.getServletContext());
+			} else if (providerType.equals("remoteuser")) {
+				theInstance = new RemoteUserLoginProvider();
 			}
 		}
 		
