@@ -34,38 +34,5 @@ public class ServletUtil {
 		return user;
 	}
 	
-	/**
-	 * Attempt to authenticate a user via IMAP.
-	 * 
-	 * @param username  the username
-	 * @param password  the plaintext password
-	 * @param props     login properties from the servlet context init parameters
-	 * @return true if the user has been authenticated successfully, false if not
-	 */
-	public static boolean authenticateImap(String username,
-            String password,
-            Properties props)
-    {
-        String url="imap://mailtest:"+username+"@"+props.getProperty(LoginServiceImpl.LOGIN_HOST);
-        
-        // configure the jvm to use the jsse security.
-        java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-
-        try {
-            // create the Session
-            javax.mail.Session session = javax.mail.Session.getInstance(props);
-            // and create the store..
-            Store store=session.getStore("imaps");
-            //javax.mail.Store store = session.getStore(new 
-                    //javax.mail.URLName(url));
-                    //javax.mail.URLName("imap://mailtest:mailtest@localhost/"));
-            // and connect.
-            store.connect(props.getProperty(LoginServiceImpl.LOGIN_HOST), username, password);
-            return true;
-        } catch (Exception e) {
-            logger.error(username+ " unable to connect to "+url, e);
-            return false;
-        }
-    }
 
 }

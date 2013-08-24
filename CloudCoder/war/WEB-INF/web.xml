@@ -213,6 +213,10 @@
   
   <!-- Listeners -->
   <listener>
+    <!-- This listener configures the login provider (database, IMAP, etc.) -->
+    <listener-class>org.cloudcoder.app.server.login.LoginProviderServletContextListener</listener-class>
+  </listener>
+  <listener>
     <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
   </listener>
   <listener>
