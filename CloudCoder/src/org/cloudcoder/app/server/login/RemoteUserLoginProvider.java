@@ -63,7 +63,11 @@ public class RemoteUserLoginProvider implements ILoginProvider {
 	
 	@Override
 	public String getPreAuthorizedUsername(HttpServletRequest request) {
-		return request.getParameter(X_REMOTE_USER); 
+		String username = request.getHeader(X_REMOTE_USER);
+		if (username != null) {
+			username = username.trim();
+		}
+		return username;
 	}
 
 }
