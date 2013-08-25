@@ -23,6 +23,7 @@ import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ILoginView;
+import org.cloudcoder.app.client.view.PreauthorizedUserLoginView;
 import org.cloudcoder.app.client.view.UsernamePasswordLoginView;
 import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
@@ -87,31 +88,42 @@ public class LoginPage extends CloudCoderPage {
 					
 					if (loginSpec.isUsernamePasswordRequired()) {
 						loginView = new UsernamePasswordLoginView();
-						loginView.setLoginSpec(loginSpec);
-						loginView.setLoginCallback(new Runnable() {
-							@Override
-							public void run() {
-								attemptLogin();
-							}
-						});
-						
-						add(loginView);
-						setWidgetLeftWidth(loginView, 0.0, Unit.PX, LOGIN_VIEW_WIDTH_PX, Unit.PX);
-						setWidgetTopHeight(loginView, LOGIN_VIEW_TOP_PX, Unit.PX, LOGIN_VIEW_HEIGHT_PX, Unit.PX);
-						
-						// For whatever reason, activating the login view (which will
-						// probably set the focus of a UI component, e.g. the username
-						// textbox) doesn't seem to work if done synchronously.
-						// Doing it after a brief delay seems to work.
-						new Timer() {
-							@Override
-							public void run() {
-								loginView.activate();
-							}
-						}.schedule(20);
 					} else {
-						GWT.log("TODO - create a login view for non-username/password login");
+						GWT.log("Using preauthorized user login...");
+						
+						if (loginSpec.getPreAuthorizedUsername() != null) {
+							// User is preauthorized.
+							// Just use a UI that prompts the user to press a button
+							// to log in.
+							loginView = new PreauthorizedUserLoginView();
+						} else {
+							// Try logging in with username and password.
+							loginView = new UsernamePasswordLoginView();
+						}
 					}
+
+					loginView.setLoginSpec(loginSpec);
+					loginView.setLoginCallback(new Runnable() {
+						@Override
+						public void run() {
+							attemptLogin();
+						}
+					});
+					
+					add(loginView);
+					setWidgetLeftWidth(loginView, 0.0, Unit.PX, LOGIN_VIEW_WIDTH_PX, Unit.PX);
+					setWidgetTopHeight(loginView, LOGIN_VIEW_TOP_PX, Unit.PX, LOGIN_VIEW_HEIGHT_PX, Unit.PX);
+					
+					// For whatever reason, activating the login view (which will
+					// probably set the focus of a UI component, e.g. the username
+					// textbox) doesn't seem to work if done synchronously.
+					// Doing it after a brief delay seems to work.
+					new Timer() {
+						@Override
+						public void run() {
+							loginView.activate();
+						}
+					}.schedule(20);
 				}
 			});
 		}
@@ -139,6 +151,7 @@ public class LoginPage extends CloudCoderPage {
 						loginView.setErrorMessage("Username and password not found");
 					} else {
 						// Successful login!
+						getSession().add(loginSpec);
 						getSession().add(result);
 						getSession().get(PageStack.class).push(PageId.COURSES_AND_PROBLEMS);
 					}
