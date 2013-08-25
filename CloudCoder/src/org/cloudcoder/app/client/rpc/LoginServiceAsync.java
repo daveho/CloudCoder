@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,11 +19,14 @@
 package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface LoginServiceAsync {
+
+	void getLoginSpec(AsyncCallback<LoginSpec> callback);
 
 	void login(String userName, String password, AsyncCallback<User> callback);
 

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class ImapLoginProvider implements ILoginProvider {
+public class ImapLoginProvider extends AbstractLoginProvider {
 	private static final Logger logger = LoggerFactory.getLogger(ImapLoginProvider.class);
 
 	public static final String LOGIN_SERVICE="cloudcoder.login.service";

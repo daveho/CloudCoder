@@ -1,7 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
-// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,21 +19,23 @@ package org.cloudcoder.app.server.login;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.shared.model.User;
-
 /**
- * Implementation of {@link ILoginProvider} that compares the username and
- * password against the user account data stored in the database.
+ * Abstract base class for {@link ILoginProvider} implementations that
+ * do require username and password, and do not support preauthorized
+ * logins.
  * 
  * @author David Hovemeyer
  */
-public class DatabaseLoginProvider extends AbstractLoginProvider {
-
+public abstract class AbstractLoginProvider implements ILoginProvider {
+	
 	@Override
-	public User login(String username, String password, HttpServletRequest request) {
-		User user = Database.getInstance().authenticateUser(username, password);
-		return user;
+	public boolean isUsernamePasswordRequired() {
+		return true;
+	}
+	
+	@Override
+	public String getPreAuthorizedUsername(HttpServletRequest request) {
+		throw new IllegalStateException("Preauthorized username not supported by " + DatabaseLoginProvider.class.getSimpleName());
 	}
 
 }

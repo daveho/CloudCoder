@@ -34,11 +34,13 @@ import org.slf4j.LoggerFactory;
  * @author David Hovemeyer
  */
 public class RemoteUserLoginProvider implements ILoginProvider {
+	private static final String X_REMOTE_USER = "X-Remote-User";
+
 	private static Logger logger = LoggerFactory.getLogger(RemoteUserLoginProvider.class);
 	
 	@Override
 	public User login(String username, String password, HttpServletRequest request) {
-		String headerValue = request.getHeader("X-Remote-User");
+		String headerValue = request.getHeader(X_REMOTE_USER);
 		if (headerValue == null) {
 			logger.error("Using remote user authentication, but no X-Remote-User header found");
 			return null;
@@ -52,6 +54,16 @@ public class RemoteUserLoginProvider implements ILoginProvider {
 		
 		// Success!
 		return user;
+	}
+	
+	@Override
+	public boolean isUsernamePasswordRequired() {
+		return false;
+	}
+	
+	@Override
+	public String getPreAuthorizedUsername(HttpServletRequest request) {
+		return request.getParameter(X_REMOTE_USER); 
 	}
 
 }

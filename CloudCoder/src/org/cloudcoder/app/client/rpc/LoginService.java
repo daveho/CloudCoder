@@ -19,6 +19,7 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.InitErrorException;
+import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -26,6 +27,13 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
+	/**
+	 * Get the {@link LoginSpec} that describes the information needed to log in.
+	 * 
+	 * @return the {@link LoginSpec}
+	 */
+	public LoginSpec getLoginSpec();
+	
 	/**
 	 * Authenticate with given username and password.
 	 * 

@@ -38,4 +38,21 @@ public interface ILoginProvider {
 	 *         or null if the username/password don't correspond to a known user
 	 */
 	public User login(String username, String password, HttpServletRequest request);
+
+	/**
+	 * @return true if username and password are required to log in,
+	 *         fales if some type of preauthorization is required
+	 */
+	public boolean isUsernamePasswordRequired();
+
+	/**
+	 * Get the preauthorized username from the servlet request.
+	 * This method should only be called if {@link #isUsernamePasswordRequired()}
+	 * returns false.
+	 * 
+	 * @param request  the servlet request
+	 * @return the preauthorized username, or null if there is no preauthorized username
+	 *         (for example, because the user has not actually preauthenticated)
+	 */
+	public String getPreAuthorizedUsername(HttpServletRequest request);
 }

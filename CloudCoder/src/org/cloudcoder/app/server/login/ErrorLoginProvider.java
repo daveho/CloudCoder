@@ -30,7 +30,7 @@ import org.cloudcoder.app.shared.model.User;
  * 
  * @author David Hovemeyer
  */
-public class ErrorLoginProvider implements ILoginProvider {
+public class ErrorLoginProvider extends AbstractLoginProvider {
 
 	@Override
 	public User login(String username, String password, HttpServletRequest request) {

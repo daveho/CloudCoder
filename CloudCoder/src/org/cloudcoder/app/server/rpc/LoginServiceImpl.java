@@ -26,9 +26,13 @@ import javax.servlet.http.HttpSession;
 import org.cloudcoder.app.client.rpc.LoginService;
 import org.cloudcoder.app.server.login.ILoginProvider;
 import org.cloudcoder.app.server.login.LoginProviderServletContextListener;
+import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.InitErrorList;
 import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.InitErrorException;
+import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +66,27 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
      * Default session timeout in seconds.  Defaults to 30 minutes.
      */
     private static final int SESSION_TIMEOUT_IN_SECONDS = 30 * 60;
+    
+    @Override
+    public LoginSpec getLoginSpec() {
+    	ILoginProvider provider = LoginProviderServletContextListener.getProviderInstance();
+    	
+    	LoginSpec loginInfo = new LoginSpec();
+    	
+    	ConfigurationSetting setting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_TEXT_INSTITUTION);
+    	String institutionName = setting != null ? setting.getValue() : "Unknown institution";
+    	loginInfo.setInstitutionName(institutionName);
+    	
+    	
+    	boolean usernamePasswordRequired = provider.isUsernamePasswordRequired();
+		loginInfo.setUsernamePasswordRequired(usernamePasswordRequired);
+    	
+		if (!usernamePasswordRequired) {
+	    	loginInfo.setPreAuthorizedUsername(provider.getPreAuthorizedUsername(getThreadLocalRequest()));
+		}
+		
+		return loginInfo;
+    }
 
 	@Override
 	public User login(String userName, String password) {
