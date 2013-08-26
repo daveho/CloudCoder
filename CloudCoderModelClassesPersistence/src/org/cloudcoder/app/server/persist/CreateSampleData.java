@@ -103,6 +103,8 @@ public class CreateSampleData {
 		problemData.setTimestampUtc(1349008031587L);
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		problemData.setParentHash("");
+		problemData.setExternalLibraryUrl("");
+		problemData.setExternalLibraryMD5("");
 	}
 	
 	public static void populateSampleCFunctionProblem(IProblem problem, int courseId) {
@@ -136,6 +138,8 @@ public class CreateSampleData {
 		problemData.setTimestampUtc(1356125346562L);
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		problemData.setParentHash("");
+		problemData.setExternalLibraryUrl("");
+		problemData.setExternalLibraryMD5("");
 	}
 	
 	public static void populateSampleCFunctionTestCases(ITestCase[] testCases, int problemId) {
