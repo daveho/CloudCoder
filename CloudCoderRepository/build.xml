@@ -28,6 +28,7 @@
 	</target>
 	
 	<target name="javac" depends="modelClasses,modelClassesPersist,modelClassesJSON,webServiceUtil">
+		<mkdir dir="war/WEB-INF/classes"/>
 		<javac srcdir="src" destdir="war/WEB-INF/classes" source="1.6" target="1.6">
 			<classpath refid="cloudcoderrepo.path"/>
 		</javac>

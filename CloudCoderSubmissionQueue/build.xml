@@ -14,6 +14,7 @@
     </target>
 	
 	<target name="javac" depends="modelClasses">
+		<mkdir dir="bin"/>
 		<javac srcdir="src" destdir="bin" classpathref="CloudCoderSubmissionQueue.classpath" source="1.6" target="1.6" debug="true"/>
 	</target>
 	
