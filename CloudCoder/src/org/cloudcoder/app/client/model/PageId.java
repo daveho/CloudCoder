@@ -38,7 +38,7 @@ public enum PageId {
 	COURSES_AND_PROBLEMS("home"),
 	
 	/** The development page (edit code, submit, etc.) */
-	DEVELOPMENT("exercse"),
+	DEVELOPMENT("exercise"),
 	
 	/** The problem admin page. */
 	PROBLEM_ADMIN("exercises"),
