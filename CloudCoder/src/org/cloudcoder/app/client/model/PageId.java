@@ -29,42 +29,57 @@ import org.cloudcoder.app.shared.model.Activity;
  */
 public enum PageId {
 	/** CloudCoder initialization error. */
-	INIT_ERROR,
+	INIT_ERROR("error"),
 	
 	/** Login page. */
-	LOGIN,
+	LOGIN("login"),
 
 	/** Default home page showing courses and problems. */
-	COURSES_AND_PROBLEMS,
+	COURSES_AND_PROBLEMS("home"),
 	
 	/** The development page (edit code, submit, etc.) */
-	DEVELOPMENT,
+	DEVELOPMENT("exercse"),
 	
 	/** The problem admin page. */
-	PROBLEM_ADMIN,
+	PROBLEM_ADMIN("exercises"),
 	
 	/** The edit problem page. */
-	EDIT_PROBLEM,
+	EDIT_PROBLEM("edit"),
 	
 	/** The user admin page. */
-	USER_ADMIN,
+	USER_ADMIN("users"),
 	
 	/** User account page. */
-	USER_ACCOUNT,
+	USER_ACCOUNT("account"),
 	
 	/** Statistics (all users progress) page. */
-	STATISTICS,
+	STATISTICS("stats"),
 	
 	/** The (individual) user progress page. */
-	USER_PROGRESS,
+	USER_PROGRESS("progress"),
 	
 	/** Quiz administration page. */
-	QUIZ,
+	QUIZ("quiz"),
 	
 	/** View a selected user's submissions for a given problem. */
-	USER_PROBLEM_SUBMISSIONS,
+	USER_PROBLEM_SUBMISSIONS("submissions"),
 	
 	/** The development page for writing and executing code 
 	 * not attached to particular exercises. */
-	PLAYGROUND_PAGE,
+	PLAYGROUND_PAGE("playground");
+	
+	private PageId(String fragmentName) {
+		this.fragmentName = fragmentName;
+	}
+	
+	private final String fragmentName;
+	
+	/**
+	 * Get the URL fragment name identifying this page.
+	 * 
+	 * @return the fragment name
+	 */
+	public String getFragmentName() {
+		return fragmentName;
+	}
 }

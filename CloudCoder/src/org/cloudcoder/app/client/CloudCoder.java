@@ -24,7 +24,6 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
-import org.cloudcoder.app.client.page.DevelopmentPage2;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
@@ -49,6 +48,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -262,6 +262,13 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		RootLayoutPanel.get().add(w);
 		RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
 		RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
+		
+		// Update the anchor in the URL to identify the page.
+		// See: http://stackoverflow.com/questions/5402732/gwt-set-url-without-submit
+		// TODO: could add params here?
+		String hash = page.getPageId().getFragmentName();
+		String newURL = Window.Location.createUrlBuilder().setHash(hash).buildString();
+		Window.Location.replace(newURL);
 
 		// Now it is safe to activate the page
 		page.activate();
