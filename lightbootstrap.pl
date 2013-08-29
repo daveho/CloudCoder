@@ -7,7 +7,7 @@
 my $dryRun = 1;
 my $ccdbpasswd = 'xyz'; # change this
 
-Run('sudo apt-get install openjdk-7-jre-headless mysql-client mysql-server apache2');
+Run('sudo apt-get install openjdk-7-jre-headless mysql-client mysql-server apache2 unzip');
 
 Run('sudo a2enmod proxy');
 Run('sudo a2enmod proxy_http');
