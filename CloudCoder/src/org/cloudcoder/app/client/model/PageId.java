@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -23,7 +24,9 @@ import org.cloudcoder.app.shared.model.Activity;
 /**
  * Abstract identifier for a {@link CloudCoderPage}.
  * Used for things like opaque page identifier to place in
- * an {@link Activity}. 
+ * an {@link Activity}.  Also specifies the fragment
+ * name that identifies a {@link CloudCoderPage}
+ * when used in the fragment part of a URL.
  * 
  * @author David Hovemeyer
  */
@@ -81,5 +84,21 @@ public enum PageId {
 	 */
 	public String getFragmentName() {
 		return fragmentName;
+	}
+	
+	/**
+	 * Get the {@link PageId} corresponding to the given fragment name.
+	 * 
+	 * @param fragmentName the fragment name
+	 * @return the {@link PageId}, or null if the fragment name
+	 *         does not match any known {@link PageId}
+	 */
+	public static PageId forFragmentName(String fragmentName) {
+		for (PageId id : values()) {
+			if (id.getFragmentName().equals(fragmentName)) {
+				return id;
+			}
+		}
+		return null;
 	}
 }

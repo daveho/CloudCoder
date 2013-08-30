@@ -165,6 +165,37 @@ public class LoginPage extends CloudCoderPage {
 	}
 
 	private UI ui;
+	private PageId linkPageId;
+	private String linkPageParams;
+	
+	/**
+	 * Default constructor.
+	 * Will take the user to the {@link CoursesAndProblemsPage2}
+	 * upon a successful login.
+	 */
+	public LoginPage() {
+		linkPageId = PageId.COURSES_AND_PROBLEMS;
+		linkPageParams = "";
+	}
+	
+	/**
+	 * Set the {@link PageId} that was specified in the original URL.
+	 * The login page should try to navigate to it on a successful login.
+	 * 
+	 * @param linkPageId the linkPageId to set
+	 */
+	public void setLinkPageId(PageId linkPageId) {
+		this.linkPageId = linkPageId;
+	}
+	
+	/**
+	 * Set the page parameters that were specified in the original URL.
+	 * 
+	 * @param linkPageParams the linkPageParams to set
+	 */
+	public void setLinkPageParams(String linkPageParams) {
+		this.linkPageParams = linkPageParams;
+	}
 
 	@Override
 	public void createWidget() {

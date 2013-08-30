@@ -82,9 +82,26 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	}
 
 	private void createInitialPage() {
-		// Check to see if the user is already logged in, and if so,
-		// if there is an Activity set.  A bit complicated because it
-		// involves two RPC calls that are chained.
+		// See if a URL fragment was specified, and if so, see if it
+		// identifies a valid page.
+		
+		PageId linkPageId_ = null; // page id specified by the link, if any
+		String linkPageParams_ = null; // page parameters specified by the link, if any
+		
+		String fragment = Window.Location.getHash();
+		if (fragment != null && !fragment.equals("")) {
+			String fragmentName = getFragmentName(fragment);
+			
+			linkPageId_ = PageId.forFragmentName(fragmentName);
+			if (linkPageId_ != null) {
+				linkPageParams_ = getFragmentParams(fragment);
+			}
+		}
+		
+		final PageId linkPageId = linkPageId_;
+		final String linkPageParams = linkPageParams_;
+		
+		// Check to see if the user is already logged in.
 		RPC.loginService.getUser(new AsyncCallback<User>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -104,61 +121,111 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			public void onSuccess(User result) {
 				if (result == null) {
 					// Not logged in, so show LoginPage
-					changePage(new LoginPage());
+					LoginPage loginPage = new LoginPage();
+					if (linkPageId != null) {
+						// A page was linked in the original URL,
+						// so have the LoginPage try to navigate to it
+						// on a successful login.
+						loginPage.setLinkPageId(linkPageId);
+						loginPage.setLinkPageParams(linkPageParams);
+					}
+					changePage(loginPage);
 				} else {
+					// User is logged in!
 					final User user = result;
-					
-					// User is logged in: get Activity
-					RPC.loginService.getActivity(new AsyncCallback<Activity>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							session.add(StatusMessage.error("Could not check for current login status: " + caught.getMessage()));
-							changePage(new LoginPage());
-						}
 
-						@Override
-						public void onSuccess(Activity result) {
-							// Add user to session
-							session.add(user);
-							
-							// Did we find the user's Activity?
-							if (result == null) {
-								// Don't know what the user's activity was, so take
-								// them to the courses/problems page
+					// Add user to session
+					session.add(user);
+
+					// If a page id was specified as part of the original URL,
+					// try to navigate to it without attempting to recover the
+					// client's server-side Activity.  (The page id in the
+					// link should take precedence.)
+					if (linkPageId != null) {
+						CloudCoderPage page = createPageForPageId(linkPageId, linkPageParams);
+						changePage(page);
+					} else {
+
+						// No page id was specified in the original URL.
+						// See if there is a server-side Activity.
+						RPC.loginService.getActivity(new AsyncCallback<Activity>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								session.add(StatusMessage.error("Error getting Activity", caught));
 								changePage(new CoursesAndProblemsPage2());
-							} else {
-								// We have an activity.  Find the page.
-								CloudCoderPage page = getPageForActivity(result);
-								
-								// Restore the session objects.
-								for (Object obj : result.getSessionObjects()) {
-									GWT.log("Restoring activity object: " + obj.getClass().getName());
-									session.add(obj);
-								}
-								
-								changePage(page);
 							}
-						}
-					});
+	
+							@Override
+							public void onSuccess(Activity result) {
+								
+								// Did we find the user's Activity?
+								if (result == null) {
+									// Don't know what the user's activity was, so take
+									// them to the courses/problems page
+									changePage(new CoursesAndProblemsPage2());
+								} else {
+									// We have an activity.  Find the page.
+									CloudCoderPage page = getPageForActivity(result);
+									
+									// Restore the session objects.
+									for (Object obj : result.getSessionObjects()) {
+										GWT.log("Restoring activity object: " + obj.getClass().getName());
+										session.add(obj);
+									}
+									
+									changePage(page);
+								}
+							}
+						});
+					}
 				}
 			}
 		});
 	}
 
+	/**
+	 * Get the fragment name.
+	 * E.g., if the fragment is "exercise?c=4,p=5", then the
+	 * fragment name is "exercise".
+	 * 
+	 * @param fragment the fragment
+	 * @return the fragment name
+	 */
+	private String getFragmentName(String fragment) {
+		int ques = fragment.indexOf('?');
+		return (ques >= 0) ? fragment.substring(0, ques) : fragment;
+	}
+
+	/**
+	 * Get the fragment parameters.
+	 * E.g., if the fragment is "exercise?c=4,p=5", then the
+	 * parameters are "c=4,p=5".
+	 * 
+	 * @param fragment the fragment
+	 * @return the fragment parameters
+	 */
+	private String getFragmentParams(String fragment) {
+		int ques = fragment.indexOf('?');
+		return ques >= 0 ? fragment.substring(ques+1) : "";
+	}
+
 	protected CloudCoderPage getPageForActivity(Activity result) {
 		String name = result.getName();
 		
-		CloudCoderPage page = null;
-		
 		// The activity name must be the string representation of a PageId.
+		PageId pageId;
 		try {
-			PageId pageId = PageId.valueOf(name);
-			
-			page = createPageForPageId(pageId);
+			pageId = PageId.valueOf(name);
 		} catch (IllegalArgumentException e) {
 			GWT.log("Illegal activity name: " + name);
-			page = new CoursesAndProblemsPage2();
+			pageId = PageId.COURSES_AND_PROBLEMS;
 		}
+
+		return createPageForPageId(pageId, null);
+	}
+
+	protected CloudCoderPage createPageForPageId(PageId pageId, String pageParams) {
+		CloudCoderPage page = createPageForPageId(pageId);
 		
 		// Create a reasonable PageStack.
 		// (Note that we need to disable notifications while we do this,
@@ -168,6 +235,11 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		page.initDefaultPageStack(pageStack);
 		pageStack.push(page.getPageId());
 		pageStack.setNotifications(true);
+		
+		// Set initial page parameters (if any)
+		if (pageParams != null) {
+			page.setUrlFragmentParams(pageParams);
+		}
 		
 		return page;
 	}

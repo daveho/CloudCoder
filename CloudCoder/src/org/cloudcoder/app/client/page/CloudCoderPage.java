@@ -181,6 +181,27 @@ public abstract class CloudCoderPage {
 	public abstract void createWidget();
 	
 	/**
+	 * Set any parameters that were specified as part of the
+	 * fragment in the URL.  For example,
+	 * if the URL is <i>SITE</i>/cloudcoder/#exercise?c=4,p=5
+	 * then the parameters are "c=4,p=5".  ("exercise" in
+	 * this case is the fragment name that identifies
+	 * {@link DevelopmentPage}.)  These parameters
+	 * can be used to allow the page to populate the session
+	 * with objects specified by the parameters, allowing
+	 * direct links to execises (and any other resources within
+	 * the webapp that we'd like to support direct links to.)
+	 * 
+	 * The default implementation is a no-op: subclasses may override.
+	 * This will be called before the {@link #activate()} method.
+	 * 
+	 * @param params the parameters
+	 */
+	public void setUrlFragmentParams(String params) {
+		// default implementation is a no-op
+	}
+	
+	/**
 	 * This method is called after the page's UI has been
 	 * added to the DOM tree.
 	 */

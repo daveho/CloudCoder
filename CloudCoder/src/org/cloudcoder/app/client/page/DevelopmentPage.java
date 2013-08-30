@@ -869,6 +869,7 @@ public class DevelopmentPage extends CloudCoderPage {
 
 	
 	private UI ui;
+	private String params;
 	
 	public DevelopmentPage() {
 	}
@@ -879,7 +880,27 @@ public class DevelopmentPage extends CloudCoderPage {
 	}
 	
 	@Override
+	public void setUrlFragmentParams(String params) {
+		this.params = params;
+	}
+	
+	@Override
 	public void activate() {
+		if (params != null) {
+			// Page parameters were specified - this page was reached via a URL.
+			// Attempt to decode the page parameters, create the required session
+			// objects, and if all goes well, activate the page.
+			
+			// TODO
+			doActivate();
+		} else {
+			// No page parameters, so presumably the objects we
+			// need (Course, Problem) are already in the session.
+			doActivate();
+		}
+	}
+
+	public void doActivate() {
 		addSessionObject(new ChangeList());
 		addSessionObject(new NamedTestResult[0]);
 		addSessionObject(new CompilerDiagnostic[0]);
