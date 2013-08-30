@@ -90,11 +90,14 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		
 		String fragment = Window.Location.getHash();
 		if (fragment != null && !fragment.equals("")) {
+			GWT.log("URL fragment is " + fragment);
 			String fragmentName = getFragmentName(fragment);
+			GWT.log("Fragment name is " + fragmentName);
 			
 			linkPageId_ = PageId.forFragmentName(fragmentName);
 			if (linkPageId_ != null) {
 				linkPageParams_ = getFragmentParams(fragment);
+				GWT.log("Link params: " + linkPageParams_);
 			}
 		}
 		
@@ -123,6 +126,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 					// Not logged in, so show LoginPage
 					LoginPage loginPage = new LoginPage();
 					if (linkPageId != null) {
+						GWT.log("Login page will redirect to " + linkPageId + ":" + linkPageParams);
 						// A page was linked in the original URL,
 						// so have the LoginPage try to navigate to it
 						// on a successful login.
@@ -142,10 +146,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 					// client's server-side Activity.  (The page id in the
 					// link should take precedence.)
 					if (linkPageId != null) {
+						GWT.log("Already logged in, linking page " + linkPageId + ":" + linkPageParams);
 						CloudCoderPage page = createPageForPageId(linkPageId, linkPageParams);
 						changePage(page);
 					} else {
-
+						GWT.log("Already logged in, no link page id specified, checking server for Activity");
+						
 						// No page id was specified in the original URL.
 						// See if there is a server-side Activity.
 						RPC.loginService.getActivity(new AsyncCallback<Activity>() {
