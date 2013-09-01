@@ -348,7 +348,16 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		// TODO: could add params here?
 		String hash = page.getPageId().getFragmentName();
 		String newURL = Window.Location.createUrlBuilder().setHash(hash).buildString();
+		
+		// When running in development mode, replacing ":" with "%3A"
+		// (due to URL encoding, I guess) appears to trigger a page reload
+		// on both Firefox and Chrome, completely bollixing our efforts to use
+		// the original URL fragment.  So, undo that bit of unnecessary
+		// manipulation of the URL.
+		newURL = newURL.replace("%3A", ":");
+		
 		Window.Location.replace(newURL);
+		GWT.log("Setting URL to " + newURL);
 
 		// Now it is safe to activate the page
 		page.activate();
