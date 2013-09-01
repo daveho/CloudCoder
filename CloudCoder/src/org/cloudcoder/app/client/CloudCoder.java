@@ -66,6 +66,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		GWT.log("loading, fragment name is " + Window.Location.getHash());
+		
 		session = new Session();
 		pageStack = new PageStack();
 		session.add(pageStack);

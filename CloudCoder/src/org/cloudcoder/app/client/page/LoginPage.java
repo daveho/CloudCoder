@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -174,6 +175,7 @@ public class LoginPage extends CloudCoderPage {
 	 * upon a successful login.
 	 */
 	public LoginPage() {
+		GWT.log("Creating LoginPage, fragment is " + Window.Location.getHash());
 		linkPageId = PageId.COURSES_AND_PROBLEMS;
 		linkPageParams = "";
 	}
