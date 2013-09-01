@@ -57,15 +57,28 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  * CloudCoder entry point class.
  */
 public class CloudCoder implements EntryPoint, Subscriber {
+	private static CloudCoder theInstance;
+	
 	private Session session;
 	private PageStack pageStack;
 	private SubscriptionRegistrar subscriptionRegistrar;
 	private CloudCoderPage currentPage;
 	
 	/**
+	 * Get the singleton instance.
+	 * 
+	 * @return the singleton instance
+	 */
+	public static CloudCoder getInstance() {
+		return theInstance;
+	}
+	
+	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		theInstance = this;
+		
 		GWT.log("loading, fragment name is " + Window.Location.getHash());
 		
 		session = new Session();
@@ -200,6 +213,9 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 * @return the fragment name
 	 */
 	private String getFragmentName(String fragment) {
+		if (fragment.startsWith("#")) {
+			fragment = fragment.substring(1);
+		}
 		int ques = fragment.indexOf('?');
 		return (ques >= 0) ? fragment.substring(0, ques) : fragment;
 	}
@@ -396,5 +412,18 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			session.add(pageStack);
 			changePage(new LoginPage());
 		}
+	}
+	
+	/**
+	 * Create and activate the specified page following a successful
+	 * login.
+	 * 
+	 * @param pageId     the page id
+	 * @param pageParams the page params, if any
+	 */
+	public void createPostLoginPage(PageId pageId, String pageParams) {
+		GWT.log("Post-login: go to page " + pageId + (pageParams != null ? (", params=" + pageParams) : ""));
+		CloudCoderPage page = createPageForPageId(pageId, pageParams);
+		changePage(page);
 	}
 }

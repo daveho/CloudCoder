@@ -23,6 +23,7 @@ import java.util.List;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
@@ -44,6 +45,8 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -881,6 +884,7 @@ public class DevelopmentPage extends CloudCoderPage {
 	
 	@Override
 	public void setUrlFragmentParams(String params) {
+		GWT.log("Development page: page params=" + params);
 		this.params = params;
 	}
 	
@@ -890,17 +894,107 @@ public class DevelopmentPage extends CloudCoderPage {
 			// Page parameters were specified - this page was reached via a URL.
 			// Attempt to decode the page parameters, create the required session
 			// objects, and if all goes well, activate the page.
-			
-			// TODO
-			doActivate();
+			activateFromPageParams();
 		} else {
 			// No page parameters, so presumably the objects we
 			// need (Course, Problem) are already in the session.
-			doActivate();
+			activateFromSessionContents();
 		}
 	}
 
-	public void doActivate() {
+	/**
+	 * Attempt to activate the page from page parameters specifying
+	 * course id and problem id.
+	 */
+	public void activateFromPageParams() {
+		PageParams p = new PageParams(params);
+		
+		final Integer courseId = p.getInt("c");
+		final Integer problemId = p.getInt("p");
+		
+		if (courseId != null && problemId != null) {
+			loadCourseAndProblem(courseId, problemId);
+		} else {
+			GWT.log("Page parameters do not specify course and problem ids");
+			getSession().add(StatusMessage.error("Page parameters do not specify course and problem ids"));
+			activateFromSessionContents();
+		}
+	}
+
+	/**
+	 * Attempt to load given {@link Course} and {@link Problem}
+	 * and then activate the page.
+	 * 
+	 * @param courseId  the course id
+	 * @param problemId the problem id
+	 */
+	public void loadCourseAndProblem(final Integer courseId,
+			final Integer problemId) {
+		RPC.getCoursesAndProblemsService.getCourses(new AsyncCallback<Course[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Could not get courses for user", caught);
+				getSession().add(StatusMessage.error("Could not get courses for user", caught));
+				activateFromSessionContents();
+			}
+			
+			public void onSuccess(Course[] result) {
+				// See if user is registered for the linked course
+				boolean found = false;
+				for (Course c : result) {
+					if (c.getId() == courseId.intValue()) {
+						// Found the course!
+						// Add a CourseSelection (specifying the null Module,
+						// since we don't really know what Modules this Course
+						// has, and it doesn't matter in this context.)
+						getSession().add(new CourseSelection(c, null));
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found) {
+					GWT.log("User is not registered for course id=" + courseId);
+					getSession().add(StatusMessage.error("User is not registered for course id=" + courseId));
+					activateFromSessionContents();
+				} else {
+					RPC.getCoursesAndProblemsService.getProblems(getSession().get(CourseSelection.class).getCourse(), new AsyncCallback<Problem[]>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							GWT.log("Could not get Problems in course", caught);
+							getSession().add(StatusMessage.error("Could not get Problems in course", caught));
+							activateFromSessionContents();
+						}
+						
+						@Override
+						public void onSuccess(Problem[] result) {
+							// See if the problem id is visible in the linked course
+							boolean found = false;
+							for (Problem p : result) {
+								if (p.getProblemId().equals(problemId)) {
+									// Found the problem!
+									getSession().add(p);
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								GWT.log("No problem found for id=" + problemId);
+								getSession().add(StatusMessage.error("No problem found for id=" + problemId));
+							}
+							activateFromSessionContents();
+						}
+					});
+				}
+			}
+		});
+	}
+
+	/**
+	 * Activate from the contents of the {@link Session}:
+	 * specifically, from the {@link Course} and {@link Problem}.
+	 */
+	private void activateFromSessionContents() {
 		addSessionObject(new ChangeList());
 		addSessionObject(new NamedTestResult[0]);
 		addSessionObject(new CompilerDiagnostic[0]);

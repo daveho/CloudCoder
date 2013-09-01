@@ -18,7 +18,9 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.PageId;

@@ -18,6 +18,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -154,7 +155,12 @@ public class LoginPage extends CloudCoderPage {
 						// Successful login!
 						getSession().add(loginSpec);
 						getSession().add(result);
-						getSession().get(PageStack.class).push(PageId.COURSES_AND_PROBLEMS);
+						
+						// Create and activate whatever initial page and page stack
+						// is appropriate, using the link page id and page params.
+						// This allows us to navigate to, e.g., the development page
+						// if that was specified in the original URL.
+						CloudCoder.getInstance().createPostLoginPage(linkPageId, linkPageParams);
 					}
 				}
 			});
