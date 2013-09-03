@@ -28,9 +28,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.HashProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -119,6 +121,11 @@ public class ExerciseData extends HttpServlet {
 		long now = System.currentTimeMillis();
 		exercise.getProblem().setWhenAssigned(now);
 		exercise.getProblem().setWhenDue(now + 2L*24*60*60*1000);
+		// Mark this as an ORIGINAL problem
+		// (Does this make the most sense? We don't really know what the
+		// origin of this problem is.)
+		exercise.getProblem().setProblemAuthorship(ProblemAuthorship.ORIGINAL);
+		exercise.getProblem().setParentHash("");
 		
 		// Store the exercise in the database
 		try {
