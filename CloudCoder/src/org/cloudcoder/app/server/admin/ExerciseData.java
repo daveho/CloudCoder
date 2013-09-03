@@ -114,6 +114,12 @@ public class ExerciseData extends HttpServlet {
 				ReflectionFactory.forClass(TestCase.class),
 				req.getReader());
 		
+		// Set details
+		exercise.getProblem().setCourseId(courseId);
+		long now = System.currentTimeMillis();
+		exercise.getProblem().setWhenAssigned(now);
+		exercise.getProblem().setWhenDue(now + 2L*24*60*60*1000);
+		
 		// Store the exercise in the database
 		try {
 			Database.getInstance().storeProblemAndTestCaseList(exercise, course, user);
