@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.HashProblemAndTestCaseData;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
