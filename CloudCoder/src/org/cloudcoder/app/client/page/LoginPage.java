@@ -211,6 +211,11 @@ public class LoginPage extends CloudCoderPage {
 	}
 	
 	@Override
+	public Class<?>[] getRequiredPageObjects() {
+		return new Class<?>[0]; // FIXME
+	}
+	
+	@Override
 	public void activate() {
 		ui.activate(getSession(), getSubscriptionRegistrar());
 	}

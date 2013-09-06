@@ -374,9 +374,9 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		
 		Window.Location.replace(newURL);
 		GWT.log("Setting URL to " + newURL);
-
+		
 		// Now it is safe to activate the page
-		page.activate();
+		page.loadPageObjectsAndActivate();
 		currentPage = page;
 		
 		// Inform the server of the Activity (page) that the user is now working on,

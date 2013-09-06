@@ -425,6 +425,11 @@ public class DevelopmentPage2 extends CloudCoderPage {
 	public void createWidget() {
 		ui = new UI();
 	}
+	
+	@Override
+	public Class<?>[] getRequiredPageObjects() {
+		return new Class<?>[0]; // FIXME
+	}
 
 	@Override
 	public void activate() {

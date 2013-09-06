@@ -189,6 +189,11 @@ public class StatisticsPage extends CloudCoderPage {
 	public void createWidget() {
 		this.ui = new UI();
 	}
+	
+	@Override
+	public Class<?>[] getRequiredPageObjects() {
+		return new Class<?>[0]; // FIXME
+	}
 
 	@Override
 	public void activate() {

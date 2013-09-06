@@ -32,6 +32,8 @@ import org.cloudcoder.app.client.view.SessionExpiredDialogBox;
 import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -51,6 +53,7 @@ public abstract class CloudCoderPage {
 	private DefaultSubscriptionRegistrar subscriptionRegistrar;
 	private Session session;
 	private List<Runnable> recoveryCallbackList;
+	private String params;
 	
 	/**
 	 * Constructor.
@@ -183,6 +186,17 @@ public abstract class CloudCoderPage {
 	public abstract void createWidget();
 	
 	/**
+	 * Get the Class objects corresponding to the objects
+	 * which must be in the {@link Session} in order for this
+	 * page to work correctly.  This list does not include
+	 * objects such as {@link User} which can be assumed
+	 * always to be in the session.
+	 * 
+	 * @return page object classes
+	 */
+	public abstract Class<?>[] getRequiredPageObjects();
+	
+	/**
 	 * Set any parameters that were specified as part of the
 	 * fragment in the URL.  For example,
 	 * if the URL is <i>SITE</i>/cloudcoder/#exercise?c=4,p=5
@@ -194,13 +208,35 @@ public abstract class CloudCoderPage {
 	 * direct links to execises (and any other resources within
 	 * the webapp that we'd like to support direct links to.)
 	 * 
-	 * The default implementation is a no-op: subclasses may override.
-	 * This will be called before the {@link #activate()} method.
-	 * 
 	 * @param params the parameters
 	 */
-	public void setUrlFragmentParams(String params) {
-		// default implementation is a no-op
+	public final void setUrlFragmentParams(String params) {
+		this.params = params;
+	}
+	
+	public final void loadPageObjectsAndActivate() {
+		if (params != null) {
+			LoadPageObjects loadPageObjects = new LoadPageObjects(getRequiredPageObjects(), getSession(), params);
+			
+			Runnable onSuccess = new Runnable() {
+				@Override
+				public void run() {
+					activate();
+				}
+			};
+			ICallback<Pair<String, Throwable>> onFailure = new ICallback<Pair<String,Throwable>>() {
+				@Override
+				public void call(Pair<String, Throwable> value) {
+					// TODO: should display an error UI!
+					GWT.log("Failed to load page objects: " + value.getLeft(), value.getRight());
+				}
+			};
+			loadPageObjects.execute(onSuccess, onFailure);
+		} else {
+			// No page params, so assume objects are already the session
+			// and we can activate directly.
+			activate();
+		}
 	}
 	
 	/**

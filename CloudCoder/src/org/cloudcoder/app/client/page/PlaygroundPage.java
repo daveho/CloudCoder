@@ -555,6 +555,11 @@ public class PlaygroundPage extends CloudCoderPage
     public void createWidget() {
         ui = new UI();
     }
+	
+	@Override
+	public Class<?>[] getRequiredPageObjects() {
+		return new Class<?>[0]; // FIXME
+	}
 
     /* (non-Javadoc)
      * @see org.cloudcoder.app.client.page.CloudCoderPage#activate()
