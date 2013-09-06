@@ -445,7 +445,7 @@ public class ConfigurationUtil
         ResultSet resultSet = null;
         try {
             stmt = conn.prepareStatement("select * from " + CourseRegistration.SCHEMA.getDbTableName()+
-                    " where courseId = ?");
+                    " where course_id = ?");
             stmt.setInt(1, courseId);
             Set<Integer> users=new HashSet<Integer>();
 
