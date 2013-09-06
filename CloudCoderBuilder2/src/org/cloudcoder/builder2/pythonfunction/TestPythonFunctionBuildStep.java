@@ -104,6 +104,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			//XXX: If we do that, we disallow global variables, which may be OK
 			StringBuilder test = new StringBuilder();
 			test.append("import sys\n");
+			test.append("import math\n");
 			test.append(programText+"\n");
 			programTextLength=StringUtil.countLines(programText);
 			int spaces=getIndentationIncrementFromPythonCode(programText);
