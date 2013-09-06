@@ -1,1 +1,10 @@
+# Explicitly ignored jarfiles copied from GWT.
+# This indicates to fetchdeps.pl that these jarfiles are
+# expected (and OK to include in build artifacts).
+/gwt-servlet.jar
+/gwt-servlet-deps.jar
+/requestfactory-server.jar
+
+# Wildcard so that git ignores the jarfiles explicitly copied by
+# fetchdeps.pl (which of course are expected to be present).
 /*.jar

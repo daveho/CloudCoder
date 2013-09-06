@@ -30,6 +30,8 @@ if (scalar(@ARGV) > 0) {
 		$mode = 'delete';
 	} elsif ($arg eq '--list-targets') {
 		$mode = 'list';
+	} elsif ($arg eq '--check') {
+		$mode = 'check';
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -46,6 +48,8 @@ if ($mode eq 'fetch') {
 	DeleteTargets();
 } elsif ($mode eq 'list') {
 	ListTargets(@deps);
+} elsif ($mode eq 'check') {
+	CheckTargets(@deps);
 }
 
 sub DeleteTargets {
@@ -183,6 +187,72 @@ sub EnsureDirExists {
 	if ($dir ne '' && (! -d $dir)) {
 		Run('mkdir', '-p', $dir);
 	}
+}
+
+# Check each jar directory to check whether there are
+# any jarfiles that are not either
+#
+#   (1) part of the explicit download set, or
+#   (2) explicitly ignored in the .gitignore (indicating that
+#       the presence of the jarfile is expected, perhaps
+#       copied by a means other than this script)
+#
+# If any jar files not matching (1) or (2) are found,
+# report them, since they may be stale (and could cause
+# problems with any build artifacts they might accidentally
+# be included in).
+sub CheckTargets {
+	my @deps = @_;
+	my %jardirs = ();
+
+	# Build a map of jar directories to sets of jarfiles
+	# downloaded by this script.
+	foreach my $tuple (@deps) {
+		my @targets = @{$tuple->[1]};
+		foreach my $target (@targets) {
+			if ($target =~ m,^(.*)/([^/\s]+)\s*$,) {
+				my $expectedJarFiles = $jardirs{$1};
+				if (!defined $expectedJarFiles) {
+					$expectedJarFiles = {};
+					$jardirs{$1} = $expectedJarFiles;
+				}
+				$expectedJarFiles->{$2} = 1;
+			}
+		}
+	}
+
+	# Check each jar directory for unexpected jar files.
+	foreach my $jardir (sort keys %jardirs) {
+		#print "Jar dir: $jardir\n";
+		my %ignoredJarFiles = GetIgnoredJarFiles($jardir);
+		my %expectedJarFiles = %{$jardirs{$jardir}};
+
+		my $contents_fh = new FileHandle("ls '$jardir'|") || die;
+		while (<$contents_fh>) {
+			chomp;
+			if (/^(.*\.jar)\s*$/) {
+				my $found = $1;
+				if ((!exists $ignoredJarFiles{$found}) && (!exists $expectedJarFiles{$found})) {
+					print "Warning: unexpected jar file $jardir/$found\n";
+				}
+			}
+		}
+	}
+}
+
+# Get the set of explicitly ignored jar files in given directory.
+sub GetIgnoredJarFiles {
+	my ($jardir) = @_;
+	my %ignoredJarFiles = ();
+	if (my $fh = new FileHandle("<$jardir/.gitignore")) {
+		while (<$fh>) {
+			chomp;
+			if (m,/([^\*]+\.jar)\s*$,) {
+				$ignoredJarFiles{$1} = 1;
+			}
+		}
+	}
+	return %ignoredJarFiles;
 }
 
 # vim:ts=2:
