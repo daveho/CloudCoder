@@ -170,7 +170,8 @@ public class LoadPageObjects {
 		Class<?> pageObjectCls = pageObjects[index];
 		
 		// If the session already contains the needed object, then there is
-		// nothing to do.
+		// nothing to do for this object, and we should continue on the
+		// next object (if any).
 		if (session.get(pageObjectCls) != null) {
 			doLoad(index+1, onSuccess, onFailure);
 			return;
