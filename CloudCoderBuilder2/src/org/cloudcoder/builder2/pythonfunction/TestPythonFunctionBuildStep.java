@@ -116,16 +116,21 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				 * 
 				 * def t0():
 				 *    _output=plus(2,3)
-				 *    _result=(5 == _output)
+				 *    _expected=<<test case output>>
+				 *    _result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001) 
 				 *    return (_result, _output)
-				 *    
+				 * 
+				 * Note the check for floating point values: a delta-based comparison
+				 * is done rather than requiring strict equality.
+				 * 
 				 * We return a tuple with a boolean representing whether
 				 * the test case passed, and a String containing the 
 				 * actual output.  
 				 */
 				test.append(indent(spaces)+"_output="+problem.getTestname() + 
 				        "(" +t.getInput()+ ")\n");
-				test.append(indent(spaces)+"_result=("+t.getOutput()+" == _output)\n");
+				test.append(indent(spaces)+"_expected=" + t.getOutput() + "\n");
+				test.append(indent(spaces)+"_result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001)\n");
 				test.append(indent(spaces)+"return (_result, _output)\n");
 			}
 			String result=test.toString();
