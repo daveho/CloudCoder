@@ -438,7 +438,9 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		// This page does not require any page objects other than the
+		// ones that are added automatically when the user logs in.
+		return new Class<?>[0];
 	}
 
 	/* (non-Javadoc)

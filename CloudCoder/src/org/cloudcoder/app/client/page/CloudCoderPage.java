@@ -214,9 +214,13 @@ public abstract class CloudCoderPage {
 		this.params = params;
 	}
 	
+	/**
+	 * Load any required page objects (if page parameters were specified),
+	 * and activate the page.
+	 */
 	public final void loadPageObjectsAndActivate() {
 		if (params != null) {
-			LoadPageObjects loadPageObjects = new LoadPageObjects(getRequiredPageObjects(), getSession(), params);
+			LoadPageObjects loadPageObjects = new LoadPageObjects(this, getRequiredPageObjects(), getSession(), params);
 			
 			Runnable onSuccess = new Runnable() {
 				@Override

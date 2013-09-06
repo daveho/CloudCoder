@@ -22,8 +22,13 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.Pair;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.core.client.GWT;
@@ -67,5 +72,47 @@ public class SessionUtil {
             }
         });
 		
+	}
+
+	/**
+	 * Load a complete {@link ProblemAndTestCaseList} for given {@link Problem}.
+	 * An RPC call is made to fetch the {@link TestCase}s for the problem,
+	 * and the result is delivered asynchronously to a callback.
+	 *
+	 * @param page       the {@link CloudCoderPage} (needed if a session timeout occurs)
+	 * @param problem    the problem
+	 * @param onSuccess  the callback to receive the full {@link ProblemAndTestCaseList}
+	 * @param onFailure  callback invoked if the {@link ProblemAndTestCaseList} can't be loaded
+	 */
+	public static void loadProblemAndTestCaseList(
+			final CloudCoderPage page,
+			final Problem problem,
+			final ICallback<ProblemAndTestCaseList> onSuccess,
+			final ICallback<Pair<String, Throwable>> onFailure) {
+		RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				if (caught instanceof CloudCoderAuthenticationException) {
+					page.recoverFromServerSessionTimeout(new Runnable() {
+						public void run() {
+							// Try again!
+							loadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
+						}
+					});
+				} else {
+					//page.getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
+					onFailure.call(new Pair<String, Throwable>("Could not load test cases for problem", caught));
+				}
+			}
+
+			@Override
+			public void onSuccess(TestCase[] result) {
+				// Success!
+				ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
+				problemAndTestCaseList.setProblem(problem);
+				problemAndTestCaseList.setTestCaseList(result);
+				onSuccess.call(problemAndTestCaseList);
+			}
+		});
 	}
 }

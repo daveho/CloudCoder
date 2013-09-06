@@ -29,6 +29,7 @@ import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -125,6 +126,27 @@ public class LoadPageObjects {
 		}
 	}
 	
+	// Note: the Problem should be loaded first
+	private class ProblemAndTestCaseListLoader implements Loader {
+		@Override
+		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
+			// No page param is required, since we assume that the Problem
+			// is already in the session.
+			SessionUtil.loadProblemAndTestCaseList(
+					page,
+					session.get(Problem.class),
+					new ICallback<ProblemAndTestCaseList>() {
+						public void call(ProblemAndTestCaseList value) {
+							session.add(value);
+							onSuccess.run();
+						}
+					},
+					onFailure
+			);
+		}
+	}
+	
+	private CloudCoderPage page;
 	private Class<?>[] pageObjects;
 	private Session session;
 	private PageParams pageParams;
@@ -134,11 +156,13 @@ public class LoadPageObjects {
 	/**
 	 * Constructor.
 	 * 
+	 * @param page        the {@link CloudCoderPage} (needed in case there is a session timeout while doing RPC)
 	 * @param pageObjects the page object classes
 	 * @param session     the {@link Session}
 	 * @param pageParams  the page parameters from the URL fragment
 	 */
-	public LoadPageObjects(Class<?>[] pageObjects, Session session, String pageParams) {
+	public LoadPageObjects(CloudCoderPage page, Class<?>[] pageObjects, Session session, String pageParams) {
+		this.page = page;
 		this.pageObjects = pageObjects;
 		this.session = session;
 		this.pageParams = new PageParams(pageParams);
@@ -146,6 +170,7 @@ public class LoadPageObjects {
 		this.loaderMap = new HashMap<Class<?>, Loader>();
 		loaderMap.put(CourseSelection.class, new CourseSelectionLoader());
 		loaderMap.put(Problem.class, new ProblemLoader());
+		loaderMap.put(ProblemAndTestCaseList.class, new ProblemAndTestCaseListLoader());
 	}
 	
 	/**

@@ -39,6 +39,7 @@ import org.cloudcoder.app.client.view.TestCaseEditor;
 import org.cloudcoder.app.client.view.ViewUtil;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.Problem;
@@ -524,7 +525,7 @@ public class EditProblemPage extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		return new Class<?>[]{CourseSelection.class, Problem.class, ProblemAndTestCaseList.class};
 	}
 
 	/* (non-Javadoc)
