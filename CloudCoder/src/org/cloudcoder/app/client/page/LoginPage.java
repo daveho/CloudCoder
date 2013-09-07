@@ -212,7 +212,8 @@ public class LoginPage extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		// This page does not require any page objects
+		return new Class<?>[0];
 	}
 	
 	@Override
