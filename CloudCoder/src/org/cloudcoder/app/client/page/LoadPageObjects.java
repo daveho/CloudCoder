@@ -58,7 +58,8 @@ public class LoadPageObjects {
 	private class CourseSelectionLoader implements Loader {
 		@Override
 		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
-			final Integer courseId = pageParams.getInt("c");
+			String paramName = PageObjectParamNameMap.getInstance().get(CourseSelection.class);
+			final Integer courseId = pageParams.getInt(paramName);
 			if (courseId == null) {
 				onFailure.call(new Pair<String, Throwable>("No course id specified", null));
 			} else {
@@ -94,7 +95,8 @@ public class LoadPageObjects {
 	private class ProblemLoader implements Loader {
 		@Override
 		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
-			final Integer problemId = pageParams.getInt("p");
+			String paramName = PageObjectParamNameMap.getInstance().get(Problem.class);
+			final Integer problemId = pageParams.getInt(paramName);
 			if (problemId == null) {
 				onFailure.call(new Pair<String, Throwable>("No problem id specified", null));
 			} else {
