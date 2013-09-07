@@ -299,7 +299,7 @@ public class QuizPage extends CloudCoderPage {
 
 	@Override
 	public void deactivate() {
-		getSubscriptionRegistrar().cancelAllSubscriptions();
+		super.deactivate();
 		((UI)getWidget()).deactivate();
 	}
 

@@ -437,7 +437,7 @@ public class DevelopmentPage2 extends CloudCoderPage {
 
 	@Override
 	public void deactivate() {
-		getSubscriptionRegistrar().cancelAllSubscriptions();
+		super.deactivate();
 		
 		// If the user was working on a quiz, remove the problem
 		// from the session.

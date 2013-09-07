@@ -234,10 +234,13 @@ public abstract class CloudCoderPage {
 	
 	/**
 	 * This method is called just before the UI is removed
-	 * from the client web page.  Subclasses may override this
-	 * to do cleanup.
+	 * from the client web page.  This default implementation
+	 * cancels all subscriptions.  Subclasses may override this
+	 * to do additional cleanup.
 	 */
-	public abstract void deactivate();
+	public void deactivate() {
+		getSubscriptionRegistrar().cancelAllSubscriptions();
+	}
 	
 	/**
 	 * Set the widget for this page.

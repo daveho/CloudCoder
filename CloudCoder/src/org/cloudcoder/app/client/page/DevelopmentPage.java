@@ -894,7 +894,7 @@ public class DevelopmentPage extends CloudCoderPage {
 
 	@Override
 	public void deactivate() {
-		getSubscriptionRegistrar().cancelAllSubscriptions();
+		super.deactivate();
 		removeAllSessionObjects();
 	}
 

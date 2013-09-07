@@ -580,7 +580,7 @@ public class PlaygroundPage extends CloudCoderPage
 
     @Override
     public void deactivate() {
-        getSubscriptionRegistrar().cancelAllSubscriptions();
+        super.deactivate();
         removeAllSessionObjects();
     }
 

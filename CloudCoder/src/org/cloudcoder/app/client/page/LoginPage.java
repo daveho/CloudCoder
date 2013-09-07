@@ -219,10 +219,6 @@ public class LoginPage extends CloudCoderPage {
 	public void activate() {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
-
-	@Override
-	public void deactivate() {
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()

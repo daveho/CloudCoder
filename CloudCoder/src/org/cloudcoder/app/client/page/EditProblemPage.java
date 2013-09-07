@@ -535,14 +535,6 @@ public class EditProblemPage extends CloudCoderPage {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#deactivate()
-	 */
-	@Override
-	public void deactivate() {
-		getSubscriptionRegistrar().cancelAllSubscriptions();
-	}
-
-	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
 	 */
 	@Override

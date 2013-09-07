@@ -199,11 +199,6 @@ public class StatisticsPage extends CloudCoderPage {
 	}
 
 	@Override
-	public void deactivate() {
-		getSubscriptionRegistrar().cancelAllSubscriptions();
-	}
-
-	@Override
 	public boolean isActivity() {
 		return true;
 	}
