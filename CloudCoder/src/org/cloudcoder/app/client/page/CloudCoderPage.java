@@ -18,9 +18,7 @@
 package org.cloudcoder.app.client.page;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.PageId;
@@ -215,31 +213,15 @@ public abstract class CloudCoderPage {
 	}
 	
 	/**
-	 * Load any required page objects (if page parameters were specified),
-	 * and activate the page.
+	 * Load any required page objects (if page parameters were specified).
+	 * Execute the onSuccess/onFailure callbacks as appropriate.
 	 */
-	public final void loadPageObjectsAndActivate() {
+	public final void loadPageObjects(Runnable onSuccess, ICallback<Pair<String, Throwable>> onFailure) {
 		if (params != null) {
 			LoadPageObjects loadPageObjects = new LoadPageObjects(this, getRequiredPageObjects(), getSession(), params);
-			
-			Runnable onSuccess = new Runnable() {
-				@Override
-				public void run() {
-					activate();
-				}
-			};
-			ICallback<Pair<String, Throwable>> onFailure = new ICallback<Pair<String,Throwable>>() {
-				@Override
-				public void call(Pair<String, Throwable> value) {
-					// TODO: should display an error UI!
-					GWT.log("Failed to load page objects: " + value.getLeft(), value.getRight());
-				}
-			};
 			loadPageObjects.execute(onSuccess, onFailure);
 		} else {
-			// No page params, so assume objects are already the session
-			// and we can activate directly.
-			activate();
+			onSuccess.run();
 		}
 	}
 	

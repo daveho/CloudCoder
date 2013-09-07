@@ -38,7 +38,9 @@ import org.cloudcoder.app.client.page.UserProgressPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.ActivityObject;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.InitErrorException;
+import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -341,7 +343,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		return activity;
 	}
 	
-	private void changePage(CloudCoderPage page) {
+	private void changePage(final CloudCoderPage page) {
 		if (currentPage != null) {
 			currentPage.deactivate();
 			RootLayoutPanel.get().remove(currentPage.getWidget());
@@ -350,14 +352,6 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			session.remove(StatusMessage.class);
 		}
 		page.setSession(session);
-
-		// Create the page's Widget and add it to the DOM tree.
-		// Leave a 10 pixel border around the page widget.
-		page.createWidget();
-		IsWidget w = page.getWidget();
-		RootLayoutPanel.get().add(w);
-		RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
-		RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
 		
 		// Update the anchor in the URL to identify the page.
 		// See: http://stackoverflow.com/questions/5402732/gwt-set-url-without-submit
@@ -375,23 +369,45 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		Window.Location.replace(newURL);
 		GWT.log("Setting URL to " + newURL);
 		
-		// Now it is safe to activate the page
-		page.loadPageObjectsAndActivate();
-		currentPage = page;
-		
-		// Inform the server of the Activity (page) that the user is now working on,
-		// if the page requests it.  Otherwise set the activity to null.
-		Activity activity = page.isActivity() ? getActivityForPage(page) : null;
-		RPC.loginService.setActivity(activity, new AsyncCallback<Void>() {
+		// Now it is safe to load the page objects, create the page UI, and activate the page
+		page.loadPageObjects(new Runnable() {
 			@Override
-			public void onFailure(Throwable caught) {
-				// There's not really anything useful we can do here.
-				GWT.log("Couldn't set activity on server?", caught);
-			}
+			public void run() {
+				// Create the page's Widget and add it to the DOM tree.
+				// Leave a 10 pixel border around the page widget.
+				page.createWidget();
+				IsWidget w = page.getWidget();
+				RootLayoutPanel.get().add(w);
+				RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
+				RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
+				
+				// Activate the page
+				page.activate();
+				
+				// Make this page current
+				currentPage = page;
+				
+				// Inform the server of the Activity (page) that the user is now working on,
+				// if the page requests it.  Otherwise set the activity to null.
+				Activity activity = page.isActivity() ? getActivityForPage(page) : null;
+				RPC.loginService.setActivity(activity, new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						// There's not really anything useful we can do here.
+						GWT.log("Couldn't set activity on server?", caught);
+					}
 
+					@Override
+					public void onSuccess(Void result) {
+						// Nothing to do
+					}
+				});
+			}
+		}, new ICallback<Pair<String, Throwable>>() {
 			@Override
-			public void onSuccess(Void result) {
-				// Nothing to do
+			public void call(Pair<String, Throwable> value) {
+				// TODO: create error UI allowing the user to navigate back to the home page (CoursesAndProblemsPage2)
+				GWT.log("Failed to load page objects: " + value.getLeft(), value.getRight());
 			}
 		});
 	}
