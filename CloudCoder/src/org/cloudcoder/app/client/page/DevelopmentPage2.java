@@ -60,7 +60,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -418,12 +417,10 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			codeStateManager.preventEdits();
 		}
 	}
-	
-	private UI ui;
 
 	@Override
 	public void createWidget() {
-		ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -435,7 +432,7 @@ public class DevelopmentPage2 extends CloudCoderPage {
 	public void activate() {
 		addSessionObject(new NamedTestResult[0]);
 		addSessionObject(new CompilerDiagnostic[0]);
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
@@ -449,12 +446,7 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			getSession().remove(Problem.class);
 		}
 		
-		ui.deactivate();
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
+		((UI)getWidget()).deactivate();
 	}
 
 	@Override

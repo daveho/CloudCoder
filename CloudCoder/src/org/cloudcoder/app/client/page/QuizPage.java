@@ -282,11 +282,9 @@ public class QuizPage extends CloudCoderPage {
 		}
 	}
 
-	private UI ui;
-
 	@Override
 	public void createWidget() {
-		this.ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -296,18 +294,13 @@ public class QuizPage extends CloudCoderPage {
 
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
-		ui.deactivate();
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
+		((UI)getWidget()).deactivate();
 	}
 
 	@Override

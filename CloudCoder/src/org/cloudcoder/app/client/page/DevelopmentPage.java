@@ -871,15 +871,12 @@ public class DevelopmentPage extends CloudCoderPage {
 	}
 
 	
-	private UI ui;
-	private String params;
-	
 	public DevelopmentPage() {
 	}
 
 	@Override
 	public void createWidget() {
-		ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -892,18 +889,13 @@ public class DevelopmentPage extends CloudCoderPage {
 		addSessionObject(new ChangeList());
 		addSessionObject(new NamedTestResult[0]);
 		addSessionObject(new CompilerDiagnostic[0]);
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
 		removeAllSessionObjects();
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
 	}
 
 	/* (non-Javadoc)

@@ -52,6 +52,7 @@ public abstract class CloudCoderPage {
 	private Session session;
 	private List<Runnable> recoveryCallbackList;
 	private String params;
+	private IsWidget widget;
 	
 	/**
 	 * Constructor.
@@ -237,11 +238,22 @@ public abstract class CloudCoderPage {
 	 * to do cleanup.
 	 */
 	public abstract void deactivate();
+	
+	/**
+	 * Set the widget for this page.
+	 * 
+	 * @param widget the widget for this page
+	 */
+	public final void setWidget(IsWidget widget) {
+		this.widget = widget;
+	}
 
 	/**
 	 * @return the widget that is the UI for this page 
 	 */
-	public abstract IsWidget getWidget();
+	public final IsWidget getWidget() {
+		return widget;
+	}
 	
 	/**
 	 * Check whether this page is an "activity": meaning that

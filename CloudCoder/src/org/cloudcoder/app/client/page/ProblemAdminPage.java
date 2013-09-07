@@ -613,14 +613,12 @@ public class ProblemAdminPage extends CloudCoderPage {
 		}
 	}
 
-	private UI ui;
-
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.page.CloudCoderPage#createWidget()
 	 */
 	@Override
 	public void createWidget() {
-		ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -633,7 +631,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 	 */
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	/* (non-Javadoc)
@@ -642,14 +640,6 @@ public class ProblemAdminPage extends CloudCoderPage {
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#getWidget()
-	 */
-	@Override
-	public IsWidget getWidget() {
-		return ui;
 	}
 
 	/* (non-Javadoc)

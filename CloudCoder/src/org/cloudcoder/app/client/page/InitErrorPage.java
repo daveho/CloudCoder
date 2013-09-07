@@ -92,32 +92,26 @@ public class InitErrorPage extends CloudCoderPage {
 			errorList.setRowData(0, Arrays.asList(result));
 		}
 	}
-	
-	private UI ui;
 
 	@Override
 	public void createWidget() {
-		this.ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		// No page objects are required
+		return new Class<?>[0];
 	}
 
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
 	}
 
 	@Override

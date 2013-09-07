@@ -47,7 +47,6 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
@@ -64,8 +63,6 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class UserAccountPage extends CloudCoderPage
 {
-    private static final long serialVersionUID = 1L;
-    
     private enum ButtonPanelAction {
     	EDIT("Edit account"),
     	VIEW_PROGRESS("View progress in course");
@@ -429,15 +426,13 @@ public class UserAccountPage extends CloudCoderPage
             pop.show();
         }
     }
-    
-    private UI ui;
 
     /* (non-Javadoc)
      * @see org.cloudcoder.app.client.page.CloudCoderPage#createWidget()
      */
     @Override
     public void createWidget() {
-        ui = new UI();
+        setWidget(new UI());
     }
 	
 	@Override
@@ -450,7 +445,7 @@ public class UserAccountPage extends CloudCoderPage
      */
     @Override
     public void activate() {
-        ui.activate(getSession(), getSubscriptionRegistrar());
+        ((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
     }
 
     /* (non-Javadoc)
@@ -459,14 +454,6 @@ public class UserAccountPage extends CloudCoderPage
     @Override
     public void deactivate() {
         getSubscriptionRegistrar().cancelAllSubscriptions();
-    }
-
-    /* (non-Javadoc)
-     * @see org.cloudcoder.app.client.page.CloudCoderPage#getWidget()
-     */
-    @Override
-    public IsWidget getWidget() {
-        return ui;
     }
 
     /* (non-Javadoc)

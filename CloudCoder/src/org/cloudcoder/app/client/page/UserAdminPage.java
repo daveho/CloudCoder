@@ -613,15 +613,13 @@ public class UserAdminPage extends CloudCoderPage
             getSession().get(PageStack.class).push(PageId.USER_PROGRESS);
         }
     }
-    
-    private UI ui;
 
     /* (non-Javadoc)
      * @see org.cloudcoder.app.client.page.CloudCoderPage#createWidget()
      */
     @Override
     public void createWidget() {
-        ui = new UI();
+        setWidget(new UI());
     }
 	
 	@Override
@@ -634,7 +632,7 @@ public class UserAdminPage extends CloudCoderPage
      */
     @Override
     public void activate() {
-        ui.activate(getSession(), getSubscriptionRegistrar());
+        ((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
     }
 
     /* (non-Javadoc)
@@ -643,14 +641,6 @@ public class UserAdminPage extends CloudCoderPage
     @Override
     public void deactivate() {
         getSubscriptionRegistrar().cancelAllSubscriptions();
-    }
-
-    /* (non-Javadoc)
-     * @see org.cloudcoder.app.client.page.CloudCoderPage#getWidget()
-     */
-    @Override
-    public IsWidget getWidget() {
-        return ui;
     }
 
     /* (non-Javadoc)

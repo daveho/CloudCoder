@@ -171,7 +171,6 @@ public class LoginPage extends CloudCoderPage {
 		}
 	}
 
-	private UI ui;
 	private PageId linkPageId;
 	private String linkPageParams;
 	
@@ -207,7 +206,7 @@ public class LoginPage extends CloudCoderPage {
 
 	@Override
 	public void createWidget() {
-		ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -218,16 +217,11 @@ public class LoginPage extends CloudCoderPage {
 	
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
 	}
 	
 	/* (non-Javadoc)

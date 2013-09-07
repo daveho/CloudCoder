@@ -224,12 +224,10 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			}
 		}
 	}
-	
-	private UI ui;
 
 	@Override
 	public void createWidget() {
-		ui = new UI();
+		setWidget(new UI());
 	}
 	
 	@Override
@@ -239,17 +237,12 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 
 	@Override
 	public void activate() {
-		ui.activate(getSession(), getSubscriptionRegistrar());
+		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();
-	}
-
-	@Override
-	public IsWidget getWidget() {
-		return ui;
 	}
 
 	@Override
