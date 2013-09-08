@@ -18,6 +18,8 @@
 package org.cloudcoder.builder2.util;
 
 import org.cloudcoder.app.shared.model.ITestCase;
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -291,4 +293,30 @@ public class TestResultUtil {
         }
         return testResult;
     }
+
+    /**
+     * Sanitize a {@TestResult} by setting any incorrectly-omitted values.
+     * 
+     * @param testResult the {@link TestResult} to sanitize
+     */
+	public static void sanitizeTestResult(TestResult testResult) {
+		// TODO: could make this generic - there is nothing below that is specific to TestResult
+		ModelObjectSchema<TestResult> schema = testResult.getSchema();
+		for (ModelObjectField<? super TestResult, ?> field : schema.getFieldList()) {
+			Object value = field.get(testResult);
+			if (field.isAllowNull() && value == null) {
+				logger.warn("Field {} in {} object is set to null", field.getName(), testResult.getClass().getSimpleName());
+				// Attempt to set a non-null value based on the field type
+				if (field.getType() == String.class) {
+					// This is the most likely case
+					field.setUntyped(testResult, "");
+				} else if (field.getType() == Integer.class) {
+					field.setUntyped(testResult, Integer.valueOf(0));
+				} else {
+					logger.error("Don't know how to create a value of type {} for incorrectly null field {}", field.getType().getName(), field.getName());
+				}
+			}
+		}
+		
+	}
 }

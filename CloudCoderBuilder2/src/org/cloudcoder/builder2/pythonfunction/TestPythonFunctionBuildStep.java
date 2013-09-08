@@ -314,7 +314,11 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
 				logger.warn("Exception type was "+e.getClass());
-				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
+				String msg = e.getMessage();
+				if (msg == null || msg.trim().equals("")) {
+					msg = "Exception running test: " + e.getClass().getName();
+				}
+				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
 			}
 		}
 	}
