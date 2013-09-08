@@ -31,6 +31,7 @@ import org.cloudcoder.builder2.commandrunner.CreateCommandInputsForEachTestCaseB
 import org.cloudcoder.builder2.commandrunner.CreateLimitedCommandExecutionPreferencesBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
+import org.cloudcoder.builder2.extlib.FetchExternalLibraryBuildStep;
 import org.cloudcoder.builder2.javacompiler.BytecodeToBytecodeExecutableBuildStep;
 import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
 import org.cloudcoder.builder2.javacompiler.LoadClassesBuildStep;
@@ -95,6 +96,7 @@ public abstract class TesterFactory {
 	 * submission.
 	 */
 	private static final IBuildStep[] JAVA_PROGRAM_TESTER_STEPS = {
+		new FetchExternalLibraryBuildStep(),
 		new JavaCompilerBuildStep(),
 		new BytecodeToBytecodeExecutableBuildStep(),
 		new CreateCommandInputsForEachTestCaseBuildStep(),
@@ -109,6 +111,7 @@ public abstract class TesterFactory {
 	 * submission.
 	 */
 	private static final IBuildStep[] JAVA_METHOD_BUILD_STEPS = {
+		new FetchExternalLibraryBuildStep(),
 		new AddJavaMethodScaffoldingBuildStep(),
 		new AddJavaMethodTestDriverBuildStep(),
 		new JavaCompilerBuildStep(),

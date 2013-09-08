@@ -33,38 +33,73 @@ public class TestResult implements Serializable, IModelObject<TestResult>
     private String message;
     private String stdout;
     private String stderr;
+    private String input;
+    private String expectedOutput;
+    private String actualOutput;
+    
+    public static final ModelObjectField<TestResult, Integer> ID=new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+        public void set(TestResult obj, Integer value) { obj.setId(value); }
+        public Integer get(TestResult obj) { return obj.getId(); }
+    };
+    public static final ModelObjectField<TestResult, Integer> SUBMISSON_RECEIPT_EVENT_ID=new ModelObjectField<TestResult, Integer>("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
+        public void set(TestResult obj, Integer value) { obj.setSubmissionReceiptEventId(value); }
+        public Integer get(TestResult obj) { return obj.getSubmissionReceiptEventId(); }
+    };
+    public static final ModelObjectField<TestResult, TestOutcome> TEST_OUTCOME=new ModelObjectField<TestResult, TestOutcome>("test_outcome", TestOutcome.class, 0) {
+        public void set(TestResult obj, TestOutcome value) { obj.setOutcome(value); }
+        public TestOutcome get(TestResult obj) { return obj.getOutcome(); }
+    };
+    public static final ModelObjectField<TestResult, String> MESSAGE=new ModelObjectField<TestResult, String>("message", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setMessage(value); }
+        public String get(TestResult obj) { return obj.getMessage(); }
+    };
+    public static final ModelObjectField<TestResult, String> STDOUT=new ModelObjectField<TestResult, String>("stdout", String.class, Integer.MAX_VALUE) {
+        public void set(TestResult obj, String value) { obj.setStdout(value); }
+        public String get(TestResult obj) { return obj.getStdout(); }
+    };
+    public static final ModelObjectField<TestResult, String> STDERR=new ModelObjectField<TestResult, String>("stderr", String.class, Integer.MAX_VALUE) {
+        public void set(TestResult obj, String value) { obj.setStderr(value); }
+        public String get(TestResult obj) { return obj.getStderr(); }
+    };
+    public static final ModelObjectField<TestResult, String> INPUT=new ModelObjectField<TestResult, String>("input", String.class, 100) {
+            public void set(TestResult obj, String value) { obj.setInput(value); }
+            public String get(TestResult obj) { return obj.getInput(); }
+    };
+    public static final ModelObjectField<TestResult, String> EXPECTED_OUTPUT=new ModelObjectField<TestResult, String>("expected", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setExpectedOutput(value); }
+        public String get(TestResult obj) { return obj.getExpectedOutput(); }
+    };
+    public static final ModelObjectField<TestResult, String> ACTUAL_OUTPUT=new ModelObjectField<TestResult, String>("actual", String.class, 100) {
+        public void set(TestResult obj, String value) { obj.setActualOutput(value); }
+        public String get(TestResult obj) { return obj.getActualOutput(); }
+    };
     
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<TestResult> SCHEMA = new ModelObjectSchema<TestResult>("test_result")
-		.add(new ModelObjectField<TestResult, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
-			public void set(TestResult obj, Integer value) { obj.setId(value); }
-			public Integer get(TestResult obj) { return obj.getId(); }
-		})
-		.add(new ModelObjectField<TestResult, Integer>("submission_receipt_event_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE) {
-			public void set(TestResult obj, Integer value) { obj.setSubmissionReceiptEventId(value); }
-			public Integer get(TestResult obj) { return obj.getSubmissionReceiptEventId(); }
-		})
-		.add(new ModelObjectField<TestResult, TestOutcome>("test_outcome", TestOutcome.class, 0) {
-			public void set(TestResult obj, TestOutcome value) { obj.setOutcome(value); }
-			public TestOutcome get(TestResult obj) { return obj.getOutcome(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("message", String.class, 100) {
-			public void set(TestResult obj, String value) { obj.setMessage(value); }
-			public String get(TestResult obj) { return obj.getMessage(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("stdout", String.class, Integer.MAX_VALUE) {
-			public void set(TestResult obj, String value) { obj.setStdout(value); }
-			public String get(TestResult obj) { return obj.getStdout(); }
-		})
-		.add(new ModelObjectField<TestResult, String>("stderr", String.class, Integer.MAX_VALUE) {
-			public void set(TestResult obj, String value) { obj.setStderr(value); }
-			public String get(TestResult obj) { return obj.getStderr(); }
-		});
+	public static final ModelObjectSchema<TestResult> SCHEMA_V0 = new ModelObjectSchema<TestResult>("test_result")
+		.add(ID)
+		.add(SUBMISSON_RECEIPT_EVENT_ID)
+		.add(TEST_OUTCOME)
+		.add(MESSAGE)
+		.add(STDOUT)
+		.add(STDERR);
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<TestResult> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+	        .addAfter(STDERR, INPUT)
+            .addAfter(INPUT, EXPECTED_OUTPUT)
+            .addAfter(EXPECTED_OUTPUT, ACTUAL_OUTPUT)
+            .finishDelta();
+	
+	public static final ModelObjectSchema<TestResult> SCHEMA = SCHEMA_V1;
     
     public TestResult() {
-    	
+    	input = "";
+    	expectedOutput = "";
+    	actualOutput = "";
     }
     
     @Override
@@ -73,6 +108,7 @@ public class TestResult implements Serializable, IModelObject<TestResult>
     }
     
     public TestResult(TestOutcome outcome, String message) {
+    	this();
     	this.id = -1;
     	this.submissionReceiptEventId = -1;
         this.outcome=outcome;
@@ -89,6 +125,77 @@ public class TestResult implements Serializable, IModelObject<TestResult>
         this.stderr=stderr;
     }
     
+    public TestResult(TestOutcome outcome,
+        String input,
+        String actualOutput,
+        String expectedOutput,
+        String stdout,
+        String stderr)
+    {
+    	this();
+        this.outcome=outcome;
+        this.input=input;
+        this.actualOutput=actualOutput;
+        this.expectedOutput=expectedOutput;
+        this.stdout=stdout;
+        this.stderr=stderr;
+    }
+    
+    /**
+     * Get the input.
+     * 
+     * @return the input
+     */
+    public String getInput() {
+    	return input;
+    }
+    /**
+     * Get the actual output from this test result.
+     * 
+     * @return the actual output
+     */
+    public String getActualOutput() {
+    	return actualOutput;
+    }
+    /**
+     * Get the expected output for this test result.
+     * 
+     * @return the expected output
+     */
+    public String getExpectedOutput() {
+    	return expectedOutput;
+    }
+    
+    /**
+     * @param input The input to set
+     */
+    public void setInput(String input) {
+    	if (input == null) {
+    		throw new IllegalArgumentException("Setting null as input in TestResult");
+    	}
+        this.input = input;
+    }
+
+    /**
+     * @param expectedOutput The expected output to set
+     */
+    public void setExpectedOutput(String expectedOutput) {
+    	if (expectedOutput == null) {
+    		throw new IllegalArgumentException("Setting null as expectedOutput in TestResult");
+    	}
+        this.expectedOutput = expectedOutput;
+    }
+
+    /**
+     * @param actualOutput The actual output to set
+     */
+    public void setActualOutput(String actualOutput) {
+    	if (actualOutput == null) {
+    		throw new IllegalArgumentException("Setting null as actualOutput in TestResult");
+    	}
+        this.actualOutput = actualOutput;
+    }
+
     /**
 	 * @param id the id to set
 	 */

@@ -25,7 +25,7 @@ import java.util.Arrays;
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-public class Change implements Serializable, IContainsEvent, IModelObject<Change> {
+public class Change implements Serializable, IContainsEvent, IModelObject<Change>, Cloneable {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -144,6 +144,24 @@ public class Change implements Serializable, IContainsEvent, IModelObject<Change
 		}
 		buf.append(textToAdopt[textToAdopt.length-1]);
 		this.text = buf.toString();
+	}
+	
+	/**
+	 * @return an exact deep copy of this object
+	 */
+	public Change duplicate() {
+		Change dup = new Change();
+	
+		// Shallow copy
+		ModelObjectUtil.copy(this, dup);
+		
+		// If there is an Event object, make a duplicate
+		dup.event = this.event; // transient field, not copied by ModelObjectUtil.copy()
+		if (dup.event != null) {
+			dup.event = this.event.duplicate();
+		}
+		
+		return dup;
 	}
 
 	public ChangeType getType() {
@@ -297,6 +315,50 @@ public class Change implements Serializable, IContainsEvent, IModelObject<Change
 
 	@Override
 	public String toString() {
-		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn/* + "," + timestamp*/ + "," + Arrays.asList(text);
+		return ChangeType.valueOf(type) + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn/* + "," + timestamp*/ + "," + Arrays.asList(text);
 	}
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + endColumn;
+        result = prime * result + endRow;
+        result = prime * result + eventId;
+        result = prime * result + startColumn;
+        result = prime * result + startRow;
+        result = prime * result + ((text == null) ? 0 : text.hashCode());
+        result = prime * result + type;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Change other = (Change) obj;
+        if (endColumn != other.endColumn)
+            return false;
+        if (endRow != other.endRow)
+            return false;
+        if (eventId != other.eventId)
+            return false;
+        if (startColumn != other.startColumn)
+            return false;
+        if (startRow != other.startRow)
+            return false;
+        if (text == null) {
+            if (other.text != null)
+                return false;
+        } else if (!text.equals(other.text))
+            return false;
+        if (type != other.type)
+            return false;
+        return true;
+    }
+	
 }

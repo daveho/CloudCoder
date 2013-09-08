@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.javamethod;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -34,7 +36,7 @@ import org.cloudcoder.builder2.model.ProgramSource;
 public class AddJavaMethodScaffoldingBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");

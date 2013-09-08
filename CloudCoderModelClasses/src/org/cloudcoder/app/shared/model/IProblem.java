@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.shared.model;
 
-import java.util.Date;
 
 /**
  * Interface describing getters/setters for {@link Problem}.
@@ -27,7 +26,7 @@ import java.util.Date;
  * 
  * @author David Hovemeyer
  */
-public interface IProblem extends IProblemData {
+public interface IProblem extends IProblemData, IAssignment {
 
 	/**
 	 * @return the id
@@ -42,40 +41,6 @@ public interface IProblem extends IProblemData {
 	public abstract Integer getCourseId();
 
 	public abstract void setCourseId(Integer courseId);
-
-	/**
-	 * @return the whenAssigned
-	 */
-	public abstract long getWhenAssigned();
-
-	/**
-	 * Get "when assigned" as a java.util.Date.
-	 * 
-	 * @return "when assigned" as a java.util.Date
-	 */
-	public abstract Date getWhenAssignedAsDate();
-
-	/**
-	 * @param whenAssigned the whenAssigned to set
-	 */
-	public abstract void setWhenAssigned(long whenAssigned);
-
-	/**
-	 * @return the whenDue
-	 */
-	public abstract long getWhenDue();
-
-	/**
-	 * Get "when due" as a java.util.Date.
-	 * 
-	 * @return "when due" as a java.util.Date.
-	 */
-	public abstract Date getWhenDueAsDate();
-
-	/**
-	 * @param whenDue the whenDue to set
-	 */
-	public abstract void setWhenDue(long whenDue);
 
 	/**
 	 * Set whether or not this Problem is visible to students.
@@ -126,5 +91,21 @@ public interface IProblem extends IProblemData {
 	 * @return the module id
 	 */
 	public int getModuleId();
+	
+	/**
+	 * Set the shared flag. (Set to true if the problem has
+	 * been shared to the exercise repository.)
+	 * 
+	 * @param shared the shared flag to set
+	 */
+	public void setShared(boolean shared);
+	
+	/**
+	 * Get the shared flag value (true if the problem has been shared
+	 * to the exercise repository).
+	 * 
+	 * @return the shared flag value
+	 */
+	public boolean isShared();
 
 }

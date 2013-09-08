@@ -1,0 +1,103 @@
+<project name="CloudCoderBuilderWebService" default="jar">
+	<property name="jarfile" value="cloudcoderBuilderWebService.jar"/>
+	
+	<path id="CloudCoderBuilderWebService.path">
+		<pathelement location="bin"/>
+		<pathelement location="../CloudCoderJetty/cloudcoderJetty.jar"/>
+		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<fileset dir="../CloudCoderModelClassesJSON/lib" includes="**.jar"/>
+		<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+		<pathelement location="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"/>
+		<pathelement location="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+	</path>
+	
+	<target name="javac" depends="cloudcoderJetty,modelClasses,modelClassesJSON,webServiceUtil,submissionQueue">
+		<mkdir dir="bin"/>
+		<javac srcdir="src" destdir="bin" source="1.6" target="1.6" debug="true">
+			<classpath refid="CloudCoderBuilderWebService.path"/>
+		</javac>
+	</target>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="modelClassesJSON">
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
+	</target>
+
+	<target name="webServiceUtil">
+		<ant inheritall="false" dir="../CloudCoderWebServiceUtil" target="jar"/>
+	</target>
+	
+	<target name="submissionQueue">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+	</target>
+	
+	<target name="cloudcoderJetty">
+		<ant dir="../CloudCoderJetty" target="jar" inheritall="false"/>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarfile}">
+			<!-- Copy classes  from the bin directory. -->
+			<fileset dir="bin" includes="**"/>
+	
+			<!-- Copy classes and other files from required libraries and Jetty. -->
+			<zipfileset src="../CloudCoderJetty/jettyDeps.jar" excludes="META-INF/**"/>
+			
+			<!-- Copy Jetty single-file-deployment support code. -->
+			<zipfileset src="../CloudCoderJetty/cloudcoderJetty.jar" excludes="META-INF/**"/>
+			
+			<!-- Include the model classes. -->
+			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+			
+			<!-- Include the model classes JSON serialization support. -->
+			<zipfileset src="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+	
+			<!-- Include web service util classes. -->
+			<zipfileset src="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"/>
+			
+			<!-- Include the submission queue classes. -->
+			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+			
+			<!-- Include libraries needed for JSON serialization. -->
+			<zipfileset src="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"/>
+			
+			<!-- Include cloudcoder configuration properties (cloudcoder.properties) -->
+			<zipfileset
+				file="../cloudcoder.properties"
+				fullpath="cloudcoder.properties"/>
+			
+			<!-- Include keystore for secure communication between builder and builder web service. -->
+			<zipfileset file="../keystore.jks" fullpath="keystore.jks"/>
+			
+			<!-- Include log4j.properties -->
+			<zipfileset
+				file="src/log4j.properties"
+				fullpath="log4j.properties"/>
+	
+			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the builder web service. -->
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.builderwebservice.CloudCoderBuilderWebServiceDaemonController" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="${jarfile}"/>
+	</target>
+	
+	<target name="depclean" depends="clean">
+		<ant dir="../CloudCoderModelClasses" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderJetty" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderSubmissionQueue" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderWebServiceUtil" target="clean" inheritall="false"/>
+	</target>
+</project>

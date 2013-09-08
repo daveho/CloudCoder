@@ -17,10 +17,12 @@
 
 package org.cloudcoder.app.client.rpc;
 
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
-import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -31,6 +33,7 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -84,14 +87,6 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         or is not regsitered in the course 
 	 */
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User forUser, Module module) throws CloudCoderAuthenticationException;
-	
-//	/**
-//	 * @param course
-//	 * @param user
-//	 * @return
-//	 * @throws NetCoderAuthenticationException
-//	 */
-//	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(Course course, User user) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Get the best submission receipts for each {@link User} on a specific {@link Problem}.
@@ -147,6 +142,20 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 */
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Submit an array of problems to the exercise repository.
+	 * This method uploads the problems to the server, which is then responsible
+	 * for lookup up the corresponding test cases, JSONifying the results,
+	 * and sending the JSON to the repository.
+	 * 
+	 * @param problems
+	 * @param repoUsername
+	 * @param repoPassword
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public ShareExercisesResult submitExercises(Problem[] problems, String repoUsername,
+	        String repoPassword) throws CloudCoderAuthenticationException;
 	
 	/**
 	 * Import an exercise (problem and testcases) from the exercise repository.
@@ -235,4 +244,27 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @throws CloudCoderAuthenticationException
 	 */
 	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get all submission receipts for given user on given problem.
+	 * Currently-authenticated user must be an instructor.
+	 * 
+	 * @param problem the {@link Problem}
+	 * @param user    the {@link User}
+	 * @return list of {@link SubmissionReceipt}s
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get all test results for given submission.
+	 * Authenticated user must either be the user specified in the
+	 * submission receipt, or an instructor in the course.
+	 * 
+	 * @param problem the problem
+	 * @param receipt the submission receipt
+	 * @return the test results
+	 * @throws CloudCoderAuthenticationException 
+	 */
+	public NamedTestResult[] getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException;
 }

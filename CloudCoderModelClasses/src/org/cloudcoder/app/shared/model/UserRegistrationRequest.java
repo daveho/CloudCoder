@@ -17,6 +17,13 @@
 
 package org.cloudcoder.app.shared.model;
 
+/**
+ * A request to create an account.
+ * Stores the (potential) user's email and a secret to be emailed
+ * to them, that will then be used to create a secret registration URL.
+ * 
+ * @author David Hovemeyer
+ */
 public class UserRegistrationRequest extends User {
 	private static final long serialVersionUID = 1L;
 

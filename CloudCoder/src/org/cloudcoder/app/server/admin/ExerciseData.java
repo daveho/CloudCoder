@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -25,27 +26,28 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 
 /**
- * Servlet to export exercise data ({@link Problem} and {@link TestCase}s)
+ * Servlet to import and export exercise data ({@link Problem} and {@link TestCase}s)
  * in JSON format.  Only course instructors are allowed to
- * access this data.
+ * export and import exercises.
  * 
  * @author David Hovemeyer
  */
 public class ExerciseData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -82,5 +84,59 @@ public class ExerciseData extends HttpServlet {
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType("application/json");
 		JSONConversion.writeProblemAndTestCaseData(problemAndTestCaseList, resp.getWriter());
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// The ProblemsAuthorizationFilter should have verified that the
+		// authenticated user is an instructor. 
+		User user = (User) req.getAttribute(RequestAttributeKeys.USER_KEY);
+
+		ProblemURLInfo info = ProblemURLInfo.fromRequest(req);
+		if (info == null) {
+			AdminServletUtil.badRequest(resp);
+			return;
+		}
+		
+		int courseId = info.getCourseId();
+		
+		// Get the course
+		Course course = new Course();
+		course.setId(courseId);
+		Database.getInstance().reloadModelObject(course);
+		
+		// Make sure the user is an instructor
+		
+		// Read a JSON-encoded exercise from the body of the request
+		ProblemAndTestCaseList exercise = new ProblemAndTestCaseList();
+		JSONConversion.readProblemAndTestCaseData(
+				exercise,
+				ReflectionFactory.forClass(Problem.class),
+				ReflectionFactory.forClass(TestCase.class),
+				req.getReader());
+		
+		// Set details
+		exercise.getProblem().setCourseId(courseId);
+		long now = System.currentTimeMillis();
+		exercise.getProblem().setWhenAssigned(now);
+		exercise.getProblem().setWhenDue(now + 2L*24*60*60*1000);
+		// Mark this as an ORIGINAL problem
+		// (Does this make the most sense? We don't really know what the
+		// origin of this problem is.)
+		exercise.getProblem().setProblemAuthorship(ProblemAuthorship.ORIGINAL);
+		exercise.getProblem().setParentHash("");
+		
+		// Store the exercise in the database
+		try {
+			Database.getInstance().storeProblemAndTestCaseList(exercise, course, user);
+		} catch (CloudCoderAuthenticationException e) {
+			// This shouldn't happen
+			throw new ServletException("Unexpected authentication exception", e);
+		}
+		
+		// Success!
+		resp.setStatus(HttpServletResponse.SC_OK);
+		resp.setContentType("text/plain");
+		resp.getWriter().println("Exercise imported with id=" + exercise.getProblem().getProblemId());
 	}
 }

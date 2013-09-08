@@ -119,7 +119,10 @@
     <servlet-name>User</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.UserServiceImpl</servlet-class>
   </servlet>
-  
+  <servlet>
+    <servlet-name>Run</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.rpc.RunServiceImpl</servlet-class>
+  </servlet>
   
   <servlet>
     <servlet-name>RegisterStudents</servlet-name>
@@ -154,6 +157,10 @@
   <servlet-mapping>
     <servlet-name>User</servlet-name>
     <url-pattern>/cloudcoder/user</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Run</servlet-name>
+    <url-pattern>/cloudcoder/run</url-pattern>
   </servlet-mapping>
   
   <!-- Admin servlets. -->
@@ -205,6 +212,10 @@
   </welcome-file-list>
   
   <!-- Listeners -->
+  <listener>
+    <!-- This listener configures the login provider (database, IMAP, etc.) -->
+    <listener-class>org.cloudcoder.app.server.login.LoginProviderServletContextListener</listener-class>
+  </listener>
   <listener>
     <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
   </listener>

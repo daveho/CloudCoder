@@ -5,6 +5,7 @@
 		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
 		<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
 		<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+		<pathelement location="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"/>
 		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
 		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
 		<fileset dir="../CloudCoderModelClassesJSON/lib" includes="**.jar"/>
@@ -22,7 +23,12 @@
 		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
 	</target>
 	
-	<target name="javac" depends="modelClasses,modelClassesPersist,modelClassesJSON">
+	<target name="webServiceUtil">
+		<ant inheritall="false" dir="../CloudCoderWebServiceUtil" target="jar"/>
+	</target>
+	
+	<target name="javac" depends="modelClasses,modelClassesPersist,modelClassesJSON,webServiceUtil">
+		<mkdir dir="war/WEB-INF/classes"/>
 		<javac srcdir="src" destdir="war/WEB-INF/classes" source="1.6" target="1.6">
 			<classpath refid="cloudcoderrepo.path"/>
 		</javac>
@@ -41,5 +47,6 @@
 		<ant dir="../CloudCoderModelClasses" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderModelClassesPersistence" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderWebServiceUtil" target="clean" inheritall="false"/>
 	</target>
 </project>

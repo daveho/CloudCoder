@@ -60,4 +60,11 @@ public enum PageId {
 	
 	/** Quiz administration page. */
 	QUIZ,
+	
+	/** View a selected user's submissions for a given problem. */
+	USER_PROBLEM_SUBMISSIONS,
+	
+	/** The development page for writing and executing code 
+	 * not attached to particular exercises. */
+	PLAYGROUND_PAGE,
 }

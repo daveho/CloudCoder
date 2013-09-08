@@ -2,6 +2,7 @@ package org.cloudcoder.builder2.commandrunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +28,7 @@ import org.cloudcoder.builder2.util.TestResultUtil;
 public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		// Get Problem
 		Problem problem = submission.getArtifact(Problem.class);
 		if (problem == null) {

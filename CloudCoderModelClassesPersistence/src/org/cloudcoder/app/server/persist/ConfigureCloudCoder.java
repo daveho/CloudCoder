@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
+import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.daemon.JarRewriter;
 import org.cloudcoder.daemon.Util;
 
@@ -55,6 +57,13 @@ public class ConfigureCloudCoder
 		@Override
 		public boolean evaluate() {
 			return configureRepository;
+		}
+	};
+	
+	private Condition IF_EASYSANDBOX_ENABLED = new Condition() {
+		@Override
+		public boolean evaluate() {
+			return config.getProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "false").toLowerCase().equals("true");
 		}
 	};
 
@@ -130,6 +139,10 @@ public class ConfigureCloudCoder
 				askprop("What port will the CloudCoder webapp use to listen for connections from\n" +
 						"Builders?",
 						"cloudcoder.submitsvc.oop.port", "47374"),
+				askprop("Should the builder use EasySandbox for C/C++ submissions? (recommended)",
+						"cloudcoder.submitsvc.oop.easysandbox.enable", "true"),
+				askprop("What should the default EasySandbox heap size be in bytes?",
+						"cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608", IF_EASYSANDBOX_ENABLED),
 
 				section("TLS/SSL (secure communication between webapp and builder(s)"),
 				askprop("What is the hostname of your institution?",

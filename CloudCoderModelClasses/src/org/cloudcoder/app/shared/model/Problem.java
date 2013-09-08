@@ -37,6 +37,7 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	private ProblemAuthorship problemAuthorship;
 	private boolean deleted;
 	private int moduleId;
+	private boolean shared;
 	
 	/** {@link ModelObjectField} for problem id. */
 	public static final ModelObjectField<IProblem, Integer> PROBLEM_ID =
@@ -79,9 +80,20 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 	/** {@link ModelObjectField} for deleted flag. */
 	public static final ModelObjectField<IProblem, Boolean> DELETED = 
 			new ModelObjectField<IProblem, Boolean>("deleted", Boolean.class, 0) {
-				public void set(IProblem obj, Boolean value) { obj.setDeleted(value); }
-				public Boolean get(IProblem obj) { return obj.isDeleted(); }
-			};
+		public void set(IProblem obj, Boolean value) { obj.setDeleted(value); }
+		public Boolean get(IProblem obj) { return obj.isDeleted(); }
+	};
+
+	/** 
+	 * {@link ModelObjectField} for shared flag (true if the problem has been shared
+	 * to the exercise repository.
+	 */
+	public static final ModelObjectField<IProblem, Boolean> SHARED = 
+			new ModelObjectField<IProblem, Boolean>("shared", Boolean.class, 0) {
+		public void set(IProblem obj, Boolean value) { obj.setShared(value); }
+		public Boolean get(IProblem obj) { return obj.isShared(); }
+	};
+			
 	
 	/**
 	 * {@link ModelObjectField} for module id. Note that default value is "1",
@@ -160,11 +172,29 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 			ModelObjectSchema.basedOn(SCHEMA_V5)
 			.addDeltasFrom(ProblemData.SCHEMA_V3)
 			.finishDelta();
+	
+	/**
+	 * Description of fields (schema version 7).
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V7 =
+			ModelObjectSchema.basedOn(SCHEMA_V6)
+			.addAfter(MODULE_ID, SHARED)
+			.finishDelta();
+	
+	/**
+	 * Description of fields (schema version 8).
+	 * This version incorporates schema changes from version 4
+	 * of {@link IProblemData}'s schema.
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V8 =
+			ModelObjectSchema.basedOn(SCHEMA_V7)
+			.addDeltasFrom(ProblemData.SCHEMA_V4)
+			.finishDelta();
 
 	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V6;
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V8;
 	
 	/**
 	 * Number of fields.
@@ -298,12 +328,24 @@ public class Problem extends ProblemData implements IProblem, ActivityObject, IM
 		return deleted;
 	}
 	
+	@Override
 	public void setModuleId(int moduleId) {
 		this.moduleId = moduleId;
 	}
 	
+	@Override
 	public int getModuleId() {
 		return moduleId;
+	}
+	
+	@Override
+	public void setShared(boolean shared) {
+		this.shared = shared;
+	}
+	
+	@Override
+	public boolean isShared() {
+		return this.shared;
 	}
 
 	@Override

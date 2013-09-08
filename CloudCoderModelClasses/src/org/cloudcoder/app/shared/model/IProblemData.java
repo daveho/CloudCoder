@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -163,4 +164,32 @@ public interface IProblemData {
 	 * @return SHA-1 hash of the parent problem, or an empty string if this is not a derived problem
 	 */
 	public String getParentHash();
+	
+	/**
+	 * Set the URL of the external library required for this problem.
+	 *  
+	 * @param externalLibraryUrl the external library required for this problem
+	 */
+	public void setExternalLibraryUrl(String externalLibraryUrl);
+	
+	/**
+	 * Get the URL of the external library required for this problem.
+	 * 
+	 * @return the URL of the external library required for this problem
+	 */
+	public String getExternalLibraryUrl();
+	
+	/**
+	 * Set the MD5 checksum of the external library required for this problem.
+	 * 
+	 * @param md5Hash the MD5 checksum of the external library required for this problem
+	 */
+	public void setExternalLibraryMD5(String md5Hash);
+	
+	/**
+	 * Get the MD5 checksum of the external library required for this problem.
+	 * 
+	 * @return the MD5 checksum of the external library required for this problem
+	 */
+	public String getExternalLibraryMD5();
 }

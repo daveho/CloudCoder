@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +48,8 @@ public class ProblemData implements Serializable, IProblemData {
 	private long timestampUTC;
 	private ProblemLicense license;
 	private String parentHash;
-	
+	private String externalLibraryUrl;
+	private String externalLibraryMD5;
 
 	// Schema version 0 fields
 	
@@ -137,6 +139,17 @@ public class ProblemData implements Serializable, IProblemData {
 		public void set(IProblemData obj, String value) { obj.setParentHash(value); }
 	};
 	
+	// Schema version 4 fields
+	
+	public static final ModelObjectField<IProblemData, String> EXTERNAL_LIBRARY_URL = new ModelObjectField<IProblemData, String>("external_library_url", String.class, 200, ModelObjectIndexType.NONE, 0, "''") {
+		public void set(IProblemData obj, String value) { obj.setExternalLibraryUrl(value); }
+		public String get(IProblemData obj) { return obj.getExternalLibraryUrl(); }
+	};
+	public static final ModelObjectField<IProblemData, String> EXTERNAL_LIBRARY_MD5 = new ModelObjectField<IProblemData, String>("external_library_md5", String.class, 32, ModelObjectIndexType.NONE, 0, "''") {
+		public void set(IProblemData obj, String value) { obj.setExternalLibraryMD5(value); }
+		public String get(IProblemData obj) { return obj.getExternalLibraryMD5(); }
+	};
+	
 	/**
 	 * Description of fields (version 0 schema).
 	 */
@@ -173,11 +186,19 @@ public class ProblemData implements Serializable, IProblemData {
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V3 = ModelObjectSchema.basedOn(SCHEMA_V2)
 		.increaseFieldSize(DESCRIPTION)
 		.finishDelta();
+	
+	/**
+	 * Description of fields (schema version 4).
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V4 = ModelObjectSchema.basedOn(SCHEMA_V3)
+		.addAfter(PARENT_HASH, EXTERNAL_LIBRARY_URL)
+		.addAfter(EXTERNAL_LIBRARY_URL, EXTERNAL_LIBRARY_MD5)
+		.finishDelta();
 
 	/**
 	 * Description of fields (current schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V3;
+	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V4;
 
 	/**
 	 * Constructor.
@@ -387,6 +408,26 @@ public class ProblemData implements Serializable, IProblemData {
 		return parentHash;
 	}
 	
+	@Override
+	public void setExternalLibraryUrl(String externalLibraryUrl) {
+		this.externalLibraryUrl = externalLibraryUrl;
+	}
+	
+	@Override
+	public String getExternalLibraryUrl() {
+		return this.externalLibraryUrl;
+	}
+	
+	@Override
+	public void setExternalLibraryMD5(String externalLibraryMD5) {
+		this.externalLibraryMD5 = externalLibraryMD5;
+	}
+	
+	@Override
+	public String getExternalLibraryMD5() {
+		return this.externalLibraryMD5;
+	}
+	
 	/**
 	 * Copy all data in the given ProblemData object into this one.
 	 * 
@@ -405,6 +446,8 @@ public class ProblemData implements Serializable, IProblemData {
 		this.timestampUTC = other.timestampUTC;
 		this.license = other.license;
 		this.parentHash = other.parentHash;
+		this.externalLibraryUrl = other.externalLibraryUrl;
+		this.externalLibraryMD5 = other.externalLibraryMD5;
 	}
 	
 	@Override
@@ -424,7 +467,9 @@ public class ProblemData implements Serializable, IProblemData {
 				&& ModelObjectUtil.equals(this.authorWebsite, other.authorWebsite)
 				&& this.timestampUTC == other.timestampUTC
 				&& ModelObjectUtil.equals(this.license, other.license)
-				&& ModelObjectUtil.equals(this.parentHash, other.parentHash);
+				&& ModelObjectUtil.equals(this.parentHash, other.parentHash)
+				&& ModelObjectUtil.equals(this.externalLibraryUrl, other.externalLibraryUrl)
+				&& ModelObjectUtil.equals(this.externalLibraryMD5, other.externalLibraryMD5);
 	}
 
 	/*

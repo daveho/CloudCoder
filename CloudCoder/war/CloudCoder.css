@@ -244,3 +244,16 @@
 .cc-inlineFlowPanel {
 	display: inline;
 }
+
+/* Padding for a HorizontalPanel */
+.paddedHorizontalPanel {
+    margin-left: 40px !important;
+}
+
+/* I'm just fudging the position of the slider. */
+#ccSubSlider {
+	position: relative;
+	top: 6px !important;
+	left: 8px !important;
+	right: 16px !important;
+}

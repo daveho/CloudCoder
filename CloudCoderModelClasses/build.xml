@@ -14,11 +14,12 @@
 	</target>
 	
 	<target name="build" depends="init">
+		<mkdir dir="bin"/>
 		<javac source="1.6" target="1.6" srcdir="src" destdir="bin"/>
 	</target>
 	
 	<target name="jar" depends="build">
-		<jar destfile="${jarfile}">
+		<jar destfile="${jarfile}" update="true">
 			<fileset dir="bin" includes="**"/>
 		</jar>
 	</target>

@@ -21,18 +21,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.cloudcoder.app.client.model.NamedTestResult;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.model.TestResultUtil;
 import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.shared.model.NamedTestResult;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.CompositeCell;
-import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.HasCell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
@@ -49,30 +50,6 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 	
 	public TestResultListView() {
 		cellTable = new DataGrid<NamedTestResult>();
-		
-		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
-		cellTable.addColumn(testCaseNameColumn, "Test name");
-		cellTable.setColumnWidth(testCaseNameColumn, "160px");
-		
-		OutcomeColumn outcomeColumn = new OutcomeColumn();
-		cellTable.addColumn(outcomeColumn, "Outcome");
-		cellTable.setColumnWidth(outcomeColumn, "160px");
-		
-		cellTable.addColumn(new MessageColumn(), "Message");
-		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
-			@Override
-			public String getOutputText(NamedTestResult testResult) {
-				return testResult.getTestResult().getStdout();
-			}
-		}), "Output");
-		
-		cellTable.addColumn(new OutputColumn(new ExtractOutputText() {
-			@Override
-			public String getOutputText(NamedTestResult testResult) {
-				return testResult.getTestResult().getStderr();
-			}
-		}), "Error output");
 		
 		initWidget(cellTable);
 	}
@@ -100,6 +77,41 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		}
 	}
 	
+	private static class InputColumn extends TextColumn<NamedTestResult> {
+	    @Override
+	    public String getValue(NamedTestResult object) {
+	    	return TestResultUtil.getInput(object.getTestResult());
+	    }
+	}
+	
+	private static class ActualOutputColumn extends TextColumn<NamedTestResult> {
+        @Override
+        public String getValue(NamedTestResult object) {
+            TestOutcome outcome=object.getTestResult().getOutcome();
+            if (outcome==TestOutcome.PASSED) {
+                return "";
+            }
+            if (outcome==TestOutcome.FAILED_FROM_TIMEOUT) {
+                return TestOutcome.FAILED_FROM_TIMEOUT.toString();
+            }
+            if (outcome==TestOutcome.FAILED_WITH_EXCEPTION) {
+            	String actualOutput = TestResultUtil.getActualOutput(object.getTestResult());
+                if (actualOutput!=null && !actualOutput.equals("")) {
+                    return actualOutput;
+                }
+                return TestOutcome.FAILED_WITH_EXCEPTION.toString();
+            }
+            return TestResultUtil.getActualOutput(object.getTestResult());
+        }
+    }
+	
+	private static class ExpectedOutputColumn extends TextColumn<NamedTestResult> {
+        @Override
+        public String getValue(NamedTestResult object) {
+        	return TestResultUtil.getExpectedOutput(object.getTestResult());
+        }
+    }
+	
 	private static class MessageColumn extends TextColumn<NamedTestResult> {
 		@Override
 		public String getValue(NamedTestResult object) {
@@ -107,61 +119,20 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 		}
 	}
 	
-	private static abstract class ShowFullOutputButtonColumn extends Column<NamedTestResult, String> {
-		public ShowFullOutputButtonColumn() {
-			super(new ButtonCell());
-
-			// Set a FieldUpdater to handle the button click
-			setFieldUpdater(new FieldUpdater<NamedTestResult, String>() {
-				@Override
-				public void update(int index, NamedTestResult object, String value) {
-					// Show the TestResultOutputDialog.
-					TestResultOutputDialog dialog = new TestResultOutputDialog(getText(object));
-					dialog.center();
-				}
-			});
-		}
-
-		protected abstract String getText(NamedTestResult object);
-
-		@Override
-		public String getValue(NamedTestResult object) {
-			return "Show all";
-		}
-	}
-	
-	private static abstract class OutputFirstLineColumn extends TextColumn<NamedTestResult> {
-		@Override
-		public String getValue(NamedTestResult object) {
-			return firstLine(getText(object));
-		}
-
-		protected abstract String getText(NamedTestResult object);
-		
-		private static String firstLine(String s) {
-			int eol = s.indexOf('\n');
-			return (eol < 0) ? s : s.substring(0, eol);
-		}
-	}
-	
-	private interface ExtractOutputText {
-		public String getOutputText(NamedTestResult testResult);
-	}
-	
 	private static class OutputColumn extends Column<NamedTestResult, NamedTestResult> {
-		public OutputColumn(ExtractOutputText extractor) {
+		public OutputColumn(ExtractOutputText<NamedTestResult> extractor) {
 			super(new CompositeCell<NamedTestResult>(getCells(extractor)));
 		}
 		
-		private static List<HasCell<NamedTestResult, ?>> getCells(final ExtractOutputText extractor) {
+		private static List<HasCell<NamedTestResult, ?>> getCells(final ExtractOutputText<NamedTestResult> extractor) {
 			List<HasCell<NamedTestResult, ?>> result = new ArrayList<HasCell<NamedTestResult, ?>>();
-			result.add(new ShowFullOutputButtonColumn(){
+			result.add(new ShowFullOutputButtonColumn<NamedTestResult>(){
 				@Override
 				protected String getText(NamedTestResult object) {
 					return extractor.getOutputText(object);
 				}
 			});
-			result.add(new OutputFirstLineColumn() {
+			result.add(new OutputFirstLineColumn<NamedTestResult>() {
 				@Override
 				protected String getText(NamedTestResult object) {
 					return extractor.getOutputText(object);
@@ -175,9 +146,64 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 			return object;
 		}
 	}
+
+	private void initColumns(Problem problem) {
+		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
+		cellTable.addColumn(testCaseNameColumn, "Test name");
+		cellTable.setColumnWidth(testCaseNameColumn, "120px");
+		
+		OutcomeColumn outcomeColumn = new OutcomeColumn();
+		cellTable.addColumn(outcomeColumn, "Outcome");
+		cellTable.setColumnWidth(outcomeColumn, "160px");
+		
+		ProblemType type = problem.getProblemType();
+	    InputColumn inputColumn = new InputColumn();
+		cellTable.addColumn(inputColumn, "Input");
+	    cellTable.setColumnWidth(inputColumn, "100px");
+		if (type.isOutputLiteral()) {
+		    // appropriate for function/methods where we know the expected result,
+		    // and the actual result.
+		    // Unclear if C functions can be made to fit this category...
+		    
+			ExpectedOutputColumn expectedOutputColumn = new ExpectedOutputColumn();
+			cellTable.addColumn(expectedOutputColumn, "Expected");
+		    cellTable.setColumnWidth(expectedOutputColumn, "100px");
+
+		    ActualOutputColumn actualOutputColumn = new ActualOutputColumn();
+			cellTable.addColumn(actualOutputColumn, "Actual");
+			cellTable.setColumnWidth(actualOutputColumn, "100px");
+		}
+		
+		// Include the message for all problem types because certain code errors,
+		// such as references to undefined variables, are only detected at runtime
+		// for some languages (I'm looking at you, Python!).  The message field
+		// is the only means we have currently to convey these errors to the
+		// user.  It would be more elegant to show these as compiler diagnostics:
+		// perhaps we will do that eventually.
+	    cellTable.addColumn(new MessageColumn(), "Message");
+		
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText<NamedTestResult>() {
+			@Override
+			public String getOutputText(NamedTestResult testResult) {
+				return testResult.getTestResult().getStdout();
+			}
+		}), "Output");
+		
+		cellTable.addColumn(new OutputColumn(new ExtractOutputText<NamedTestResult>() {
+			@Override
+			public String getOutputText(NamedTestResult testResult) {
+				return testResult.getTestResult().getStderr();
+			}
+		}), "Error output");
+	}
 	
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
+		Problem problem = session.get(Problem.class);
+		
+		// Create the columns - they are dependent on the problem type
+		initColumns(problem);
 		
 		NamedTestResult[] testResultList = session.get(NamedTestResult[].class);
 		if (testResultList != null) {

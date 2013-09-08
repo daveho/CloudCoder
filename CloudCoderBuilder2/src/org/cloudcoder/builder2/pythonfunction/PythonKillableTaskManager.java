@@ -29,7 +29,7 @@ import org.python.util.PythonInterpreter;
  *
  * @param <T>
  */
-public class PythonKillableTaskManager<T> extends AbstractKillableTaskManager
+public class PythonKillableTaskManager<T> extends AbstractKillableTaskManager<T>
 {
     private PythonInterpreter pythonInterpreter;
 
@@ -44,17 +44,16 @@ public class PythonKillableTaskManager<T> extends AbstractKillableTaskManager
     
     @Override
     public void unredirectStandardOutputStreams() {
+     // Nothing to do here...
+        // We stop using the interpreter when we're done
+        // with the test cases
+    }
+
+    @Override
+    public void redirectStandardOutputStreams() {
         stdOutMonitor=new ThreadedPrintStreamMonitor();
         stdErrMonitor=new ThreadedPrintStreamMonitor();
         pythonInterpreter.setOut(stdOutMonitor);
         pythonInterpreter.setErr(stdErrMonitor);
     }
-
-    @Override
-    public void redirectStandardOutputStreams() {
-        // Nothing to do here...
-        // We stop using the interpreter when we're done
-        // with the test cases
-    }
-    
 }

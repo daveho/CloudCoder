@@ -19,6 +19,7 @@
   	<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
   	<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
   	<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
+  	<pathelement location="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
   	
   	<!-- GWT stuff -->
     <pathelement location="war/WEB-INF/classes"/>
@@ -30,6 +31,7 @@
     <mkdir dir="war/WEB-INF/lib" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
     <copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet-deps.jar" />
+  	<copy todir="war/WEB-INF/lib" file="${gwt.sdk}/requestfactory-server.jar" />
     <!-- Add any additional server libs that need to be copied -->
   </target>
 
@@ -47,8 +49,15 @@
   <target name="modelClassesJSON">
   	<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
   </target>
+	
+  <!-- Ensure that the builder submission queue library is built. -->
+  <target name="submissionQueue">
+  	<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+  </target>
 
-  <target name="javac" depends="libs,modelClasses,modelClassesPersist,modelClassesJSON" description="Compile java source to bytecode">
+  <target name="javac"
+  	depends="libs,modelClasses,modelClassesPersist,modelClassesJSON,submissionQueue"
+  	description="Compile java source to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"

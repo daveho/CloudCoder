@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.javamethod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -49,7 +50,7 @@ public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
     public static final long TIMEOUT_LIMIT = 2000;
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		// Get Problem
 		Problem problem = submission.getArtifact(Problem.class);
 		if (problem == null) {

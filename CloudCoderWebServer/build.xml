@@ -31,6 +31,7 @@
 	
     <target depends="init,jetty" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
+    	<mkdir dir="bin"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="CloudCoderWebServer.classpath"/>
@@ -56,12 +57,16 @@
 	<target name="modelClassesJSON">
 		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar"/>
 	</target>
+
+	<!-- Ensure that the builder submission queue library is built. -->
+	<target name="submissionQueue">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+	</target>
 	
 	<!-- Target to build the CloudCoder Jetty library. -->
 	<target name="jetty">
 		<ant inheritall="false" dir="../CloudCoderJetty" target="jar"/>
 	</target>
-	
 	
 	<!--
 		Depending on whether or not this is a distribution build, decide
@@ -114,14 +119,14 @@
 		Target to build a single deployable jarfile containing both
 		the webapp (and required libraries) and Jetty (the web server).
 	-->
-	<target name="jar" depends="checkDistBuild,build,modelClasses,modelClassesPersistence,modelClassesJSON,webapp">
+	<target name="jar" depends="checkDistBuild,build,modelClasses,modelClassesPersistence,modelClassesJSON,submissionQueue,webapp">
 		
 		<!--
 			Build single deployable jarfile containing our launcher code,
 			all requried libraries, and the webapp.  Note that signatures
 			must be removed from the libraries.
 		-->
-		<jar destfile="${jarname}">
+		<jar destfile="${jarname}" update="true">
 			<!-- Copy classes  from the bin directory. -->
 			<fileset dir="bin" includes="**"/>
 
@@ -158,6 +163,11 @@
 			<zipfileset
 				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
 				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
+			
+			<!-- Include the submission queue jar file in the webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderSubmissionQueue.jar"/>
 
 			<!-- Include GWT requestfactory-server.jar if needed. -->
 			<zipfileset file="${requestFactorySource}" fullpath="${requestFactoryTarget}"/>
@@ -196,6 +206,7 @@
 		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderJetty" target="clean"/>
 	</target>
 </project>

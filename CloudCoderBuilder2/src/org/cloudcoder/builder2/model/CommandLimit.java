@@ -61,7 +61,22 @@ public enum CommandLimit {
 	/**
 	 * Maximum number of characters that will be captured for any single line of output.
 	 */
-	OUTPUT_LINE_MAX_CHARS(null);
+	OUTPUT_LINE_MAX_CHARS(null),
+	
+	/**
+	 * If set to a non-zero value, the command will be sandboxed using
+	 * EasySandbox, meaning the process will only be able to read from stdin,
+	 * write to stdout and stderr, and allocate memory from a fixed size
+	 * heap.  Other potentially dangerous operations, such as accessing
+	 * files, the network, etc.
+	 */
+	ENABLE_SANDBOX(null),
+	
+	/**
+	 * For sandboxed processes, set the size of the (preallocated) heap,
+	 * in bytes.
+	 */
+	SANDBOX_HEAP_SIZE_BYTES(null);
 	
 	private final String flag;
 	

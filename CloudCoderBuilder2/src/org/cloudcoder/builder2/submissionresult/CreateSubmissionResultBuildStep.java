@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.submissionresult;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
@@ -36,7 +38,7 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 public class CreateSubmissionResultBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		SubmissionResult submissionResult = new SubmissionResult();
 
 		// Get the CompilationResult

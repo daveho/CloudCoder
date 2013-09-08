@@ -63,9 +63,9 @@ public class ShareProblemDialog extends DialogBox {
 	 */
 	public void setExercise(ProblemAndTestCaseList exercise) {
 		this.exercise = exercise;
-		Problem problem = exercise.getProblem();
-		panel.setExerciseName(problem.getTestname() + " - " + problem.getBriefDescription());
-		panel.setExerciseLicense(problem.getLicense().getName());
+//		Problem problem = exercise.getProblem();
+//		panel.setExerciseName(problem.getTestname() + " - " + problem.getBriefDescription());
+//		panel.setExerciseLicense(problem.getLicense().getName());
 	}
 
 	/**

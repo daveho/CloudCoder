@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * A Tester executes a series of {@link IBuildStep}s on a
@@ -49,10 +50,11 @@ public class Tester {
 	 * Execute the Tester on a {@link BuilderSubmission}.
 	 * 
 	 * @param submission the {@link BuilderSubmission} to build/test
+     * @param config     configuration properties: i.e., properties from cloudcoder.properties file
 	 */
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		for (IBuildStep buildStep : buildStepList) {
-			buildStep.execute(submission);
+			buildStep.execute(submission, config);
 			if (submission.isComplete()) {
 				break;
 			}

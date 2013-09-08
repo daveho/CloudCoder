@@ -4,16 +4,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CharacterLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.NumberLiteral;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrimitiveType;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SimpleType;
 
 
 /**
@@ -27,13 +37,12 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 public class ParseToDotFile extends ASTVisitor
 {
     private int nodes=0;
-    private Map<ASTNode,String> map=new HashMap<ASTNode,String>();
-    private Map<ASTNode,String> names=new HashMap<ASTNode,String>();
-    private StringBuffer dotfile=new StringBuffer();
+    protected Map<ASTNode,String> map=new LinkedHashMap<ASTNode,String>();
+    protected Map<ASTNode,String> labelMap=new HashMap<ASTNode,String>();
+    //protected Map<String,ASTNode> reverseName=new TreeMap<String,ASTNode>();
+    protected StringBuffer dotfile=new StringBuffer();
     
-    
-
-    private static String readFile(String filename) throws IOException 
+    protected static String readFile(String filename) throws IOException 
     {
         String res="";
         Scanner scan=new Scanner(new FileInputStream(filename));
@@ -44,7 +53,7 @@ public class ParseToDotFile extends ASTVisitor
         return res;
     }
 
-    public static void parseProgramTextToDotFile(String programText, String outfile)
+    public void parseProgramTextDotFile(String programText, String outfile)
     throws IOException
     {
         ASTParser parser = ASTParser.newParser(AST.JLS4);
@@ -54,58 +63,91 @@ public class ParseToDotFile extends ASTVisitor
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_7, options);
         parser.setCompilerOptions(options);
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-        ParseToDotFile visitor=new ParseToDotFile();
-        cu.accept(visitor);
+        //ParseToDotFile visitor=new ParseToDotFile();
+        cu.accept(this);
         PrintStream out=new PrintStream(new FileOutputStream(outfile));
-        out.print(visitor.getDotFormatString());
+        out.print(getDotFormatString());
         out.flush();
         out.close();
     }
     
-    public static void parseToDotFile(String infile, String outfile)
+    public void parseToFullDotFile(String infile, String outfile)
     throws IOException
     {
         String src = readFile(infile);
         
-        parseProgramTextToDotFile(src, outfile);
+        parseProgramTextDotFile(src, outfile);
+    }
+    
+//    private String getTypeGraph() {
+//        String lookup="";
+//        for (ASTNode node : reverseName.values()) {
+//            String label=names.get(node);
+//            lookup+=map.get(node)+" [label=\""+label+"\"];\n";
+//        }
+//        return lookup;
+//    }
+    
+    protected String getTextGraph() {
+        String lookup="";
+        for (Map.Entry<ASTNode,String> entry : labelMap.entrySet()) {
+            lookup+=map.get(entry.getKey())+" [label=\""+entry.getValue()+"\"];\n";
+        }
+        return lookup;
     }
     
     public String getDotFormatString() {
-        String lookup="";
-        for (Entry<ASTNode,String> entry : names.entrySet()) {
-            lookup+=map.get(entry.getKey())+" [label=\""+entry.getValue()+"\"];\n";
-        }
         return "digraph ast {\n" +
-            lookup+"\n"+
+            getTextGraph()+"\n"+
             dotfile +"\n"+
             "}";
     }
     
-    private static String getTypeName(Class cl) {
+    protected static String getTypeName(Class cl) {
         return cl.getSimpleName();
     }
         
-    
-    @Override
-    public boolean preVisit2(ASTNode node) {
-        
+    protected void createOrLookupNode(ASTNode node, String text){
+        text=text.replaceAll("\n", "");
         if (!map.containsKey(node)) {
-            map.put(node, "n"+nodes);
-            names.put(node, getTypeName(node.getClass()));
+            String nodeName=String.format("n%03d", nodes);
+            map.put(node, nodeName);
+            labelMap.put(node, text);
+            //reverseName.put(nodeName, node);
             nodes++;
         }
+    }
+    
+    protected void createOrLookupNode(ASTNode node) {
+        createOrLookupNode(node, getTypeName(node.getClass()));
+    }
+    
+    protected boolean process(ASTNode node, String text) {
+        createOrLookupNode(node, text);
         ASTNode parent=node.getParent();
         if (parent==null) {
             return true;
         }
-        if (!map.containsKey(parent)) {
-            map.put(parent, "n"+nodes);
-            names.put(parent, getTypeName(parent.getClass()));
-            nodes++;
-        }
+        createOrLookupNode(parent);
         dotfile.append(map.get(parent)+" -> "+map.get(node)+"\n");
-        
+        return false;
+    }
+    
+    protected boolean process(ASTNode node) {
+        createOrLookupNode(node);
+        ASTNode parent=node.getParent();
+        if (parent==null) {
+            return true;
+        }
+        createOrLookupNode(parent);
+        dotfile.append(map.get(parent)+" -> "+map.get(node)+"\n");
+ 
         return true;
+    }
+    
+    @Override
+    public boolean preVisit2(ASTNode node) {
+        return process(node);
     }
     
     

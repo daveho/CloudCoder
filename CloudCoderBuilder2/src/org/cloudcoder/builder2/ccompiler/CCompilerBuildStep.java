@@ -18,6 +18,7 @@
 package org.cloudcoder.builder2.ccompiler;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
@@ -41,7 +42,7 @@ public class CCompilerBuildStep implements IBuildStep {
 	private static final String DEFAULT_PROG_NAME = "prog";
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");

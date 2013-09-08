@@ -18,19 +18,23 @@
 package org.cloudcoder.app.client;
 
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.DevelopmentPage;
+import org.cloudcoder.app.client.page.DevelopmentPage2;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
 import org.cloudcoder.app.client.page.LoginPage;
+import org.cloudcoder.app.client.page.PlaygroundPage;
 import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.QuizPage;
 import org.cloudcoder.app.client.page.StatisticsPage;
 import org.cloudcoder.app.client.page.UserAccountPage;
 import org.cloudcoder.app.client.page.UserAdminPage;
+import org.cloudcoder.app.client.page.UserProblemSubmissionsPage;
 import org.cloudcoder.app.client.page.UserProgressPage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Activity;
@@ -175,7 +179,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			page = new CoursesAndProblemsPage2();
 			break;
 		case DEVELOPMENT:
-			page = new DevelopmentPage();
+		    page = new DevelopmentPage();
+//		    page = new DevelopmentPage2();
 			break;
 		case PROBLEM_ADMIN:
 			page = new ProblemAdminPage();
@@ -198,6 +203,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		case USER_ACCOUNT:
 			page = new UserAccountPage();
 			break;
+		case USER_PROBLEM_SUBMISSIONS:
+			page = new UserProblemSubmissionsPage();
+			break;
+		case PLAYGROUND_PAGE:
+		    page = new PlaygroundPage();
+		    break;
 		default:
 			// This shouldn't happen (can't find page for Activity),
 			// but if it does, go to the courses and problems page.

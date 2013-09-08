@@ -18,12 +18,17 @@
 package org.cloudcoder.builder2.util;
 
 import org.cloudcoder.app.shared.model.ITestCase;
+import org.cloudcoder.app.shared.model.ModelObjectField;
+import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for creating {@link TestResult}s.
@@ -32,6 +37,7 @@ import org.cloudcoder.builder2.model.CommandResult;
  * @author Jaime Spacco
  */
 public class TestResultUtil {
+    private static final Logger logger=LoggerFactory.getLogger(TestResultUtil.class);
 	/**
 	 * Create a TestResult for an executed test that timed out.
 	 * 
@@ -195,12 +201,25 @@ public class TestResultUtil {
 				"Took too long!  Check for infinite loops, or recursion without a proper base case");
 	}
 
+	/**
+	 * Helper method to create a standard test result when
+	 * the actual method output is unknown.
+	 * If a {@link CommandResult} is passed, its stdout/stderr will be
+	 * added to the test result.
+	 * 
+	 * @param p         the {@link CommandResult} (null if the test was not executed as a {@link Command})
+	 * @param problem   the {@link Problem}
+	 * @param outcome   the {@link TestOutcome}
+	 * @param testCase  the {@link TestCase}
+	 * @return the {@link TestResult}
+	 */
 	private static TestResult createTestResult(CommandResult p, Problem problem, TestOutcome outcome, TestCase testCase) {
 	    return createTestResult(p, problem, outcome, testCase, null);
 	}
 	
 	/**
-	 * Helper method to create a standard test result.
+	 * Helper method to create a standard test result when the actual method
+	 * output is (possibly) known.
 	 * If a {@link CommandResult} is passed, its stdout/stderr will be
 	 * added to the test result.
 	 * 
@@ -225,8 +244,16 @@ public class TestResultUtil {
 				}
 			}
 		}
-
+		
 		TestResult testResult = new TestResult(outcome, buf.toString());
+		
+		ProblemType type=problem.getProblemType();
+		if (type.isOutputLiteral() && !testCase.isSecret()) {
+		    testResult.setInput(testCase.getInput());
+		    testResult.setExpectedOutput(testCase.getOutput());
+		    // Important: at the database level, actual output cannot be null
+		    testResult.setActualOutput(output != null ? output : "");
+		}
 
 		if (p != null) {
 			if (outcome.isDisplayProcessStatus() &&
@@ -245,5 +272,51 @@ public class TestResultUtil {
 		}
 
 		return testResult;
+	}
+
+    public static TestResult createResultForFailedWithExceptionTest(Problem problem, 
+        TestCase testCase, Throwable exception)
+    {
+        //TODO: We can parse the stack trace to get out specific line numbers
+        Throwable targetException=exception.getCause();
+        String message="";
+        if (!testCase.isSecret()) {
+            message="Failed with exception "+targetException.getMessage();
+        }
+        TestResult testResult = new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, message); 
+        if (problem.getProblemType().isOutputLiteral()) {
+            testResult.setInput(testCase.getInput());
+            testResult.setExpectedOutput(testCase.getOutput());
+            testResult.setActualOutput(targetException.toString());
+            logger.debug("targetException: "+targetException);
+            logger.debug("targetException.getMessage(): "+targetException.getMessage());
+        }
+        return testResult;
+    }
+
+    /**
+     * Sanitize a {@TestResult} by setting any incorrectly-omitted values.
+     * 
+     * @param testResult the {@link TestResult} to sanitize
+     */
+	public static void sanitizeTestResult(TestResult testResult) {
+		// TODO: could make this generic - there is nothing below that is specific to TestResult
+		ModelObjectSchema<TestResult> schema = testResult.getSchema();
+		for (ModelObjectField<? super TestResult, ?> field : schema.getFieldList()) {
+			Object value = field.get(testResult);
+			if (field.isAllowNull() && value == null) {
+				logger.warn("Field {} in {} object is set to null", field.getName(), testResult.getClass().getSimpleName());
+				// Attempt to set a non-null value based on the field type
+				if (field.getType() == String.class) {
+					// This is the most likely case
+					field.setUntyped(testResult, "");
+				} else if (field.getType() == Integer.class) {
+					field.setUntyped(testResult, Integer.valueOf(0));
+				} else {
+					logger.error("Don't know how to create a value of type {} for incorrectly null field {}", field.getType().getName(), field.getName());
+				}
+			}
+		}
+		
 	}
 }

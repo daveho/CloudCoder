@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.cfunction;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -41,7 +43,7 @@ import org.cloudcoder.builder2.util.StringUtil;
 public class AddCFunctionScaffoldingBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {

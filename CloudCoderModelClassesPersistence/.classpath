@@ -4,6 +4,12 @@
 	<classpathentry kind="src" path="test/junit"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/mysql-connector-java-5.1.16-bin.jar"/>
+	<classpathentry kind="lib" path="lib/c3p0-0.9.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.mchange.com/projects/c3p0/apidocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/mchange-commons-java-0.2.3.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderJetty"/>

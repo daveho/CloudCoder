@@ -30,6 +30,7 @@ import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.webservice.util.ServletUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 

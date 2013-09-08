@@ -17,6 +17,8 @@
 
 package org.cloudcoder.builder2.commandrunner;
 
+import java.util.Properties;
+
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandExecutionPreferences;
@@ -36,7 +38,7 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 public class ExecuteCommandForEachCommandInputBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		// Get the Commands
 		Command[] commandList = submission.getArtifact(Command[].class);
 		if (commandList == null) {

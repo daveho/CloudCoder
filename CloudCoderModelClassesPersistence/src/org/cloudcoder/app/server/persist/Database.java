@@ -17,14 +17,22 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.sql.SQLException;
+
 /**
  * Factory to provide a default implementation of IDatabase.
  * 
  * @author David Hovemeyer
  */
 public class Database {
-	//private static IDatabase instance = new HibernateDatabase();
-	private static IDatabase instance = new JDBCDatabase();
+	private static IDatabase instance;
+	static {
+		try {
+			instance = new JDBCDatabase();
+		} catch (SQLException e) {
+			throw new IllegalStateException("Could not create JDBCDatabase object", e);
+		}
+	}
 	
 	/**
 	 * Get the default implementation of IDatabase.

@@ -23,7 +23,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
@@ -41,6 +40,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService;
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -50,13 +50,14 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.ModuleNameComparator;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.ProblemAuthorship;
-import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
@@ -79,7 +80,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Course[] getCourses() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("Loading courses for user " + user.getUsername());
 		
@@ -105,7 +106,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public CourseAndCourseRegistration[] getCourseAndCourseRegistrations() throws CloudCoderAuthenticationException {
 		// make sure the client has authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("Loading courses and registrations for user " + user.getUsername());
 		
@@ -132,7 +133,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		List<Problem> resultList = Database.getInstance().getProblemsInCourse(user, course).getProblemList();
 		for (Problem p : resultList) {
@@ -161,7 +162,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
 			Course course, User forUser, Module module) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		logger.info("getting submission receipts for authenticated user "+user.getUsername());
 		
@@ -169,38 +170,13 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
 	}
 	
-//	/* (non-Javadoc)
-//	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getProblemAndSubscriptionReceipts(org.cloudcoder.app.shared.model.Course)
-//	 */
-//	@Override
-//	public ProblemAndSubmissionReceipt[] getProblemAndSubscriptionReceipts(
-//			Course course, User user) throws CloudCoderAuthenticationException {
-//
-//		logger.warn("yay! getting submission receipts for user "+user.getUsername());
-//		
-//		List<ProblemAndSubmissionReceipt> resultList = new LinkedList<ProblemAndSubmissionReceipt>();
-//		ProblemList problems = Database.getInstance().getProblemsInCourse(user, course);
-//		for(Problem p : problems.getProblemList()){
-//			List<UserAndSubmissionReceipt> e = Database.getInstance().getBestSubmissionReceipts(course, 0, p);
-//			for(UserAndSubmissionReceipt pair : e){
-//				if(pair.getUser().getId() == user.getId()){
-//					// FIXME: is it a problem that we're not including Modules in the ProblemAndSubmissionReceipts?
-//					resultList.add(new ProblemAndSubmissionReceipt(p,pair.getSubmissionReceipt(),null));
-//				}
-//			}
-//		}
-//		
-//		//List<ProblemAndSubmissionReceipt> resultList = Database.getInstance().getBestSubmissionReceipts(course, problemId).getProblemAndSubscriptionReceiptsInCourse(user, course);
-//		return resultList.toArray(new ProblemAndSubmissionReceipt[resultList.size()]);
-//	}
-	
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.app.client.rpc.GetCoursesAndProblemsService#getBestSubmissionReceipts(org.cloudcoder.app.shared.model.Problem)
 	 */
 	@Override
 	public UserAndSubmissionReceipt[] getBestSubmissionReceipts(Problem problem, int section) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Return best submission receipts for each user in course
 		List<UserAndSubmissionReceipt> result = Database.getInstance().getBestSubmissionReceipts(problem, section, user);
@@ -213,7 +189,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public TestCase[] getTestCasesForProblem(int problemId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().getTestCasesForProblem(user, true, problemId);
 	}
@@ -224,7 +200,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public String[] getTestCaseNamesForProblem(int problemId) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		TestCase[] testCaseList = Database.getInstance().getTestCasesForProblem(user, false, problemId);
 		String[] result = new String[testCaseList.length];
 		for (int i = 0; i < testCaseList.length; i++) {
@@ -240,7 +216,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	public ProblemAndTestCaseList storeProblemAndTestCaseList(ProblemAndTestCaseList problemAndTestCaseList, Course course)
 			throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Store in database
 		Database.getInstance().storeProblemAndTestCaseList(problemAndTestCaseList, course, user);
@@ -255,8 +231,19 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public OperationResult submitExercise(ProblemAndTestCaseList exercise, String repoUsername, String repoPassword)
 		throws CloudCoderAuthenticationException  {
-		System.out.println("Sharing exercise: " + exercise.getProblem().getTestname());
+		logger.warn("Sharing exercise: " + exercise.getProblem().getTestname());
+
+		// Only a course instructor may share an exercise.
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+		Course course = new Course();
+		course.setId(exercise.getProblem().getCourseId());
+		Database.getInstance().reloadModelObject(course);
+		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
+		if (!regList.isInstructor()) {
+			return new OperationResult(false, "You must be an instructor to share an exercise");
+		}
 		
+		// Get the exercise repository URL
 		ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
 		if (repoUrlSetting == null) {
 			return new OperationResult(false, "URL of exercise repository is not configured");
@@ -294,6 +281,10 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 			StatusLine statusLine = response.getStatusLine();
 			
 			if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+				// Update the exercise's shared flag so we have a record that it was shared.
+				exercise.getProblem().setShared(true);
+				Database.getInstance().storeProblemAndTestCaseList(exercise, course, authenticatedUser);
+
 				return new OperationResult(true, "Exercise successfully published to the repository - thank you!");
 			} else if (statusLine.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
 				return new OperationResult(false, "Authentication with repository failed - incorrect username/password?");
@@ -310,13 +301,118 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 	
 	@Override
+    public ShareExercisesResult submitExercises(Problem[] problems, String repoUsername, String repoPassword) 
+    throws CloudCoderAuthenticationException
+    {
+	    logger.warn("Sharing "+problems.length+" exercises");
+	    
+	    // create the result place holder
+	    ShareExercisesResult result=new ShareExercisesResult(problems.length);
+	    
+	    if (problems.length==0) {
+	        result.failAll("No problems to be shared!");
+	        return result;
+	    }
+
+        // Only a course instructor may share an exercise.
+        User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+        Course course = new Course();
+        course.setId(problems[0].getCourseId());
+        Database.getInstance().reloadModelObject(course);
+        CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, course);
+        if (!regList.isInstructor()) {
+            result.failAll("You must be an instructor to share an exercise");
+            return result;
+        }
+        
+        // Get the exercise repository URL
+        ConfigurationSetting repoUrlSetting = Database.getInstance().getConfigurationSetting(ConfigurationSettingName.PUB_REPOSITORY_URL);
+        if (repoUrlSetting == null) {
+            result.failAll("URL of exercise repository is not configured");
+            return result;
+        }
+        String repoUrl = repoUrlSetting.getValue();
+        if (repoUrl.endsWith("/")) {
+            repoUrl = repoUrl.substring(0, repoUrl.length()-1);
+        }
+        
+        HttpPost post = new HttpPost(repoUrl + "/exercisedata");
+        
+        // Encode an Authorization header using the provided repository username and password.
+        String authHeaderValue =
+                "Basic " +
+                DatatypeConverter.printBase64Binary((repoUsername + ":" + repoPassword).getBytes(Charset.forName("UTF-8")));
+        //System.out.println("Authorization: " + authHeaderValue);
+        post.addHeader("Authorization", authHeaderValue);
+        
+        // Now go through and upload each problem
+        // For now, we do this one at a time
+        // In the future we could send problems and test cases 
+        // to the repo in bulk, and add a new web service to handle it
+        
+        for (Problem p : problems) {
+            // Look up the test cases
+            List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(p.getProblemId());
+            ProblemAndTestCaseList exercise=new ProblemAndTestCaseList();
+            exercise.setProblem(p);
+            exercise.setTestCaseList(testCaseList);
+            
+            // Convert the exercise to a JSON string
+            StringEntity entity;
+            StringWriter sw = new StringWriter();
+            try {
+                JSONConversion.writeProblemAndTestCaseData(exercise, sw);
+                entity = new StringEntity(sw.toString(), ContentType.create("application/json", "UTF-8"));
+            } catch (IOException e) {
+                // fail remaining test cases and return our results thus far
+                // some exercises may have been successfully shared
+                result.failRemaining("Could not convert exercise to JSON: " + e.getMessage());
+                return result;
+            }
+            post.setEntity(entity);
+            
+            // POST the exercise to the repository
+            HttpClient client = new DefaultHttpClient();
+            try {
+                HttpResponse response = client.execute(post);
+            
+                StatusLine statusLine = response.getStatusLine();
+                
+                if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                    // Update the exercise's shared flag so we have a record that it was shared.
+                    exercise.getProblem().setShared(true);
+                    exercise.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED);
+                    Database.getInstance().storeProblemAndTestCaseList(exercise, course, authenticatedUser);
+                    result.success();
+                } else if (statusLine.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+                    result.failRemaining("Authentication with repository failed - incorrect username/password?");
+                    return result;
+                } else {
+                    result.failRemaining("Failed to publish exercise to repository: " + statusLine.getReasonPhrase());
+                    return result;
+                }
+            } catch (ClientProtocolException e) {
+                result.failRemaining("Error sending exercise to repository: " + e.getMessage());
+                return result;
+            } catch (IOException e) {
+                result.failRemaining("Error sending exercise to repository: " + e.getMessage());
+                return result;
+            } finally {
+                client.getConnectionManager().shutdown();
+            }
+        }
+        result.allSucceeded("Successfully uploaded "+problems.length+" exercise to repository.  Thanks!");
+        return result;
+    }
+	
+	@Override
 	public ProblemAndTestCaseList importExercise(Course course, String exerciseHash) throws CloudCoderAuthenticationException {
 		if (course == null || exerciseHash == null) {
 			throw new IllegalArgumentException();
 		}
 		
 		// Make sure a user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Find user's registration in the course: if user is not instructor,
 		// import is not allowed
@@ -384,7 +480,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public OperationResult deleteProblem(Course course, Problem problem) throws CloudCoderAuthenticationException {
 		// Make sure a user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		boolean result = Database.getInstance().deleteProblem(user, course, problem);
 		return new OperationResult(result, result ? "Problem deleted successfully" : "Could not delete problem");
 	}
@@ -395,7 +491,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Quiz startQuiz(Problem problem, int section) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		return Database.getInstance().startQuiz(user, problem, section);
 	}
 	
@@ -405,7 +501,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Quiz findCurrentQuiz(Problem problem) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		// Find current quiz (if any)
 		Quiz quiz = Database.getInstance().findCurrentQuiz(user, problem);
@@ -425,7 +521,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Boolean endQuiz(Quiz quiz) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
 		return Database.getInstance().endQuiz(user, quiz);
 	}
@@ -436,7 +532,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Module[] getModulesForCourse(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		Module[] modulesForCourse = Database.getInstance().getModulesForCourse(user, course);
 		
@@ -452,7 +548,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Module setModule(Problem problem, String moduleName) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().setModule(user, problem, moduleName);
 	}
@@ -460,8 +556,30 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	@Override
 	public Integer[] getSectionsForCourse(Course course) throws CloudCoderAuthenticationException {
 		// Make sure user is authenticated
-		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest());
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().getSectionsForCourse(course, user);
 	}
+	
+	@Override
+	public SubmissionReceipt[] getAllSubmissionReceiptsForUser(Problem problem, User user) throws CloudCoderAuthenticationException {
+		// Make sure user is authenticated
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+		
+		// Make sure authenticated user is an instructor
+		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, problem.getCourseId());
+		if (!regList.isInstructor()) {
+			return new SubmissionReceipt[0];
+		}
+		
+		return Database.getInstance().getAllSubmissionReceiptsForUser(problem, user);
+	}
+	
+	@Override
+	public NamedTestResult[] getTestResultsForSubmission(Problem problem, SubmissionReceipt receipt) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+		return Database.getInstance().getTestResultsForSubmission(authenticatedUser, problem, receipt);
+	}
+
+    
 }

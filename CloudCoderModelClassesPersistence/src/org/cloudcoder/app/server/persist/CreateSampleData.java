@@ -20,6 +20,7 @@ package org.cloudcoder.app.server.persist;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.IProblemData;
@@ -102,6 +103,8 @@ public class CreateSampleData {
 		problemData.setTimestampUtc(1349008031587L);
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		problemData.setParentHash("");
+		problemData.setExternalLibraryUrl("");
+		problemData.setExternalLibraryMD5("");
 	}
 	
 	public static void populateSampleCFunctionProblem(IProblem problem, int courseId) {
@@ -135,6 +138,8 @@ public class CreateSampleData {
 		problemData.setTimestampUtc(1356125346562L);
 		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
 		problemData.setParentHash("");
+		problemData.setExternalLibraryUrl("");
+		problemData.setExternalLibraryMD5("");
 	}
 	
 	public static void populateSampleCFunctionTestCases(ITestCase[] testCases, int problemId) {

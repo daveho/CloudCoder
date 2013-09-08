@@ -1,107 +1,65 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
-import org.cloudcoder.app.shared.model.ConfigurationSettingName;
+import org.cloudcoder.app.client.view.ILoginView;
+import org.cloudcoder.app.client.view.PreauthorizedUserLoginView;
+import org.cloudcoder.app.client.view.UsernamePasswordLoginView;
+import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * Login page.
  */
 public class LoginPage extends CloudCoderPage {
+	private static final double LOGIN_VIEW_TOP_PX = 32.0;
+	private static final double LOGIN_VIEW_WIDTH_PX = 340.0;
+	private static final double LOGIN_VIEW_HEIGHT_PX = 480.0;
+	private static final double LOGO_TOP_PX = 120.0;
+	
 	/**
 	 * UI class for LoginPage.
 	 */
 	private class UI extends LayoutPanel implements SessionObserver {
 		private InlineLabel pageTitleLabel;
-		private TextBox usernameTextBox;
-		private PasswordTextBox passwordTextBox;
-		private InlineLabel errorLabel;
-		private InlineLabel loggingInLabel;
+		private ILoginView loginView;
+		protected LoginSpec loginSpec;
 		
 		public UI() {
-			//setSize("640px", "480px");
-			
-			InlineLabel usernameLabel = new InlineLabel("User name:");
-			add(usernameLabel);
-			setWidgetLeftWidth(usernameLabel, 57.0, Unit.PX, 91.0, Unit.PX);
-			setWidgetTopHeight(usernameLabel, 127.0, Unit.PX, 15.0, Unit.PX);
-			
-			usernameTextBox = new TextBox();
-			usernameTextBox.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-						passwordTextBox.setFocus(true);
-					}
-				}
-			});
-			add(usernameTextBox);
-			setWidgetLeftWidth(usernameTextBox, 57.0, Unit.PX, 200.0, Unit.PX);
-			setWidgetTopHeight(usernameTextBox, 148.0, Unit.PX, 31.0, Unit.PX);
-			
-			InlineLabel passwordLabel = new InlineLabel("Password:");
-			add(passwordLabel);
-			setWidgetLeftWidth(passwordLabel, 57.0, Unit.PX, 91.0, Unit.PX);
-			setWidgetTopHeight(passwordLabel, 185.0, Unit.PX, 15.0, Unit.PX);
-			
-			passwordTextBox = new PasswordTextBox();
-			passwordTextBox.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-						attemptLogin();
-					}
-				}
-			});
-			add(passwordTextBox);
-			setWidgetLeftWidth(passwordTextBox, 57.0, Unit.PX, 200.0, Unit.PX);
-			setWidgetTopHeight(passwordTextBox, 206.0, Unit.PX, 33.0, Unit.PX);
-			
-			Button loginButton = new Button("Log in");
-			loginButton.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					attemptLogin();
-				}
-			});
-			add(loginButton);
-			setWidgetLeftWidth(loginButton, 176.0, Unit.PX, 81.0, Unit.PX);
-			setWidgetTopHeight(loginButton, 245.0, Unit.PX, 27.0, Unit.PX);
-			
 			Image cloudCoderLogoImage = new Image(GWT.getModuleBaseURL() + "images/CloudCoderLogo-med.png");
 			add(cloudCoderLogoImage);
-			setWidgetLeftWidth(cloudCoderLogoImage, 301.0, Unit.PX, 240.0, Unit.PX);
-			setWidgetTopHeight(cloudCoderLogoImage, 148.0, Unit.PX, 165.0, Unit.PX);
-			
-			InlineLabel promptLabel = new InlineLabel("Please enter your username and password.");
-			add(promptLabel);
-			setWidgetLeftWidth(promptLabel, 57.0, Unit.PX, 343.0, Unit.PX);
-			setWidgetTopHeight(promptLabel, 328.0, Unit.PX, 20.0, Unit.PX);
-			
-			errorLabel = new InlineLabel("");
-			errorLabel.setStylePrimaryName("cc-errorText");
-			add(errorLabel);
-			setWidgetLeftWidth(errorLabel, 57.0, Unit.PX, 484.0, Unit.PX);
-			setWidgetTopHeight(errorLabel, 383.0, Unit.PX, 73.0, Unit.PX);
+			setWidgetLeftWidth(cloudCoderLogoImage, LOGIN_VIEW_WIDTH_PX + 10.0, Unit.PX, 240.0, Unit.PX);
+			setWidgetTopHeight(cloudCoderLogoImage, LOGO_TOP_PX, Unit.PX, 165.0, Unit.PX);
 			
 			pageTitleLabel = new InlineLabel("");
 			pageTitleLabel.setStylePrimaryName("cc-pageTitle");
@@ -113,50 +71,87 @@ public class LoginPage extends CloudCoderPage {
 			add(welcomeLabel);
 			setWidgetLeftWidth(welcomeLabel, 57.0, Unit.PX, 313.0, Unit.PX);
 			setWidgetTopHeight(welcomeLabel, 23.0, Unit.PX, 15.0, Unit.PX);
-			
-			loggingInLabel = new InlineLabel("");
-			add(loggingInLabel);
-			setWidgetLeftWidth(loggingInLabel, 57.0, Unit.PX, 343.0, Unit.PX);
-			setWidgetTopHeight(loggingInLabel, 353.0, Unit.PX, 20.0, Unit.PX);
 		}
 		
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
-			// Load and display the institution name
-			RPC.configurationSettingService.getConfigurationSettingValue(ConfigurationSettingName.PUB_TEXT_INSTITUTION, new AsyncCallback<String>() {
+			RPC.loginService.getLoginSpec(new AsyncCallback<LoginSpec>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					// FIXME: display error
+					GWT.log("Failure to get LoginSpec", caught);
 				}
 				
-				@Override
-				public void onSuccess(String result) {
-					setPubTextInstitution(result);
+				public void onSuccess(LoginSpec result) {
+					loginSpec = result;
+					
+					setPubTextInstitution(loginSpec.getInstitutionName());
+					
+					if (loginSpec.isUsernamePasswordRequired()) {
+						loginView = new UsernamePasswordLoginView();
+					} else {
+						GWT.log("Using preauthorized user login...");
+						
+						if (loginSpec.getPreAuthorizedUsername() != null) {
+							// User is preauthorized.
+							// Just use a UI that prompts the user to press a button
+							// to log in.
+							loginView = new PreauthorizedUserLoginView();
+						} else {
+							// Try logging in with username and password.
+							loginView = new UsernamePasswordLoginView();
+						}
+					}
+
+					loginView.setLoginSpec(loginSpec);
+					loginView.setLoginCallback(new Runnable() {
+						@Override
+						public void run() {
+							attemptLogin();
+						}
+					});
+					
+					add(loginView);
+					setWidgetLeftWidth(loginView, 0.0, Unit.PX, LOGIN_VIEW_WIDTH_PX, Unit.PX);
+					setWidgetTopHeight(loginView, LOGIN_VIEW_TOP_PX, Unit.PX, LOGIN_VIEW_HEIGHT_PX, Unit.PX);
+					
+					// For whatever reason, activating the login view (which will
+					// probably set the focus of a UI component, e.g. the username
+					// textbox) doesn't seem to work if done synchronously.
+					// Doing it after a brief delay seems to work.
+					new Timer() {
+						@Override
+						public void run() {
+							loginView.activate();
+						}
+					}.schedule(20);
 				}
 			});
 		}
 
 		protected void attemptLogin() {
-			String username = usernameTextBox.getText();
-			String password = passwordTextBox.getText();
+			String username = loginView.getUsername();
+			String password = loginView.getPassword();
 			if (username.equals("") || password.equals("")) {
-				errorLabel.setText("Please enter your username and password");
+				loginView.setErrorMessage("Please enter your username and password");
+				return;
 			}
 			
-			loggingInLabel.setText("Logging in...");
+			loginView.setInfoMessage("Logging in...");
 			RPC.loginService.login(username, password, new AsyncCallback<User>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					loggingInLabel.setText("");
-					errorLabel.setText("Error communicating with server (are you connected to the network?)");
+					loginView.setInfoMessage("");
+					loginView.setErrorMessage("Error communicating with server (are you connected to the network?)");
 				}
 				
 				@Override
 				public void onSuccess(User result) {
 					if (result == null) {
-						errorLabel.setText("Username and password not found");
+						loginView.setInfoMessage("");
+						loginView.setErrorMessage("Username and password not found");
 					} else {
 						// Successful login!
+						getSession().add(loginSpec);
 						getSession().add(result);
 						getSession().get(PageStack.class).push(PageId.COURSES_AND_PROBLEMS);
 					}
@@ -166,7 +161,6 @@ public class LoginPage extends CloudCoderPage {
 
 		public void setPubTextInstitution(String result) {
 			pageTitleLabel.setText(result);
-			usernameTextBox.setFocus(true);
 		}
 	}
 

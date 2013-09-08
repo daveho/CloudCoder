@@ -20,8 +20,8 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cloudcoder.app.client.PageStack;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
@@ -44,6 +44,7 @@ import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.ProblemData;
 import org.cloudcoder.app.shared.model.ProblemLicense;
 import org.cloudcoder.app.shared.model.ProblemType;
@@ -184,6 +185,15 @@ public class EditProblemPage extends CloudCoderPage {
 			// Attempt to store the problem and its test cases in the database
 			final ProblemAndTestCaseList problemAndTestCaseList = getSession().get(ProblemAndTestCaseList.class);
 			final Course course = getCurrentCourse();
+
+			// imported exercises which are modified become imported_and_modified
+			// original exercises that are edited, and imported and modified exercises stay in the same state
+			if (problemAndTestCaseList.getProblem().getProblemAuthorship()==ProblemAuthorship.IMPORTED) {
+                problemAndTestCaseList.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED_AND_MODIFIED);
+			}
+			// Edited problems are no longer shared
+			problemAndTestCaseList.getProblem().setShared(false);
+			
 			saveProblem(problemAndTestCaseList, course, afterSave);
 		}
 
@@ -276,6 +286,8 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditStringField<IProblem>("Author website", ProblemData.AUTHOR_WEBSITE));
 			problemFieldEditorList.add(new EditDateField<IProblem>("Creation date", ProblemData.TIMESTAMP_UTC));
 			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
+			problemFieldEditorList.add(new EditStringField<IProblem>("URL of required external library", ProblemData.EXTERNAL_LIBRARY_URL));
+			problemFieldEditorList.add(new EditStringField<IProblem>("MD5 checksum of required external library", ProblemData.EXTERNAL_LIBRARY_MD5));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(

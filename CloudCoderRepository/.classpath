@@ -12,5 +12,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderWebServiceUtil"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

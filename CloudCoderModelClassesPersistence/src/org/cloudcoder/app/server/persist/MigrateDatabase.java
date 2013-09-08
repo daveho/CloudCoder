@@ -1,3 +1,21 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.server.persist;
 
 import java.io.IOException;
@@ -6,6 +24,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.server.persist.util.SchemaUtil;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 
 public class MigrateDatabase {
@@ -16,6 +36,7 @@ public class MigrateDatabase {
 		System.out.println("Migrate the " + appName + " database to the latest schema.");
 		System.out.println("Important: make sure " + appName + " is not currently running!");
 		
+		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 		
 		Class.forName("com.mysql.jdbc.Driver");

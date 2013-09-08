@@ -20,10 +20,12 @@ package org.cloudcoder.builder2.javacompiler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Bytecode;
+import org.cloudcoder.builder2.model.ExternalLibrary;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
@@ -44,7 +46,7 @@ import org.cloudcoder.builder2.util.SubmissionResultUtil;
 public class JavaCompilerBuildStep implements IBuildStep {
 
 	@Override
-	public void execute(BuilderSubmission submission) {
+	public void execute(BuilderSubmission submission, Properties config) {
 		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
 		if (programSourceList == null) {
 			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
@@ -68,7 +70,7 @@ public class JavaCompilerBuildStep implements IBuildStep {
 		submission.addArtifact(packageAndClassNamesList);
 
 		// Attempt to compile the program
-		InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
+		InMemoryJavaCompiler compiler = getJavaCompiler(submission);
 		for (int i = 0; i < programSourceList.length; i++) {
 			compiler.addSourceFile(packageAndClassNamesList[i].getFullyQualifiedClassName(), programSourceList[i].getProgramText());
 		}
@@ -92,6 +94,21 @@ public class JavaCompilerBuildStep implements IBuildStep {
 		// Create array of Bytecode objects, add as submission artifact
 		Bytecode[] bytecodeArray = ArrayUtil.toArray(bytecodeList, Bytecode.class);
 		submission.addArtifact(bytecodeArray);
+	}
+
+	public InMemoryJavaCompiler getJavaCompiler(BuilderSubmission submission) {
+		InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
+		
+		// If an ExternalLibrary is required, then make sure it's on the classpath
+		ExternalLibrary extlib = submission.getArtifact(ExternalLibrary.class);
+		if (extlib != null) {
+			if (!extlib.isAvailable()) {
+				throw new InternalBuilderException(JavaCompilerBuildStep.class, "Should not happen: external library is not available");
+			}
+			compiler.setExtraClasspath(extlib.getFileName());
+		}
+		
+		return compiler;
 	}
 
 }
