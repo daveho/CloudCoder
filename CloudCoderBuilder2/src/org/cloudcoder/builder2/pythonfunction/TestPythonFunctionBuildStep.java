@@ -170,7 +170,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			final byte[] sBytes=s.getBytes();
 
 			//Check if the Python code is syntactically correct
-			CompilationResult compres=compilePythonScript(s);
+			CompilationResult compres=compilePythonScript(problem, s);
 			if (compres.getOutcome()!=CompilationOutcome.SUCCESS) {
 				compres.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
 				return new SubmissionResult(compres);
@@ -222,11 +222,25 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		/**
 		 * @param programText
 		 */
-		public static CompilationResult compilePythonScript(final String programText) {
+		public CompilationResult compilePythonScript(Problem problem, final String programText) {
 			try {
 			    logger.info("\n"+programText);
 				PythonInterpreter terp=new PythonInterpreter();
 				terp.execfile(new ByteArrayInputStream(programText.getBytes()));
+				
+				// Check to see if the test code actually defines the required
+				// function.  If it doesn't, report this as a failed compilation
+				// (it isn't really, but attempting to execute any of the
+				// test methods will accomplish nothing useful.)
+				PyFunction func = (PyFunction)terp.get(problem.getTestname(), PyFunction.class);
+				if (func == null) {
+					CompilationResult compRes = new CompilationResult(CompilationOutcome.FAILURE);
+					CompilerDiagnostic diag = new CompilerDiagnostic(prologueLength+1, prologueLength+1, 1, 1, "Required function " + problem.getTestname() + " was not defined");
+					compRes.setCompilerDiagnosticList(new CompilerDiagnostic[]{ diag });
+					return compRes;
+				}
+
+				// Compilation successful, we should be ready to run the tests
 				return new CompilationResult(CompilationOutcome.SUCCESS);
 			} catch (PySyntaxError e) {
 

@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,12 +19,29 @@
 package org.cloudcoder.app.shared.model;
 
 /**
- * @author jaimespacco
- *
+ * Enumeration describing the outcome of an attempt to compile a submission.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
  */
 public enum CompilationOutcome {
+	/**
+	 * Successful compilation.
+	 */
     SUCCESS,
+    
+    /**
+     * Unsuccessful compilation (for example, a syntax error prevented compilation).
+     */
     FAILURE, 
+    
+    /**
+     * Some type of unexpected compiler error occurred.
+     */
     UNEXPECTED_COMPILER_ERROR,
+    
+    /**
+     * An internal error (i.e., bug) in the builder prevented successful compilation.
+     */
     BUILDER_ERROR,
 }
