@@ -34,7 +34,6 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
-import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
 import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -43,11 +42,14 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.python.core.Py;
 import org.python.core.PyException;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
 import org.python.core.PyTuple;
+import org.python.core.PyType;
+import org.python.core.__builtin__;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -327,13 +329,40 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 					logger.error("Security exception", e.getCause());
 					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
-				logger.warn("Exception type was "+e.getClass());
-				String msg = e.getMessage();
-				if (msg == null || msg.trim().equals("")) {
-					msg = "Exception running test: " + e.getClass().getName();
-				}
+				logger.info("Exception executing Python submission", e);
+				String msg = getExceptionMessage(e);
 				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
 			}
+		}
+		
+		// The following method is from:
+		//    http://python.6.x6.nabble.com/Getting-PyException-details-from-Java-td1762496.html
+		// [With some minor fixes.]
+		
+		/** 
+		 * Returns the exception message, akin to java exception's getMessage() 
+		 * method (not supported properly in Jython). 
+		 * @param pye a python exception instance 
+		 * @return a string containing the python exception's message 
+		 */ 
+		public static String getExceptionMessage(PyException pye) { 
+			// derivative of Jython's Py.formatException() method 
+
+			StringBuffer buf = new StringBuffer(128); 
+			if (pye.type instanceof PyType) { 
+				buf.append(((PyType) pye.type).fastGetName()); 
+			} else { 
+				buf.append(pye.type.__str__()); 
+			} 
+			if (pye.value != Py.None) { 
+				buf.append(": "); 
+				if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
+					buf.append(pye.value.__getitem__(0).__str__()); 
+				} else { 
+					buf.append(pye.value.__str__()); 
+				} 
+			} 
+			return buf.toString(); 
 		}
 	}
 }
