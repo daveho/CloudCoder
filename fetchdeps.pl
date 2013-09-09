@@ -134,14 +134,33 @@ sub Run {
 sub ReadDeps {
 	my ($filename) = @_;
 	my @deps = ();
+	my %vars = ();
 	my $fh = new FileHandle("<$filename") || die "Couldn't open deps file $filename: $!\n";
 	my $download;
 	my $targets = [];
 	while (<$fh>) {
 		chomp;
+
+		# Comment?
 		if (/^\s*#/) {
-			# Comment: ignore
-		} elsif (/^(\S+)/) {
+			next;
+		}
+
+		# Blank line?
+		if (/^\s*$/) {
+			next;
+		}
+
+		# Is this a variable definition?
+		if (/^([A-Za-z_][A-Za-z_0-9]*)\s*=\s*(\S*)\s*$/) {
+			$vars{$1} = $2;
+			next;
+		}
+
+		# Perform variable substitutions
+		s,\${([A-Za-z_][A-Za-z_0-9]*)},$vars{$1},ge;
+
+		if (/^(\S+)/) {
 			# Download
 			if (defined $download) {
 				# Push previous download/targets
