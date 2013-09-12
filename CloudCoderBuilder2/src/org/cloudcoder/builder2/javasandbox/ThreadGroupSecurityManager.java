@@ -138,6 +138,11 @@ public class ThreadGroupSecurityManager extends SecurityManager
             return;
         }
         
+        // FIXME: workaround for Jython, Oracle JDK 7
+        if (perm.getName().equals("suppressAccessChecks")) {
+        	return;
+        }
+        
         if (isCheckedThreadGroup()) {
 //            String threadName = Thread.currentThread().getName();
 //    		if (threadName.startsWith("RubyTest_")) {
