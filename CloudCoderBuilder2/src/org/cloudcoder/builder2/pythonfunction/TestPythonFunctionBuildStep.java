@@ -256,9 +256,12 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				//compres.setException(e);
 				return compres;
 			} catch (PyException e) {
-				logger.warn("Unexpected PyException (probably compilation failure): ");
+				logger.warn("Unexpected PyException (probably compilation failure)", e);
 				CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
 				//compres.setException(e);
+				String message = getExceptionMessage(e);
+				CompilerDiagnostic diag = new CompilerDiagnostic(1, 1, 1, 1, message);
+				compres.setCompilerDiagnosticList(new CompilerDiagnostic[]{diag});
 				return compres;
 			}
 		}
