@@ -31,6 +31,7 @@ public class CompilationResult implements Serializable
     private CompilerDiagnostic[] diagnosticList;
     
     public CompilationResult() {
+    	diagnosticList = new CompilerDiagnostic[0];
     }
     
     public String toString() {
@@ -48,6 +49,7 @@ public class CompilationResult implements Serializable
      */
     public CompilationResult(CompilationOutcome outcome) {
         this.outcome=outcome;
+        this.diagnosticList = new CompilerDiagnostic[0];
     }
     
     public void setCompilerDiagnosticList(CompilerDiagnostic[] diagnostics) {

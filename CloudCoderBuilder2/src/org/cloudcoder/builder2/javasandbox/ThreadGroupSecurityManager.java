@@ -83,16 +83,19 @@ public class ThreadGroupSecurityManager extends SecurityManager
      */
     @Override
     public void checkCreateClassLoader() {
-        if (isCheckedThreadGroup()) {
-        	String threadName = Thread.currentThread().getName();
-        	
-//        	if (threadName.startsWith("RubyTest_")) {
-//        		// FIXME: is this really necessary?
-//        		return;
-//        	}
-        	
-            throw new SecurityException("Cannot create classloader");
-        }
+    	
+    	// FIXME: allow creation of class loaders, since Java reflection seems to require this sometimes
+    	
+//        if (isCheckedThreadGroup()) {
+//        	String threadName = Thread.currentThread().getName();
+//        	
+////        	if (threadName.startsWith("RubyTest_")) {
+////        		// FIXME: is this really necessary?
+////        		return;
+////        	}
+//        	
+//            throw new SecurityException("Cannot create classloader");
+//        }
     }
 
     /* (non-Javadoc)
@@ -133,6 +136,11 @@ public class ThreadGroupSecurityManager extends SecurityManager
         }
         if (perm.getName().equals("accessDeclaredMembers")) {
             return;
+        }
+        
+        // FIXME: workaround for Jython, Oracle JDK 7
+        if (perm.getName().equals("suppressAccessChecks")) {
+        	return;
         }
         
         if (isCheckedThreadGroup()) {

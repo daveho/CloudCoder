@@ -134,14 +134,33 @@ sub Run {
 sub ReadDeps {
 	my ($filename) = @_;
 	my @deps = ();
+	my %vars = ();
 	my $fh = new FileHandle("<$filename") || die "Couldn't open deps file $filename: $!\n";
 	my $download;
 	my $targets = [];
 	while (<$fh>) {
 		chomp;
+
+		# Comment?
 		if (/^\s*#/) {
-			# Comment: ignore
-		} elsif (/^(\S+)/) {
+			next;
+		}
+
+		# Blank line?
+		if (/^\s*$/) {
+			next;
+		}
+
+		# Is this a variable definition?
+		if (/^([A-Za-z_][A-Za-z_0-9]*)\s*=\s*(\S*)\s*$/) {
+			$vars{$1} = $2;
+			next;
+		}
+
+		# Perform variable substitutions
+		s,\${([A-Za-z_][A-Za-z_0-9]*)},$vars{$1},ge;
+
+		if (/^(\S+)/) {
 			# Download
 			if (defined $download) {
 				# Push previous download/targets
@@ -201,6 +220,10 @@ sub EnsureDirExists {
 # report them, since they may be stale (and could cause
 # problems with any build artifacts they might accidentally
 # be included in).
+#
+# Causes the script to exit with an exit code of 0
+# if no unexpected jarfiles are found, or 1 if at least
+# one unexpected jarfile is found.
 sub CheckTargets {
 	my @deps = @_;
 	my %jardirs = ();
@@ -222,6 +245,7 @@ sub CheckTargets {
 	}
 
 	# Check each jar directory for unexpected jar files.
+	my $unexpectedJarCount = 0;
 	foreach my $jardir (sort keys %jardirs) {
 		#print "Jar dir: $jardir\n";
 		my %ignoredJarFiles = GetIgnoredJarFiles($jardir);
@@ -234,10 +258,12 @@ sub CheckTargets {
 				my $found = $1;
 				if ((!exists $ignoredJarFiles{$found}) && (!exists $expectedJarFiles{$found})) {
 					print "Warning: unexpected jar file $jardir/$found\n";
+					$unexpectedJarCount++;
 				}
 			}
 		}
 	}
+	exit ($unexpectedJarCount > 0 ? 1 : 0);
 }
 
 # Get the set of explicitly ignored jar files in given directory.
