@@ -118,6 +118,13 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			}
 		}
 		
+		// Special case: don't attempt to redirect to the login page.
+		// That would be silly.
+		if (linkPageId_ == PageId.LOGIN) {
+			linkPageId_ = null;
+			linkPageParams_ = null;
+		}
+		
 		final PageId linkPageId = linkPageId_;
 		final String linkPageParams = linkPageParams_;
 		
