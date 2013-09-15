@@ -36,6 +36,7 @@ import org.cloudcoder.app.client.page.UserAdminPage;
 import org.cloudcoder.app.client.page.UserProblemSubmissionsPage;
 import org.cloudcoder.app.client.page.UserProgressPage;
 import org.cloudcoder.app.client.rpc.RPC;
+import org.cloudcoder.app.client.view.PageLoadErrorView;
 import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.ActivityObject;
 import org.cloudcoder.app.shared.model.ICallback;
@@ -368,12 +369,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 				page.setFragment();
 				
 				// Create the page's Widget and add it to the DOM tree.
-				// Leave a 10 pixel border around the page widget.
 				page.createWidget();
-				IsWidget w = page.getWidget();
-				RootLayoutPanel.get().add(w);
-				RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
-				RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
+				showPageUI(page.getWidget());
 				
 				// Activate the page
 				page.activate();
@@ -400,8 +397,12 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		}, new ICallback<Pair<String, Throwable>>() {
 			@Override
 			public void call(Pair<String, Throwable> value) {
-				// TODO: create error UI allowing the user to navigate back to the home page (CoursesAndProblemsPage2)
-				GWT.log("Failed to load page objects: " + value.getLeft(), value.getRight());
+				session.add(StatusMessage.error(value.getLeft(), value.getRight()));
+				PageLoadErrorView w = new PageLoadErrorView();
+				page.setWidget(w);
+				showPageUI(w);
+				currentPage = page;
+				w.activate(session, subscriptionRegistrar);
 			}
 		});
 	}
@@ -435,5 +436,17 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		GWT.log("Post-login: go to page " + pageId + (pageParams != null ? (", params=" + pageParams) : ""));
 		CloudCoderPage page = createPageForPageId(pageId, pageParams);
 		changePage(page);
+	}
+
+	/**
+	 * Show a page UI.
+	 * 
+	 * @param w the page UI
+	 */
+	private void showPageUI(IsWidget w) {
+		// Leave a 10 pixel border around the page widget.
+		RootLayoutPanel.get().add(w);
+		RootLayoutPanel.get().setWidgetLeftRight(w, 10.0, Unit.PX, 10.0, Unit.PX);
+		RootLayoutPanel.get().setWidgetTopBottom(w, 10.0, Unit.PX, 10.0, Unit.PX);
 	}
 }

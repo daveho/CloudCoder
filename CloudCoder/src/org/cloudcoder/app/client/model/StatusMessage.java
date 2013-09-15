@@ -98,9 +98,8 @@ public class StatusMessage {
 	 * @return the error status message
 	 */
 	public static Object error(String message, Throwable caught) {
-		String exceptionMessage = caught.getMessage();
-		if (exceptionMessage != null) {
-			message = message + ": " + exceptionMessage;
+		if (caught != null && caught.getMessage() != null) {
+			message = message + ": " + caught.getMessage();
 		}
 		return new StatusMessage(Category.ERROR, message);
 	}

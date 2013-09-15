@@ -231,7 +231,9 @@ public abstract class CloudCoderPage {
 	
 	/**
 	 * This method is called after the page's UI has been
-	 * added to the DOM tree.
+	 * added to the DOM tree.  This method may safely assume that
+	 * the widget set with {@link #setWidget(IsWidget)} is
+	 * the widget created by {@link #createWidget()}.
 	 */
 	public abstract void activate();
 	
@@ -240,6 +242,11 @@ public abstract class CloudCoderPage {
 	 * from the client web page.  This default implementation
 	 * cancels all subscriptions.  Subclasses may override this
 	 * to do additional cleanup.
+	 * 
+	 * <em>Important</em>: implementations of this method should
+	 * not assume that the page widget set with {@link #setWidget(IsWidget)}
+	 * belongs to any particular class.  When an error occurs loading
+	 * a page, an arbitrary error UI widget could be set.
 	 */
 	public void deactivate() {
 		getSubscriptionRegistrar().cancelAllSubscriptions();

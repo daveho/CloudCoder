@@ -446,7 +446,9 @@ public class DevelopmentPage2 extends CloudCoderPage {
 			getSession().remove(Problem.class);
 		}
 		
-		((UI)getWidget()).deactivate();
+		if (getWidget() instanceof UI) {
+			((UI)getWidget()).deactivate();
+		}
 	}
 
 	@Override

@@ -300,7 +300,9 @@ public class QuizPage extends CloudCoderPage {
 	@Override
 	public void deactivate() {
 		super.deactivate();
-		((UI)getWidget()).deactivate();
+		if (getWidget() instanceof UI) {
+			((UI)getWidget()).deactivate();
+		}
 	}
 
 	@Override
