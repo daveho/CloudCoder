@@ -34,7 +34,6 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.javasandbox.IsolatedTask;
-import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
 import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -43,11 +42,14 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.python.core.Py;
 import org.python.core.PyException;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
 import org.python.core.PyTuple;
+import org.python.core.PyType;
+import org.python.core.__builtin__;
 import org.python.util.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +172,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			final byte[] sBytes=s.getBytes();
 
 			//Check if the Python code is syntactically correct
-			CompilationResult compres=compilePythonScript(s);
+			CompilationResult compres=compilePythonScript(problem, s);
 			if (compres.getOutcome()!=CompilationOutcome.SUCCESS) {
 				compres.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
 				return new SubmissionResult(compres);
@@ -222,11 +224,25 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		/**
 		 * @param programText
 		 */
-		public static CompilationResult compilePythonScript(final String programText) {
+		public CompilationResult compilePythonScript(Problem problem, final String programText) {
 			try {
 			    logger.info("\n"+programText);
 				PythonInterpreter terp=new PythonInterpreter();
 				terp.execfile(new ByteArrayInputStream(programText.getBytes()));
+				
+				// Check to see if the test code actually defines the required
+				// function.  If it doesn't, report this as a failed compilation
+				// (it isn't really, but attempting to execute any of the
+				// test methods will accomplish nothing useful.)
+				PyFunction func = (PyFunction)terp.get(problem.getTestname(), PyFunction.class);
+				if (func == null) {
+					CompilationResult compRes = new CompilationResult(CompilationOutcome.FAILURE);
+					CompilerDiagnostic diag = new CompilerDiagnostic(prologueLength+1, prologueLength+1, 1, 1, "Required function " + problem.getTestname() + " was not defined");
+					compRes.setCompilerDiagnosticList(new CompilerDiagnostic[]{ diag });
+					return compRes;
+				}
+
+				// Compilation successful, we should be ready to run the tests
 				return new CompilationResult(CompilationOutcome.SUCCESS);
 			} catch (PySyntaxError e) {
 
@@ -240,9 +256,12 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 				//compres.setException(e);
 				return compres;
 			} catch (PyException e) {
-				logger.warn("Unexpected PyException (probably compilation failure): ");
+				logger.warn("Unexpected PyException (probably compilation failure)", e);
 				CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
 				//compres.setException(e);
+				String message = getExceptionMessage(e);
+				CompilerDiagnostic diag = new CompilerDiagnostic(1, 1, 1, 1, message);
+				compres.setCompilerDiagnosticList(new CompilerDiagnostic[]{diag});
 				return compres;
 			}
 		}
@@ -313,9 +332,40 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 					logger.error("Security exception", e.getCause());
 					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
-				logger.warn("Exception type was "+e.getClass());
-				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, e.getMessage(), "stdout", "stderr");
+				logger.info("Exception executing Python submission", e);
+				String msg = getExceptionMessage(e);
+				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
 			}
+		}
+		
+		// The following method is from:
+		//    http://python.6.x6.nabble.com/Getting-PyException-details-from-Java-td1762496.html
+		// [With some minor fixes.]
+		
+		/** 
+		 * Returns the exception message, akin to java exception's getMessage() 
+		 * method (not supported properly in Jython). 
+		 * @param pye a python exception instance 
+		 * @return a string containing the python exception's message 
+		 */ 
+		public static String getExceptionMessage(PyException pye) { 
+			// derivative of Jython's Py.formatException() method 
+
+			StringBuffer buf = new StringBuffer(128); 
+			if (pye.type instanceof PyType) { 
+				buf.append(((PyType) pye.type).fastGetName()); 
+			} else { 
+				buf.append(pye.type.__str__()); 
+			} 
+			if (pye.value != Py.None) { 
+				buf.append(": "); 
+				if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
+					buf.append(pye.value.__getitem__(0).__str__()); 
+				} else { 
+					buf.append(pye.value.__str__()); 
+				} 
+			} 
+			return buf.toString(); 
 		}
 	}
 }

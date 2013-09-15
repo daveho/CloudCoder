@@ -81,11 +81,6 @@
 				file="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderWebServiceUtil.jar"/>
 			
-			<!-- Include libraries needed for JSON serialization. -->
-			<zipfileset
-				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
-				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
-			
 			<!-- Include JSTL taglib jarfile. -->
 			<zipfileset
 				file="../CloudCoderJetty/lib/jetty/jsp/${jstl.jar}"

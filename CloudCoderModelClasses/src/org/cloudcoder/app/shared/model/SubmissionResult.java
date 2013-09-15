@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,6 +20,12 @@ package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
 
+/**
+ * Object describing the result of compiling and testing a submission.
+ * Contains a {@link CompilationResult} and a sequence of {@link TestResult}s.
+ * 
+ * @author David Hovemeyer
+ */
 public class SubmissionResult implements Serializable
 {
     public static final long serialVersionUID=1L;
@@ -27,21 +34,35 @@ public class SubmissionResult implements Serializable
     private CompilationResult compilationResult;
     //Can add in other stuff like static error warnings
     
-    public SubmissionResult() {}
-    
-    public SubmissionResult(CompilationResult compilationResult) {
-        this.compilationResult=compilationResult;
+    /**
+     * Constructor.
+     */
+    public SubmissionResult() {
+    	
     }
     
     /**
-     * @param compileResult
+     * Constructor from a {@link CompilationResult}.
+     * Useful for a submission which failed to compile.
+     * 
+     * @param compilationResult the {@link CompilationResult}
+     */
+    public SubmissionResult(CompilationResult compilationResult) {
+        this.compilationResult=compilationResult;
+        
+        // Create empty list of TestResults
+        this.testResults = new TestResult[0];
+    }
+    
+    /**
+     * @param compileResult the {@link CompilationResult}
      */
     public void setCompilationResult(CompilationResult compileResult) {
         this.compilationResult=compileResult;
     }
 
     /**
-     * @return the compilationResult
+     * @return the {@link CompilationResult}
      */
     public CompilationResult getCompilationResult() {
         return compilationResult;

@@ -72,10 +72,29 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	
 	public static final int DEFAULT_PORT = 47374;
 
-	private ServerTask serverTask;
+	private volatile ServerTask serverTask;
 	private Thread serverThread;
 	private String keystoreFilename;
 	private String keystorePassword;
+
+	/**
+	 * Poll to see how many worker tasks, and thus how many connected builder threads,
+	 * there are.
+	 * 
+	 * @return number of connected builder threads
+	 */
+	public int getNumBuilderThreads() {
+		ServerTask theServerTask = serverTask;
+		if (theServerTask == null) {
+			// In general, this should not happen.
+			// It could happen if health data is requested before the webapp
+			// and the server side of the OOP build service have had a chance
+			// to initialize fully.
+			logger.warn("getNumBuilderThreads() called, but there is no server task");
+			return 0;
+		}
+		return theServerTask.getNumWorkerTasks();
+	}
 	
 	@Override
 	public IFutureSubmissionResult submitAsync(Problem problem, List<TestCase> testCaseList, String programText) 

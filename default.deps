@@ -1,3 +1,4 @@
+
 http://mirrors.ibiblio.org/pub/mirrors/maven2/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar
   CloudCoderLogging/lib/jsr305.jar
 http://repo1.maven.org/maven2/com/google/guava/guava/13.0.1/guava-13.0.1.jar
@@ -18,8 +19,9 @@ http://repo1.maven.org/maven2/commons-io/commons-io/2.1/commons-io-2.1.jar
   CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar
   CloudCoderLoadTester/lib/commons-io-2.1.jar
   CloudCoderLogging/lib/commons-io-2.1.jar
-http://search.maven.org/remotecontent?filepath=org/python/jython/2.5.3/jython-2.5.3.jar
-  CloudCoderBuilder2/lib/jython-2.5.3.jar
+  CloudCoderAnalysis/lib/commons-io-2.1.jar
+http://repo1.maven.org/maven2/org/python/jython-standalone/2.5.3/jython-standalone-2.5.3.jar
+  CloudCoderBuilder2/lib/jython-standalone-2.5.3.jar
 https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/daemon-0.5.jar
   CloudCoderJetty/lib/daemon/daemon-0.5.jar
   CloudCoderBuilder2/lib/daemon-0.5.jar
@@ -87,6 +89,7 @@ http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jsp-2.1/7.4.4.v20110707/je
   CloudCoderJetty/lib/jetty/jsp/jetty-jsp-2.1-7.4.4.v20110707.jar
 http://json-simple.googlecode.com/files/json-simple-1.1.1.jar
   CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar
+  CloudCoder/war/WEB-INF/lib/json-simple-1.1.1.jar
 http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mail.jar
   CloudCoder/war/WEB-INF/lib/mail.jar
@@ -121,5 +124,45 @@ http://repo1.maven.org/maven2/com/mchange/mchange-commons-java/0.2.3.4/mchange-c
   CloudCoderModelClassesPersistence/lib/mchange-commons-java-0.2.3.4.jar
   CloudCoder/war/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar
+
+#
+# Misc. libs for CloudCoderAnalysis
+#
 https://java-diff-utils.googlecode.com/files/diffutils-1.2.1.jar
   CloudCoderAnalysis/lib/diffutils-1.2.1.jar
+http://repo1.maven.org/maven2/org/ow2/asm/asm-all/4.1/asm-all-4.1.jar
+  CloudCoderAnalysis/lib/asm-all-4.1.jar
+
+#
+# Eclipse/JDT jarfiles for CloudCoderAnalysis
+#
+
+# We can directly download Eclipse 3.7.1 jars from this site:
+mirrorServiceEclipse371=http://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/eclipse/updates/3.7/R-3.7.1-201109091335/plugins
+
+${mirrorServiceEclipse371}/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar
+  CloudCoderAnalysis/lib/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar
+${mirrorServiceEclipse371}/org.eclipse.core.jobs_3.5.100.v20110404.jar
+  CloudCoderAnalysis/lib/org.eclipse.core.jobs_3.5.100.v20110404.jar
+${mirrorServiceEclipse371}/org.eclipse.core.resources_3.7.100.v20110510-0712.jar
+  CloudCoderAnalysis/lib/org.eclipse.core.resources_3.7.100.v20110510-0712.jar
+${mirrorServiceEclipse371}/org.eclipse.core.runtime_3.7.0.v20110110.jar
+  CloudCoderAnalysis/lib/org.eclipse.core.runtime_3.7.0.v20110110.jar
+${mirrorServiceEclipse371}/org.eclipse.equinox.common_3.6.0.v20110523.jar
+  CloudCoderAnalysis/lib/org.eclipse.equinox.common_3.6.0.v20110523.jar
+${mirrorServiceEclipse371}/org.eclipse.equinox.preferences_3.4.1.R37x_v20110725.jar
+  CloudCoderAnalysis/lib/org.eclipse.equinox.preferences_3.4.1.R37x_v20110725.jar
+${mirrorServiceEclipse371}/org.eclipse.jdt.compiler.apt_1.0.400.v0110816-0800.jar
+  CloudCoderAnalysis/lib/org.eclipse.jdt.compiler.apt_1.0.400.v0110816-0800.jar
+${mirrorServiceEclipse371}/org.eclipse.jdt.compiler.tool_1.0.100.v_B76_R37x.jar
+  CloudCoderAnalysis/lib/org.eclipse.jdt.compiler.tool_1.0.100.v_B76_R37x.jar
+${mirrorServiceEclipse371}/org.eclipse.jdt.core_3.7.1.v_B76_R37x.jar
+  CloudCoderAnalysis/lib/org.eclipse.jdt.core_3.7.1.v_B76_R37x.jar
+${mirrorServiceEclipse371}/org.eclipse.jface_3.7.0.I20110522-1430.jar
+  CloudCoderAnalysis/lib/org.eclipse.jface_3.7.0.I20110522-1430.jar
+${mirrorServiceEclipse371}/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar
+  CloudCoderAnalysis/lib/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar
+${mirrorServiceEclipse371}/org.eclipse.osgi.util_3.2.200.v20110110.jar
+  CloudCoderAnalysis/lib/org.eclipse.osgi.util_3.2.200.v20110110.jar
+${mirrorServiceEclipse371}/org.eclipse.text_3.5.101.r371_v20110810-0800.jar
+  CloudCoderAnalysis/lib/org.eclipse.text_3.5.101.r371_v20110810-0800.jar

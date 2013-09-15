@@ -22,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.cloudcoder.app.server.model.HealthData;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +35,32 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerTask implements Runnable {
     private static final Logger logger=LoggerFactory.getLogger(ServerTask.class);
+    
+    // Update HealthData every 5 seconds.
+	public static final long UPDATE_SUBMISSION_QUEUE_SIZE_INTERVAL = 5000L;
+    
+    private class HealthMonitorTask implements Runnable {
+    	@Override
+    	public void run() {
+    		while (!shutdownRequested) {
+    			try {
+    				int size = submissionQueue.size();
+    				HealthData.getInstance().updateSubmissionQueueSize(size);
+    				
+    				Thread.sleep(UPDATE_SUBMISSION_QUEUE_SIZE_INTERVAL);
+    			} catch (InterruptedException e) {
+    				// Shutting down
+    				logger.info("Health monitor thread interrupted...");
+    			}
+    		}
+    	}
+    }
 
 	private LinkedBlockingQueue<OOPBuildServiceSubmission> submissionQueue;
 	private ServerSocket serverSocket;
 	private WorkerTaskSet workerTaskSet;
 	private volatile boolean shutdownRequested;
+	private Thread healthMonitorThread;
 	
 	public ServerTask(ServerSocket serverSocket) {
 		this.submissionQueue = new LinkedBlockingQueue<OOPBuildServiceSubmission>();
@@ -58,6 +80,9 @@ public class ServerTask implements Runnable {
 	
 	@Override
 	public void run() {
+		healthMonitorThread = new Thread(new HealthMonitorTask());
+		healthMonitorThread.start();
+		
 		try {
 			while (!shutdownRequested) {
 				Socket clientSocket = serverSocket.accept();
@@ -77,6 +102,9 @@ public class ServerTask implements Runnable {
 
 	public void shutdown() {
 		shutdownRequested = true;
+		
+		// Shut down the submission queue size monitor thread
+		healthMonitorThread.interrupt();
 		
 		// close server sockets (so no new clients can attach)
 		try {

@@ -18,7 +18,6 @@
 
 package org.cloudcoder.builder2.server;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,15 +27,13 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.builder2.csandbox.EasySandboxSharedLibrary;
 import org.cloudcoder.builder2.model.BuilderSubmission;
-import org.cloudcoder.builder2.model.CleanupActionStack;
-import org.cloudcoder.builder2.model.ICleanupAction;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.model.Tester;
 import org.cloudcoder.builder2.tester.TesterFactory;
 import org.cloudcoder.builder2.util.ArrayUtil;
+import org.cloudcoder.builder2.util.SubmissionResultUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,12 +104,9 @@ public class Builder2 {
 
 	   logger.info("Sending SubmissionResult back to server");
 
-	   if (result.getTestResults() == null) {
-		  logger.error("Null TestResult - should not happen");
-		  result.setTestResults(new TestResult[0]);
-	   } else {
-		  logger.info("{} results", result.getTestResults().length);
-	   }
+	   // Paranoia: sanitize the SubmissionResult and it contents,
+	   // in case any fields were mistakenly left uninitialized
+	   SubmissionResultUtil.sanitizeSubmissionResult(result);
 
 	   return result;
 	}

@@ -150,26 +150,37 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
 	private void initColumns(Problem problem) {
 		TestCaseNameColumn testCaseNameColumn = new TestCaseNameColumn();
 		cellTable.addColumn(testCaseNameColumn, "Test name");
-		cellTable.setColumnWidth(testCaseNameColumn, "160px");
+		cellTable.setColumnWidth(testCaseNameColumn, "120px");
 		
 		OutcomeColumn outcomeColumn = new OutcomeColumn();
 		cellTable.addColumn(outcomeColumn, "Outcome");
 		cellTable.setColumnWidth(outcomeColumn, "160px");
 		
 		ProblemType type = problem.getProblemType();
+	    InputColumn inputColumn = new InputColumn();
+		cellTable.addColumn(inputColumn, "Input");
+	    cellTable.setColumnWidth(inputColumn, "100px");
 		if (type.isOutputLiteral()) {
-		    // appropriate for function/methods where we know the inputs, the expected output,
-		    // and the actual output.
+		    // appropriate for function/methods where we know the expected result,
+		    // and the actual result.
 		    // Unclear if C functions can be made to fit this category...
-		    cellTable.addColumn(new InputColumn(), "Input");
-		    cellTable.addColumn(new ExpectedOutputColumn(), "Expected Output");
-		    cellTable.addColumn(new ActualOutputColumn(), "Actual Output");
 		    
-		} else {
-		    // appropriate for whole-program exercises that use regexps to check 
-		    // correctness of outputs
-		    cellTable.addColumn(new MessageColumn(), "Message");
+			ExpectedOutputColumn expectedOutputColumn = new ExpectedOutputColumn();
+			cellTable.addColumn(expectedOutputColumn, "Expected");
+		    cellTable.setColumnWidth(expectedOutputColumn, "100px");
+
+		    ActualOutputColumn actualOutputColumn = new ActualOutputColumn();
+			cellTable.addColumn(actualOutputColumn, "Actual");
+			cellTable.setColumnWidth(actualOutputColumn, "100px");
 		}
+		
+		// Include the message for all problem types because certain code errors,
+		// such as references to undefined variables, are only detected at runtime
+		// for some languages (I'm looking at you, Python!).  The message field
+		// is the only means we have currently to convey these errors to the
+		// user.  It would be more elegant to show these as compiler diagnostics:
+		// perhaps we will do that eventually.
+	    cellTable.addColumn(new MessageColumn(), "Message");
 		
 		cellTable.addColumn(new OutputColumn(new ExtractOutputText<NamedTestResult>() {
 			@Override

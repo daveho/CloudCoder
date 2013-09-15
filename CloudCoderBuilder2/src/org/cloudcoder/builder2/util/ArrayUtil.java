@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -39,6 +40,51 @@ public class ArrayUtil {
 		int i = 0;
 		for (E element : c) {
 			result[i++] = element;
+		}
+		return result;
+	}
+
+	/**
+	 * Determine whether given array has any null elements.
+	 * 
+	 * @param a an array
+	 * @return true if the array has any null elements, false if all elements are non-null
+	 */
+	public static boolean hasNullElements(Object[] a) {
+		return countNullElements(a) > 0;
+	}
+
+	/**
+	 * Return number of null elements in array.
+	 * 
+	 * @param a an array
+	 * @return number of null elements in the array
+	 */
+	public static int countNullElements(Object[] a) {
+		int count = 0;
+		for (Object o : a) {
+			if (o == null) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * Return a copy of the given array that has the same element values
+	 * in the same order, except that all null values are removed.
+	 * 
+	 * @param a an array
+	 * @return an array with the same values with the null values removed
+	 */
+	public static<E> E[] stripNullElements(E[] a) {
+		@SuppressWarnings("unchecked")
+		E[] result = (E[]) Array.newInstance(a.getClass().getComponentType(), a.length - countNullElements(a));
+		int added = 0;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != null) {
+				result[added++] = a[i];
+			}
 		}
 		return result;
 	}
