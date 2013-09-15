@@ -87,6 +87,7 @@
 			else="war/WEB-INF/classes/${cloudcoder.submitsvc.ssl.keystore}">
 			<isset property="distBuild"/>
 		</condition>
+		<property name="versionFile" value="../CloudCoder/src/VERSION"/>
 
 		<!-- for gwt-2.5.0, we need requestfactory-server.jar:
 			see: http://code.google.com/p/google-web-toolkit/issues/detail?id=7527 -->
@@ -181,6 +182,11 @@
 			<zipfileset
 				file="${cloudcoderProperties}"
 				fullpath="cloudcoder.properties"/>
+
+			<!-- Include the VERSION file -->
+			<zipfileset
+				file="${versionFile}"
+				fullpath="VERSION"/>
 
 			<!-- Include a Manifest specifying the Main-Class to start/control/shutdown the webapp. -->
 			<manifest>

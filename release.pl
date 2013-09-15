@@ -26,6 +26,7 @@ my $webapp="CloudCoderWebServer/cloudcoderApp.jar";
 my $builder="CloudCoderBuilder2/cloudcoderBuilder.jar";
 my $webappSrc='CloudCoder/src';
 my $builderSrc='CloudCoderBuilder2/src';
+my $builderBin='CloudCoderBuilder2/bin';
 my $wiki="../CloudCoder.wiki";
 my $downloadFile='Downloads.md';
 my $downloads="$wiki/$downloadFile";
@@ -82,6 +83,7 @@ WriteStringToFile($version, 'VERSION');
 print "Done creating VERSION\n";
 Run('cp', 'VERSION', "$webappSrc");
 Run('cp', 'VERSION', "$builderSrc");
+Run('cp', 'VERSION', "$builderBin");
 print "Done copying VERSION to $webappSrc and $builderSrc";
 
 # TODO: Assert the VERSION files match to allow skipping
@@ -192,7 +194,7 @@ sub UpdateDownloads {
       push(@newlines, '');
       push(@newlines, $webappLink);
       push(@newlines, '');
-      push(@newlines, $webappLink);
+      push(@newlines, $builderLink);
       push(@newlines, '');
       push(@newlines, $line);
     } else {
