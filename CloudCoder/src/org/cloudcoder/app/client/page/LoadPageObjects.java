@@ -148,6 +148,8 @@ public class LoadPageObjects {
 		}
 	}
 	
+	// TODO: Allow loading of UserSelection
+	
 	private CloudCoderPage page;
 	private Class<?>[] pageObjects;
 	private Session session;

@@ -437,7 +437,7 @@ public class UserAccountPage extends CloudCoderPage
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		return new Class<?>[]{ CourseSelection.class };
 	}
 
     /* (non-Javadoc)

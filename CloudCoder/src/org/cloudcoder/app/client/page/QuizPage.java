@@ -25,6 +25,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -289,7 +290,7 @@ public class QuizPage extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		return new Class<?>[]{ CourseSelection.class, Problem.class };
 	}
 
 	@Override
