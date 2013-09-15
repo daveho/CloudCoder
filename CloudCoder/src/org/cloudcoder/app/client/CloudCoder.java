@@ -353,26 +353,13 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		}
 		page.setSession(session);
 		
-		// Update the anchor in the URL to identify the page.
-		// See: http://stackoverflow.com/questions/5402732/gwt-set-url-without-submit
-		// TODO: could add params here?
-		String hash = page.getPageId().getFragmentName();
-		String newURL = Window.Location.createUrlBuilder().setHash(hash).buildString();
-		
-		// When running in development mode, replacing ":" with "%3A"
-		// (due to URL encoding, I guess) appears to trigger a page reload
-		// on both Firefox and Chrome, completely bollixing our efforts to use
-		// the original URL fragment.  So, undo that bit of unnecessary
-		// manipulation of the URL.
-		newURL = newURL.replace("%3A", ":");
-		
-		Window.Location.replace(newURL);
-		GWT.log("Setting URL to " + newURL);
-		
 		// Now it is safe to load the page objects, create the page UI, and activate the page
 		page.loadPageObjects(new Runnable() {
 			@Override
 			public void run() {
+				// Set the URL fragment to properly identify this page
+				page.setFragment();
+				
 				// Create the page's Widget and add it to the DOM tree.
 				// Leave a 10 pixel border around the page widget.
 				page.createWidget();

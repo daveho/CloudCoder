@@ -18,7 +18,10 @@
 
 package org.cloudcoder.app.client.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
@@ -41,6 +44,23 @@ public class PageParams {
 		map = parseParams(params);
 	}
 	
+	/**
+	 * Constructor for empty page params.
+	 */
+	public PageParams() {
+		map = new HashMap<String, String>();
+	}
+
+	/**
+	 * Add a parameter and its value.
+	 * 
+	 * @param paramName   the parameter name
+	 * @param paramValue  the parameter value
+	 */
+	public void put(String paramName, String paramValue) {
+		map.put(paramName, paramValue);
+	}
+
 	/**
 	 * Get the value corresponding to given key.
 	 * 
@@ -82,5 +102,27 @@ public class PageParams {
 			}
 		}
 		return map;
+	}
+	
+	/**
+	 * Convert to the external URL form.
+	 * This can be appended after the fragment name.
+	 */
+	public String unparse() {
+		List<String> names = new ArrayList<String>();
+		names.addAll(map.keySet());
+		Collections.sort(names);
+		StringBuilder buf = new StringBuilder();
+		
+		for (String name : names) {
+			if (buf.length() > 0) {
+				buf.append(',');
+			}
+			buf.append(name);
+			buf.append('=');
+			buf.append(map.get(name));
+		}
+		
+		return buf.toString();
 	}
 }

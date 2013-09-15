@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
@@ -37,6 +38,7 @@ import org.cloudcoder.app.shared.util.DefaultSubscriptionRegistrar;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 
@@ -174,7 +176,8 @@ public abstract class CloudCoderPage {
 	 * Remove all objects added to the Session.
 	 */
 	protected void removeAllSessionObjects() {
-		for (Class<?> cls : sessionObjectClassList) {
+		for (Class<?> cls : sessionObjectClassList) {		
+
 			session.remove(cls);
 		}
 	}
@@ -311,5 +314,42 @@ public abstract class CloudCoderPage {
 	 * @param pageStack the {@link PageStack}
 	 */
 	public abstract void initDefaultPageStack(PageStack pageStack);
+
+	/**
+	 * Based on the {@link PageId} and the required page objects,
+	 * set the URL fragment for this page.
+	 */
+	public final void setFragment() {
+		// Update the anchor in the URL to identify the page.
+		// See: http://stackoverflow.com/questions/5402732/gwt-set-url-without-submit
+		// TODO: could add params here?
+		String fragmentName = this.getPageId().getFragmentName();
+		
+		// Based on the session objects, create PageParams for this page
+		CreatePageParamsFromPageAndSession createPageParams = new CreatePageParamsFromPageAndSession();
+		PageParams pageParams = createPageParams.create(this);
+		
+		// Construct the complete URL fragment (fragment name and page params)
+		String hash = fragmentName;
+		String fragmentParams = pageParams.unparse();
+		GWT.log("fragment params are " + fragmentParams);
+		if (!fragmentParams.equals("")) {
+			hash = hash + "?" + fragmentParams;
+		}
+		
+		// Construct a new URL for the page (leaving the non-fragment part of the
+		// URL unchanged, avoiding a page reload)
+		String newURL = Window.Location.createUrlBuilder().setHash(hash).buildString();
+		
+		// When running in development mode, replacing ":" with "%3A"
+		// (due to URL encoding, I guess) appears to trigger a page reload
+		// on both Firefox and Chrome, completely bollixing our efforts to use
+		// the original URL fragment.  So, undo that bit of unnecessary
+		// manipulation of the URL.
+		newURL = newURL.replace("%3A", ":");
+		
+		Window.Location.replace(newURL);
+		GWT.log("Setting URL to " + newURL);
+	}
 	
 }
