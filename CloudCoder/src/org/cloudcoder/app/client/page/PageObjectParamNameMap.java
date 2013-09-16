@@ -24,6 +24,7 @@ import java.util.Map;
 import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.UserSelection;
 
 /**
  * Singleton map that associates page object classes with the
@@ -47,6 +48,7 @@ public class PageObjectParamNameMap {
 		map = new HashMap<Class<?>, String>();
 		map.put(CourseSelection.class, "c");
 		map.put(Problem.class, "p");
+		map.put(UserSelection.class, "u");
 	}
 	
 	/**

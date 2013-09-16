@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserProgressView;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
@@ -126,7 +127,16 @@ public class UserProgressPage extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[0]; // FIXME
+		return new Class<?>[]{
+				// The selected course
+				CourseSelection.class,
+				// Course registrations for the logged-in user (to check instructor status)
+				CourseAndCourseRegistration[].class,
+				// List of students registered in the course
+				User[].class,
+				// Selected user
+				UserSelection.class
+		};
 	}
 
 	@Override

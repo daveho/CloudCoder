@@ -25,12 +25,16 @@ import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserSelection;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -148,7 +152,126 @@ public class LoadPageObjects {
 		}
 	}
 	
-	// TODO: Allow loading of UserSelection
+	// Load CourseAndCourseRegistration list for logged-in user.
+	private class CourseAndCourseRegistrationListLoader implements Loader {
+		@Override
+		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
+			SessionUtil.loadCourseAndCourseRegistrationList(page, new ICallback<CourseAndCourseRegistration[]>() {
+				@Override
+				public void call(CourseAndCourseRegistration[] value) {
+					session.add(value);
+					onSuccess.run();
+				}
+			}, onFailure);
+		}
+	}
+	
+	/*
+	// CourseSelection and CourseAndCourseRegistration list should have already been loaded
+	private class ProblemListLoader implements Loader {
+		@Override
+		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
+			CourseSelection courseSelection = session.get(CourseSelection.class);
+			CourseAndCourseRegistration[] courseRegList = session.get(CourseAndCourseRegistration[].class);
+			
+			// Check whether user is an instructor
+			if (!isInstructor(courseSelection, courseRegList)) {
+				onFailure.call(new Pair<String, Throwable>("User is not an instructor in the course", null));
+				return;
+			}
+			
+			// Attempt to load problems in course
+		}
+	}
+	*/
+	
+	// Load user list of Users in course indicated by CourseSelection.
+	// Normally, this requires that the logged-in user is an instructor
+	// in the selected course.  However, as a special case, we allow
+	// this loader to succeed for a non-instructor user, putting a 0-length.
+	// User list in the session.  This special case handles the case
+	// where the logged-in user is accessing his/her own information
+	// (such as a submission history in the UserProgressPage).
+	private class UserListLoader implements Loader {
+		@Override
+		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
+			CourseSelection courseSelection = session.get(CourseSelection.class);
+			CourseAndCourseRegistration[] courseRegList = session.get(CourseAndCourseRegistration[].class);
+
+			// See if the logged-in user is an instructor in the selected course
+			if (!isInstructor(courseSelection, courseRegList)) {
+				// Special case: logged-in user isn't an instructor.
+				session.add(new User[0]);
+				onSuccess.run();
+				return;
+			}
+			
+			// Load users in course.
+			SessionUtil.loadUsersInCourse(
+					page,
+					courseSelection,
+					new ICallback<User[]>() {
+						@Override
+						public void call(User[] value) {
+							// Success!
+							session.add(value);
+							onSuccess.run();
+						}
+					},
+					new ICallback<Pair<String, Throwable>>() {
+						@Override
+						public void call(Pair<String, Throwable> value) {
+							onFailure.call(value);
+						}
+					}
+			);
+		}
+	}
+	
+	// UserSelection: CourseSelection, CourseAndCourseRegistration list,
+	// and registered User list must have already been loaded into the session.
+	private class UserSelectionLoader implements Loader {
+		@Override
+		public void load(final Runnable onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
+			final Integer userId = pageParams.getInt(PageObjectParamNameMap.getInstance().get(UserSelection.class));
+			if (userId == null) {
+				onFailure.call(new Pair<String, Throwable>("No user id specified", null));
+				return;
+			}
+			
+			// Special case: if the requested user id is the logged-in user's id,
+			// then we succeed trivially.  (A user can always access his/her
+			// own information, such as a submission history.)
+			User loggedInUser = session.get(User.class);
+			if (loggedInUser.getId() == userId.intValue()) {
+				GWT.log("User self-selection");
+				UserSelection userSelection = new UserSelection();
+				userSelection.setUser(loggedInUser);
+				onSuccess.run();
+				return;
+			}
+			
+			// General case: a user is being selected among all users in the course.
+			
+			// Users registered in the course should already have been loaded
+			User[] regUserList = session.get(User[].class);
+			
+			// Check to see if the user is registered in the course
+			for (User userInCourse : regUserList) {
+				if (userInCourse.getId() == userId.intValue()) {
+					// Huzzah!
+					UserSelection userSelection = new UserSelection();
+					userSelection.setUser(userInCourse);
+					session.add(userSelection);
+					onSuccess.run();
+					return;
+				}
+			}
+			
+			// User is not registered in course
+			onFailure.call(new Pair<String, Throwable>("User " + userId + " is not registered in the course", null));
+		}
+	}
 	
 	private CloudCoderPage page;
 	private Class<?>[] pageObjects;
@@ -175,6 +298,9 @@ public class LoadPageObjects {
 		loaderMap.put(CourseSelection.class, new CourseSelectionLoader());
 		loaderMap.put(Problem.class, new ProblemLoader());
 		loaderMap.put(ProblemAndTestCaseList.class, new ProblemAndTestCaseListLoader());
+		loaderMap.put(CourseAndCourseRegistration[].class, new CourseAndCourseRegistrationListLoader());
+		loaderMap.put(User[].class, new UserListLoader());
+		loaderMap.put(UserSelection.class, new UserSelectionLoader());
 	}
 	
 	/**
@@ -224,5 +350,23 @@ public class LoadPageObjects {
 		
 		// Use Loader to load current page object and, if successful, continue recursively
 		loader.load(successContinuation, onFailure);
+	}
+
+	/**
+	 * Check whether logged-in user is an instructor in the selected course.
+	 * 
+	 * @param courseSelection the selected course
+	 * @param courseRegList   course registrations for logged-in user
+	 * @return true if the logged-in user is an instructor in the selected course, false otherwise
+	 */
+	private static boolean isInstructor(CourseSelection courseSelection, CourseAndCourseRegistration[] courseRegList) {
+		boolean isInstructor = false;
+		for (CourseAndCourseRegistration reg : courseRegList) {
+			if (reg.getCourse().getId() == courseSelection.getCourse().getId()) {
+				isInstructor = reg.getCourseRegistration().getRegistrationType().isInstructor();
+				break;
+			}
+		}
+		return isInstructor;
 	}
 }

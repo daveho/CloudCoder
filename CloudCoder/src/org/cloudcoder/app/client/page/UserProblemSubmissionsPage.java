@@ -29,11 +29,13 @@ import org.cloudcoder.app.client.view.ReadOnlyProblemTextView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
 import org.cloudcoder.app.client.view.TestResultListView;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -232,7 +234,18 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 	
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[]{ CourseSelection.class, Problem.class, UserSelection.class };
+		return new Class<?>[]{
+				// Which course the problem was assigned in
+				CourseSelection.class,
+				// The Problem
+				Problem.class,
+				// Course registrations for the logged-in user (to check instructor status)
+				CourseAndCourseRegistration[].class,
+				// List of students registered in the course
+				User[].class,
+				// Selected user
+				UserSelection.class
+		};
 	}
 
 	@Override

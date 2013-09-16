@@ -21,6 +21,7 @@ import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.UserSelection;
 
 import com.google.gwt.core.shared.GWT;
 
@@ -59,6 +60,13 @@ public class CreatePageParamsFromPageAndSession {
 						paramValue = String.valueOf(problem.getProblemId());
 					} else {
 						GWT.log("No Problem in session");
+					}
+				} else if (pageObjectCls == UserSelection.class) {
+					UserSelection userSelection = page.getSession().get(UserSelection.class);
+					if (userSelection != null) {
+						paramValue = String.valueOf(userSelection.getUser().getId());
+					} else {
+						GWT.log("No UserSelection in session");
 					}
 				} else {
 					GWT.log("Don't know how to get param value for " + pageObjectCls.getName());
