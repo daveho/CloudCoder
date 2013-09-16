@@ -36,7 +36,7 @@ public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends
 	/**
 	 * Height in pixels.
 	 */
-	public static final double HEIGHT_PX = 28.0;
+	public static final double HEIGHT_PX = 30.0;
 	
 	private Map<ActionType, Button> actionToButtonMap;
 

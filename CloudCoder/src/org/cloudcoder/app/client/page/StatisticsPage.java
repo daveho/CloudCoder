@@ -21,6 +21,7 @@ import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Section;
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.view.ButtonPanel;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemProgressView;
 import org.cloudcoder.app.client.view.SectionSelectionView;
@@ -53,7 +54,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 public class StatisticsPage extends CloudCoderPage {
 	
 	private class UI extends Composite implements Subscriber {
-		private static final double STATS_OPTION_PANEL_HEIGHT_PX = 28.0;
+		private static final double STATS_OPTION_PANEL_HEIGHT_PX = ButtonPanel.HEIGHT_PX;
 
 		private PageNavPanel pageNavPanel;
 		private Label problemLabel;
