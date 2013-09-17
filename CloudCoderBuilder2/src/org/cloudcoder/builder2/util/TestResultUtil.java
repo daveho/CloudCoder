@@ -247,10 +247,13 @@ public class TestResultUtil {
 		StringBuilder buf = new StringBuilder();
 		buf.append(outcome.getShortMessage());
 
+		String input = testCase.getInput();
+		String expected = testCase.getOutput();
+
 		if (!testCase.isSecret()) {
-			buf.append(" for input (" + testCase.getInput() + ")");
+			buf.append(" for input (" + input + ")");
 			if (problem.getProblemType().isOutputLiteral()) {
-				buf.append(", expected output=" + testCase.getOutput());
+				buf.append(", expected output=" + expected);
 				if (output!=null && outcome!=TestOutcome.PASSED) {
 				    // include the actual output, if we have it
 				    buf.append(", actual output="+output);
@@ -262,10 +265,21 @@ public class TestResultUtil {
 		
 		ProblemType type=problem.getProblemType();
 		if (type.isOutputLiteral() && !testCase.isSecret()) {
-		    testResult.setInput(testCase.getInput());
-		    testResult.setExpectedOutput(testCase.getOutput());
+		    // "Unquote" the input and expected values.
+		    // This avoids the confusion that might result when the
+		    // literal representation of a value is different
+		    // than printed representation (which is the case with
+		    // strings: "Hello" is the literal for Hello).
+		    input = unquote(problem.getProblemType(), input);
+		    expected = unquote(problem.getProblemType(), expected);
+		    
+		    testResult.setInput(input);
+		    testResult.setExpectedOutput(expected);
+		    
 		    // Important: at the database level, actual output cannot be null
-		    testResult.setActualOutput(output != null ? output : "");
+		    String actual = output != null ? output : "";
+		    
+			testResult.setActualOutput(actual);
 		}
 
 		if (p != null) {
@@ -287,7 +301,26 @@ public class TestResultUtil {
 		return testResult;
 	}
 
-    public static TestResult createResultForFailedWithExceptionTest(Problem problem, 
+	/**
+	 * "Unquote" an input or expected value by removing surrounding quotes, if any.
+	 * 
+	 * @param problemType the {@link ProblemType}
+	 * @param s the input or expected value
+	 * @return the unquoted version of the input or expected value
+	 */
+    private static String unquote(ProblemType problemType, String s) {
+    	// FIXME: only done for Python, only works for single and double quoted strings
+		if (problemType == ProblemType.PYTHON_FUNCTION) {
+			if (s.startsWith("'") && s.endsWith("'")) {
+				s = s.substring(1, s.length() - 1);
+			} else if (s.startsWith("\"") && s.endsWith("\"")) {
+				s = s.substring(1, s.length() - 1);
+			}
+		}
+		return s;
+	}
+
+	public static TestResult createResultForFailedWithExceptionTest(Problem problem, 
         TestCase testCase, Throwable exception)
     {
         //TODO: We can parse the stack trace to get out specific line numbers
