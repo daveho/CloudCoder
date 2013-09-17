@@ -162,6 +162,19 @@ public class TestResultUtil {
 	}
 
 	/**
+	 * Create a generic {@link TestResult} for a passed test
+	 * where a result (output) value was generated.
+	 * 
+	 * @param problem   the {@link Problem}
+	 * @param testCase  the {@link TestCase}
+	 * @param output    the result value
+	 * @return the {@link TestResult}
+	 */
+	public static TestResult createResultForPassedTest(Problem problem, TestCase testCase, String output) {
+		return createTestResult(null, problem, TestOutcome.PASSED, testCase, output);
+	}
+	
+	/**
 	 * Create a generic {@link TestResult} for a failed test.
 	 * This method assumes that we don't have the actual output
 	 * of the submitted code (i.e. the expected result was 5

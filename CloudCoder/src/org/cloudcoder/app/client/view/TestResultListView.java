@@ -88,9 +88,9 @@ public class TestResultListView extends ResizeComposite implements SessionObserv
         @Override
         public String getValue(NamedTestResult object) {
             TestOutcome outcome=object.getTestResult().getOutcome();
-            if (outcome==TestOutcome.PASSED) {
-                return "";
-            }
+//            if (outcome==TestOutcome.PASSED) {
+//                return "";
+//            }
             if (outcome==TestOutcome.FAILED_FROM_TIMEOUT) {
                 return TestOutcome.FAILED_FROM_TIMEOUT.toString();
             }

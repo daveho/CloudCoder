@@ -21,6 +21,7 @@ package org.cloudcoder.app.client.model;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 
@@ -90,6 +91,7 @@ public class TestResultUtil {
         if (actualOutput!=null) {
             return actualOutput;
         }
+        GWT.log("Actual output is null? message=" + testResult.getMessage());
         
         TestOutcome outcome = testResult.getOutcome();
         String message = testResult.getMessage();

@@ -320,7 +320,7 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			    String output=tuple.__getitem__(1).toString();
 			    logger.trace("Actual output of code submitted for method: "+output);
 				if (result!=null && result.equals(True)) {
-				    return TestResultUtil.createResultForPassedTest(problem, testCase);
+				    return TestResultUtil.createResultForPassedTest(problem, testCase, output);
 				} else {
 					logger.warn("Test case failed result  "+tuple.toString());
 					// Message returned to user is created here!
