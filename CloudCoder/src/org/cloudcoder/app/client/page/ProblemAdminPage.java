@@ -634,14 +634,6 @@ public class ProblemAdminPage extends CloudCoderPage {
 	public void activate() {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
-	 */
-	@Override
-	public boolean isActivity() {
-		return true;
-	}
 	
 	@Override
 	public PageId getPageId() {

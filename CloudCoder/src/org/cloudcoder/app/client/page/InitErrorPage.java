@@ -108,11 +108,6 @@ public class InitErrorPage extends CloudCoderPage {
 	public void activate() {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
-
-	@Override
-	public boolean isActivity() {
-		return false;
-	}
 	
 	@Override
 	public PageId getPageId() {

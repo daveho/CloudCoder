@@ -18,7 +18,6 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
 
@@ -33,10 +32,6 @@ public interface LoginServiceAsync {
 	void logout(AsyncCallback<Void> callback);
 
 	void getUser(AsyncCallback<User> callback);
-
-	void getActivity(AsyncCallback<Activity> callback);
-
-	void setActivity(Activity activity, AsyncCallback<Void> callback);
 
 	void getInitErrorList(AsyncCallback<String[]> callback);
 

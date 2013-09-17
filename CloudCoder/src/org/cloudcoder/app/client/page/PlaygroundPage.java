@@ -584,14 +584,6 @@ public class PlaygroundPage extends CloudCoderPage
         removeAllSessionObjects();
     }
 
-    /* (non-Javadoc)
-     * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
-     */
-    @Override
-    public boolean isActivity() {
-        return true;
-    }
-
     @Override
     public PageId getPageId() {
         return PageId.PLAYGROUND_PAGE;

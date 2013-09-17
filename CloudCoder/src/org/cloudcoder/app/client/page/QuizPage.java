@@ -307,11 +307,6 @@ public class QuizPage extends CloudCoderPage {
 	}
 
 	@Override
-	public boolean isActivity() {
-		return true;
-	}
-
-	@Override
 	public PageId getPageId() {
 		return PageId.QUIZ;
 	}

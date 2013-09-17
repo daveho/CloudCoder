@@ -897,14 +897,6 @@ public class DevelopmentPage extends CloudCoderPage {
 		super.deactivate();
 		removeAllSessionObjects();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
-	 */
-	@Override
-	public boolean isActivity() {
-		return true;
-	}
 	
 	@Override
 	public PageId getPageId() {

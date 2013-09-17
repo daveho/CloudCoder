@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 
 /**
  * A selected {@link User}.
@@ -25,7 +27,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class UserSelection implements ActivityObject {
+public class UserSelection implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private User user;

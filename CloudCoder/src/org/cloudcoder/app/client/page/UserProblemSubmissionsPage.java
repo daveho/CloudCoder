@@ -254,11 +254,6 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 	}
 
 	@Override
-	public boolean isActivity() {
-		return true;
-	}
-
-	@Override
 	public PageId getPageId() {
 		return PageId.USER_PROBLEM_SUBMISSIONS;
 	}

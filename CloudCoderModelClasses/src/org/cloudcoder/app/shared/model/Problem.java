@@ -25,7 +25,7 @@ import java.util.Date;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class Problem extends ProblemData implements IProblem, ActivityObject, IModelObject<Problem>
+public class Problem extends ProblemData implements IProblem, IModelObject<Problem>
 {
 	private static final long serialVersionUID = 1L;
 

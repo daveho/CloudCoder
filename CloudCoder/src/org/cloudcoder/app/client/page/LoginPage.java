@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -119,13 +120,12 @@ public class LoginPage extends CloudCoderPage {
 					// For whatever reason, activating the login view (which will
 					// probably set the focus of a UI component, e.g. the username
 					// textbox) doesn't seem to work if done synchronously.
-					// Doing it after a brief delay seems to work.
-					new Timer() {
+					Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
 						@Override
-						public void run() {
+						public void execute() {
 							loginView.activate();
 						}
-					}.schedule(20);
+					});
 				}
 			});
 		}
@@ -218,14 +218,6 @@ public class LoginPage extends CloudCoderPage {
 	@Override
 	public void activate() {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
-	 */
-	@Override
-	public boolean isActivity() {
-		return false;
 	}
 	
 	@Override

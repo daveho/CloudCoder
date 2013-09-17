@@ -17,9 +17,11 @@
 
 package org.cloudcoder.app.server.rpc;
 
-import org.cloudcoder.app.shared.model.Activity;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
+import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.Quiz;
+import org.cloudcoder.app.shared.model.User;
 
 /**
  * Keys for session attributes.
@@ -34,17 +36,18 @@ public interface SessionAttributeKeys {
 	public static final String USER_KEY = "user";
 	
 	/**
-	 * Key to get the most-recently-set {@link Activity} object.
-	 */
-	public static final String ACTIVITY_KEY = "activity";
-	
-	/**
 	 * Key to get the current {@link Problem} object.
 	 */
 	public static final String PROBLEM_KEY = "problem";
 
+	/**
+	 * Key to get the {@link IFutureSubmissionResult}.
+	 */
 	public static final String FUTURE_SUBMISSION_RESULT_KEY = "future";
 
+	/**
+	 * Key to get the full-text {@link Change}.
+	 */
 	public static final String FULL_TEXT_CHANGE_KEY = "fullText";
 
 	/**

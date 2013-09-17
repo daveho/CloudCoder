@@ -28,7 +28,6 @@ import org.cloudcoder.app.server.login.ILoginProvider;
 import org.cloudcoder.app.server.login.LoginProviderServletContextListener;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.InitErrorList;
-import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.InitErrorException;
@@ -91,6 +90,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	@Override
 	public User login(String userName, String password) {
 	    // Can this method be called anywhere?
+
 	    // Does AdminAuthorizationFilter have access to the ServletConfig?
         
 		User user=null;
@@ -152,22 +152,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		}
 		
 		return (User) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.USER_KEY);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.rpc.LoginService#getActivity()
-	 */
-	@Override
-	public Activity getActivity() {
-		return (Activity) getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.ACTIVITY_KEY);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.rpc.LoginService#setActivity(org.cloudcoder.app.shared.model.Activity)
-	 */
-	@Override
-	public void setActivity(Activity activity) {
-		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.ACTIVITY_KEY, activity);
 	}
 	
 	@Override

@@ -145,13 +145,6 @@ public class UserProgressPage extends CloudCoderPage {
 	}
 
 	@Override
-	public boolean isActivity() {
-		// This could be an activity, but we would need to have a way
-		// to keep the SelectedUser in the server-side session.
-		return false;
-	}
-
-	@Override
 	public PageId getPageId() {
 		return PageId.USER_PROGRESS;
 	}

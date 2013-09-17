@@ -20,7 +20,6 @@ package org.cloudcoder.app.client.page;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cloudcoder.app.client.CloudCoder;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.PageStack;
@@ -28,7 +27,6 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.SessionExpiredDialogBox;
-import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
@@ -115,27 +113,6 @@ public abstract class CloudCoderPage {
 						}
 						
 						session.add(StatusMessage.goodNews("Successfully logged back in"));
-						
-						// Try to set the Activity in the server-side session.
-						Activity activity = CloudCoder.getActivityForSessionAndPage(CloudCoderPage.this, session);
-						RPC.loginService.setActivity(activity, new AsyncCallback<Void>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								// Not a fatal problem: we're logged in, but for some reason
-								// we couldn't set the activity in the server-side session.
-								session.add(StatusMessage.information("Logged back in, but couldn't set activity on server"));
-								dialog.hide();
-								executeRecoveryCallbacks();
-							}
-
-							@Override
-							public void onSuccess(Void result) {
-								// At this point, we are completely logged back in an
-								// we have a valid Activity set on the server.
-								dialog.hide();
-								executeRecoveryCallbacks();
-							}
-						});
 					}
 					
 					@Override
@@ -267,16 +244,6 @@ public abstract class CloudCoderPage {
 	public final IsWidget getWidget() {
 		return widget;
 	}
-	
-	/**
-	 * Check whether this page is an "activity": meaning that
-	 * if the user closes the page and navigates back, that
-	 * the same page should be restored (if the server session is
-	 * still valid.)
-	 * 
-	 * @return true if the page is an activity, false if not
-	 */
-	public abstract boolean isActivity();
 	
 	/**
 	 * @return the Session object

@@ -19,12 +19,11 @@
 package org.cloudcoder.app.client.model;
 
 import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.shared.model.Activity;
 
 /**
  * Abstract identifier for a {@link CloudCoderPage}.
- * Used for things like opaque page identifier to place in
- * an {@link Activity}.  Also specifies the fragment
+ * Used by {@link PageStack} to keep track of navigation
+ * history.  Also specifies the fragment
  * name that identifies a {@link CloudCoderPage}
  * when used in the fragment part of a URL.
  * 

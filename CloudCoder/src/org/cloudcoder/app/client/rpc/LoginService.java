@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.client.rpc;
 
-import org.cloudcoder.app.shared.model.Activity;
 import org.cloudcoder.app.shared.model.InitErrorException;
 import org.cloudcoder.app.shared.model.LoginSpec;
 import org.cloudcoder.app.shared.model.User;
@@ -55,20 +54,6 @@ public interface LoginService extends RemoteService {
 	 * @throws InitErrorException 
 	 */
 	public User getUser() throws InitErrorException;
-	
-	/**
-	 * Get the {@link Activity} most recently set by a call
-	 * to {@link #setActivity(Activity)}.
-	 * 
-	 * @return the most recent Activity
-	 */
-	public Activity getActivity();
-	
-	/**
-	 * Set the user's current {@link Activity}.
-	 * @param activity the user's current Activity
-	 */
-	public void setActivity(Activity activity);
 	
 	/**
 	 * Get list of (server-side) webapp init errors.

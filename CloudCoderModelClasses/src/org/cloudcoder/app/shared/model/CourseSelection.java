@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 
 /**
  * Object added to the {@link Session} when a {@link Course} is selected.
@@ -25,7 +27,7 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class CourseSelection implements ActivityObject {
+public class CourseSelection implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Course course;

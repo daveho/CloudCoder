@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,7 +29,7 @@ import java.util.List;
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndTestCaseList implements ActivityObject, IProblemAndTestCaseData<Problem, TestCase> {
+public class ProblemAndTestCaseList implements Serializable, IProblemAndTestCaseData<Problem, TestCase> {
 	private static final long serialVersionUID = 1L;
 	
 	private Problem problem;

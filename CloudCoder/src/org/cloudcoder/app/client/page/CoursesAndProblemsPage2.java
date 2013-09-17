@@ -445,14 +445,6 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#isActivity()
-	 */
-	@Override
-	public boolean isActivity() {
-		return true;
-	}
-
 	@Override
 	public PageId getPageId() {
 		return PageId.COURSES_AND_PROBLEMS;
