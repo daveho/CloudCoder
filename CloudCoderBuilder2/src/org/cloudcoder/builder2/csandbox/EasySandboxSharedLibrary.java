@@ -25,8 +25,6 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import jline.internal.Log;
-
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
@@ -104,7 +102,7 @@ public class EasySandboxSharedLibrary {
 		
 		if (!compiler.compile()) {
 			for (String err : compiler.getCompilerOutput()) {
-				Log.error("Compile error: {}", err);
+				logger.error("Compile error: {}", err);
 			}
 			throw new IOException("Error compiling EasySandbox shared library");
 		}
