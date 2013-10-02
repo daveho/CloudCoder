@@ -65,7 +65,7 @@ public class CCompilerBuildStep implements IBuildStep {
 		}
 		submission.addCleanupAction(new DeleteDirectoryCleanupAction(tempDir));
 		
-		Compiler compiler = new Compiler(programSource.getProgramText(), tempDir, DEFAULT_PROG_NAME);
+		Compiler compiler = new Compiler(programSource.getProgramText(), tempDir, DEFAULT_PROG_NAME, config);
 		compiler.setCompilerExe("g++"); // FIXME: should make this configurable
 		if (!compiler.compile()) {
 			// Compilation failed

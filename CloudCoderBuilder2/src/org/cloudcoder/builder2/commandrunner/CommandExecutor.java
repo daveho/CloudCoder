@@ -108,7 +108,7 @@ public class CommandExecutor implements Runnable {
 			processRunner = processRunner_;
 			maxWaitTimeSec = prefs.getLimit(CommandLimit.CPU_TIME_SEC) * 2;
 		} else {
-			processRunner = new ProcessRunner();
+			processRunner = new ProcessRunner(config);
 			maxWaitTimeSec = DEFAULT_MAX_TIME_IN_SECONDS;
 		}
 

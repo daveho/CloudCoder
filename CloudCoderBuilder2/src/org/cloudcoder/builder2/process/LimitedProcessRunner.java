@@ -61,7 +61,6 @@ public class LimitedProcessRunner extends ProcessRunner {
 		DEFAULT_LIMIT_MAP.put(CommandLimit.SANDBOX_HEAP_SIZE_BYTES, 8*1024*1024);
 	}
 	
-	private Properties config;
 	private Map<CommandLimit, Integer> limitMap;
 	private boolean easySandboxEnabled;
 
@@ -71,7 +70,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 	 * @param config builder configuration properties
 	 */
 	public LimitedProcessRunner(Properties config) {
-		this.config = config;
+		super(config);
 		limitMap = new HashMap<CommandLimit, Integer>();
 		limitMap.putAll(DEFAULT_LIMIT_MAP);
 		easySandboxEnabled = false;
@@ -128,7 +127,7 @@ public class LimitedProcessRunner extends ProcessRunner {
 		// by runProcess.sh.)
 		Integer enableSandbox = limitMap.get(CommandLimit.ENABLE_SANDBOX);
 		if (enableSandbox.intValue() != 0) {
-			String easySandboxShlib = EasySandboxSharedLibrary.getInstance(config).getSharedLibraryPath();
+			String easySandboxShlib = EasySandboxSharedLibrary.getInstance(getConfig()).getSharedLibraryPath();
 			if (easySandboxShlib == null) {
 				logger.error("Sandboxing requested, but EasySandbox.so is not available");
 				// FIXME: should we abort at this point?

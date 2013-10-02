@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.builder2.model.ProcessStatus;
@@ -48,20 +49,8 @@ import org.slf4j.LoggerFactory;
 public class ProcessRunner {
 	private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
     
-	private static String RUN_PROCESS_SCRIPT;
-	static {
-		// "Externalize" the runProcess.sh script.
-		// If we're running out of a directory, then we can directly access the file
-		// in the classpath.  If we're running out of a jarfile, then this will copy
-		// runProcess.sh into a temporary file in the filesystem.
-		try {
-			String runProcessPath = ProcessRunner.class.getPackage().getName().replace('.', '/') + "/res/runProcess.sh";
-			RUN_PROCESS_SCRIPT = Util.getExternalizedFileName(ProcessRunner.class.getClassLoader(), runProcessPath);
-		} catch (IOException e) {
-			throw new IllegalStateException("Couldn't get externalized path for runProcess.sh", e);
-		}
-	}
-    
+	private Properties config;
+	
 	private String statusMessage = "";
 	
 	private boolean processStarted;
@@ -79,12 +68,24 @@ public class ProcessRunner {
 	
 	/**
 	 * Constructor.
+	 * 
+	 * @param config builder configuration properties
 	 */
-	public ProcessRunner() {
+	public ProcessRunner(Properties config) {
+		this.config = config;
 	    for (Entry<String,String> entry : System.getenv().entrySet()) {
 	        env.put(entry.getKey(), entry.getValue());
 	    }
 	    status = ProcessStatus.UNKNOWN;
+	}
+	
+	/**
+	 * Get the builder configuration properties.
+	 * 
+	 * @return the builder configuration properties.
+	 */
+	public Properties getConfig() {
+		return config;
 	}
 	
 	/**
@@ -184,7 +185,7 @@ public class ProcessRunner {
 	protected String[] wrapCommand(String[] command) {
 		List<String> cmd = new ArrayList<String>();
 		cmd.add("/bin/bash");
-		cmd.add(RUN_PROCESS_SCRIPT);
+		cmd.add(RunProcessScript.getInstance(config));
 		cmd.addAll(Arrays.asList(command));
 		return cmd.toArray(new String[cmd.size()]);
 	}
