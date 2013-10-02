@@ -47,6 +47,40 @@ import org.cloudcoder.daemon.Util;
  */
 public class Builder2DaemonController extends DaemonController {
 
+	/**
+	 * Implementation of {@link Options} for the builder2 daemon.
+	 * 
+	 * @author David Hovemeyer
+	 */
+	private final class Builder2Options extends Options {
+		private String builderJvmArgs;
+		
+		public void setBuilderJvmArgs(String builderJvmArgs) {
+			this.builderJvmArgs = builderJvmArgs;
+		}
+		
+		@Override
+		// Create the stdout log in the "log" directory.
+		public String getStdoutLogFileName() {
+			return "log/stdout.log";
+		}
+		
+		@Override
+		public String getJvmOptions() {
+			// Use the concatenation of jvm args specified in the builder's configuration properties
+			// and those specified on the daemon controller command line.
+			StringBuilder buf = new StringBuilder();
+			if (super.getJvmOptions() != null) {
+				buf.append(super.getJvmOptions());
+			}
+			if (builderJvmArgs != null && !builderJvmArgs.trim().equals("")) {
+				buf.append(" ");
+				buf.append(builderJvmArgs.trim());
+			}
+			return buf.toString();
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.cloudcoder.daemon.DaemonController#getDefaultInstanceName()
 	 */
@@ -68,13 +102,22 @@ public class Builder2DaemonController extends DaemonController {
 	 */
 	@Override
 	protected Options createOptions() {
-		// Create the stdout log in the "log" directory.
-		return new Options() {
-			@Override
-			public String getStdoutLogFileName() {
-				return "log/stdout.log";
+		
+		Builder2Options options = new Builder2Options();
+		
+		// Attempt to load the embedded configuration properties:
+		// if we can find them, see if there are any JVM arguments we should be using
+		try {
+			Properties config = Util.loadPropertiesFromResource(this.getClass().getClassLoader(), "cloudcoder.properties");
+			String jvmArgs = config.getProperty("cloudcoder.builder2.jvmargs");
+			if (jvmArgs != null) {
+				// Set builder JVM options
+				options.setBuilderJvmArgs(jvmArgs);
 			}
-		};
+		} catch (IllegalStateException e) {
+			System.err.println("Warning: couldn't find cloudcoder.properties");
+		}
+		return options;
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -174,6 +217,7 @@ public class Builder2DaemonController extends DaemonController {
             "cloudcoder.submitsvc.ssl.cn",
             "cloudcoder.submitsvc.ssl.keystore",
             "cloudcoder.submitsvc.ssl.keystore.password",
+            "cloudcoder.builder2.jvmargs",
             "cloudcoder.webserver.port",
             "cloudcoder.webserver.contextpath",
             "cloudcoder.webserver.localhostonly");

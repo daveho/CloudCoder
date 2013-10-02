@@ -110,6 +110,10 @@ if ((lc $properties{"cloudcoder.submitsvc.oop.easysandbox.enable"}) eq 'true') {
 		"cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
 }
 
+# Allow builder JVM arguments to be specified
+askprop("Are there JVM options that should be used when running the builder?",
+	"cloudcoder.builder2.jvmargs", "");
+
 section("TLS/SSL (secure communication between webapp and builder(s)");
 
 my $useDefaultKeystoreYN = ask("Do you want to use the default keystore\n" .
