@@ -29,6 +29,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +38,7 @@ import org.cloudcoder.app.shared.model.ConvertBytesToHex;
 import org.cloudcoder.builder2.model.ExternalLibrary;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
+import org.cloudcoder.builder2.util.SingletonHolder;
 import org.cloudcoder.daemon.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,15 +51,19 @@ import org.slf4j.LoggerFactory;
 public class ExternalLibraryCache {
 	private static final Logger logger = LoggerFactory.getLogger(ExternalLibraryCache.class);
 	
-	private static ExternalLibraryCache theInstance = new ExternalLibraryCache();
+	private static SingletonHolder<ExternalLibraryCache, Properties> holder = new SingletonHolder<ExternalLibraryCache, Properties>() {
+		protected ExternalLibraryCache onCreate(Properties arg) {
+			return new ExternalLibraryCache(arg);
+		}
+	};
 	
 	/**
 	 * Get the singleton instance.
 	 * 
 	 * @return the singleton instance
 	 */
-	public static ExternalLibraryCache getInstance() {
-		return theInstance;
+	public static ExternalLibraryCache getInstance(Properties config) {
+		return holder.get(config);
 	}
 	
 	/**
@@ -137,8 +143,8 @@ public class ExternalLibraryCache {
 	private Object lock;
 	private Map<Key, Entry> entryMap; 
 	
-	private ExternalLibraryCache() {
-		tmpDir = FileUtil.makeTempDir();
+	private ExternalLibraryCache(Properties config) {
+		tmpDir = FileUtil.makeTempDir(config);
 		lock = new Object();
 		entryMap = new HashMap<Key, Entry>();
 	}

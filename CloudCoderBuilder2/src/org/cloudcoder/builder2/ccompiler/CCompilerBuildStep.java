@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -55,7 +56,7 @@ public class CCompilerBuildStep implements IBuildStep {
 		
 		ProgramSource programSource = programSourceList[0];
 		
-		File tempDir = FileUtil.makeTempDir();
+		File tempDir = FileUtil.makeTempDir(config);
 		if (tempDir == null) {
 			// Couldn't create temp dir
 			submission.addArtifact(SubmissionResultUtil.createSubmissionResultForUnexpectedBuildError(

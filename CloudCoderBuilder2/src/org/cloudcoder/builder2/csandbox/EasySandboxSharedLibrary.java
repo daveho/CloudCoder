@@ -23,10 +23,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.util.Properties;
+
+import jline.internal.Log;
 
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
+import org.cloudcoder.builder2.util.SingletonHolder;
 import org.cloudcoder.daemon.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,96 +47,69 @@ import org.slf4j.LoggerFactory;
 public class EasySandboxSharedLibrary {
 	private static Logger logger = LoggerFactory.getLogger(EasySandboxSharedLibrary.class);
 	
-	/**
-	 * A singleton to manage the compilation of the EasySandbox shared library.
-	 * This is a separate static class to address the following issue:
-	 * if the builder never tests a C/C++ submission (that would require
-	 * EasySandbox to execute), then accessing the EasySandboxSharedLibrary
-	 * singleton in order to call its cleanup() method will cause the
-	 * shared library to be compiled unnecessarily.
-	 */
-	private static class BuildOnce {
-		static BuildOnce theInstance = new BuildOnce();
-		
-		static BuildOnce getInstance() {
-			return theInstance;
+	private static SingletonHolder<EasySandboxSharedLibrary, Properties> holder = new SingletonHolder<EasySandboxSharedLibrary, Properties>() {
+		@Override
+		protected EasySandboxSharedLibrary onCreate(Properties arg) {
+			return new EasySandboxSharedLibrary(arg);
 		}
-		
-		// Fields
-		File tempDir;
-		String sharedLibraryPath;
-
-		// Constructor: will attempt to compile the EasySandbox shared library
-		BuildOnce() {
-			try {
-				build();
-			} catch (IOException e) {
-				logger.warn("Could not build EasySandbox shared library", e);
-			}
-		}
-		
-		void build() throws IOException {
-			// Get source code for the EasySandbox source files
-			String source1 = sourceResourceToString("EasySandbox.c");
-			String source2 = sourceResourceToString("malloc.c");
-			
-			this.tempDir = FileUtil.makeTempDir();
-			
-			// Compile the code and link it into a shared library
-			Compiler compiler = new Compiler(tempDir, "EasySandbox.so");
-			compiler.addModule("EasySandbox.c", source1);
-			compiler.addModule("malloc.c", source2);
-			compiler.addFlag("-fPIC");
-			compiler.addFlag("-shared");
-			compiler.addEndFlag("-ldl");
-			
-			if (!compiler.compile()) {
-				for (String err : compiler.getCompilerOutput()) {
-					System.err.println(err);
-				}
-				throw new IOException("Error compiling EasySandbox shared library");
-			}
-			
-			sharedLibraryPath = tempDir.getAbsolutePath() + "/EasySandbox.so";
-		}
-		
-		void cleanup() {
-			if (tempDir != null) {
-				new DeleteDirectoryRecursively(tempDir).delete();
-			}
-		}
-		
-		private String sourceResourceToString(String sourceFileName) throws IOException {
-			InputStream in = null;
-			try {
-				in = this.getClass().getClassLoader().getResourceAsStream("org/cloudcoder/builder2/csandbox/res/" + sourceFileName);
-				InputStreamReader r = new InputStreamReader(in);
-				StringWriter sw = new StringWriter();
-				IOUtil.copy(r, sw);
-				return sw.toString();
-			} finally {
-				IOUtil.closeQuietly(in);
-			}
-		}
-	}
-	
-	private static EasySandboxSharedLibrary instance = new EasySandboxSharedLibrary();
+	};
 	
 	/**
 	 * Get the singleton instance.
 	 * 
 	 * @return the singleton instance
 	 */
-	public static EasySandboxSharedLibrary getInstance() {
-		return instance;
+	public static EasySandboxSharedLibrary getInstance(Properties config) {
+		return holder.get(config);
 	}
-
-	private volatile BuildOnce buildOnce;
+	
+	/**
+	 * Check whether or not the singleton instance was created.
+	 * 
+	 * @return true if the singleton instance was created, false if not
+	 */
+	public static boolean isCreated() {
+		return holder.isCreated();
+	}
+	
+	// Fields
+	private File tempDir;
+	private String sharedLibraryPath;
 	
 	/**
 	 * Constructor.
 	 */
-	private EasySandboxSharedLibrary() {
+	private EasySandboxSharedLibrary(Properties config) {
+		try {
+			build(config);
+		} catch (Exception e) {
+			logger.error("Could not build EasySandbox shared library", e);
+		}
+	}
+	
+	private void build(Properties config) throws IOException {
+		// Get source code for the EasySandbox source files
+		String source1 = sourceResourceToString("EasySandbox.c");
+		String source2 = sourceResourceToString("malloc.c");
+		
+		this.tempDir = FileUtil.makeTempDir(config);
+		
+		// Compile the code and link it into a shared library
+		Compiler compiler = new Compiler(tempDir, "EasySandbox.so");
+		compiler.addModule("EasySandbox.c", source1);
+		compiler.addModule("malloc.c", source2);
+		compiler.addFlag("-fPIC");
+		compiler.addFlag("-shared");
+		compiler.addEndFlag("-ldl");
+		
+		if (!compiler.compile()) {
+			for (String err : compiler.getCompilerOutput()) {
+				Log.error("Compile error: {}", err);
+			}
+			throw new IOException("Error compiling EasySandbox shared library");
+		}
+		
+		sharedLibraryPath = tempDir.getAbsolutePath() + "/EasySandbox.so";
 	}
 	
 	/**
@@ -141,20 +118,29 @@ public class EasySandboxSharedLibrary {
 	 * @return the path of the shared library, or null if the shared library is not available
 	 */
 	public String getSharedLibraryPath() {
-		buildOnce = BuildOnce.getInstance();
-		return buildOnce.sharedLibraryPath;
+		return sharedLibraryPath;
 	}
 	
 	/**
 	 * Clean up.
 	 */
 	public void cleanup() {
-		// Do not attempt to access the BuildOnce instance:
-		// just check to see if it was ever created.  If not,
-		// we don't want to cause it to be created.
-		if (buildOnce != null) {
-			// BuildOnce instance was created, so clean up.
-			buildOnce.cleanup();
+		if (tempDir != null) {
+			new DeleteDirectoryRecursively(tempDir).delete();
 		}
 	}
+	
+	private String sourceResourceToString(String sourceFileName) throws IOException {
+		InputStream in = null;
+		try {
+			in = this.getClass().getClassLoader().getResourceAsStream("org/cloudcoder/builder2/csandbox/res/" + sourceFileName);
+			InputStreamReader r = new InputStreamReader(in);
+			StringWriter sw = new StringWriter();
+			IOUtil.copy(r, sw);
+			return sw.toString();
+		} finally {
+			IOUtil.closeQuietly(in);
+		}
+	}
+	
 }

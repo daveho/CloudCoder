@@ -47,7 +47,7 @@ public class FetchExternalLibraryBuildStep implements IBuildStep {
 
 		// Get the ExternalLibrary object from the ExternalLibraryCache.
 		// This will attempt to download the library if necessary.
-		ExternalLibraryCache cache = ExternalLibraryCache.getInstance();
+		ExternalLibraryCache cache = ExternalLibraryCache.getInstance(config);
 		ExternalLibrary extlib;
 		try {
 			extlib = cache.get(problem.getExternalLibraryUrl(), problem.getExternalLibraryMD5());

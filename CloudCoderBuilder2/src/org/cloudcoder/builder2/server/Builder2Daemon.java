@@ -18,6 +18,8 @@
 
 package org.cloudcoder.builder2.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +28,7 @@ import org.cloudcoder.builder2.csandbox.EasySandboxSharedLibrary;
 import org.cloudcoder.builder2.extlib.ExternalLibraryCache;
 import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
 import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
+import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
@@ -41,6 +44,8 @@ public class Builder2Daemon implements IDaemon {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private List<BuilderAndThread> builderAndThreadList;
+	private Properties config;
+	private File instanceTempDir;
 
 	private static class BuilderAndThread {
 		final Builder2Server builder;
@@ -87,7 +92,6 @@ public class Builder2Daemon implements IDaemon {
 	@Override
 	public void start(String instanceName) {
 		// If embedded configuration properties exist, read them
-		Properties config;
 		try {
 			String configPropPath = "cloudcoder.properties";
 			ClassLoader clsLoader = this.getClass().getClassLoader();
@@ -99,6 +103,24 @@ public class Builder2Daemon implements IDaemon {
 			// Enable EasySandbox by default
 			config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
 			config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
+			
+			// Just use the system temporary directory as the instance temp directory
+			config.setProperty("", System.getProperty("java.io.tmpdir"));
+		}
+		
+		if (config.getProperty("cloudcoder.builder2.tmpdir") == null) {
+			// Create an instance-specific temporary directory for this instance to use.
+			// We avoid using the system temporary directory because its space could be limited.
+			try {
+				this.instanceTempDir = new File("./" + instanceName + "-" + Util.getPid()).getCanonicalFile();
+				if (!this.instanceTempDir.mkdir()) {
+					throw new IOException("Could not create instance temp directory " + instanceTempDir.getPath());
+				}
+			} catch (Exception e) {
+				throw new IllegalStateException("Could not create instance temp directory", e);
+			}
+			logger.info("Using instance temporary directory {}", instanceTempDir.getPath());
+			config.setProperty("cloudcoder.builder2.tmpdir", instanceTempDir.getPath());
 		}
 		
 		Options options = new Options(config);
@@ -166,10 +188,18 @@ public class Builder2Daemon implements IDaemon {
 
 		// Ensure that if the EasySandbox shared library was built,
 		// that its directory is deleted before the daemon exits.
-		EasySandboxSharedLibrary.getInstance().cleanup();
+		if (EasySandboxSharedLibrary.isCreated()) {
+			EasySandboxSharedLibrary.getInstance(config).cleanup();
+		}
 		
 		// Delete directories/files used by the ExternalLibraryCache
-		ExternalLibraryCache.getInstance().cleanup();
+		ExternalLibraryCache.getInstance(config).cleanup();
+		
+		// Delete instance temporary directory
+		if (instanceTempDir != null) {
+			logger.info("Deleting instance temporary directory {}", instanceTempDir.getPath());
+			new DeleteDirectoryRecursively(instanceTempDir).delete();
+		}
 	}
 
 }
