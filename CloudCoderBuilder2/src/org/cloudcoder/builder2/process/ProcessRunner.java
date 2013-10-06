@@ -390,16 +390,32 @@ public class ProcessRunner {
         }
     }
 
-    /**
-     * Forcibly kill the process.
-     */
-    public void killProcess() {
-        logger.info("Killing process");
-        process.destroy();
-        stdoutCollector.interrupt();
-        stderrCollector.interrupt();
-        if (stdinSender != null) {
-        	stdinSender.interrupt();
-        }
-    }
+	/**
+	 * Forcibly kill the process.
+	 */
+	public void killProcess() {
+		logger.info("Killing process");
+		process.destroy();
+		
+		// Important: wait for the process, otherwise we will probably create
+		// a zombie process.
+		boolean exited = false;
+		do {
+			try {
+				process.waitFor();
+				process.exitValue();
+				exited = true;
+			} catch (InterruptedException e) {
+				logger.warn("Interrupted waiting for destroyed process to exit");
+			} catch (IllegalThreadStateException e) {
+				logger.warn("Trouble getting exit status of destroyed process", e);
+			}
+		} while (!exited);
+		
+		stdoutCollector.interrupt();
+		stderrCollector.interrupt();
+		if (stdinSender != null) {
+			stdinSender.interrupt();
+		}
+	}
 }

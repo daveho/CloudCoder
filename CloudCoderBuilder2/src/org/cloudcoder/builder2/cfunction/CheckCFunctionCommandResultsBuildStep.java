@@ -29,6 +29,8 @@ import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * For each {@link CommandResult} produced by a scaffolded {@link ProblemType#C_FUNCTION}
@@ -39,6 +41,7 @@ import org.cloudcoder.builder2.util.TestResultUtil;
  * @author David Hovemeyer
  */
 public class CheckCFunctionCommandResultsBuildStep implements IBuildStep {
+	private static final Logger logger = LoggerFactory.getLogger(CheckCFunctionCommandResultsBuildStep.class);
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
@@ -65,16 +68,24 @@ public class CheckCFunctionCommandResultsBuildStep implements IBuildStep {
 		TestResult[] testResultList = new TestResult[commandResultList.length];
 		
 		for (int i = 0; i < commandResultList.length; i++) {
-			if (commandResultList[i].getStatus() != ProcessStatus.EXITED) {
+			CommandResult commandResult = commandResultList[i];
+			if (commandResult == null) {
+				// Work around extremely weird issue: null CommandResults when
+				// a test process is killed.
+				logger.error("Null CommandResult for command {}, treating as timeout", i);
+				commandResult = new CommandResult(ProcessStatus.TIMED_OUT, "Test process timed out?");
+			}
+			
+			if (commandResult.getStatus() != ProcessStatus.EXITED) {
 				// Abnormal process exit
-				testResultList[i] = TestResultUtil.createTestResultForAbnormalExit(commandResultList[i], problem, testCaseList[i]);
+				testResultList[i] = TestResultUtil.createTestResultForAbnormalExit(commandResult, problem, testCaseList[i]);
 			} else {
 				// Check exit code
 				int exitCode = commandResultList[i].getExitCode();
 				if (exitCode == codes.getSuccessCode()) {
-					testResultList[i] = TestResultUtil.createTestResultForPassedTest(commandResultList[i], problem, testCaseList[i]);
+					testResultList[i] = TestResultUtil.createTestResultForPassedTest(commandResult, problem, testCaseList[i]);
 				} else {
-					testResultList[i] = TestResultUtil.createTestResultForFailedAssertion(commandResultList[i], problem, testCaseList[i]);
+					testResultList[i] = TestResultUtil.createTestResultForFailedAssertion(commandResult, problem, testCaseList[i]);
 				}
 			}
 		}

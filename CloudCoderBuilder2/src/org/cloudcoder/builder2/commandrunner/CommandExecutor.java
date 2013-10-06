@@ -97,8 +97,6 @@ public class CommandExecutor implements Runnable {
 	 */
 	@Override
 	public void run() {
-		// FIXME: allow use of a SECCOMP sandbox
-		
 		int maxWaitTimeSec;
 		
 		ProcessRunner processRunner;
@@ -141,6 +139,10 @@ public class CommandExecutor implements Runnable {
 					processRunner.getStdoutAsList(),
 					processRunner.getStderrAsList());
 		}
+		
+		if (commandResult == null) {
+			logger.error("CommandExecutor thread finishing with a null commandResult");
+		}
 	}
 
 	/**
@@ -171,6 +173,11 @@ public class CommandExecutor implements Runnable {
 					"could not join test executor after {} attempts - giving up",
 					MAX_TEST_EXECUTOR_JOIN_ATTEMPTS);
 			commandResult = new CommandResult(ProcessStatus.COULD_NOT_START, "Command executor did not finish");
+		}
+		
+		if (commandResult == null) {
+			// This absolutely should not happen.
+			logger.error("commandResult is still null as CommandExecutor is exiting?");
 		}
 	}
 	
