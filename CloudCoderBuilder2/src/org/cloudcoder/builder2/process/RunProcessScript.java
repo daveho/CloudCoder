@@ -37,6 +37,9 @@ import org.slf4j.LoggerFactory;
 public class RunProcessScript {
 	private static Logger logger = LoggerFactory.getLogger(RunProcessScript.class);
 	
+//	private static final String SCRIPT_FILENAME = "runProcess.sh";
+	private static final String SCRIPT_FILENAME = "runProcess2.sh";
+
 	private static final SingletonHolder<String, Properties> holder = new SingletonHolder<String, Properties>() {
 		@Override
 		protected String onCreate(Properties arg) {
@@ -45,11 +48,11 @@ public class RunProcessScript {
 			// in the classpath.  If we're running out of a jarfile, then this will copy
 			// runProcess.sh into a temporary file in the filesystem.
 			try {
-				String runProcessPath = RunProcessScript.class.getPackage().getName().replace('.', '/') + "/res/runProcess.sh";
+				String runProcessPath = RunProcessScript.class.getPackage().getName().replace('.', '/') + "/res/" + SCRIPT_FILENAME;
 				return Util.getExternalizedFileName(ProcessRunner.class.getClassLoader(), runProcessPath, FileUtil.makeTempDir(arg));
 			} catch (IOException e) {
 				logger.error("Can't exernalize runProcess.sh", e);
-				throw new IllegalStateException("Couldn't get externalized path for runProcess.sh", e);
+				throw new IllegalStateException("Couldn't get externalized path for " + SCRIPT_FILENAME, e);
 			}
 		}
 	};
