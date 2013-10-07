@@ -40,7 +40,12 @@ import org.cloudcoder.builder2.util.SubmissionResultUtil;
  * @author Jaime Spacco
  */
 public class CCompilerBuildStep implements IBuildStep {
-	private static final String DEFAULT_PROG_NAME = "prog";
+	/**
+	 * Default name for resulting executable.
+	 * Make it something distinctive so that it shows up clearly
+	 * in process listings.
+	 */
+	private static final String DEFAULT_PROG_NAME = "cctestprog";
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
