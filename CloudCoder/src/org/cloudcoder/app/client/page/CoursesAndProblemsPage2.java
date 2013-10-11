@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.page;
 
+import org.cloudcoder.app.client.model.LoginIndicator;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -442,6 +443,14 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 	@Override
 	public void activate() {
 		getSession().add(new ProblemAndSubmissionReceipt[0]);
+		
+		// If the user just logged in, add a help message indicating that he/she
+		// should click on a course to get started.
+		if (getSession().get(LoginIndicator.class) != null) {
+			getSession().add(StatusMessage.information("Select a course (on the left hand side) to get started"));
+			getSession().remove(LoginIndicator.class);
+		}
+		
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
 

@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client;
 
+import org.cloudcoder.app.client.model.LoginIndicator;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -348,6 +349,14 @@ public class CloudCoder implements EntryPoint, Subscriber {
 	 */
 	public void createPostLoginPage(PageId pageId, String pageParams) {
 		GWT.log("Post-login: go to page " + pageId + (pageParams != null ? (", params=" + pageParams) : ""));
+		
+		// Special case: if the page id is COURSES_AND_PROBLEMS, add a LoginIndicator
+		// to the session.  This allows the courses and problems page to display
+		// any relevant help information to assist the user in getting started.
+		if (pageId == PageId.COURSES_AND_PROBLEMS) {
+			session.add(new LoginIndicator());
+		}
+		
 		CloudCoderPage page = createPageForPageId(pageId, pageParams);
 		changePage(page);
 	}
