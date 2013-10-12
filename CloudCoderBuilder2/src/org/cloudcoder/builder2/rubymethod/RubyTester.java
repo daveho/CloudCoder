@@ -61,7 +61,7 @@ public class RubyTester {
         String output=arr.get(1).toString();
         
 		return result
-				? TestResultUtil.createResultForPassedTest(problem, testCase)
+				? TestResultUtil.createResultForPassedTest(problem, testCase, output)
 				: TestResultUtil.createResultForFailedTest(problem, testCase, output);
 	}
 }
