@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,8 +21,11 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 
 /**
- * @author jaimespacco
- *
+ * A compiler diagnostic (compiler error, warning, etc.)  Indicates
+ * some sort of invalid construct in the student's source code.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
  */
 public class CompilerDiagnostic implements Serializable
 {
@@ -41,6 +45,25 @@ public class CompilerDiagnostic implements Serializable
         endLine-=epilogue;
     }
     
+    @Override
+    public int hashCode() {
+    	return (int) ((startLine*2207) + (endLine*937) + (startColumn*443) + (endColumn*113) + message.hashCode());
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj == null || !(obj instanceof CompilerDiagnostic)) {
+    		return false;
+    	}
+    	CompilerDiagnostic other = (CompilerDiagnostic) obj;
+    	return this.startLine == other.startLine
+    			&& this.endLine == other.endLine
+    			&& this.startColumn == other.startColumn
+    			&& this.endColumn == other.endColumn
+    			&& ModelObjectUtil.equals(this.message, other.message);
+    }
+    
+    @Override
     public String toString() {
         return message+": startLine: "+startLine+
                 ", endLine: "+endLine+

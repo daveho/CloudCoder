@@ -48,7 +48,7 @@ public abstract class AbstractKillableTaskManager<T>
     protected static final Logger logger = LoggerFactory.getLogger(AbstractKillableTaskManager.class);
     protected static boolean securityManagerInstalled = false;
     /** list of "isolated tasks" to be executed */
-    private List<IsolatedTask<T>> tasks;
+    private List<? extends IsolatedTask<T>> tasks;
     /** List of Outcomes; essentially placeholders objects where tasks will put their results */
     private List<Outcome<T>> results;
     private long maxRunTime;
@@ -75,7 +75,7 @@ public abstract class AbstractKillableTaskManager<T>
      * @param maxRunTime     maximum time to let any task run
      * @param timeoutHandler callback to run if a timeout occurs
      */
-    public AbstractKillableTaskManager(List<IsolatedTask<T>> tasks, 
+    public AbstractKillableTaskManager(List<? extends IsolatedTask<T>> tasks, 
             long maxRunTime, 
             TimeoutHandler<T> timeoutHandler)
     {

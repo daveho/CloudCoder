@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,6 +21,7 @@ package org.cloudcoder.builder2.pythonfunction;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -81,6 +83,75 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 	 * other testers.
 	 */
 	private static class Tester {
+		/**
+		 * An {@link IsolatedTask} for executing a python test case.
+		 */
+		private class PythonTestCaseTask implements IsolatedTask<TestResult> {
+			private final TestCase tc;
+			private final PyFunction func;
+			private final PyObject true1;
+			private final Problem problem;
+			private CompilerDiagnostic compilerDiagnostic;
+
+			private PythonTestCaseTask(TestCase tc, PyFunction func, PyObject true1, Problem problem) {
+				this.tc = tc;
+				this.func = func;
+				this.true1 = true1;
+				this.problem = problem;
+			}
+
+			@Override
+			public TestResult execute() {
+				return executeTestCase(problem, tc, true1, func);
+			}
+			
+			public CompilerDiagnostic getCompilerDiagnostic() {
+				return compilerDiagnostic;
+			}
+
+			/**
+			 * Execute a single {@link TestCase}.
+			 * 
+			 * @param testCase the {@link TestCase}
+			 * @param True     Python True object
+			 * @param func     the generated testcase function
+			 * @return the {@link TestResult}
+			 */
+			TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) 
+			{
+				try {
+				    // returns a tuple: (result, output)
+				    PyObject tuple=func.__call__();
+				    PyObject result=tuple.__getitem__(0);
+				    String output=tuple.__getitem__(1).toString();
+				    logger.trace("Actual output of code submitted for method: "+output);
+					if (result!=null && result.equals(True)) {
+					    return TestResultUtil.createResultForPassedTest(problem, testCase, output);
+					} else {
+						logger.warn("Test case failed result  "+tuple.toString());
+						// Message returned to user is created here!
+						// TODO: Factor out for Java, Python, Ruby one method for creating output
+						return TestResultUtil.createResultForFailedTest(problem, testCase, output);
+					}
+				} catch (PyException e) {
+					if (e.getCause() instanceof SecurityException) {
+						logger.error("Security exception", e.getCause());
+						return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
+					}
+					logger.info("Exception executing Python submission", e);
+					
+					// Special case: if it's a NameError, construct a CompilerDiagnostic
+					if (isNameError(e)) {
+						this.compilerDiagnostic = nameErrorToCompilerDiagnostic(e);
+						return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "NameError", "stdout", "stderr");
+					}
+					
+					String msg = getExceptionMessage(e);
+					return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
+				}
+			}
+		}
+
 		private int programTextLength;
 		private int prologueLength;
 		private int epilogueLength;
@@ -188,16 +259,11 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			// the method to make sure the code will compile
 			terp.execfile(new ByteArrayInputStream(sBytes));
 
-			List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
+			List<PythonTestCaseTask> tasks=new ArrayList<PythonTestCaseTask>();
 			for (final TestCase t : testCaseList) {
 			    // pull out the function associated with this particular test case
 	            final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
-				tasks.add(new IsolatedTask<TestResult>() {
-					@Override
-					public TestResult execute() {
-						return executeTestCase(problem, t, True, func);
-					}
-				});
+				tasks.add(new PythonTestCaseTask(t, func, True, problem));
 			}
 
 			PythonKillableTaskManager<TestResult> pool=new PythonKillableTaskManager<TestResult>(
@@ -213,10 +279,34 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 
 			// run each task in a separate thread
 			pool.run();
+			
+			// Collect any CompilerDiagnostics that may have been reported.
+			// Because Python is a dynamic language, some errors that would be
+			// found before the program runs in static languages,
+			// such as references to undefined variables, are only found
+			// at runtime.  We use a HashSet to de-duplicate the CompilerDiagnostics,
+			// since the same error may be found by multiple tests.
+			List<CompilerDiagnostic> dynamicCompilerDiagnosticList = new ArrayList<CompilerDiagnostic>();
+			HashSet<CompilerDiagnostic> seen = new HashSet<CompilerDiagnostic>();
+			for (PythonTestCaseTask task : tasks) {
+				CompilerDiagnostic diag = task.getCompilerDiagnostic();
+				if (diag != null && !seen.contains(diag)) {
+					seen.add(diag);
+					dynamicCompilerDiagnosticList.add(diag);
+				}
+			}
 
 			//merge outcomes with their buffered inputs for stdout/stderr
 			List<TestResult> testResults=SandboxUtil.getStdoutStderr(pool);
-			SubmissionResult result=new SubmissionResult(new CompilationResult(CompilationOutcome.SUCCESS));
+			
+			// Construct a CompilationResult
+			CompilationResult compilationResult = new CompilationResult(CompilationOutcome.SUCCESS);
+			int numDynamicCompilerDiagnostics = dynamicCompilerDiagnosticList.size();
+			compilationResult.setCompilerDiagnosticList(dynamicCompilerDiagnosticList.toArray(new CompilerDiagnostic[numDynamicCompilerDiagnostics]));
+			compilationResult.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
+			
+			// Construct a SubmissionResult
+			SubmissionResult result=new SubmissionResult(compilationResult);
 			result.setTestResults(testResults.toArray(new TestResult[testResults.size()]));
 			return result;
 		}
@@ -304,43 +394,12 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			diagnostics.add(d);
 			return diagnostics;
 		}
-
-		/**
-		 * @param testCase
-		 * @param True
-		 * @param func
-		 * @return
-		 */
-		static TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) 
-		{
-			try {
-			    // returns a tuple: (result, output)
-			    PyObject tuple=func.__call__();
-			    PyObject result=tuple.__getitem__(0);
-			    String output=tuple.__getitem__(1).toString();
-			    logger.trace("Actual output of code submitted for method: "+output);
-				if (result!=null && result.equals(True)) {
-				    return TestResultUtil.createResultForPassedTest(problem, testCase, output);
-				} else {
-					logger.warn("Test case failed result  "+tuple.toString());
-					// Message returned to user is created here!
-					// TODO: Factor out for Java, Python, Ruby one method for creating output
-					return TestResultUtil.createResultForFailedTest(problem, testCase, output);
-				}
-			} catch (PyException e) {
-				if (e.getCause() instanceof SecurityException) {
-					logger.error("Security exception", e.getCause());
-					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
-				}
-				logger.info("Exception executing Python submission", e);
-				String msg = getExceptionMessage(e);
-				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
-			}
-		}
 		
-		// The following method is from:
+		// The following method is originally from:
 		//    http://python.6.x6.nabble.com/Getting-PyException-details-from-Java-td1762496.html
-		// [With some minor fixes.]
+		// I (DHH) updated it to work with more recent Jython versions, and
+		// refactored to provide explicit methods for extracting the error type
+		// and the error message.
 		
 		/** 
 		 * Returns the exception message, akin to java exception's getMessage() 
@@ -351,21 +410,45 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		public static String getExceptionMessage(PyException pye) { 
 			// derivative of Jython's Py.formatException() method 
 
-			StringBuffer buf = new StringBuffer(128); 
-			if (pye.type instanceof PyType) { 
-				buf.append(((PyType) pye.type).fastGetName()); 
-			} else { 
-				buf.append(pye.type.__str__()); 
-			} 
+			StringBuffer buf = new StringBuffer(128);
+			buf.append(getErrorType(pye)); 
 			if (pye.value != Py.None) { 
-				buf.append(": "); 
-				if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
-					buf.append(pye.value.__getitem__(0).__str__()); 
-				} else { 
-					buf.append(pye.value.__str__()); 
-				} 
+				buf.append(": ");
+				buf.append(getErrorMessage(pye)); 
 			} 
 			return buf.toString(); 
+		}
+
+		private static String getErrorMessage(PyException pye) {
+			if (pye.value == Py.None) {
+				return "Unknown error";
+			}
+			if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
+				return pye.value.__getitem__(0).__str__().toString();
+			} else { 
+				return pye.value.__str__().toString();
+			}
+		}
+
+		private static String getErrorType(PyException pye) {
+			if (pye.type instanceof PyType) { 
+				return ((PyType) pye.type).fastGetName();
+			} else { 
+				return pye.type.__str__().toString();
+			}
+		}
+		
+		private boolean isNameError(PyException pye) {
+			return getErrorType(pye).equals("exceptions.NameError");
+		}
+		
+		private CompilerDiagnostic nameErrorToCompilerDiagnostic(PyException pye) {
+			int line;
+			
+			// FIXME: figure out how to get the actual line number
+			line = 1;
+			
+			return new CompilerDiagnostic(line, line, 1, 1, getErrorMessage(pye));
 		}
 	}
 }

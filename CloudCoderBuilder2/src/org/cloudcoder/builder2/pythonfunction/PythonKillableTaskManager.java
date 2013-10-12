@@ -33,7 +33,7 @@ public class PythonKillableTaskManager<T> extends AbstractKillableTaskManager<T>
 {
     private PythonInterpreter pythonInterpreter;
 
-    public PythonKillableTaskManager(List<IsolatedTask<T>> tasks, 
+    public PythonKillableTaskManager(List<? extends IsolatedTask<T>> tasks, 
         long maxRunTime, 
         TimeoutHandler<T> timeoutHandler,
         PythonInterpreter pythonInterpreter)
