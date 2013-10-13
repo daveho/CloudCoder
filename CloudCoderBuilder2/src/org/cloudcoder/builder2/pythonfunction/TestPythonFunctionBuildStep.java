@@ -42,7 +42,6 @@ import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
-import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
 import org.python.core.Py;
 import org.python.core.PyException;
@@ -66,410 +65,361 @@ import org.slf4j.LoggerFactory;
  */
 public class TestPythonFunctionBuildStep implements IBuildStep {
 
-	public static final Logger logger=LoggerFactory.getLogger(TestPythonFunctionBuildStep.class);
-	public static final long TIMEOUT_LIMIT=2000;
+	public static final Logger logger = LoggerFactory.getLogger(TestPythonFunctionBuildStep.class);
+	public static final long TIMEOUT_LIMIT = 2000;
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		Tester tester = new Tester();
-		SubmissionResult result = tester.testSubmission(submission);
+		SubmissionResult result = testSubmission(submission);
 		submission.addArtifact(result);
 	}
 
-	/*
-	 * DHH: this is basically just a literal cut and paste of the
-	 * PythonTester from the original builder.  In the future we
-	 * should consider splitting this code into discrete build steps,
-	 * especially if there are steps that would be useful for
-	 * other testers.
+	/**
+	 * An {@link IsolatedTask} for executing a python test case.
 	 */
-	private static class Tester {
-		/**
-		 * An {@link IsolatedTask} for executing a python test case.
-		 */
-		private class PythonTestCaseTask implements IsolatedTask<TestResult> {
-			private final TestCase tc;
-			private final PyFunction func;
-			private final PyObject true1;
-			private final Problem problem;
-			private CompilerDiagnostic compilerDiagnostic;
+	private class PythonTestCaseTask implements IsolatedTask<TestResult> {
+		private final TestCase tc;
+		private final PyFunction func;
+		private final PyObject true1;
+		private final Problem problem;
+		private CompilerDiagnostic compilerDiagnostic;
 
-			private PythonTestCaseTask(TestCase tc, PyFunction func, PyObject true1, Problem problem) {
-				this.tc = tc;
-				this.func = func;
-				this.true1 = true1;
-				this.problem = problem;
-			}
-
-			@Override
-			public TestResult execute() {
-				return executeTestCase(problem, tc, true1, func);
-			}
-			
-			public CompilerDiagnostic getCompilerDiagnostic() {
-				return compilerDiagnostic;
-			}
-
-			/**
-			 * Execute a single {@link TestCase}.
-			 * 
-			 * @param testCase the {@link TestCase}
-			 * @param True     Python True object
-			 * @param func     the generated testcase function
-			 * @return the {@link TestResult}
-			 */
-			TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) 
-			{
-				try {
-				    // returns a tuple: (result, output)
-				    PyObject tuple=func.__call__();
-				    PyObject result=tuple.__getitem__(0);
-				    String output=tuple.__getitem__(1).toString();
-				    logger.trace("Actual output of code submitted for method: "+output);
-					if (result!=null && result.equals(True)) {
-					    return TestResultUtil.createResultForPassedTest(problem, testCase, output);
-					} else {
-						logger.warn("Test case failed result  "+tuple.toString());
-						// Message returned to user is created here!
-						// TODO: Factor out for Java, Python, Ruby one method for creating output
-						return TestResultUtil.createResultForFailedTest(problem, testCase, output);
-					}
-				} catch (PyException e) {
-					if (e.getCause() instanceof SecurityException) {
-						logger.error("Security exception", e.getCause());
-						return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
-					}
-					logger.info("Exception executing Python submission", e);
-					
-					// Special case: if it's a NameError, construct a CompilerDiagnostic
-					if (isNameError(e)) {
-						this.compilerDiagnostic = nameErrorToCompilerDiagnostic(e);
-						return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "NameError", "stdout", "stderr");
-					}
-					
-					String msg = getExceptionMessage(e);
-					return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
-				}
-			}
+		private PythonTestCaseTask(TestCase tc, PyFunction func, PyObject true1, Problem problem) {
+			this.tc = tc;
+			this.func = func;
+			this.true1 = true1;
+			this.problem = problem;
 		}
 
-		private int programTextLength;
-		private int prologueLength;
-		private int epilogueLength;
-
-		protected static int getIndentationIncrementFromPythonCode(String programText) {
-			//TODO: Figure out the indentation scheme of the student submitted programTest
-			return 2;
+		@Override
+		public TestResult execute() {
+			return executeTestCase(problem, tc, true1, func);
 		}
-
-		protected static String indent(int n) {
-			StringBuilder b=new StringBuilder();
-			for (int i=0; i<n; i++) {
-				b.append(' ');
-			}
-			return b.toString();
-		}
-
-		protected String createTestClassSource(Problem problem,
-				List<TestCase> testCaseList,
-				String programText)
-		{
-			//TODO: Strip out anything that isn't a function declaration or import statement
-			//XXX: If we do that, we disallow global variables, which may be OK
-			StringBuilder test = new StringBuilder();
-			test.append("import sys\n");
-			test.append("import math\n");
-			
-			prologueLength = 2; // Keep this up to date with the imports above
-			
-			test.append(programText+"\n");
-			programTextLength=StringUtil.countLines(programText);
-			int spaces=getIndentationIncrementFromPythonCode(programText);
-
-			for (TestCase t : testCaseList) {
-				// each test case is a function that invokes the function being tested
-				test.append("def "+t.getTestCaseName()+"():\n");
-				/* 
-				 * The python functions for individual test cases look like this:
-				 * 
-				 * def t0():
-				 *    _output=plus(2,3)
-				 *    _expected=<<test case output>>
-				 *    _result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001) 
-				 *    return (_result, _output)
-				 * 
-				 * Note the check for floating point values: a delta-based comparison
-				 * is done rather than requiring strict equality.
-				 * 
-				 * We return a tuple with a boolean representing whether
-				 * the test case passed, and a String containing the 
-				 * actual output.  
-				 */
-				test.append(indent(spaces)+"_output="+problem.getTestname() + 
-				        "(" +t.getInput()+ ")\n");
-				test.append(indent(spaces)+"_expected=" + t.getOutput() + "\n");
-				test.append(indent(spaces)+"_result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001)\n");
-				test.append(indent(spaces)+"return (_result, _output)\n");
-			}
-			String result=test.toString();
-			int totalLen=StringUtil.countLines(result);
-			epilogueLength=totalLen-programTextLength;
-			return result;
-		}
-
-		public SubmissionResult testSubmission(BuilderSubmission submission)
-		{
-			final Problem problem=submission.getArtifact(Problem.class);
-			if (problem == null) {
-				throw new InternalBuilderException(this.getClass(), "No Problem");
-			}
-			
-			ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-			if (programSourceList == null) {
-				throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-			}
-			
-			if (programSourceList.length > 1) {
-				throw new InternalBuilderException(this.getClass(), "Multiple source files not supported");
-			}
-			
-			final String programText=programSourceList[0].getProgramText();
-			
-			TestCase[] testCaseList_ = submission.getArtifact(TestCase[].class);
-			if (testCaseList_ == null) {
-				throw new InternalBuilderException(this.getClass(), "No TestCase list");
-			}
-			
-			List<TestCase> testCaseList= Arrays.asList(testCaseList_);
-
-			final String s=createTestClassSource(problem, testCaseList, programText);
-			final byte[] sBytes=s.getBytes();
-
-			//Check if the Python code is syntactically correct
-			CompilationResult compres=compilePythonScript(problem, s);
-			if (compres.getOutcome()!=CompilationOutcome.SUCCESS) {
-				compres.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
-				return new SubmissionResult(compres);
-			}
-			
-			// Create a Python interpreter, load True from the interpreter
-			// then execute our script.
-			// Note that our script will have all statements outside of a function
-			// stripped out (except for import statements) so no global variables
-			final PythonInterpreter terp=new PythonInterpreter();
-			final PyObject True=terp.eval("True");
-			// won't throw an exception because we checked it at the top of
-			// the method to make sure the code will compile
-			terp.execfile(new ByteArrayInputStream(sBytes));
-
-			List<PythonTestCaseTask> tasks=new ArrayList<PythonTestCaseTask>();
-			for (final TestCase t : testCaseList) {
-			    // pull out the function associated with this particular test case
-	            final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
-				tasks.add(new PythonTestCaseTask(t, func, True, problem));
-			}
-
-			PythonKillableTaskManager<TestResult> pool=new PythonKillableTaskManager<TestResult>(
-					tasks, 
-					TIMEOUT_LIMIT,
-					new TimeoutHandler<TestResult>() {
-						@Override
-						public TestResult handleTimeout() {
-							return TestResultUtil.createResultForTimeout();
-						}
-					},
-					terp);
-
-			// run each task in a separate thread
-			pool.run();
-			
-			// Collect any CompilerDiagnostics that may have been reported.
-			// Because Python is a dynamic language, some errors that would be
-			// found before the program runs in static languages,
-			// such as references to undefined variables, are only found
-			// at runtime.  We use a HashSet to de-duplicate the CompilerDiagnostics,
-			// since the same error may be found by multiple tests.
-			List<CompilerDiagnostic> dynamicCompilerDiagnosticList = new ArrayList<CompilerDiagnostic>();
-			HashSet<CompilerDiagnostic> seen = new HashSet<CompilerDiagnostic>();
-			for (PythonTestCaseTask task : tasks) {
-				CompilerDiagnostic diag = task.getCompilerDiagnostic();
-				if (diag != null && !seen.contains(diag)) {
-					seen.add(diag);
-					dynamicCompilerDiagnosticList.add(diag);
-				}
-			}
-
-			//merge outcomes with their buffered inputs for stdout/stderr
-			List<TestResult> testResults=SandboxUtil.getStdoutStderr(pool);
-			
-			// Construct a CompilationResult
-			CompilationResult compilationResult = new CompilationResult(CompilationOutcome.SUCCESS);
-			int numDynamicCompilerDiagnostics = dynamicCompilerDiagnosticList.size();
-			compilationResult.setCompilerDiagnosticList(dynamicCompilerDiagnosticList.toArray(new CompilerDiagnostic[numDynamicCompilerDiagnostics]));
-			compilationResult.adjustDiagnosticLineNumbers(prologueLength, epilogueLength);
-			
-			// Construct a SubmissionResult
-			SubmissionResult result=new SubmissionResult(compilationResult);
-			result.setTestResults(testResults.toArray(new TestResult[testResults.size()]));
-			return result;
+		
+		public CompilerDiagnostic getCompilerDiagnostic() {
+			return compilerDiagnostic;
 		}
 
 		/**
-		 * @param programText
+		 * Execute a single {@link TestCase}.
+		 * 
+		 * @param testCase the {@link TestCase}
+		 * @param True     Python True object
+		 * @param func     the generated testcase function
+		 * @return the {@link TestResult}
 		 */
-		public CompilationResult compilePythonScript(Problem problem, final String programText) {
+		public TestResult executeTestCase(Problem problem, final TestCase testCase, final PyObject True, final PyFunction func) {
 			try {
-			    logger.info("\n"+programText);
-				PythonInterpreter terp=new PythonInterpreter();
-				terp.execfile(new ByteArrayInputStream(programText.getBytes()));
-				
-				// Check to see if the test code actually defines the required
-				// function.  If it doesn't, report this as a failed compilation
-				// (it isn't really, but attempting to execute any of the
-				// test methods will accomplish nothing useful.)
-				PyFunction func = (PyFunction)terp.get(problem.getTestname(), PyFunction.class);
-				if (func == null) {
-					CompilationResult compRes = new CompilationResult(CompilationOutcome.FAILURE);
-					CompilerDiagnostic diag = new CompilerDiagnostic(prologueLength+1, prologueLength+1, 1, 1, "Required function " + problem.getTestname() + " was not defined");
-					compRes.setCompilerDiagnosticList(new CompilerDiagnostic[]{ diag });
-					return compRes;
+			    // returns a tuple: (result, output)
+			    PyObject tuple=func.__call__();
+			    PyObject result=tuple.__getitem__(0);
+			    String output=tuple.__getitem__(1).toString();
+			    logger.trace("Actual output of code submitted for method: "+output);
+				if (result!=null && result.equals(True)) {
+				    return TestResultUtil.createResultForPassedTest(problem, testCase, output);
+				} else {
+					logger.warn("Test case failed result  "+tuple.toString());
+					// Message returned to user is created here!
+					// TODO: Factor out for Java, Python, Ruby one method for creating output
+					return TestResultUtil.createResultForFailedTest(problem, testCase, output);
 				}
-
-				// Compilation successful, we should be ready to run the tests
-				return new CompilationResult(CompilationOutcome.SUCCESS);
-			} catch (PySyntaxError e) {
-
-				logger.info("Failed to compile:\n"+programText+"\nwith message");
-
-				//TODO: Convert Python error message or stack trace into a list of
-				// CompilerDiagnostics to be sent back to the server
-				CompilationResult compres=new CompilationResult(CompilationOutcome.FAILURE);
-				List<CompilerDiagnostic> diagnostics=convertPySyntaxError(e);
-				compres.setCompilerDiagnosticList(diagnostics.toArray(new CompilerDiagnostic[diagnostics.size()]));
-				//compres.setException(e);
-				return compres;
 			} catch (PyException e) {
-				logger.warn("Unexpected PyException (probably compilation failure)", e);
-				CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
-				//compres.setException(e);
-				String message = getExceptionMessage(e);
-				CompilerDiagnostic diag = new CompilerDiagnostic(1, 1, 1, 1, message);
-				compres.setCompilerDiagnosticList(new CompilerDiagnostic[]{diag});
-				return compres;
-			}
-		}
-
-		/**
-		 * @param e
-		 * @return
-		 */
-		static List<CompilerDiagnostic> convertPySyntaxError(PySyntaxError e) {
-			List<CompilerDiagnostic> diagnostics=new LinkedList<CompilerDiagnostic>();
-
-			/*
-			 * Based on the source for Jython-2.5.2, here's code the 
-			 * value field of a PySyntaxError:
-			 * 
-
-
-        PyObject[] tmp = new PyObject[] {
-            new PyString(filename), new PyInteger(line),
-            new PyInteger(column), new PyString(text)
-        };
-
-        this.value = new PyTuple(new PyString(s), new PyTuple(tmp));
-
-			 * We're going to pull this apart to get out the values we want
-			 *
-			 */
-
-			PyTuple tuple=(PyTuple)e.value;
-
-			String msg=tuple.get(0).toString();
-			PyTuple loc=(PyTuple)tuple.get(1);
-			//String filename=(String)loc.get(0);
-			int lineNum=(Integer)loc.get(1);
-			int colNum=(Integer)loc.get(2);
-			//String text=(String)loc.get(3);
-
-			CompilerDiagnostic d=new CompilerDiagnostic(lineNum, lineNum, colNum, colNum, msg);
-
-			diagnostics.add(d);
-			return diagnostics;
-		}
-		
-		// The following method is originally from:
-		//    http://python.6.x6.nabble.com/Getting-PyException-details-from-Java-td1762496.html
-		// I (DHH) updated it to work with more recent Jython versions, and
-		// refactored to provide explicit methods for extracting the error type
-		// and the error message.
-		
-		/** 
-		 * Returns the exception message, akin to java exception's getMessage() 
-		 * method (not supported properly in Jython). 
-		 * @param pye a python exception instance 
-		 * @return a string containing the python exception's message 
-		 */ 
-		public static String getExceptionMessage(PyException pye) { 
-			// derivative of Jython's Py.formatException() method 
-
-			StringBuffer buf = new StringBuffer(128);
-			buf.append(getErrorType(pye)); 
-			if (pye.value != Py.None) { 
-				buf.append(": ");
-				buf.append(getErrorMessage(pye)); 
-			} 
-			return buf.toString(); 
-		}
-
-		private static String getErrorMessage(PyException pye) {
-			if (pye.value == Py.None) {
-				return "Unknown error";
-			}
-			if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
-				return pye.value.__getitem__(0).__str__().toString();
-			} else { 
-				return pye.value.__str__().toString();
-			}
-		}
-
-		private static String getErrorType(PyException pye) {
-			if (pye.type instanceof PyType) { 
-				return ((PyType) pye.type).fastGetName();
-			} else { 
-				return pye.type.__str__().toString();
-			}
-		}
-		
-		private boolean isNameError(PyException pye) {
-			return getErrorType(pye).equals("exceptions.NameError");
-		}
-		
-		private CompilerDiagnostic nameErrorToCompilerDiagnostic(PyException pye) {
-			int line;
-
-			// Use the traceback to get the line number where the error occurred.
-			PyTraceback top = getTracebackTop(pye.traceback);
-			line = top.tb_lineno;
-			
-			return new CompilerDiagnostic(line, line, 1, 1, getErrorMessage(pye));
-		}
-
-		//
-		// From experimentation, it seems that a PyTraceback is a stack trace
-		// starting with the bottom of the call stack.  Each tb_next link
-		// advances to the next higher (inner) stack frame.  This seems backwards
-		// to me (seems like you would start with the top and work down),
-		// but I'm assuming there's a good reason.  In any case, we assume
-		// that the top item on the stack frame identifies the real error.
-		//
-		private PyTraceback getTracebackTop(PyTraceback traceback) {
-			for (;;) {
-				if (traceback.tb_next == null || !(traceback.tb_next instanceof PyTraceback)) {
-					return traceback;
+				if (e.getCause() instanceof SecurityException) {
+					logger.error("Security exception", e.getCause());
+					return new TestResult(TestOutcome.FAILED_BY_SECURITY_MANAGER, "Failed for input=" + testCase.getInput() + ", expected=" + testCase.getOutput());
 				}
-				traceback = (PyTraceback) traceback.tb_next;
+				logger.info("Exception executing Python submission", e);
+				
+				// Special case: if it's a NameError, construct a CompilerDiagnostic
+				if (isNameError(e)) {
+					this.compilerDiagnostic = pyExceptionToCompilerDiagnostic(e);
+					return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "NameError", "stdout", "stderr");
+				}
+				
+				String msg = getExceptionMessage(e);
+				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, msg, "stdout", "stderr");
 			}
+		}
+	}
+
+	/**
+	 * Test a {@link ProblemType#PYTHON_FUNCTION} submission.
+	 * 
+	 * @param submission the submission
+	 * @return the {@link SubmissionResult}
+	 */
+	private SubmissionResult testSubmission(BuilderSubmission submission) {
+		final Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+		
+		ProgramSource[] programSourceList = submission.requireArtifact(TestPythonFunctionBuildStep.class, ProgramSource[].class);
+		if (programSourceList.length > 1) {
+			throw new InternalBuilderException(TestPythonFunctionBuildStep.class, "Multiple source files not supported");
+		}
+		ProgramSource programSource = programSourceList[0];
+		
+		// Because AddPythonFunctionScaffoldingBuildStep has executed previously,
+		// the ProgramSource is the scaffolded source code (ready to execute test cases)
+		final String programText = programSource.getProgramText();
+		
+		TestCase[] testCaseList_ = submission.requireArtifact(TestPythonFunctionBuildStep.class, TestCase[].class);
+		List<TestCase> testCaseList= Arrays.asList(testCaseList_);
+
+		final byte[] sBytes = programText.getBytes();
+
+		// Check if the Python code is syntactically correct.
+		// Because Python is a dynamic language, this will only find invalid syntax,
+		// unknown imports, and similar issues.
+		CompilationResult compres = compilePythonScript(problem, programSource);
+		if (compres.getOutcome() != CompilationOutcome.SUCCESS) {
+			compres.adjustDiagnosticLineNumbers(programSource.getPrologueLength(), programSource.getEpilogueLength());
+			return new SubmissionResult(compres);
+		}
+		
+		// Create a Python interpreter, load True from the interpreter
+		// then execute our script.
+		// Note that our script will have all statements outside of a function
+		// stripped out (except for import statements) so no global variables
+		final PythonInterpreter terp=new PythonInterpreter();
+		final PyObject True=terp.eval("True");
+		// won't throw an exception because we checked it at the top of
+		// the method to make sure the code will compile
+		terp.execfile(new ByteArrayInputStream(sBytes));
+
+		// Create PythonTestCaseTasks, one to execute each test case function
+		List<PythonTestCaseTask> tasks=new ArrayList<PythonTestCaseTask>();
+		for (final TestCase t : testCaseList) {
+		    // pull out the function associated with this particular test case
+            final PyFunction func=(PyFunction)terp.get(t.getTestCaseName(), PyFunction.class);
+			tasks.add(new PythonTestCaseTask(t, func, True, problem));
+		}
+
+		// Create a PythonKillableTaskManager to execute the test case tasks
+		PythonKillableTaskManager<TestResult> pool=new PythonKillableTaskManager<TestResult>(
+				tasks, 
+				TIMEOUT_LIMIT,
+				new TimeoutHandler<TestResult>() {
+					@Override
+					public TestResult handleTimeout() {
+						return TestResultUtil.createResultForTimeout();
+					}
+				},
+				terp);
+
+		// run each task in a separate thread
+		pool.run();
+		
+		// Collect any CompilerDiagnostics that may have been reported.
+		// Because Python is a dynamic language, some errors that would be
+		// found before the program runs in static languages,
+		// such as references to undefined variables, are only found
+		// at runtime.  We use a HashSet to de-duplicate the CompilerDiagnostics,
+		// since the same error may be found by multiple tests.
+		List<CompilerDiagnostic> dynamicCompilerDiagnosticList = new ArrayList<CompilerDiagnostic>();
+		HashSet<CompilerDiagnostic> seen = new HashSet<CompilerDiagnostic>();
+		for (PythonTestCaseTask task : tasks) {
+			CompilerDiagnostic diag = task.getCompilerDiagnostic();
+			if (diag != null && !seen.contains(diag)) {
+				seen.add(diag);
+				dynamicCompilerDiagnosticList.add(diag);
+			}
+		}
+
+		// Merge outcomes with their buffered inputs for stdout/stderr
+		List<TestResult> testResults=SandboxUtil.getStdoutStderr(pool);
+		
+		// Construct a CompilationResult
+		CompilationResult compilationResult = new CompilationResult(CompilationOutcome.SUCCESS);
+		int numDynamicCompilerDiagnostics = dynamicCompilerDiagnosticList.size();
+		compilationResult.setCompilerDiagnosticList(dynamicCompilerDiagnosticList.toArray(new CompilerDiagnostic[numDynamicCompilerDiagnostics]));
+		compilationResult.adjustDiagnosticLineNumbers(programSource.getPrologueLength(), programSource.getEpilogueLength());
+		
+		// Construct a SubmissionResult
+		SubmissionResult result=new SubmissionResult(compilationResult);
+		result.setTestResults(testResults.toArray(new TestResult[testResults.size()]));
+		return result;
+	}
+
+	/**
+	 * "Compile" scaffolded python code to detect syntax errors, missing imports, and
+	 * other "static" errors.
+	 * 
+	 * @param problem       the {@link Problem}
+	 * @param programSource the scaffolded code
+	 * @return the {@link CompilationResult}
+	 */
+	private CompilationResult compilePythonScript(Problem problem, ProgramSource programSource) {
+		String programText = programSource.getProgramText();
+		
+		try {
+		    logger.info("\n"+programText);
+			PythonInterpreter terp=new PythonInterpreter();
+			terp.execfile(new ByteArrayInputStream(programText.getBytes()));
+			
+			// Check to see if the test code actually defines the required
+			// function.  If it doesn't, report this as a failed compilation
+			// (it isn't really, but attempting to execute any of the
+			// test methods will accomplish nothing useful.)
+			PyFunction func = (PyFunction)terp.get(problem.getTestname(), PyFunction.class);
+			if (func == null) {
+				CompilationResult compRes = new CompilationResult(CompilationOutcome.FAILURE);
+				int line = programSource.getPrologueLength() + 1;
+				CompilerDiagnostic diag = new CompilerDiagnostic(line, line, 1, 1, "Required function " + problem.getTestname() + " was not defined");
+				compRes.setCompilerDiagnosticList(new CompilerDiagnostic[]{ diag });
+				return compRes;
+			}
+
+			// Compilation successful, we should be ready to run the tests
+			return new CompilationResult(CompilationOutcome.SUCCESS);
+		} catch (PySyntaxError e) {
+			logger.info("Failed to compile:\n"+programText+"\nwith message");
+
+			CompilationResult compres = new CompilationResult(CompilationOutcome.FAILURE);
+			List<CompilerDiagnostic> diagnostics=convertPySyntaxError(e);
+			compres.setCompilerDiagnosticList(diagnostics.toArray(new CompilerDiagnostic[diagnostics.size()]));
+			return compres;
+		} catch (PyException e) {
+			// This happens, for example, when an unknown import is specified.
+			logger.warn("PyException attempting to compile python code", e);
+			CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
+			CompilerDiagnostic diag = pyExceptionToCompilerDiagnostic(e);
+			compres.setCompilerDiagnosticList(new CompilerDiagnostic[]{diag});
+			return compres;
+		}
+	}
+
+	/**
+	 * Convert a PySyntaxError into a list of {@link CompilerDiagnostic}s.
+	 * 
+	 * @param e the PySyntaxError
+	 * @return list of {@link CompilerDiagnostic}s
+	 */
+	static List<CompilerDiagnostic> convertPySyntaxError(PySyntaxError e) {
+		List<CompilerDiagnostic> diagnostics=new LinkedList<CompilerDiagnostic>();
+
+		//
+		// Based on the source for Jython-2.5.2, here's code the 
+		// value field of a PySyntaxError:
+		//
+		//   PyObject[] tmp = new PyObject[] {
+		//       new PyString(filename), new PyInteger(line),
+		//       new PyInteger(column), new PyString(text)
+		//   };
+		// 
+		//   this.value = new PyTuple(new PyString(s), new PyTuple(tmp));
+		//
+		// We're going to pull this apart to get out the values we want
+		//
+
+		PyTuple tuple=(PyTuple)e.value;
+
+		String msg=tuple.get(0).toString();
+		PyTuple loc=(PyTuple)tuple.get(1);
+		//String filename=(String)loc.get(0);
+		int lineNum=(Integer)loc.get(1);
+		int colNum=(Integer)loc.get(2);
+		//String text=(String)loc.get(3);
+
+		CompilerDiagnostic d=new CompilerDiagnostic(lineNum, lineNum, colNum, colNum, msg);
+
+		diagnostics.add(d);
+		return diagnostics;
+	}
+	
+	// The following method is originally from:
+	//    http://python.6.x6.nabble.com/Getting-PyException-details-from-Java-td1762496.html
+	// I (DHH) updated it to work with more recent Jython versions, and
+	// refactored to provide explicit methods for extracting the error type
+	// and the error message.
+	
+	/** 
+	 * Returns the exception message, akin to java exception's getMessage() 
+	 * method (not supported properly in Jython). 
+	 * @param pye a python exception instance 
+	 * @return a string containing the python exception's message 
+	 */ 
+	private static String getExceptionMessage(PyException pye) { 
+		// derivative of Jython's Py.formatException() method 
+
+		StringBuffer buf = new StringBuffer(128);
+		buf.append(getErrorType(pye)); 
+		if (pye.value != Py.None) { 
+			buf.append(": ");
+			buf.append(getErrorMessage(pye)); 
+		} 
+		return buf.toString(); 
+	}
+
+	/**
+	 * Get an error message out of a PyException.
+	 * 
+	 * @param pye the PyException
+	 * @return the error message
+	 */
+	private static String getErrorMessage(PyException pye) {
+		if (pye.value == Py.None) {
+			return "Unknown error";
+		}
+		if (__builtin__.isinstance(pye.value, (PyType) Py.SyntaxError)) { 
+			return pye.value.__getitem__(0).__str__().toString();
+		} else { 
+			return pye.value.__str__().toString();
+		}
+	}
+
+	/**
+	 * Get the error type (e.g., "exceptions.NameError") from a PyException.
+	 * 
+	 * @param pye the PyException
+	 * @return the error type
+	 */
+	private static String getErrorType(PyException pye) {
+		if (pye.type instanceof PyType) { 
+			return ((PyType) pye.type).fastGetName();
+		} else { 
+			return pye.type.__str__().toString();
+		}
+	}
+	
+	/**
+	 * Determine if the error type returned from {@link #getErrorType(PyException)} is a NameError.
+	 * 
+	 * @param pye a PyException
+	 * @return true if the PyException represents a NameError
+	 */
+	private boolean isNameError(PyException pye) {
+		return getErrorType(pye).equals("exceptions.NameError");
+	}
+	
+	/**
+	 * Convert a PyException into a {@link CompilerDiagnostic}.
+	 * 
+	 * @param pye the PyException
+	 * @return a {@link CompilerDiagnostic}
+	 */
+	private CompilerDiagnostic pyExceptionToCompilerDiagnostic(PyException pye) {
+		int line;
+
+		// Use the traceback to get the line number where the error occurred.
+		PyTraceback top = getTracebackTop(pye.traceback);
+		line = top.tb_lineno;
+		
+		return new CompilerDiagnostic(line, line, 1, 1, getErrorMessage(pye));
+	}
+
+	//
+	// From experimentation, it seems that a PyTraceback is a stack trace
+	// starting with the bottom of the call stack.  Each tb_next link
+	// advances to the next higher (inner) stack frame.  This seems backwards
+	// to me (seems like you would start with the top and work down),
+	// but I'm assuming there's a good reason.  In any case, we assume
+	// that the top item on the stack frame identifies the real error.
+	//
+	private PyTraceback getTracebackTop(PyTraceback traceback) {
+		for (;;) {
+			if (traceback.tb_next == null || !(traceback.tb_next instanceof PyTraceback)) {
+				return traceback;
+			}
+			traceback = (PyTraceback) traceback.tb_next;
 		}
 	}
 }

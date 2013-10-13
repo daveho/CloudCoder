@@ -41,6 +41,7 @@ import org.cloudcoder.builder2.javamethod.ExecuteJavaMethodTestsBuildStep;
 import org.cloudcoder.builder2.javaprogram.JavaProgramToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.Tester;
+import org.cloudcoder.builder2.pythonfunction.AddPythonFunctionScaffoldingBuildStep;
 import org.cloudcoder.builder2.pythonfunction.TestPythonFunctionBuildStep;
 import org.cloudcoder.builder2.rubymethod.AddRubyMethodScaffoldingBuildStep;
 import org.cloudcoder.builder2.rubymethod.TestRubyMethodBuildStep;
@@ -124,6 +125,7 @@ public abstract class TesterFactory {
 	 * submission.
 	 */
 	private static final IBuildStep[] PYTHON_FUNCTION_BUILD_STEPS = {
+		new AddPythonFunctionScaffoldingBuildStep(),
 		new TestPythonFunctionBuildStep(),
 	};
 	
