@@ -49,6 +49,7 @@ import org.python.core.PyException;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
 import org.python.core.PySyntaxError;
+import org.python.core.PyTraceback;
 import org.python.core.PyTuple;
 import org.python.core.PyType;
 import org.python.core.__builtin__;
@@ -178,6 +179,9 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			StringBuilder test = new StringBuilder();
 			test.append("import sys\n");
 			test.append("import math\n");
+			
+			prologueLength = 2; // Keep this up to date with the imports above
+			
 			test.append(programText+"\n");
 			programTextLength=StringUtil.countLines(programText);
 			int spaces=getIndentationIncrementFromPythonCode(programText);
@@ -209,7 +213,6 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 			}
 			String result=test.toString();
 			int totalLen=StringUtil.countLines(result);
-			prologueLength=0;
 			epilogueLength=totalLen-programTextLength;
 			return result;
 		}
@@ -444,11 +447,29 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		
 		private CompilerDiagnostic nameErrorToCompilerDiagnostic(PyException pye) {
 			int line;
-			
-			// FIXME: figure out how to get the actual line number
-			line = 1;
+
+			// Use the traceback to get the line number where the error occurred.
+			PyTraceback top = getTracebackTop(pye.traceback);
+			line = top.tb_lineno;
 			
 			return new CompilerDiagnostic(line, line, 1, 1, getErrorMessage(pye));
+		}
+
+		//
+		// From experimentation, it seems that a PyTraceback is a stack trace
+		// starting with the bottom of the call stack.  Each tb_next link
+		// advances to the next higher (inner) stack frame.  This seems backwards
+		// to me (seems like you would start with the top and work down),
+		// but I'm assuming there's a good reason.  In any case, we assume
+		// that the top item on the stack frame identifies the real error.
+		//
+		private PyTraceback getTracebackTop(PyTraceback traceback) {
+			for (;;) {
+				if (traceback.tb_next == null || !(traceback.tb_next instanceof PyTraceback)) {
+					return traceback;
+				}
+				traceback = (PyTraceback) traceback.tb_next;
+			}
 		}
 	}
 }
