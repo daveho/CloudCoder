@@ -28,7 +28,6 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.builder2.javasandbox.IsolatedTask;
 import org.cloudcoder.builder2.javasandbox.SandboxUtil;
 import org.cloudcoder.builder2.javasandbox.TimeoutHandler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -62,36 +61,27 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	// Preload classes that will be needed to test the Ruby submission in the
 	// IsolatedTask, and create the ScriptingContainer.
 	static {
-		new RubyTester();
 		TestResultUtil.createResultForTimeout();
 		//TODO cannot execute any code with ruby before redirecting
 		container = new ScriptingContainer(LocalContextScope.CONCURRENT);
 		container.runScriptlet("true");
+		new RubyTester(container, new Object(), new Problem(), new TestCase());
 	}
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
-		
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		if (programSourceList.length != 1) {
 			throw new InternalBuilderException(this.getClass(), "Only one source file is expected");
 		}
-		final String testSource = programSourceList[0].getProgramText();
+		ProgramSource programSource = programSourceList[0];
+		final String testSource = programSource.getProgramText();
 
 		// Get Problem
-		final Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
-		
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
+		final Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+
+		// Get TestCase list
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 		
 		// Compile the test scriptlet
 		// TODO: do this in a sandbox?
@@ -112,15 +102,9 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 		}
 		
 		// Create a RubyTester in an IsolatedTask for each TestCase
-		List<IsolatedTask<TestResult>> tasks = new ArrayList<IsolatedTask<TestResult>>();
+		List<RubyTester> tasks = new ArrayList<RubyTester>();
 		for (final TestCase testCase : testCaseList) {
-			IsolatedTask<TestResult> task = new IsolatedTask<TestResult>() {
-				@Override
-				public TestResult execute() throws Throwable {
-					RubyTester tester = new RubyTester();
-					return tester.execute(container, receiver, problem, testCase);
-				}
-			};
+			RubyTester task = new RubyTester(container, receiver, problem, testCase);
 			tasks.add(task);
 		}
 		
@@ -138,6 +122,13 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 
 		pool.setThreadNamePrefix("RubyTest_"); // enable Ruby-specific security manager rules
 		pool.run();
+		
+		// Collect "dynamic" compiler diagnostics.
+		List<CompilerDiagnostic> dynamicCompilerDiagnosticList = SandboxUtil.collectDynamicCompilerDiagnostics(tasks);
+		
+		// Create a CompilationResult with the "dynamic" compiler diagnostics
+		CompilationResult compilationResult = SandboxUtil.createDynamicCompilationResult(programSource, dynamicCompilerDiagnosticList);
+		submission.addArtifact(compilationResult);
 		
 		// merge outcomes with their buffered inputs for stdout/stderr
 		List<TestResult> testResults = SandboxUtil.getStdoutStderr(pool);

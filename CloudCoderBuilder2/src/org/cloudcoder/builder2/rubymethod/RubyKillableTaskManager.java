@@ -15,7 +15,7 @@ public class RubyKillableTaskManager<T> extends AbstractKillableTaskManager<T>
     private final PrintStream stdout;
     private final PrintStream stderr;
     
-    public RubyKillableTaskManager(List<IsolatedTask<T>> tasks, 
+    public RubyKillableTaskManager(List<? extends IsolatedTask<T>> tasks, 
         long maxRunTime, 
         TimeoutHandler<T> timeoutHandler,
         ScriptingContainer container)
