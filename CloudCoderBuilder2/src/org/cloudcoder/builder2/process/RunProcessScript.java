@@ -38,7 +38,8 @@ public class RunProcessScript {
 	private static Logger logger = LoggerFactory.getLogger(RunProcessScript.class);
 	
 //	private static final String SCRIPT_FILENAME = "runProcess.sh";
-	private static final String SCRIPT_FILENAME = "runProcess2.sh";
+//	private static final String SCRIPT_FILENAME = "runProcess2.sh";
+	private static final String SCRIPT_FILENAME = "runProcess3.sh";
 
 	private static final SingletonHolder<String, Properties> holder = new SingletonHolder<String, Properties>() {
 		@Override

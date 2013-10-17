@@ -62,8 +62,11 @@ public class InputSender {
 				try {
 					writer.write(stdin);
 					writer.flush();
+					//System.out.println("Successfully wrote and flushed " + stdin);
 				} catch (IOException e) {
 					// ignore
+					//System.err.println("Error sending stdin");
+					//e.printStackTrace();
 				} finally {
 					IOUtils.closeQuietly(writer);
 				}

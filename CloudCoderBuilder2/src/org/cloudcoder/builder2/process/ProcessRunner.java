@@ -159,6 +159,7 @@ public class ProcessRunner {
 
 			// If stdin was provided, send it
 			if (stdin != null) {
+				//System.out.println("Creating InputSender for input: " + stdin);
 				stdinSender = new InputSender(process.getOutputStream(), stdin);
 				stdinSender.start();
 			}

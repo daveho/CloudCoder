@@ -106,12 +106,15 @@ public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
 		boolean foundMatchingOutput = false;
 		Pattern pat = Pattern.compile(regex, caseInsensitive ? Pattern.CASE_INSENSITIVE : 0);
 		for (String line : stdoutAsList) {
+			System.out.println("Check: " + line);
 			Matcher m = pat.matcher(line);
 			if (m.matches()) {
 				// Match!
+				System.out.println("MATCH");
 				foundMatchingOutput = true;
 				break;
 			}
+			System.out.println("Not a match");
 		}
 		
 		return foundMatchingOutput
