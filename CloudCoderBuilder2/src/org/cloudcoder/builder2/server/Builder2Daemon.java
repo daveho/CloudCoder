@@ -105,7 +105,7 @@ public class Builder2Daemon implements IDaemon {
 			config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
 			
 			// Just use the system temporary directory as the instance temp directory
-			config.setProperty("", System.getProperty("java.io.tmpdir"));
+			config.setProperty("cloudcoder.builder2.tmpdir", System.getProperty("java.io.tmpdir"));
 		}
 		
 		if (config.getProperty("cloudcoder.builder2.tmpdir") == null) {
