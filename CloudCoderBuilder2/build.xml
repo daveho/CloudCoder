@@ -99,7 +99,7 @@
 			<zipgroupfileset file="${json.jar}" />
 			<zipgroupfileset dir="../CloudCoderModelClassesJSON/lib" includes="*.jar"/>
 
-			<fileset dir="bin" includes="**"/>
+			<fileset dir="bin" includes="**" excludes="org/cloudcoder/builder2/tests/**"/>
 			
 			<!-- Include keystore for secure communications with webapp. -->
 			<zipfileset file="${cloudcoderKeystoreSource}" fullpath="${cloudcoderKeystoreTarget}" />
