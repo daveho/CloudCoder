@@ -45,7 +45,7 @@ public class PythonUtil {
 	 * "compilation" exceptions that should be treated as
 	 * compiler diagnostics.
 	 */
-	private static final Set<String> compilationExceptionTypes = new HashSet<>();
+	private static final Set<String> compilationExceptionTypes = new HashSet<String>();
 	static {
 		compilationExceptionTypes.add("exceptions.NameError");
 		compilationExceptionTypes.add("exceptions.ImportError");
