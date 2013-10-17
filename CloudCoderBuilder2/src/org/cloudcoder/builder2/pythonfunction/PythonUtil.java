@@ -18,8 +18,10 @@
 
 package org.cloudcoder.builder2.pythonfunction;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.python.core.Py;
@@ -37,6 +39,17 @@ import org.python.core.__builtin__;
  * @author David Hovemeyer
  */
 public class PythonUtil {
+	
+	/**
+	 * Set of dynamic exceptions (PyExceptions) that we treat as
+	 * "compilation" exceptions that should be treated as
+	 * compiler diagnostics.
+	 */
+	private static final Set<String> compilationExceptionTypes = new HashSet<>();
+	static {
+		compilationExceptionTypes.add("exceptions.NameError");
+		compilationExceptionTypes.add("exceptions.ImportError");
+	}
 
 	/**
 	 * Convert a PySyntaxError into a list of {@link CompilerDiagnostic}s.
@@ -131,14 +144,26 @@ public class PythonUtil {
 		}
 	}
 
+//	/**
+//	 * Determine if the error type returned from {@link getErrorType} is a NameError.
+//	 * 
+//	 * @param pye a PyException
+//	 * @return true if the PyException represents a NameError
+//	 */
+//	public static boolean isNameError(PyException pye) {
+//		return getErrorType(pye).equals("exceptions.NameError");
+//	}
+
 	/**
-	 * Determine if the error type returned from {@link getErrorType} is a NameError.
+	 * Determin if the given PyException is a "compilation" exception
+	 * that should be reported as a compiler diagnostic.
 	 * 
-	 * @param pye a PyException
-	 * @return true if the PyException represents a NameError
+	 * @param pye the PyException
+	 * @return true if the PyException is a "compilation" exception
 	 */
-	public static boolean isNameError(PyException pye) {
-		return getErrorType(pye).equals("exceptions.NameError");
+	public static boolean isCompilationException(PyException pye) {
+		String errorType = getErrorType(pye);
+		return compilationExceptionTypes.contains(errorType);
 	}
 
 	/**

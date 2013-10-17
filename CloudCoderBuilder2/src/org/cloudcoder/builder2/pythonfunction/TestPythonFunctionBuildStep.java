@@ -197,7 +197,9 @@ public class TestPythonFunctionBuildStep implements IBuildStep {
 		} catch (PyException e) {
 			// This happens, for example, when an unknown import is specified.
 			logger.warn("PyException attempting to compile python code", e);
-			CompilationResult compres=new CompilationResult(CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
+			boolean compilationException = PythonUtil.isCompilationException(e);
+			CompilationResult compres = new CompilationResult(
+					compilationException ? CompilationOutcome.FAILURE : CompilationOutcome.UNEXPECTED_COMPILER_ERROR);
 			CompilerDiagnostic diag = PythonUtil.pyExceptionToCompilerDiagnostic(e);
 			compres.setCompilerDiagnosticList(new CompilerDiagnostic[]{diag});
 			return compres;

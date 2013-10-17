@@ -98,10 +98,11 @@ public class PythonTestCaseTask implements IsolatedTaskWithCompilerDiagnostic<Te
 			}
 			TestPythonFunctionBuildStep.logger.info("Exception executing Python submission", e);
 			
-			// Special case: if it's a NameError, construct a CompilerDiagnostic
-			if (PythonUtil.isNameError(e)) {
+			// Special case: if it's a "compilation" exception, construct a CompilerDiagnostic
+			if (PythonUtil.isCompilationException(e)) {
 				this.compilerDiagnostic = PythonUtil.pyExceptionToCompilerDiagnostic(e);
-				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, "NameError", "stdout", "stderr");
+				String errorType = PythonUtil.getErrorType(e);
+				return new TestResult(TestOutcome.FAILED_WITH_EXCEPTION, errorType, "stdout", "stderr");
 			}
 			
 			String msg = PythonUtil.getExceptionMessage(e);

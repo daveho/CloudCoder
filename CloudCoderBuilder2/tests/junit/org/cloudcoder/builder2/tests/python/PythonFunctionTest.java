@@ -36,6 +36,13 @@ public class PythonFunctionTest extends BuilderTest {
 	}
 	
 	@Test
+	public void testComputeSumCompilationFailureDueToUnknownImport() {
+		String source = getContext().getSourceText("compute_sum_missing_import.py");
+		SubmissionResult result = getContext().testSubmission(source, computeSum);
+		super.assertCompilationError(result);
+	}
+	
+	@Test
 	public void testGravityNameErrorDueToMisspelledParam() {
 		String source = getContext().getSourceText("gravity_nameerror_due_to_misspelled_param.py");
 		SubmissionResult result = getContext().testSubmission(source, gravity);
