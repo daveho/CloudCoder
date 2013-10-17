@@ -57,6 +57,11 @@ import org.slf4j.LoggerFactory;
 public class TestPythonFunctionBuildStep implements IBuildStep {
 	public static final Logger logger = LoggerFactory.getLogger(TestPythonFunctionBuildStep.class);
 	public static final long TIMEOUT_LIMIT = 2000;
+	
+	static {
+		// Force preloading of classes needed by PythonTestCaseTask
+		new PythonUtil();
+	}
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {

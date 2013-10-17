@@ -3,6 +3,8 @@ package org.cloudcoder.builder2.tests;
 import static org.junit.Assert.*;
 
 import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestOutcome;
@@ -60,5 +62,20 @@ public class BuilderTest {
 	public void assertAllTestCasesHaveTestResults(SubmissionResult result,
 			ProblemAndTestCaseList exercise) {
 		assertEquals(exercise.getTestCaseData().size(), result.getTestResults().length);
+	}
+
+	public void assertCompilerDiagnosticAtLine(SubmissionResult result, int lineNumber) {
+		CompilationResult compRes = result.getCompilationResult();
+		for (CompilerDiagnostic diag : compRes.getCompilerDiagnosticList()) {
+			System.out.println("Diagnostic at line: " + diag.getStartLine());
+			if (diag.getStartLine() == (long)lineNumber) {
+				return;
+			}
+		}
+		assertTrue("No compiler diagnostic at line " + lineNumber, false);
+	}
+
+	public void assertCompilationError(SubmissionResult result) {
+		assertEquals(CompilationOutcome.FAILURE, result.getCompilationResult().getOutcome());
 	}
 }
