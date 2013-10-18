@@ -1,9 +1,15 @@
+// CloudCoder process wrapper
+// Compile with gcc -std=gnu99 -D_BSD_SOURCE
+// Note: is not valid C++, do not use g++
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/wait.h>
+#include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -27,7 +33,7 @@ static void install_sigterm_handler(void)
 {
 	// Install handler for SIGTERM
 	sigset_t mask;
-	sigemptyset(mask);
+	sigemptyset(&mask);
 	struct sigaction sa = {
 		.sa_handler = &sigterm_handler,
 		.sa_mask = mask,
@@ -252,7 +258,7 @@ int main(int argc, char **argv, char **env)
 			FILE *fd = fopen(exit_status_file, "w");
 			if (fd != NULL) {
 				fprintf(fd, "%s\n", how);
-				fprintf(fs, "%d\n", exitcode);
+				fprintf(fd, "%d\n", exitcode);
 				fclose(fd);
 			}
 		}
