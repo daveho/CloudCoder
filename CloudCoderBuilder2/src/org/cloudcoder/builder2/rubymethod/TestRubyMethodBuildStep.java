@@ -36,9 +36,11 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProgramSource;
 import org.cloudcoder.builder2.util.ArrayUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.jruby.embed.EvalFailedException;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ParseFailedException;
 import org.jruby.embed.ScriptingContainer;
+import org.jruby.exceptions.RaiseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +97,13 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 			CompilerDiagnostic diag = createRubyCompilerDiagnostic(e);
 			failedCompilation(submission, diag);
 			return;
+		} catch (EvalFailedException e) {
+			// >>>>>>>>>>>>> HERE <<<<<<<<<<<<<<<<
+			CompilerDiagnostic diag = createRubyCompilerDiagnostic(e);
+			failedCompilation(submission, diag);
+			return;
 		} catch (RuntimeException e) {
+			logger.info("Unexpected ruby compilation error", e);
 			CompilerDiagnostic diag = new CompilerDiagnostic(1, 1, 1, 1, "Unexpected compilation error");
 			failedCompilation(submission, diag);
 			return;
@@ -146,6 +154,8 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 	}
 
 	private CompilerDiagnostic createRubyCompilerDiagnostic(ParseFailedException e) {
+		logger.info("Ruby compilation failure", e);
+		
 		String msg = e.getMessage();
 		
 		try {
@@ -172,6 +182,25 @@ public class TestRubyMethodBuildStep implements IBuildStep {
 		}
 		
 		return new CompilerDiagnostic(1, 1, 1, 1, "Unknown compilation error");
+	}
+	
+	private CompilerDiagnostic createRubyCompilerDiagnostic(EvalFailedException e) {
+		logger.info("Ruby eval failure", e);
+		
+		// Special case: check for a RaiseException as the cause
+		Throwable cause = e.getCause();
+		if (cause instanceof RaiseException) {
+			// The bottom element of the stack should have the line number
+			StackTraceElement[] stackTrace = cause.getStackTrace();
+			if (stackTrace.length > 0) {
+				StackTraceElement bottom = stackTrace[stackTrace.length - 1];
+				int lineNumber = bottom.getLineNumber();
+				return new CompilerDiagnostic(lineNumber, lineNumber, 1, 1, cause.getMessage());
+			}
+		}
+		
+		// Unfortunately we don't have an accurate line number here
+		return new CompilerDiagnostic(1, 1, 1, 1, e.getMessage());
 	}
 
 }
