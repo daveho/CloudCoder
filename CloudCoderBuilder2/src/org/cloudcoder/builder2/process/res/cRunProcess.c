@@ -206,7 +206,7 @@ int main(int argc, char **argv, char **env)
 		char **args = argv + 1; // strip the name of the wrapper exe
 
 		// Exec the child process!
-		int rc = execve(exe, args, env);
+		execve(exe, args, env);
 
 		// An error occurred executing the child process.
 		exit(127);
