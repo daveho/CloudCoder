@@ -24,6 +24,13 @@ public class CProgramTest extends BuilderTest {
 		super.assertAllTestsPassed(result, skip3);
 	}
 	
+	@Test
+	public void testSkip3TimeoutInfiniteLoop() {
+		String source = getContext().getSourceText("skip3_timeout_infinite_loop.c");
+		SubmissionResult result = getContext().testSubmission(source, skip3);
+		super.assertAllTestsTimedOut(result, skip3);
+	}
+	
 	@AfterClass
 	public static void whenDone() {
 		BuilderTest.getInstance().destroyContext();

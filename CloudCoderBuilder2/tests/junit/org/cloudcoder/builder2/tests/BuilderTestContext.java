@@ -24,12 +24,8 @@ public class BuilderTestContext {
 	private Properties config;
 	private Builder2 builder;
 	
-	public BuilderTestContext() {
-		config = new Properties();
-		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
-		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
-		config.setProperty("cloudcoder.builder2.tmpdir", System.getProperty("java.io.tmpdir"));
-		
+	public BuilderTestContext(Properties config) {
+		this.config = config;
 		builder = new Builder2(config);
 	}
 	

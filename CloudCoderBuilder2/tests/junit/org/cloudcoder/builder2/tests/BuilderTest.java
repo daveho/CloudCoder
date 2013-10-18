@@ -2,6 +2,8 @@ package org.cloudcoder.builder2.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
@@ -18,11 +20,19 @@ public class BuilderTest {
 	public boolean createContext() {
 		if (context == null) {
 			theInstance = this;
-			context = new BuilderTestContext();
+			context = new BuilderTestContext(createConfig());
 			context.setup();
 			return true;
 		}
 		return false;
+	}
+	
+	protected Properties createConfig() {
+		Properties config = new Properties();
+		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
+		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
+		config.setProperty("cloudcoder.builder2.tmpdir", System.getProperty("java.io.tmpdir"));
+		return config;
 	}
 	
 	public BuilderTestContext getContext() {
@@ -77,5 +87,12 @@ public class BuilderTest {
 
 	public void assertCompilationError(SubmissionResult result) {
 		assertEquals(CompilationOutcome.FAILURE, result.getCompilationResult().getOutcome());
+	}
+
+	public void assertAllTestsTimedOut(SubmissionResult result, ProblemAndTestCaseList exercise) {
+		assertAllTestCasesHaveTestResults(result, exercise);
+		for (TestResult tr : result.getTestResults()) {
+			assertEquals(TestOutcome.FAILED_FROM_TIMEOUT, tr.getOutcome());
+		}
 	}
 }
