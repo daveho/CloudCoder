@@ -130,6 +130,35 @@ static char **create_env(char **env)
 	return new_env;
 }
 
+static void read_one_byte(int fd)
+{
+	// Read exactly one byte from pipe
+	for (;;) {
+		char c;
+		ssize_t rc = read(fd, &c, 1);
+		if (rc == 1) {
+			break;
+		}
+		if (rc == 0) {
+			// Reached EOF: should definitely not happen
+			exit(127);
+		}
+		if (errno != EINTR) {
+			// Some unexpected error
+			exit(127);
+		}
+	}
+}
+
+static void write_one_byte(int fd)
+{
+	// Write exactly one byte to pipe
+	char c = 'b';
+	if (write(fd, &c, 1) != 1) {
+		exit(EXIT_FATAL_ERROR);
+	}
+}
+
 int main(int argc, char **argv, char **env)
 {
 	install_sigterm_handler();
@@ -141,8 +170,10 @@ int main(int argc, char **argv, char **env)
 	// happened, because we have observed some strange issues if
 	// both the real child subprocess and the wrapper process have
 	// the stdin pipe open at the same time.
-	int pipe[2];
-	// TODO
+	int pipefd[2];
+	if (pipe(pipefd) == -1) {
+		exit(EXIT_FATAL_ERROR);
+	}
 
 	// Fork the child process
 	s_childpid = fork();
@@ -150,11 +181,13 @@ int main(int argc, char **argv, char **env)
 		// Fork failed!
 		exit(EXIT_FATAL_ERROR);
 	}
-	if (s_childpid != 0) {
+	if (s_childpid == 0) {
 		// in the child
 
 		// Wait for parent's signal that it is ok to proceed
-		// TODO
+		close(pipefd[1]); // close write side of pipe
+		read_one_byte(pipefd[0]); // read exactly one byte
+		close(pipefd[0]);
 
 		// Set resource limits as specified by CC_PROCESS_RESOURCE_LIMITS
 		set_resource_limits();
@@ -179,10 +212,52 @@ int main(int argc, char **argv, char **env)
 		close(1);
 		close(2);
 		
-		// TODO: tell the child it's safe to execute the program
+		// Tell the child it's safe to execute the program
+		close(pipefd[0]); // close read side of pipe
+		write_one_byte(pipefd[1]); // write exactly one byte
+		close(pipefd[1]);
 
-		// TODO: wait for child to exit
+		// Wait for child to exit
+		int status;
+		while (waitpid(s_childpid, &status, 0) == -1) {
+			if (errno != EINTR) {
+				// Unexpected error waiting for child.
+				// This is pretty bad.
+				exit(EXIT_FATAL_ERROR);
+			}
+		}
 
-		// TODO: create exit status file if requested
+		// Figure out exit status
+		char *how;
+		int exitcode;
+		if (WIFEXITED(status)) {
+			// We assume that exit code 127 means that it was not
+			// possible to execute the child process
+			exitcode = WEXITSTATUS(status);
+			how = (exitcode == 127) ? "failed_to_execute" : "exited";
+		} else if (WIFSIGNALED(status)) {
+			// Child process was terminated by a signal
+			exitcode = WTERMSIG(status);
+			how = "terminated_by_signal";	
+		} else {
+			// Not sure what happened to the child.
+			// We'll assume the worst.
+			exitcode = -1;
+			how = "failed_to_execute";
+		}
+
+		// Create exit status file if requested
+		char *exit_status_file = getenv("CC_PROC_STAT_FILE");
+		if (exit_status_file != NULL) {
+			FILE *fd = fopen(exit_status_file, "w");
+			if (fd != NULL) {
+				fprintf(fd, "%s\n", how);
+				fprintf(fs, "%d\n", exitcode);
+				fclose(fd);
+			}
+		}
+
+		// Done!
+		exit(exitcode);
 	}
 }
