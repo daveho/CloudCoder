@@ -202,8 +202,8 @@ int main(int argc, char **argv, char **env)
 		env = create_env(env);
 
 		// Get the executable and arguments
-		char *exe = argv[1];
-		char **args = argv + 2;
+		char *exe = argv[1]; // the program to run
+		char **args = argv + 1; // strip the name of the wrapper exe
 
 		// Exec the child process!
 		int rc = execve(exe, args, env);
