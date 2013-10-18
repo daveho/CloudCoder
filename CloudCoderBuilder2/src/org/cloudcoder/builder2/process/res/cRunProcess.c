@@ -87,7 +87,7 @@ static void set_resource_limits(void)
 				break;
 
 			case 'v': // Maximum virtual memory in KB
-				set_limit(RLIMIT_AS, value);
+				set_limit(RLIMIT_AS, value*1024);
 				break;
 			}
 
