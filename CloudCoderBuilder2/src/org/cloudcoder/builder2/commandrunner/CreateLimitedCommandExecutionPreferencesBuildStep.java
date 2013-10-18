@@ -34,11 +34,8 @@ public class CreateLimitedCommandExecutionPreferencesBuildStep implements IBuild
 		prefs.setLimit(CommandLimit.STACK_SIZE_KB, 256);
 		prefs.setLimit(CommandLimit.VM_SIZE_KB, 32768);
 		
-		// FIXME: this doesn't work yet
-		/*
 		// Use the native exe processs wrapper rather than the bash script
 		prefs.setWrapperMode(WrapperMode.NATIVE_EXE);
-		*/
 		
 		// Configure EasySandbox.
 		// Note that the default is not to enable it: however, we expect
