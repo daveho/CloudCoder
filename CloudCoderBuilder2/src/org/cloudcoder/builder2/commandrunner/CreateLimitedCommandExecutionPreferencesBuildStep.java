@@ -6,6 +6,7 @@ import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandExecutionPreferences;
 import org.cloudcoder.builder2.model.CommandLimit;
 import org.cloudcoder.builder2.model.IBuildStep;
+import org.cloudcoder.builder2.model.WrapperMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class CreateLimitedCommandExecutionPreferencesBuildStep implements IBuild
 	public void execute(BuilderSubmission submission, Properties config) {
 		CommandExecutionPreferences prefs = new CommandExecutionPreferences();
 		
-		// Configure ulimit
+		// Configure process resource limits and output limits
 		prefs.setLimit(CommandLimit.CPU_TIME_SEC, 5);
 		prefs.setLimit(CommandLimit.FILE_SIZE_KB, 0);
 		prefs.setLimit(CommandLimit.OUTPUT_LINE_MAX_CHARS, 400);
@@ -32,6 +33,12 @@ public class CreateLimitedCommandExecutionPreferencesBuildStep implements IBuild
 		prefs.setLimit(CommandLimit.PROCESSES, 0);
 		prefs.setLimit(CommandLimit.STACK_SIZE_KB, 256);
 		prefs.setLimit(CommandLimit.VM_SIZE_KB, 32768);
+		
+		// FIXME: this doesn't work yet
+		/*
+		// Use the native exe processs wrapper rather than the bash script
+		prefs.setWrapperMode(WrapperMode.NATIVE_EXE);
+		*/
 		
 		// Configure EasySandbox.
 		// Note that the default is not to enable it: however, we expect

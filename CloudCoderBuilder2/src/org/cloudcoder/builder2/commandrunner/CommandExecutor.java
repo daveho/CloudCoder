@@ -103,6 +103,7 @@ public class CommandExecutor implements Runnable {
 		if (prefs != null) {
 			LimitedProcessRunner processRunner_ = new LimitedProcessRunner(config);
 			processRunner_.setPreferences(prefs);
+			processRunner_.setWrapperMode(prefs.getWrapperMode());
 			processRunner = processRunner_;
 			maxWaitTimeSec = prefs.getLimit(CommandLimit.CPU_TIME_SEC) * 2;
 		} else {

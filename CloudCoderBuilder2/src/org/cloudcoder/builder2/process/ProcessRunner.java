@@ -34,8 +34,8 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.builder2.model.ProcessStatus;
+import org.cloudcoder.builder2.model.WrapperMode;
 import org.cloudcoder.builder2.util.StringUtil;
-import org.cloudcoder.daemon.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +50,7 @@ public class ProcessRunner {
 	private static final Logger logger=LoggerFactory.getLogger(ProcessRunner.class);
     
 	private Properties config;
+	private WrapperMode wrapperMode;
 	
 	private String statusMessage = "";
 	
@@ -73,6 +74,7 @@ public class ProcessRunner {
 	 */
 	public ProcessRunner(Properties config) {
 		this.config = config;
+		this.wrapperMode = WrapperMode.SCRIPT;
 	    for (Entry<String,String> entry : System.getenv().entrySet()) {
 	        env.put(entry.getKey(), entry.getValue());
 	    }
@@ -86,6 +88,15 @@ public class ProcessRunner {
 	 */
 	public Properties getConfig() {
 		return config;
+	}
+	
+	/**
+	 * Set the {@link WrapperMode}.
+	 * 
+	 * @param wrapperMode the {@link WrapperMode}
+	 */
+	public void setWrapperMode(WrapperMode wrapperMode) {
+		this.wrapperMode = wrapperMode;
 	}
 	
 	/**
@@ -183,10 +194,27 @@ public class ProcessRunner {
 		return false;
 	}
 
-	protected String[] wrapCommand(String[] command) {
+	private String[] wrapCommand(String[] command) {
 		List<String> cmd = new ArrayList<String>();
-		cmd.add("/bin/bash");
-		cmd.add(RunProcessScript.getInstance(config));
+		
+		switch (wrapperMode) {
+		case NATIVE_EXE:
+			RunProcessNativeExe runProc = RunProcessNativeExe.getInstance(config);
+			if (runProc.getNativeExePath() != null) {
+				// Native exe process wrapper exists, so use it.
+				cmd.add(runProc.getNativeExePath());
+				break;
+			}
+			
+			// There was a problem compiling the native exe wrapper.
+			// Fall through!
+			
+		case SCRIPT:
+			cmd.add("/bin/bash");
+			cmd.add(RunProcessScript.getInstance(config));
+			break;
+		}
+		
 		cmd.addAll(Arrays.asList(command));
 		return cmd.toArray(new String[cmd.size()]);
 	}

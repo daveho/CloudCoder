@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.builder2.model.WrapperMode;
 import org.cloudcoder.builder2.process.ProcessRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class Compiler {
 	private List<Module> modules;
 	private String statusMessage;
 	private List<String> compilerOutput;
+	private WrapperMode wrapperMode;
 
 	/**
 	 * Constructor for programs compiled from a single source file.
@@ -75,8 +77,7 @@ public class Compiler {
 	 * @param config  the builder configuration properties
 	 */
 	public Compiler(String code, File workDir, String progName, Properties config) {
-		this(workDir, progName);
-		this.config = config;
+		this(workDir, progName, config);
 		addModule(progName + ".c", code);
 	}
 	
@@ -88,7 +89,8 @@ public class Compiler {
 	 * @param workDir  the working directory where compilation should take place
 	 * @param progName the name to be given to the resulting executable
 	 */
-	public Compiler(File workDir, String progName) {
+	public Compiler(File workDir, String progName, Properties config) {
+		this.config = config;
 		this.compilerExe = DEFAULT_COMPILER_EXE;
 		this.progName = progName;
 		this.workDir = workDir;
@@ -97,6 +99,7 @@ public class Compiler {
 		this.modules = new ArrayList<Module>();
 		this.statusMessage = "";
 		this.compilerOutput = new LinkedList<String>();
+		this.wrapperMode = WrapperMode.SCRIPT; // safe default
 	}
 	
 	/**
@@ -209,6 +212,12 @@ public class Compiler {
 
 	private boolean runCommand(File tempDir, String[] cmd) {
 		ProcessRunner runner = new ProcessRunner(config);
+		
+		// Set the wrapper mode.  This is important to be able to control explicitly,
+		// since the program we're compiling might be the native executable wrapper
+		// program (cRunProcess.c), leading to a chicken-and-egg issue.
+		runner.setWrapperMode(wrapperMode);
+		
 		if (!runner.runSynchronous(tempDir, cmd)) {
 			statusMessage = runner.getStatusMessage();
 			return false;
@@ -241,7 +250,22 @@ public class Compiler {
 		return Collections.unmodifiableList(compilerOutput);
 	}
 
+	/**
+	 * Set the name of the exe to be generated.
+	 * 
+	 * @param progname the exe name
+	 */
 	public void setProgramName(String progname) {
 		this.progName = progname;
+	}
+
+	/**
+	 * Set the {@link WrapperMode} to be used when executing the compiler
+	 * in a {@link ProcessRunner}.
+	 * 
+	 * @param wrapperMode the wrapper mode
+	 */
+	public void setWrapperMode(WrapperMode wrapperMode) {
+		this.wrapperMode = wrapperMode;
 	}
 }

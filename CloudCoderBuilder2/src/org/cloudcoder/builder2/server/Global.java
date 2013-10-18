@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.cloudcoder.builder2.csandbox.EasySandboxSharedLibrary;
 import org.cloudcoder.builder2.extlib.ExternalLibraryCache;
 import org.cloudcoder.builder2.javasandbox.JVMKillableTaskManager;
+import org.cloudcoder.builder2.process.RunProcessNativeExe;
 import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
 
 /**
@@ -30,6 +31,7 @@ import org.cloudcoder.builder2.pythonfunction.PythonKillableTaskManager;
  * after builders finish.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class Global {
 	/**
@@ -57,5 +59,8 @@ public class Global {
 		
 		// Delete directories/files used by the ExternalLibraryCache
 		ExternalLibraryCache.getInstance(config).cleanup();
+		
+		// Delete directories/files used by the RunProcessNativeExe
+		RunProcessNativeExe.getInstance(config).cleanup();
 	}
 }

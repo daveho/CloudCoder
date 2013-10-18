@@ -20,16 +20,14 @@ package org.cloudcoder.builder2.csandbox;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.Properties;
 
 import org.cloudcoder.builder2.ccompiler.Compiler;
+import org.cloudcoder.builder2.model.WrapperMode;
+import org.cloudcoder.builder2.process.ProcessUtil;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
 import org.cloudcoder.builder2.util.SingletonHolder;
-import org.cloudcoder.daemon.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,13 +85,14 @@ public class EasySandboxSharedLibrary {
 	
 	private void build(Properties config) throws IOException {
 		// Get source code for the EasySandbox source files
-		String source1 = sourceResourceToString("EasySandbox.c");
-		String source2 = sourceResourceToString("malloc.c");
+		String source1 = ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/EasySandbox.c");
+		String source2 = ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/malloc.c");
 		
 		this.tempDir = FileUtil.makeTempDir(config);
 		
 		// Compile the code and link it into a shared library
-		Compiler compiler = new Compiler(tempDir, "EasySandbox.so");
+		Compiler compiler = new Compiler(tempDir, "EasySandbox.so", config);
+		compiler.setWrapperMode(WrapperMode.SCRIPT); // safe default, native exe wrapper might not be available
 		compiler.addModule("EasySandbox.c", source1);
 		compiler.addModule("malloc.c", source2);
 		compiler.addFlag("-fPIC");
@@ -125,19 +124,6 @@ public class EasySandboxSharedLibrary {
 	public void cleanup() {
 		if (tempDir != null) {
 			new DeleteDirectoryRecursively(tempDir).delete();
-		}
-	}
-	
-	private String sourceResourceToString(String sourceFileName) throws IOException {
-		InputStream in = null;
-		try {
-			in = this.getClass().getClassLoader().getResourceAsStream("org/cloudcoder/builder2/csandbox/res/" + sourceFileName);
-			InputStreamReader r = new InputStreamReader(in);
-			StringWriter sw = new StringWriter();
-			IOUtil.copy(r, sw);
-			return sw.toString();
-		} finally {
-			IOUtil.closeQuietly(in);
 		}
 	}
 	

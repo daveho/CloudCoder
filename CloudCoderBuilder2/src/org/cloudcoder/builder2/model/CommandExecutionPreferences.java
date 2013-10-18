@@ -28,12 +28,14 @@ import java.util.Map;
  */
 public class CommandExecutionPreferences {
 	private Map<CommandLimit, Integer> limitMap;
+	private WrapperMode wrapperMode;
 	
 	/**
 	 * Constructor. No preferences are set by default.
 	 */
 	public CommandExecutionPreferences() {
 		limitMap = new HashMap<CommandLimit, Integer>();
+		wrapperMode = WrapperMode.SCRIPT; // Safe default
 	}
 	
 	/**
@@ -74,5 +76,24 @@ public class CommandExecutionPreferences {
 	 */
 	public Map<CommandLimit, Integer> getMap() {
 		return Collections.unmodifiableMap(limitMap);
+	}
+	
+	/**
+	 * Set the {@link WrapperMode} to choose the process wrapper (script or native exe)
+	 * that will control the process by setting resource limits, enabling sandboxing, etc.
+	 * 
+	 * @param wrapperMode the {@link WrapperMode}
+	 */
+	public void setWrapperMode(WrapperMode wrapperMode) {
+		this.wrapperMode = wrapperMode;
+	}
+	
+	/**
+	 * Get the {@link WrapperMode}.
+	 * 
+	 * @return the {@link WrapperMode}
+	 */
+	public WrapperMode getWrapperMode() {
+		return wrapperMode;
 	}
 }
