@@ -75,7 +75,9 @@ public class CreateCourse {
 			if (user==null) {
 			    throw new IllegalArgumentException("Cannot find instructor with username "+username);
 			}
-			int section = ConfigurationUtil.askInt(keyboard, "What section is this instructor teaching? ");
+			int section = ConfigurationUtil.askInt(
+					keyboard,
+					"What section is this instructor teaching (integer)? ");
 			
 			instructors.add(new Instructor(user, section));
 			
