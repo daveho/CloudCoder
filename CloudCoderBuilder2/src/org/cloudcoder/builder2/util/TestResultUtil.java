@@ -263,23 +263,28 @@ public class TestResultUtil {
 		
 		TestResult testResult = new TestResult(outcome, buf.toString());
 		
-		ProblemType type=problem.getProblemType();
-		if (type.isOutputLiteral() && !testCase.isSecret()) {
+		if (!testCase.isSecret()) {
+			// Input is set for all non-secret test cases
 		    testResult.setInput(input);
-		    testResult.setExpectedOutput(expected);
 		    
-		    String actual = output;
-		    
-		    if (actual == null) {
-			    // Important: at the database level, actual output cannot be null
-		    	actual = "";
-		    } else {
-			    // Depending on the problem type, add quoting to the
-			    // actual output.  The expected output is passed in
-		    	// order to make the quoting consistent.
-		    	actual = quote(problem.getProblemType(), expected, actual);
-		    }
-			testResult.setActualOutput(actual);
+			if (problem.getProblemType().isOutputLiteral()) {
+				// Expected and actual output are only set for "literal output"
+				// problem types.
+			    testResult.setExpectedOutput(expected);
+			    
+			    String actual = output;
+			    
+			    if (actual == null) {
+				    // Important: at the database level, actual output cannot be null
+			    	actual = "";
+			    } else {
+				    // Depending on the problem type, add quoting to the
+				    // actual output.  The expected output is passed in
+			    	// order to make the quoting consistent.
+			    	actual = quote(problem.getProblemType(), expected, actual);
+			    }
+				testResult.setActualOutput(actual);
+			}
 		}
 
 		if (p != null) {
