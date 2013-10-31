@@ -35,6 +35,7 @@ import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.PythonTutorView;
 import org.cloudcoder.app.client.view.QuizIndicatorView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TestOutcomeSummaryView;
@@ -51,8 +52,10 @@ import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemText;
+import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.app.shared.model.QuizEndedException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -63,12 +66,17 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -127,6 +135,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		public static final double NORTH_PANEL_HEIGHT_PX = ProblemDescriptionView.HEIGHT_PX;
 		public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
 		public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
+		public static final double VISUALIZE_BUTTON_WIDTH_PX = 100.0;
 
 		public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 		private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
@@ -145,6 +154,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private TestResultListView testResultListView;
 		private CompilerDiagnosticListView compilerDiagnosticListView;
 		private List<IResultsTabPanelWidget> resultsTabPanelWidgetList;
+		private Button visualizeButton;
 
 		private AceEditor aceEditor;
 		private Timer flushPendingChangeEventsTimer;
@@ -226,6 +236,11 @@ public class DevelopmentPage extends CloudCoderPage {
 
 		public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
 			final Problem problem = session.get(Problem.class);
+			
+			// If this is a Python problem add the Visualize! button
+			if (problem.getProblemType() == ProblemType.PYTHON_FUNCTION) {
+				createVisualizeButton();
+			}
 
 			mode = Mode.LOADING;
 			
@@ -321,7 +336,104 @@ public class DevelopmentPage extends CloudCoderPage {
 			// Tell the server which problem we want to work on
 			setProblem(session, problem);
 		}
+
+		private void createVisualizeButton() {
+			// Resize the status message view to make some room
+			southLayoutPanel.setWidgetLeftRight(
+					statusMessageView,
+					0.0, Unit.PX,
+					TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + VISUALIZE_BUTTON_WIDTH_PX + 26.0, Unit.PX);
+			
+			visualizeButton = new Button("Visualize!");
+			southLayoutPanel.add(visualizeButton);
+			southLayoutPanel.setWidgetTopHeight(
+					visualizeButton,
+					0.0, Unit.PX,
+					StatusMessageView.HEIGHT_PX, Unit.PX);
+			southLayoutPanel.setWidgetRightWidth(
+					visualizeButton,
+					TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + 16.0, Unit.PX,
+					VISUALIZE_BUTTON_WIDTH_PX, Unit.PX);
+			
+			visualizeButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					onVisualize();
+				}
+			});
+		}
 		
+		protected void onVisualize() {
+			TestCase[] testCases = getSession().get(TestCase[].class);
+			if (testCases != null) {
+				launchPythonTutor(testCases);
+			} else {
+				RPC.getCoursesAndProblemsService.getNonSecretTestCasesForProblem(getSession().get(Problem.class).getProblemId(), new AsyncCallback<TestCase[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									onVisualize();
+								}
+							});
+						} else {
+							getSession().add(StatusMessage.error("Could not get test cases", caught));
+						}
+					}
+					
+					@Override
+					public void onSuccess(TestCase[] result) {
+						//getSession().add(result);
+						addSessionObject(result);
+						launchPythonTutor(result);
+					}
+				});
+			}
+		}
+		
+		private void launchPythonTutor(TestCase[] nonSecretTestCases) {
+			// Find usable client area
+			int clientWidth = Window.getClientWidth();
+			int clientHeight = Window.getClientHeight();
+
+			// The PythonTutorView will be allowed to take up most of the client area
+			int pythonTutorWidth = clientWidth - 100;
+			int pythonTutorHeight = clientHeight - 140;
+			
+			// Create a dialog
+			final DialogBox dialog = new DialogBox();
+			
+			// Create dialog client area (to contain the PythonTutorView and a dismiss button
+			LayoutPanel clientArea = new LayoutPanel();
+			clientArea.setWidth(pythonTutorWidth + "px");
+			clientArea.setHeight((pythonTutorHeight+28+10) + "px");
+			
+			// Dismiss button
+			Button dismissButton = new Button("Dismiss");
+			clientArea.add(dismissButton);
+			clientArea.setWidgetBottomHeight(dismissButton, 5.0, Unit.PX, 28.0, Unit.PX);
+			clientArea.setWidgetRightWidth(dismissButton, 5.0, Unit.PX, 100.0, Unit.PX);
+			dismissButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					dialog.hide();
+				}
+			});
+			
+			// The PythonTutorView
+			PythonTutorView pythonTutorView = new PythonTutorView(aceEditor.getText(), getSession().get(Problem.class), nonSecretTestCases, pythonTutorWidth, pythonTutorHeight);
+			clientArea.add(pythonTutorView);
+			clientArea.setWidgetLeftWidth(pythonTutorView, 0.0, Unit.PX, pythonTutorWidth, Unit.PX);
+			clientArea.setWidgetTopHeight(pythonTutorView, 0.0, Unit.PX, pythonTutorHeight, Unit.PX);
+			
+			// Show the dialog!
+			dialog.add(clientArea);
+			dialog.setGlassEnabled(true);
+			dialog.center();
+		}
+
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == ChangeList.State.CLEAN && mode == Mode.ONCLEAN_CALLBACK_PENDING_CLEAN_CHANGE_LIST) {

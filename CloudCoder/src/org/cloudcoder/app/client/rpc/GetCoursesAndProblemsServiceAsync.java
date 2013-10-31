@@ -55,6 +55,9 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void getTestCaseNamesForProblem(int problemId,
 			AsyncCallback<String[]> callback);
 
+	void getNonSecretTestCasesForProblem(int problemId,
+			AsyncCallback<TestCase[]> callback);
+
 	void storeProblemAndTestCaseList(
 			ProblemAndTestCaseList problemAndTestCaseList, Course course,
 			AsyncCallback<ProblemAndTestCaseList> callback);

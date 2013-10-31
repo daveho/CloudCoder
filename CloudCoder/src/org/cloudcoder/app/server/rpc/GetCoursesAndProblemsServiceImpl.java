@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -192,6 +193,19 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
 		return Database.getInstance().getTestCasesForProblem(user, true, problemId);
+	}
+	
+	@Override
+	public TestCase[] getNonSecretTestCasesForProblem(int problemId) throws CloudCoderAuthenticationException {
+		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+		TestCase[] testCases = Database.getInstance().getTestCasesForProblem(user, false, problemId);
+		ArrayList<TestCase> nonSecretTestCases = new ArrayList<TestCase>();
+		for (TestCase tc : testCases) {
+			if (!tc.isSecret()) {
+				nonSecretTestCases.add(tc);
+			}
+		}
+		return nonSecretTestCases.toArray(new TestCase[nonSecretTestCases.size()]);
 	}
 	
 	/* (non-Javadoc)
