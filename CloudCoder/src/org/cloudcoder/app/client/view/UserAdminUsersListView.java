@@ -161,5 +161,6 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
     protected void displayUsers(User[] result) {
         grid.setRowCount(result.length);
         grid.setRowData(Arrays.asList(result));
+        grid.setVisibleRange(0, result.length);
     }
 }

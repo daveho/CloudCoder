@@ -348,6 +348,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	protected void displayProblems(ProblemAndModule[] result) {
 		grid.setRowCount(result.length);
 		grid.setRowData(Arrays.asList(result));
+		grid.setVisibleRange(0, result.length);
 	}
 
     /**
