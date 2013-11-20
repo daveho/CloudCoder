@@ -91,6 +91,7 @@ http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jsp-2.1/7.4.4.v20110707/je
 http://json-simple.googlecode.com/files/json-simple-1.1.1.jar
   CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar
   CloudCoder/war/WEB-INF/lib/json-simple-1.1.1.jar
+  CloudCoderRepository/war/WEB-INF/lib/json-simple-1.1.1.jar
 http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mail.jar
   CloudCoder/war/WEB-INF/lib/mail.jar
