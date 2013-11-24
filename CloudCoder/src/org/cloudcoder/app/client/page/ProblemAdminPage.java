@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -30,6 +31,7 @@ import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ShareManyProblemsDialog;
+import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.shared.dto.ShareExerciseStatus;
 import org.cloudcoder.app.shared.dto.ShareExercisesResult;
@@ -57,7 +59,6 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
@@ -65,6 +66,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  * Page for performing course admin actions related to {@link Problem}s.
  * 
  * @author David Hovemeyer
+ * @author Jaime Spacco
  */
 public class ProblemAdminPage extends CloudCoderPage {
 	private enum ProblemAction implements IButtonPanelAction {
@@ -91,9 +93,6 @@ public class ProblemAdminPage extends CloudCoderPage {
 			return name;
 		}
 		
-		/* (non-Javadoc)
-		 * @see org.cloudcoder.app.client.view.IButtonPanelAction#getTooltip()
-		 */
 		@Override
 		public String getTooltip() {
 			return tooltip;
@@ -327,6 +326,11 @@ public class ProblemAdminPage extends CloudCoderPage {
 		
 		private void doShareProblem2() {
 		    final Problem[] chosen=getSession().get(Problem[].class);
+		    if (chosen.length == 0) {
+		    	// No problems selected, so nothing to do 
+		    	return;
+		    }
+		    
 		    GWT.log("Selected "+chosen.length+" problems in the UI");
 		    // Filter the problems
 		    // We cannot upload anything that is not permissive, 
@@ -337,7 +341,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 		            GWT.log("License: "+p.getLicense().toString()+" is not permissive, wtf?");
 		            OkDialogBox licenseDialog = new OkDialogBox(
 	                        "Sharing requires a permissive license",
-	                        "Sharing a problem requires a permissive license. Please ensure all problems " +
+	                        "Sharing a problem requires a permissive license. Please ensure shared problems " +
 	                        "have a permissive license such as Creative Commons or GNU FDL.");
 	                licenseDialog.center();
 	                return;
@@ -363,7 +367,63 @@ public class ProblemAdminPage extends CloudCoderPage {
 		        }
 		    }
 		    
-		    ShareManyProblemsDialog shareManyProblemsDialog=new ShareManyProblemsDialog();
+		    if (chosen.length == 1) {
+		    	// Single problem selected.  This is a special case at the moment because
+		    	// the single-problem dialog gives more specific feedback about which
+		    	// problem is being shared and what the license is.
+		    	shareOne(chosen);
+		    } else {
+		    	// Multiple problems selected.
+			    shareMany(chosen);
+		    }
+		}
+
+		/**
+		 * @param chosen
+		 */
+		private void shareOne(final Problem[] chosen) {
+			SessionUtil.loadProblemAndTestCaseList(
+					ProblemAdminPage.this,
+					chosen[0],
+					new ICallback<ProblemAndTestCaseList>() {
+						@Override
+						public void call(ProblemAndTestCaseList value) {
+					    	ShareProblemDialog dialog = new ShareProblemDialog();
+							dialog.setExercise(value);
+							dialog.setResultCallback(new ICallback<OperationResult>() {
+								@Override
+								public void call(OperationResult value) {
+									// Add a StatusMessage with the result of the operation
+									GWT.log("share problem result: " + value.isSuccess() + ":" + value.getMessage());
+
+									if (value.isSuccess()) {
+										getSession().add(StatusMessage.goodNews(value.getMessage()));
+										
+										// Reload the problems so that the shared flag is updated
+										// for the problem the user just shared
+										reloadProblems(getCurrentCourse());
+									} else {
+										getSession().add(StatusMessage.error(value.getMessage()));
+									}
+								}
+							});
+							dialog.center();
+						}
+					},
+					new ICallback<Pair<String, Throwable>>() {
+						@Override
+						public void call(Pair<String, Throwable> value) {
+							getSession().add(StatusMessage.error(value.getLeft(), value.getRight()));
+						}
+					}
+			);
+		}
+
+		/**
+		 * @param chosen
+		 */
+		private void shareMany(final Problem[] chosen) {
+			ShareManyProblemsDialog shareManyProblemsDialog=new ShareManyProblemsDialog();
 		    shareManyProblemsDialog.setExercise(chosen);
 		    shareManyProblemsDialog.setResultCallback(new ICallback<ShareExercisesResult>() {
 		        public void call(ShareExercisesResult result) {

@@ -40,8 +40,8 @@ public class ShareProblemDialogPanel extends Composite {
 	
 	private Runnable cancelButtonCallback;
 	private Runnable shareExerciseButtonCallback;
-//	private Label exerciseNameLabel;
-//	private Label exerciseLicenseLabel;
+	private Label exerciseNameLabel;
+	private Label exerciseLicenseLabel;
 	private Label errorLabel;
 	
 	public ShareProblemDialogPanel() {
@@ -101,15 +101,15 @@ public class ShareProblemDialogPanel extends Composite {
 		layoutPanel.setWidgetRightWidth(shareExerciseButton, 100.0, Unit.PX, 120.0, Unit.PX);
 		layoutPanel.setWidgetTopHeight(shareExerciseButton, 267.0, Unit.PX, 27.0, Unit.PX);
 		
-//		exerciseNameLabel = new Label("");
-//		layoutPanel.add(exerciseNameLabel);
-//		layoutPanel.setWidgetLeftRight(exerciseNameLabel, 100.0, Unit.PX, 10.0, Unit.PX);
-//		layoutPanel.setWidgetTopHeight(exerciseNameLabel, 124.0, Unit.PX, 15.0, Unit.PX);
-//		
-//		exerciseLicenseLabel = new Label("");
-//		layoutPanel.add(exerciseLicenseLabel);
-//		layoutPanel.setWidgetLeftRight(exerciseLicenseLabel, 100.0, Unit.PX, 10.0, Unit.PX);
-//		layoutPanel.setWidgetTopHeight(exerciseLicenseLabel, 145.0, Unit.PX, 15.0, Unit.PX);
+		exerciseNameLabel = new Label("");
+		layoutPanel.add(exerciseNameLabel);
+		layoutPanel.setWidgetLeftRight(exerciseNameLabel, 100.0, Unit.PX, 10.0, Unit.PX);
+		layoutPanel.setWidgetTopHeight(exerciseNameLabel, 124.0, Unit.PX, 15.0, Unit.PX);
+		
+		exerciseLicenseLabel = new Label("");
+		layoutPanel.add(exerciseLicenseLabel);
+		layoutPanel.setWidgetLeftRight(exerciseLicenseLabel, 100.0, Unit.PX, 10.0, Unit.PX);
+		layoutPanel.setWidgetTopHeight(exerciseLicenseLabel, 145.0, Unit.PX, 15.0, Unit.PX);
 		
 		errorLabel = new Label("");
 		errorLabel.setStyleName("cc-errorText");
@@ -165,23 +165,23 @@ public class ShareProblemDialogPanel extends Composite {
 		return passwordTextBox.getText();
 	}
 	
-//	/**
-//	 * Set the exercise name to display.
-//	 * 
-//	 * @param exerciseName the exercise name
-//	 */
-//	public void setExerciseName(String exerciseName) {
-//		exerciseNameLabel.setText(exerciseName);
-//	}
-//	
-//	/**
-//	 * Set the license to display.
-//	 * 
-//	 * @param license the license
-//	 */
-//	public void setExerciseLicense(String license) {
-//		exerciseLicenseLabel.setText(license);
-//	}
+	/**
+	 * Set the exercise name to display.
+	 * 
+	 * @param exerciseName the exercise name
+	 */
+	public void setExerciseName(String exerciseName) {
+		exerciseNameLabel.setText(exerciseName);
+	}
+	
+	/**
+	 * Set the license to display.
+	 * 
+	 * @param license the license
+	 */
+	public void setExerciseLicense(String license) {
+		exerciseLicenseLabel.setText(license);
+	}
 	
 	/**
 	 * Set error message to display.
