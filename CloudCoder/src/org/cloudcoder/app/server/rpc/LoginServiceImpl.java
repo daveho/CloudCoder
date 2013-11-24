@@ -59,7 +59,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
      * call to CloudCoderPage.recoverFromServerSessionTimeout().
      * Should NOT be set to true for production!
      */
-    private static boolean DEBUG_SESSION_TIMEOUTS = false;
+    private static boolean DEBUG_SESSION_TIMEOUTS = true;//false;
 
     /**
      * Default session timeout in seconds.  Defaults to 30 minutes.

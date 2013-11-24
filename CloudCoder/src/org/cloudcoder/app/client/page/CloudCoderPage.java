@@ -113,6 +113,13 @@ public abstract class CloudCoderPage {
 						}
 						
 						session.add(StatusMessage.goodNews("Successfully logged back in"));
+						
+						// Now we should be able to perform whichever operation(s)
+						// that were blocked because the session had timed out.
+						executeRecoveryCallbacks();
+						
+						// Hide the dialog.
+						dialog.hide();
 					}
 					
 					@Override
@@ -129,7 +136,7 @@ public abstract class CloudCoderPage {
 		dialog.center();
 	}
 
-	protected void executeRecoveryCallbacks() {
+	private void executeRecoveryCallbacks() {
 		for (Runnable callback : recoveryCallbackList) {
 			callback.run();
 		}
