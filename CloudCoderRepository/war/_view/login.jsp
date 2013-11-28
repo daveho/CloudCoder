@@ -19,7 +19,10 @@
 				<table>
 					<tr>
 						<td>Username: </td>
-						<td><input id="usernameElt" name="username" type="text" size="20" value="${username}" /></td>
+						<td>
+							<input id="usernameElt" name="username" type="text" size="20" value="${username}" />
+							<a href="${pageContext.servletContext.contextPath}/forgottenPassword">I forgot my password</a>
+						</td>
 					</tr>
 					<tr>
 						<td>Password: </td>
@@ -32,6 +35,7 @@
 				</table>
 				<input type="hidden" name="redirectPath" value="${redirectPath}" />
 			</form>
+			<p></p>
 			<c:if test="${! empty error}">
 				<div class="error">${error}</div>
 			</c:if>

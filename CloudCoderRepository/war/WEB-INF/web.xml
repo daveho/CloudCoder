@@ -55,6 +55,10 @@
 		<servlet-name>SuggestTags</servlet-name>
 		<servlet-class>org.cloudcoder.repoapp.servlets.SuggestTags</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>ForgottenPassword</servlet-name>
+		<servlet-class>org.cloudcoder.repoapp.servlets.ForgottenPassword</servlet-class>
+	</servlet>
 	
 	<!-- Servlet-mapping -->
 	<servlet-mapping>
@@ -104,6 +108,10 @@
 	<servlet-mapping>
 		<servlet-name>SuggestTags</servlet-name>
 		<url-pattern>/suggestTags/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>ForgottenPassword</servlet-name>
+		<url-pattern>/forgottenPassword/*</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Use the /index servlet as the welcome file -->
