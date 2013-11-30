@@ -559,6 +559,16 @@ public interface IDatabase {
 	 * @return true if successful, false if object could not be located by its unique id
 	 */
 	public<E extends IModelObject<E>> boolean reloadModelObject(E obj);
+	
+	/**
+	 * Insert a model object in the database.
+	 * The object's unique id field will be set.
+	 * This method should not be used to update objects already
+	 * stored in the database.
+	 * 
+	 * @param obj the model object to insert
+	 */
+	public<E extends IModelObject<E>> void insertModelObject(E obj);
 
 	/**
 	 * Get all of the {@link Module}s of the {@link Problem}s that are assigned
@@ -660,5 +670,13 @@ public interface IDatabase {
 	 * @return list of {@link RepoProblemRating}s for the exercise
 	 */
 	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId);
+
+	/**
+	 * Find a {@link User} given the user's email address.
+	 * 
+	 * @param emailAddress the email address
+	 * @return the {@link User}, or null if there is no user with the given email address
+	 */
+	public User findUserForEmailAddress(String emailAddress);
 
 }

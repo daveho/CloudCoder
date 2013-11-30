@@ -303,7 +303,7 @@ public class Queries {
 	 * @return the index of the parameter just after where the model object's field values are stored
 	 * @throws SQLException
 	 */
-	public static<E> int storeNoIdGeneric(E modelObj, PreparedStatement stmt, int index, ModelObjectSchema<E> schema) throws SQLException {
+	public static<E> int storeNoIdGeneric(E modelObj, PreparedStatement stmt, int index, ModelObjectSchema<? super E> schema) throws SQLException {
 		for (ModelObjectField<? super E, ?> field : schema.getFieldList()) {
 			if (!field.isUniqueId()) {
 				Object value = field.get(modelObj);

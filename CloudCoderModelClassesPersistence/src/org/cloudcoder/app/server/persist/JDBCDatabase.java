@@ -38,6 +38,7 @@ import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAnd
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourseId;
 import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
 import org.cloudcoder.app.server.persist.txn.FindUnfinishedQuizForStudent;
+import org.cloudcoder.app.server.persist.txn.FindUserForEmailAddress;
 import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetAllSubmissionReceiptsForUserAndProblem;
@@ -66,6 +67,7 @@ import org.cloudcoder.app.server.persist.txn.GetTestResultsForSubmission;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
+import org.cloudcoder.app.server.persist.txn.InsertModelObject;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
@@ -417,6 +419,11 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
+	public <E extends IModelObject<E>> void insertModelObject(E obj) {
+		databaseRun(new InsertModelObject<E>(obj));
+	}
+	
+	@Override
 	public Module[] getModulesForCourse(final User user, final Course course) {
 		return databaseRun(new GetModulesForCourse(user, course));
 	}
@@ -459,6 +466,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId) {
 		return databaseRun(new GetRatingsForRepoProblem(repoProblemId));
+	}
+	
+	@Override
+	public User findUserForEmailAddress(String emailAddress) {
+		return databaseRun(new FindUserForEmailAddress(emailAddress));
 	}
 
 	/**

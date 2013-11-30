@@ -20,20 +20,14 @@ package org.cloudcoder.repoapp.servlets;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.mail.Authenticator;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,44 +52,12 @@ import org.slf4j.LoggerFactory;
  * 
  * @author David Hovemeyer
  */
-public class Register extends HttpServlet {
+public class Register extends EmailServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Register.class);
 	
 	private static final SecureRandom random = new SecureRandom();
-	
-	private volatile Session session;
-
-	@Override
-	public void init() throws ServletException {
-		ServletContext context = getServletContext();
-		if (this.session == null) {
-			String smtpHost = context.getInitParameter("cloudcoder.repoapp.smtp.host");
-			String smtpUsername = context.getInitParameter("cloudcoder.repoapp.smtp.user");
-			String smtpPassword = context.getInitParameter("cloudcoder.repoapp.smtp.passwd");
-			String smtpPort = context.getInitParameter("cloudcoder.repoapp.smtp.port");
-			
-			final PasswordAuthentication passwordAuthentication = new PasswordAuthentication(smtpUsername, smtpPassword);
-			Authenticator authenticator = new Authenticator() {
-				@Override
-				public PasswordAuthentication getPasswordAuthentication() {
-					return passwordAuthentication;
-				}
-			};
-	
-			Properties properties = new Properties();
-			properties.putAll(System.getProperties());
-//			properties.setProperty("mail.user", smtpUsername);
-			properties.setProperty("mail.smtp.submitter", passwordAuthentication.getUserName());
-			properties.setProperty("mail.smtp.auth", "true");
-			properties.setProperty("mail.password", smtpPassword);
-			properties.setProperty("mail.smtp.host", smtpHost);
-			properties.setProperty("mail.smtp.port", smtpPort);
-	
-			this.session = Session.getInstance(properties, authenticator);
-		}
-	}
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -168,7 +130,7 @@ public class Register extends HttpServlet {
 
 	private boolean sendConfirmationEmail(UserRegistrationRequest request) {
 		try {
-			MimeMessage message = new MimeMessage(session);
+			MimeMessage message = new MimeMessage(getSession());
 			message.setFrom(new InternetAddress("support@cloudcoder.org"));
 			message.addRecipient(RecipientType.TO, new InternetAddress(request.getEmail()));
 			message.setSubject("CloudCoder exercise repository user registration");

@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -25,6 +26,11 @@ import java.io.Serializable;
  * @author David Hovemeyer
  */
 public class User implements Serializable, IModelObject<User> {
+	/**
+	 * Maximum allowed length for a username.
+	 */
+	public static final int MAX_USERNAME_LEN = 20;
+
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -41,7 +47,7 @@ public class User implements Serializable, IModelObject<User> {
 		public Integer get(User obj) { return obj.getId(); }
 	};
 
-	public static final ModelObjectField<? super User, String> USERNAME = new ModelObjectField<User, String>("username", String.class, 20, ModelObjectIndexType.UNIQUE) {
+	public static final ModelObjectField<? super User, String> USERNAME = new ModelObjectField<User, String>("username", String.class, MAX_USERNAME_LEN, ModelObjectIndexType.UNIQUE) {
 		public void set(User obj, String value) { obj.setUsername(value); }
 		public String get(User obj) { return obj.getUsername(); }
 	};

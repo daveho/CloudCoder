@@ -26,6 +26,7 @@ import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.SchemaUtil;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
+import org.cloudcoder.app.shared.model.PasswordResetRequest;
 import org.cloudcoder.app.shared.model.RepoProblem;
 import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemRating;
@@ -47,6 +48,7 @@ public class CreateRepositoryDatabase {
 		RepoProblemTag.SCHEMA,
 		UserRegistrationRequest.SCHEMA,
 		RepoProblemRating.SCHEMA,
+		PasswordResetRequest.SCHEMA,
 	};
 	
 	public static void main(String[] args) throws Exception {
