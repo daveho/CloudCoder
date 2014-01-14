@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -75,6 +75,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	public CourseAdminProblemListView(CloudCoderPage page) {
 		this.page = page;
 		grid = new DataGrid<ProblemAndModule>();
+		grid.addColumn(new ProblemIdColumn(), "Id");
 		grid.addColumn(new ProblemNameColumn(), "Name");
 		grid.addColumn(new ProblemBriefDescriptionColumn(), "Description");
 		grid.addColumn(new ProblemTypeColumn(), "Type");
@@ -84,15 +85,16 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		grid.addColumn(new ProblemLicense(), "License");
 		grid.addColumn(new ProblemSharedColumn(), "Shared");
 		
-		grid.setColumnWidth(0, 12.5, Unit.PCT);
-		grid.setColumnWidth(1, 25.0, Unit.PCT);
-		grid.setColumnWidth(2, 12.5, Unit.PCT);
-		grid.setColumnWidth(3, 10.0, Unit.PCT);
-		grid.setColumnWidth(4, 10.0, Unit.PCT);
-		grid.setColumnWidth(5, 60.0, Unit.PX);
-		grid.setColumnWidth(6, 10.0, Unit.PCT);
-		grid.setColumnWidth(7, 60.0, Unit.PX);
-		grid.setColumnWidth(8, 20.0, Unit.PCT);
+		grid.setColumnWidth(0, 5.0, Unit.PCT);
+		grid.setColumnWidth(1, 12.5, Unit.PCT);
+		grid.setColumnWidth(2, 22.0, Unit.PCT);
+		grid.setColumnWidth(3, 12.5, Unit.PCT);
+		grid.setColumnWidth(4, 9.0, Unit.PCT);
+		grid.setColumnWidth(5, 9.0, Unit.PCT);
+		grid.setColumnWidth(6, 60.0, Unit.PX);
+		grid.setColumnWidth(7, 10.0, Unit.PCT);
+		grid.setColumnWidth(8, 60.0, Unit.PX);
+		grid.setColumnWidth(9, 20.0, Unit.PCT);
 		
 		// The column displaying the module name allows editing, and invokes
 		// a callback when the module name changes.
@@ -119,6 +121,13 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 	 */
 	public void setEditModuleNameCallback(ICallback<ProblemAndModule> callback) {
 		this.editModuleNameCallback = callback;
+	}
+	
+	private static class ProblemIdColumn extends TextColumn<ProblemAndModule> {
+		@Override
+		public String getValue(ProblemAndModule object) {
+			return String.valueOf(object.getProblem().getProblemId());
+		}
 	}
 	
 	private static class ProblemNameColumn extends TextColumn<ProblemAndModule> {
