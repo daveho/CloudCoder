@@ -192,8 +192,7 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 	}
 
 	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
-		cellTable.setRowCount(problemList.length);
-		cellTable.setRowData(0, Arrays.asList(problemList));
-		cellTable.setVisibleRange(0, problemList.length);
+		GWT.log("Displaying " + problemList.length + " problems/submission receipts");
+		cellTable.setRowData(Arrays.asList(problemList));
 	}
 }
