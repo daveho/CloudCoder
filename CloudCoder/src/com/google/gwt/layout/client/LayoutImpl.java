@@ -75,7 +75,7 @@ class LayoutImpl {
     container.getStyle().setOverflow(Overflow.HIDDEN);
 
     fillParent(child);
-
+    
     Element beforeContainer = null;
     if (before != null) {
       beforeContainer = before.getParentElement();
@@ -93,6 +93,11 @@ class LayoutImpl {
     style.setTop(0, PX);
     style.setRight(0, PX);
     style.setBottom(0, PX);
+    
+    // DHH: Try to fix issues with width of child widgets seen in recent
+    //      versions of Chrome and Chromium.
+    style.setProperty("boxSizing", "border-box");
+    style.setWidth(100.0, Unit.PCT);
   }
 
   /**
@@ -214,5 +219,9 @@ class LayoutImpl {
     style.clearTop();
     style.clearWidth();
     style.clearHeight();
+
+    // DHH: Try to fix issues with width of child widgets seen in recent
+    //      versions of Chrome and Chromium.
+    style.clearProperty("boxSizing");
   }
 }
