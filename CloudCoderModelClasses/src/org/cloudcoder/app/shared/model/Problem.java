@@ -190,6 +190,18 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 			ModelObjectSchema.basedOn(SCHEMA_V7)
 			.addDeltasFrom(ProblemData.SCHEMA_V4)
 			.finishDelta();
+	
+	/**
+	 * Description of fields (schema version 9).
+	 * Note that we are not actually changing any fields.
+	 * Instead, we are forcing a new schema version because
+	 * the representation of test cases changed in ITestCaseData
+	 * (version 0 to version 1), and this needs to force a new
+	 * schema version for {@link Problem} and {@link RepoProblem}.
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V9 = ModelObjectSchema.basedOn(SCHEMA_V8)
+		.addDeltasFrom(ProblemData.SCHEMA_V5)
+		.finishDelta();
 
 	/**
 	 * Description of fields (current schema version).

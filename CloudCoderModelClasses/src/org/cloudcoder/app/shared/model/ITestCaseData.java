@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2014, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -86,16 +87,30 @@ public interface ITestCaseData {
 			public String get(ITestCaseData obj) { return obj.getTestCaseName(); }
 		};
 	
-	/** {@link ModelObjectField} for input. */
-	public static final ModelObjectField<ITestCaseData, String> INPUT =
+	/** {@link ModelObjectField} for input (schema version 0). */
+	public static final ModelObjectField<ITestCaseData, String> INPUT_V0 =
 		new ModelObjectField<ITestCaseData, String>("input", String.class, 255) {
 			public void set(ITestCaseData obj, String value) { obj.setInput(value); }
 			public String get(ITestCaseData obj) { return obj.getInput(); }
 		};
+		
+	/** {@link ModelObjectField} for input (schema version 1). */
+	public static final ModelObjectField<ITestCaseData, String> INPUT =
+		new ModelObjectField<ITestCaseData, String>("input", String.class, 1023) {
+			public void set(ITestCaseData obj, String value) { obj.setInput(value); }
+			public String get(ITestCaseData obj) { return obj.getInput(); }
+		};
 
-	/** {@link ModelObjectField} for output. */
-	public static final ModelObjectField<ITestCaseData, String> OUTPUT =
+	/** {@link ModelObjectField} for output (schema version 0). */
+	public static final ModelObjectField<ITestCaseData, String> OUTPUT_V0 =
 		new ModelObjectField<ITestCaseData, String>("output", String.class, 255) {
+			public void set(ITestCaseData obj, String value) { obj.setOutput(value); }
+			public String get(ITestCaseData obj) { return obj.getOutput(); }
+		};
+
+	/** {@link ModelObjectField} for output (schema version 0). */
+	public static final ModelObjectField<ITestCaseData, String> OUTPUT =
+		new ModelObjectField<ITestCaseData, String>("output", String.class, 1023) {
 			public void set(ITestCaseData obj, String value) { obj.setOutput(value); }
 			public String get(ITestCaseData obj) { return obj.getOutput(); }
 		};
@@ -112,12 +127,20 @@ public interface ITestCaseData {
 	 */
 	public static final ModelObjectSchema<ITestCaseData> SCHEMA_V0 = new ModelObjectSchema<ITestCaseData>("test_case_data")
 		.add(TEST_CASE_NAME)
-		.add(INPUT)
-		.add(OUTPUT)
+		.add(INPUT_V0)
+		.add(OUTPUT_V0)
 		.add(SECRET);
+	
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<ITestCaseData> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+		.increaseFieldSize(INPUT)
+		.increaseFieldSize(OUTPUT)
+		.finishDelta();
 	
 	/**
 	 * Description of fields (latest schema version).
 	 */
-	public static final ModelObjectSchema<ITestCaseData> SCHEMA = SCHEMA_V0;
+	public static final ModelObjectSchema<ITestCaseData> SCHEMA = SCHEMA_V1;
 }

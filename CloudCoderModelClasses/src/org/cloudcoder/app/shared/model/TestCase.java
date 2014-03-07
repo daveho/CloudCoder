@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2014, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -54,9 +55,16 @@ public class TestCase extends TestCaseData implements Serializable, ITestCase, I
 		.addAll(ITestCaseData.SCHEMA_V0.getFieldList());
 	
 	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<TestCase> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+		.addDeltasFrom(ITestCaseData.SCHEMA_V1)
+		.finishDelta();
+	
+	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<TestCase> SCHEMA = SCHEMA_V0;
+	public static final ModelObjectSchema<TestCase> SCHEMA = SCHEMA_V1;
 	
 	
 	public TestCase() {

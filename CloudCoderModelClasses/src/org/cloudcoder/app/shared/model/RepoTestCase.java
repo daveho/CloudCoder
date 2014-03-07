@@ -45,14 +45,24 @@ public class RepoTestCase extends TestCaseData implements IModelObject<RepoTestC
 	};
 	
 	/**
-	 * Description of fields.
+	 * Description of fields (schema version 0).
 	 */
 	public static final ModelObjectSchema<RepoTestCase> SCHEMA_V0 = new ModelObjectSchema<RepoTestCase>("repo_test_case")
 		.add(ID)
 		.add(REPO_PROBLEM_ID)
 		.addAll(ITestCaseData.SCHEMA_V0.getFieldList());
 	
-	public static final ModelObjectSchema<RepoTestCase> SCHEMA = SCHEMA_V0;
+	/**
+	 * Description of fields (schema version 1).
+	 */
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+		.addDeltasFrom(ITestCaseData.SCHEMA_V1)
+		.finishDelta();
+	
+	/**
+	 * Description of fields (current schema version).
+	 */
+	public static final ModelObjectSchema<RepoTestCase> SCHEMA = SCHEMA_V1;
 	
 	/**
 	 * Constructor.
