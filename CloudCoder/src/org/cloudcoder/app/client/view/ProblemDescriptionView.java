@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2014, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -25,6 +26,7 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -83,6 +85,37 @@ public class ProblemDescriptionView extends ResizeComposite implements SessionOb
 		// Note: if the problem description contains HTML markup, it will
 		// be rendered.  This is intentional, since it allows a greater degree
 		// of control over formatting that just plain text would allow.
-		problemDescriptionHtml.setHTML(problem.getDescription());
+		StringBuilder buf = new StringBuilder();
+		String description = problem.getDescription();
+		
+		// Add the description as specified in the problem.
+		buf.append(description);
+		
+		// Add author information.
+		buf.append("<div class=\"cc-authorInfo\">Author: <span class=\"cc-authorName\">");
+		String authorName = problem.getAuthorName();
+		String authorWebsite = problem.getAuthorWebsite();
+		if (!authorWebsite.trim().equals("")) {
+			// Format author name as link to author website
+			buf.append("<a href=\"");
+			buf.append(new SafeHtmlBuilder().appendEscaped(authorWebsite).toSafeHtml().asString());
+			buf.append("\">");
+			buf.append(new SafeHtmlBuilder().appendEscaped(authorName).toSafeHtml().asString());
+			buf.append("</a>");
+		} else {
+			// No author website
+			buf.append(new SafeHtmlBuilder().appendEscaped(authorName).toSafeHtml().asString());
+		}
+		// Add license information.
+		buf.append("</span><br>License: <span class=\"cc-problemLicense\"><a href=\"");
+		buf.append(problem.getLicense().getUrl());
+		buf.append("\">");
+		buf.append(problem.getLicense().getName());
+		buf.append("</a></span>");
+		
+		buf.append("</span>");
+		buf.append("</div>");
+		
+		problemDescriptionHtml.setHTML(buf.toString());
 	}
 }

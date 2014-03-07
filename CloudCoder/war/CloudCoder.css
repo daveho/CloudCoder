@@ -257,3 +257,10 @@
 	left: 8px !important;
 	right: 16px !important;
 }
+
+/*
+ * Styles for author information.
+ */
+ .cc-authorInfo {
+	border-top: 1px solid gray;	
+}
