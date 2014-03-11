@@ -1,7 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
-// Copyright (C) 2013, York College of Pennsylvania
+// Copyright (C) 2013-2014, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -163,6 +163,7 @@ public class BatchMain {
 		// TODO: allow these to be specified via a properties file
 		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.enable", "true");
 		config.setProperty("cloudcoder.submitsvc.oop.easysandbox.heapsize", "8388608");
+		config.setProperty("cloudcoder.builder2.tmpdir", "/tmp");
 		
 		builder2 = new Builder2(config);
 		
