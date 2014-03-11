@@ -16,6 +16,8 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Check {@link CommandResult}s by checking each line of standard output
@@ -26,6 +28,7 @@ import org.cloudcoder.builder2.util.TestResultUtil;
  * @author David Hovemeyer
  */
 public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
+	private static Logger logger = LoggerFactory.getLogger(CheckCommandResultsUsingRegexBuildStep.class);
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
@@ -106,15 +109,15 @@ public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
 		boolean foundMatchingOutput = false;
 		Pattern pat = Pattern.compile(regex, caseInsensitive ? Pattern.CASE_INSENSITIVE : 0);
 		for (String line : stdoutAsList) {
-			System.out.println("Check: " + line);
+			logger.debug("Check: {}", line);
 			Matcher m = pat.matcher(line);
 			if (m.matches()) {
 				// Match!
-				System.out.println("MATCH");
+				logger.debug("MATCH");
 				foundMatchingOutput = true;
 				break;
 			}
-			System.out.println("Not a match");
+			logger.debug("Not a match");
 		}
 		
 		return foundMatchingOutput
