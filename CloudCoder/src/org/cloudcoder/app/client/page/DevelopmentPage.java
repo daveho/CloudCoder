@@ -520,8 +520,22 @@ public class DevelopmentPage extends CloudCoderPage {
 					if (caught instanceof CloudCoderAuthenticationException) {
 						recoverFromServerSessionTimeout(new Runnable(){
 							public void run() {
-								// Try again!
-								doSubmitRPC(problem, text);
+								// If the session timed out, we need to attempt
+								// to set the Problem again (since the submit RPC
+								// service expects that the Problem is in the session).
+								RPC.editCodeService.setProblem(problem.getProblemId(), new AsyncCallback<Problem>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										// We're fairly hosed at this point
+										getSession().add(StatusMessage.error("Could not set problem on session recovery", caught));
+									}
+									
+									@Override
+									public void onSuccess(Problem result) {
+										// Try to submit again!
+										doSubmitRPC(problem, text);
+									}
+								});
 							}
 						});
 					} else if (caught instanceof QuizEndedException) {

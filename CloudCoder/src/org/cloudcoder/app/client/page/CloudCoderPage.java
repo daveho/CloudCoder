@@ -132,7 +132,7 @@ public abstract class CloudCoderPage {
 		
 		dialog.setLoginButtonHandler(callback);
 		
-		GWT.log("Showing session timeout dialog");
+		GWT.log("Showing session timeout dialog", new Exception());
 		dialog.center();
 	}
 
