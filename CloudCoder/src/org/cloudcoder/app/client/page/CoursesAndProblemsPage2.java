@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView2;
+import org.cloudcoder.app.client.view.ProblemNameAndBriefDescriptionView;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
@@ -101,6 +102,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 		private PageNavPanel pageNavPanel;
 		private TermAndCourseTreeView termAndCourseTreeView;
+		private ProblemNameAndBriefDescriptionView problemNameAndBriefDescriptionView;
 		private ProblemDescriptionView problemDescriptionView;
 		private StatusMessageView statusMessageView;
 		private ProblemListView2 problemListView2;
@@ -186,9 +188,15 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			problemDescriptionPanel.add(loadProblemButton);
 			problemDescriptionPanel.setWidgetTopHeight(loadProblemButton, VSEP_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			problemDescriptionPanel.setWidgetRightWidth(loadProblemButton, 0.0, Unit.PX, LOAD_PROBLEM_BUTTON_WIDTH_PX, Unit.PX);
+
+			problemNameAndBriefDescriptionView = new ProblemNameAndBriefDescriptionView();
+			problemDescriptionPanel.add(problemNameAndBriefDescriptionView);
+			problemDescriptionPanel.setWidgetTopHeight(problemNameAndBriefDescriptionView, VSEP_PX+SectionLabel.HEIGHT_PX, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
+			problemDescriptionPanel.setWidgetLeftRight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
+			
 			problemDescriptionView = new ProblemDescriptionView();
 			problemDescriptionPanel.add(problemDescriptionView);
-			problemDescriptionPanel.setWidgetTopBottom(problemDescriptionView, VSEP_PX+SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			problemDescriptionPanel.setWidgetTopBottom(problemDescriptionView, VSEP_PX+SectionLabel.HEIGHT_PX+ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			problemDescriptionPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, 0.0, Unit.PX);
 			centerSplit.addSouth(problemDescriptionPanel, 300.0);
 
@@ -249,6 +257,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 
 			// activate views
 			problemListView2.activate(session, subscriptionRegistrar);
+			problemNameAndBriefDescriptionView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
 

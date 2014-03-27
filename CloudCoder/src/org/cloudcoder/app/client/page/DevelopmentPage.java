@@ -36,6 +36,7 @@ import org.cloudcoder.app.client.view.IDevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
+import org.cloudcoder.app.client.view.ProblemNameAndBriefDescriptionView;
 import org.cloudcoder.app.client.view.PythonTutorView;
 import org.cloudcoder.app.client.view.QuizIndicatorView;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -142,6 +143,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
 
 		private LayoutPanel northLayoutPanel;
+		private ProblemNameAndBriefDescriptionView problemNameAndBriefDescriptionView;
 		private ProblemDescriptionView problemDescriptionView;
 		private PageNavPanel pageNavPanel;
 		private IDevActionsPanel devActionsPanel;
@@ -169,10 +171,15 @@ public class DevelopmentPage extends CloudCoderPage {
 
 			northLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_PX);
+
+			problemNameAndBriefDescriptionView = new ProblemNameAndBriefDescriptionView();
+			northLayoutPanel.add(problemNameAndBriefDescriptionView);
+			northLayoutPanel.setWidgetTopHeight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
+			northLayoutPanel.setWidgetLeftRight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
 			problemDescriptionView = new ProblemDescriptionView();
 			northLayoutPanel.add(problemDescriptionView);
 			northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
-			northLayoutPanel.setWidgetTopBottom(problemDescriptionView, 0.0, Unit.PX, 10.0, Unit.PX);
+			northLayoutPanel.setWidgetTopBottom(problemDescriptionView, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX, 10.0, Unit.PX);
 			buttonsLayoutPanel = new LayoutPanel(); // contains PageNavPanel and DevActionsPanel
 			pageNavPanel = new PageNavPanel();
 			buttonsLayoutPanel.add(pageNavPanel);
@@ -246,6 +253,7 @@ public class DevelopmentPage extends CloudCoderPage {
 			mode = Mode.LOADING;
 			
 			// Activate views
+			problemNameAndBriefDescriptionView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			testResultListView.activate(session, subscriptionRegistrar);
 			statusMessageView.activate(session, subscriptionRegistrar);
