@@ -32,6 +32,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.DevActionsPanel;
+import org.cloudcoder.app.client.view.DevActionsPanel2;
 import org.cloudcoder.app.client.view.IDevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -148,8 +149,8 @@ public class DevelopmentPage extends CloudCoderPage {
 		private PageNavPanel pageNavPanel;
 		private IDevActionsPanel devActionsPanel;
 		private LayoutPanel southLayoutPanel;
-		private LayoutPanel centerLayoutPanel;
-		private LayoutPanel buttonsLayoutPanel;
+		private LayoutPanel editorLayoutPanel;
+		//private LayoutPanel buttonsLayoutPanel;
 		private StatusMessageView statusMessageView;
 		private QuizIndicatorView quizIndicatorView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
@@ -172,28 +173,18 @@ public class DevelopmentPage extends CloudCoderPage {
 			northLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_PX);
 
+			// North panel is just the ProblemNameAndBriefDescriptionView and PageNavPanel
 			problemNameAndBriefDescriptionView = new ProblemNameAndBriefDescriptionView();
 			northLayoutPanel.add(problemNameAndBriefDescriptionView);
 			northLayoutPanel.setWidgetTopHeight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
 			northLayoutPanel.setWidgetLeftRight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
-			problemDescriptionView = new ProblemDescriptionView();
-			northLayoutPanel.add(problemDescriptionView);
-			northLayoutPanel.setWidgetLeftRight(problemDescriptionView, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
-			northLayoutPanel.setWidgetTopBottom(problemDescriptionView, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX, 10.0, Unit.PX);
-			buttonsLayoutPanel = new LayoutPanel(); // contains PageNavPanel and DevActionsPanel
 			pageNavPanel = new PageNavPanel();
-			buttonsLayoutPanel.add(pageNavPanel);
-			buttonsLayoutPanel.setWidgetLeftRight(pageNavPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-			buttonsLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
-			devActionsPanel = new DevActionsPanel();
-			buttonsLayoutPanel.add(devActionsPanel);
-			buttonsLayoutPanel.setWidgetLeftRight(devActionsPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-			buttonsLayoutPanel.setWidgetTopBottom(devActionsPanel, PageNavPanel.HEIGHT_PX, Style.Unit.PX, 0.0, Unit.PX);
-			
-			northLayoutPanel.add(buttonsLayoutPanel);
-			northLayoutPanel.setWidgetRightWidth(buttonsLayoutPanel, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
-			northLayoutPanel.setWidgetTopBottom(buttonsLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			northLayoutPanel.add(pageNavPanel);
+			northLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
+			northLayoutPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
 
+			// South layout panel is the status message view, quiz indicator, test outcome summary view,
+			// and results tab panel.
 			southLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_PX);
 			
@@ -231,8 +222,27 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 			});
 			
-			centerLayoutPanel = new LayoutPanel();
-			dockLayoutPanel.add(centerLayoutPanel);
+			// The center panel is the ProblemDescriptionView (on the left), and
+			// the editor and DevActionsPanel (on the right).
+			SplitLayoutPanel centerPanel = new SplitLayoutPanel();
+			
+			// Left is ProblemDescriptionView, right is a LayoutPanel containing the editor layout panel
+			// and the DevActionsPanel.
+			problemDescriptionView = new ProblemDescriptionView();
+			centerPanel.addWest(problemDescriptionView, 300.0);
+			
+			LayoutPanel editorAndDevActionsPanel = new LayoutPanel();
+			editorLayoutPanel = new LayoutPanel();
+			editorAndDevActionsPanel.add(editorLayoutPanel);
+			editorAndDevActionsPanel.setWidgetTopBottom(editorLayoutPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
+			editorAndDevActionsPanel.setWidgetLeftRight(editorLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			devActionsPanel = new DevActionsPanel2();
+			editorAndDevActionsPanel.add(devActionsPanel);
+			editorAndDevActionsPanel.setWidgetBottomHeight(devActionsPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
+			editorAndDevActionsPanel.setWidgetLeftRight(devActionsPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			centerPanel.add(editorAndDevActionsPanel);
+			
+			dockLayoutPanel.add(centerPanel);
 
 			initWidget(dockLayoutPanel);
 		}
@@ -607,7 +617,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private void createEditor(Language language) {
 			aceEditor = new AceEditor();
 			aceEditor.setSize("100%", "100%");
-			centerLayoutPanel.add(aceEditor);
+			editorLayoutPanel.add(aceEditor);
 			aceEditor.startEditor();
 			aceEditor.setFontSize("14px");
 			
