@@ -135,7 +135,6 @@ public class DevelopmentPage extends CloudCoderPage {
 	 * UI class for DevelopmentPage.
 	 */
 	private class UI extends Composite implements Subscriber {
-		public static final double NORTH_PANEL_HEIGHT_PX = ProblemDescriptionView.HEIGHT_PX;
 		public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
 		public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
 		public static final double VISUALIZE_BUTTON_WIDTH_PX = 100.0;
@@ -235,17 +234,20 @@ public class DevelopmentPage extends CloudCoderPage {
 			// Left is ProblemDescriptionView, right is a LayoutPanel containing the editor layout panel
 			// and the DevActionsPanel.
 			problemDescriptionView = new ProblemDescriptionView();
-			centerPanel.addWest(problemDescriptionView, 300.0);
+			centerPanel.addWest(problemDescriptionView, ProblemDescriptionView.DEFAULT_WIDTH_PX);
 			
 			LayoutPanel editorAndDevActionsPanel = new LayoutPanel();
 			editorLayoutPanel = new LayoutPanel();
 			editorAndDevActionsPanel.add(editorLayoutPanel);
 			editorAndDevActionsPanel.setWidgetTopBottom(editorLayoutPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			editorAndDevActionsPanel.setWidgetLeftRight(editorLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			FlowPanel devActionsPanelWrapper = new FlowPanel();
 			devActionsPanel = new DevActionsPanel2();
-			editorAndDevActionsPanel.add(devActionsPanel);
-			editorAndDevActionsPanel.setWidgetBottomHeight(devActionsPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
-			editorAndDevActionsPanel.setWidgetLeftRight(devActionsPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			devActionsPanel.asWidget().setStylePrimaryName("cc-devActionsPanel");
+			devActionsPanelWrapper.add(devActionsPanel);
+			editorAndDevActionsPanel.add(devActionsPanelWrapper);
+			editorAndDevActionsPanel.setWidgetBottomHeight(devActionsPanelWrapper, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
+			editorAndDevActionsPanel.setWidgetLeftRight(devActionsPanelWrapper, 0.0, Unit.PX, 0.0, Unit.PX);
 			centerPanel.add(editorAndDevActionsPanel);
 			
 			dockLayoutPanel.add(centerPanel);

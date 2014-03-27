@@ -76,7 +76,7 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
  * @author David Hovemeyer
  */
 public class DevelopmentPage2 extends CloudCoderPage {
-	public static final double NORTH_PANEL_HEIGHT_PX = ProblemDescriptionView.HEIGHT_PX;
+	public static final double NORTH_PANEL_HEIGHT_PX = 300.0;
 	public static final double SOUTH_PANEL_HEIGHT_PX = 200.0;
 	public static final double BUTTONS_PANEL_WIDTH_PX = 200.0;
 	

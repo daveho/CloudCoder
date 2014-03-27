@@ -264,3 +264,14 @@
  .cc-authorInfo {
 	border-top: 1px solid gray;	
 }
+
+/*
+ * Style for DevActionsPanel2 (reset and submit buttons).
+ * We want them to float right in their container div.
+ * Also push it down a tad to allow some visual separation
+ * from the editor.
+ */
+ .cc-devActionsPanel {
+    margin-top: 4px;
+ 	float: right;
+ }

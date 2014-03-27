@@ -37,8 +37,8 @@ import com.google.gwt.user.client.ui.ResizeComposite;
  * @author David Hovemeyer
  */
 public class ProblemDescriptionView extends ResizeComposite implements SessionObserver, Subscriber {
-	/** The preferred height of the ProblemDescriptionView. */
-	public static final double HEIGHT_PX = 175.0;
+	/** Preferred width of the ProblemDescriptionView. */
+	public static final double DEFAULT_WIDTH_PX = 400.0;
 	
 	private HTML problemDescriptionHtml;
 
