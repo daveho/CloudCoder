@@ -32,6 +32,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
 import org.cloudcoder.app.client.view.DevActionsPanel;
+import org.cloudcoder.app.client.view.IDevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
@@ -143,7 +144,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private LayoutPanel northLayoutPanel;
 		private ProblemDescriptionView problemDescriptionView;
 		private PageNavPanel pageNavPanel;
-		private DevActionsPanel devActionsPanel;
+		private IDevActionsPanel devActionsPanel;
 		private LayoutPanel southLayoutPanel;
 		private LayoutPanel centerLayoutPanel;
 		private LayoutPanel buttonsLayoutPanel;

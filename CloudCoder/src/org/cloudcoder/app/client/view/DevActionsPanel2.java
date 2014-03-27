@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2014, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -18,47 +18,33 @@
 
 package org.cloudcoder.app.client.view;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 /**
- * The DevActionsPanel contains the buttons for the DevelopmentPage
- * (such as the "Submit!" button.)
+ * Implementation of {@link IDevActionsPanel} which uses a
+ * FlowPanel for the buttons.  Provides more flexibility for layout
+ * and flow than the original DevActionsPanel.
  * 
  * @author David Hovemeyer
  */
-public class DevActionsPanel extends ResizeComposite implements IDevActionsPanel {
+public class DevActionsPanel2 extends Composite implements IDevActionsPanel {
 	private static final double BUTTON_HEIGHT_PX = 32.0;
 	private static final double BUTTON_WIDTH_PX = 120.0;
-
 	private Runnable submitHandler;
 	private Runnable resetHandler;
-	
-	/**
-	 * Constructor.
-	 */
-	public DevActionsPanel() {
-		LayoutPanel layoutPanel = new LayoutPanel();
-		
-		Button submitButton = new Button("Submit!");
-		submitButton.setStylePrimaryName("cc-emphButton");
-		submitButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (submitHandler != null) {
-					submitHandler.run();
-				}
-			}
-		});
-		layoutPanel.add(submitButton);
-		layoutPanel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, BUTTON_WIDTH_PX, Unit.PX);
-		layoutPanel.setWidgetBottomHeight(submitButton, 10.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
-		
+
+	public DevActionsPanel2() {
+		FlowPanel panel = new FlowPanel();
+
 		Button resetButton = new Button("Reset");
+		resetButton.setWidth(BUTTON_WIDTH_PX + "px");
+		resetButton.setHeight(BUTTON_HEIGHT_PX + "px");
+		panel.add(resetButton);
 		resetButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -67,18 +53,31 @@ public class DevActionsPanel extends ResizeComposite implements IDevActionsPanel
 				}
 			}
 		});
-		layoutPanel.add(resetButton);
-		layoutPanel.setWidgetRightWidth(resetButton, 0.0, Unit.PX, BUTTON_WIDTH_PX, Unit.PX);
-		layoutPanel.setWidgetBottomHeight(resetButton, 10.0 + BUTTON_HEIGHT_PX + 10.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
-
-		initWidget(layoutPanel);
+		
+		panel.add(new InlineHTML("&nbsp;"));
+		
+		Button submitButton = new Button("Submit!");
+		submitButton.setWidth(BUTTON_WIDTH_PX + "px");
+		submitButton.setHeight(BUTTON_HEIGHT_PX + "px");
+		submitButton.setStylePrimaryName("cc-emphButton");
+		panel.add(submitButton);
+		submitButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (submitHandler != null) {
+					submitHandler.run();
+				}
+			}
+		});
+		
+		initWidget(panel);
 	}
 	
 	@Override
 	public void setSubmitHandler(Runnable submitHandler) {
 		this.submitHandler = submitHandler;
 	}
-	
+
 	@Override
 	public void setResetHandler(Runnable resetHandler) {
 		this.resetHandler = resetHandler;
