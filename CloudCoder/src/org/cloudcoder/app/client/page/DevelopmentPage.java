@@ -143,14 +143,13 @@ public class DevelopmentPage extends CloudCoderPage {
 		public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 		private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
 
-		private LayoutPanel northLayoutPanel;
+//		private LayoutPanel northLayoutPanel;
 		private ProblemNameAndBriefDescriptionView problemNameAndBriefDescriptionView;
 		private ProblemDescriptionView problemDescriptionView;
 		private PageNavPanel pageNavPanel;
 		private IDevActionsPanel devActionsPanel;
 		private LayoutPanel southLayoutPanel;
 		private LayoutPanel editorLayoutPanel;
-		//private LayoutPanel buttonsLayoutPanel;
 		private StatusMessageView statusMessageView;
 		private QuizIndicatorView quizIndicatorView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
@@ -168,12 +167,13 @@ public class DevelopmentPage extends CloudCoderPage {
 		private String[] testCaseNames;
 
 		public UI() {
-			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
-
-			northLayoutPanel = new LayoutPanel();
-			dockLayoutPanel.addNorth(northLayoutPanel, NORTH_PANEL_HEIGHT_PX);
+			// The top-level panel holds just the north panel (which is fixed height)
+			// and the dock layout panel (which holds all of the resizable parts of the UI).
+			LayoutPanel topLevelPanel = new LayoutPanel();
 
 			// North panel is just the ProblemNameAndBriefDescriptionView and PageNavPanel
+			LayoutPanel northLayoutPanel = new LayoutPanel();
+
 			problemNameAndBriefDescriptionView = new ProblemNameAndBriefDescriptionView();
 			northLayoutPanel.add(problemNameAndBriefDescriptionView);
 			northLayoutPanel.setWidgetTopHeight(problemNameAndBriefDescriptionView, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
@@ -182,6 +182,12 @@ public class DevelopmentPage extends CloudCoderPage {
 			northLayoutPanel.add(pageNavPanel);
 			northLayoutPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
 			northLayoutPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, BUTTONS_PANEL_WIDTH_PX, Unit.PX);
+
+			topLevelPanel.add(northLayoutPanel);
+			topLevelPanel.setWidgetTopHeight(northLayoutPanel, 0.0, Unit.PX, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX);
+			topLevelPanel.setWidgetLeftRight(northLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			
+			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
 
 			// South layout panel is the status message view, quiz indicator, test outcome summary view,
 			// and results tab panel.
@@ -243,8 +249,12 @@ public class DevelopmentPage extends CloudCoderPage {
 			centerPanel.add(editorAndDevActionsPanel);
 			
 			dockLayoutPanel.add(centerPanel);
+			
+			topLevelPanel.add(dockLayoutPanel);
+			topLevelPanel.setWidgetTopBottom(dockLayoutPanel, ProblemNameAndBriefDescriptionView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			topLevelPanel.setWidgetLeftRight(dockLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 
-			initWidget(dockLayoutPanel);
+			initWidget(topLevelPanel);
 		}
 
 		private void addResultsTab(IResultsTabPanelWidget w, String title) {
