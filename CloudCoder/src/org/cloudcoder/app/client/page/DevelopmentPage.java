@@ -23,7 +23,6 @@ import java.util.List;
 import org.cloudcoder.app.client.model.ChangeFromAceOnChangeEvent;
 import org.cloudcoder.app.client.model.ChangeList;
 import org.cloudcoder.app.client.model.PageId;
-import org.cloudcoder.app.client.model.PageParams;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.QuizInProgress;
 import org.cloudcoder.app.client.model.Session;
@@ -31,7 +30,6 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CompilerDiagnosticListView;
-import org.cloudcoder.app.client.view.DevActionsPanel;
 import org.cloudcoder.app.client.view.DevActionsPanel2;
 import org.cloudcoder.app.client.view.IDevActionsPanel;
 import org.cloudcoder.app.client.view.IResultsTabPanelWidget;
@@ -49,7 +47,6 @@ import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
-import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -67,7 +64,6 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -79,8 +75,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -142,7 +136,6 @@ public class DevelopmentPage extends CloudCoderPage {
 		public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 		private static final int POLL_SUBMISSION_RESULT_INTERVAL_MS = 1000;
 
-//		private LayoutPanel northLayoutPanel;
 		private ProblemNameAndBriefDescriptionView problemNameAndBriefDescriptionView;
 		private ProblemDescriptionView problemDescriptionView;
 		private PageNavPanel pageNavPanel;
@@ -152,6 +145,7 @@ public class DevelopmentPage extends CloudCoderPage {
 		private StatusMessageView statusMessageView;
 		private QuizIndicatorView quizIndicatorView;
 		private TestOutcomeSummaryView testOutcomeSummaryView;
+		private double statusMessageViewRightEdgeOffset;
 		private TabLayoutPanel resultsTabPanel;
 		private TestResultListView testResultListView;
 		private CompilerDiagnosticListView compilerDiagnosticListView;
@@ -189,26 +183,40 @@ public class DevelopmentPage extends CloudCoderPage {
 			SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
 
 			// South layout panel is the status message view, quiz indicator, test outcome summary view,
-			// and results tab panel.
+			// dev actions panel (reset and submit buttons), and results tab panel.
 			southLayoutPanel = new LayoutPanel();
 			dockLayoutPanel.addSouth(southLayoutPanel, SOUTH_PANEL_HEIGHT_PX);
+
+			double rightOffset = 0.0;
+			this.devActionsPanel = new DevActionsPanel2();
+			devActionsPanel.asWidget().setStylePrimaryName("cc-devActionsPanel");
+			southLayoutPanel.add(devActionsPanel);
+			southLayoutPanel.setWidgetRightWidth(devActionsPanel, rightOffset, Unit.PX, DevActionsPanel2.WIDTH_PX, Unit.PX);
+			southLayoutPanel.setWidgetTopHeight(devActionsPanel, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			rightOffset += (DevActionsPanel2.WIDTH_PX + 5.0);
 			
-			this.statusMessageView = new StatusMessageView();
-			southLayoutPanel.add(statusMessageView);
-			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + 16.0, Unit.PX);
+			this.testOutcomeSummaryView = new TestOutcomeSummaryView();
+			southLayoutPanel.add(testOutcomeSummaryView);
+			southLayoutPanel.setWidgetTopHeight(testOutcomeSummaryView, 4.0, Unit.PX, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX);
+			southLayoutPanel.setWidgetRightWidth(testOutcomeSummaryView, rightOffset, Unit.PX, TestOutcomeSummaryView.WIDTH_PX, Unit.PX);
+			rightOffset += (TestOutcomeSummaryView.WIDTH_PX + 5.0);
+
 			this.quizIndicatorView = new QuizIndicatorView();
 			southLayoutPanel.add(quizIndicatorView);
 			southLayoutPanel.setWidgetTopHeight(quizIndicatorView, 0.0, Unit.PX, QuizIndicatorView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetRightWidth(quizIndicatorView, TestOutcomeSummaryView.WIDTH_PX + 8.0, Unit.PX, QuizIndicatorView.WIDTH_PX, Unit.PX);
-			this.testOutcomeSummaryView = new TestOutcomeSummaryView();
-			southLayoutPanel.add(testOutcomeSummaryView);
-			southLayoutPanel.setWidgetTopHeight(testOutcomeSummaryView, 2.0, Unit.PX, TestOutcomeSummaryView.HEIGHT_PX, Unit.PX);
-			southLayoutPanel.setWidgetRightWidth(testOutcomeSummaryView, 0.0, Unit.PX, TestOutcomeSummaryView.WIDTH_PX, Unit.PX);
+			southLayoutPanel.setWidgetRightWidth(quizIndicatorView, rightOffset, Unit.PX, QuizIndicatorView.WIDTH_PX, Unit.PX);
+			rightOffset += (QuizIndicatorView.WIDTH_PX + 5.0);
+			
+			this.statusMessageViewRightEdgeOffset = rightOffset;
+
+			this.statusMessageView = new StatusMessageView();
+			southLayoutPanel.add(statusMessageView);
+			southLayoutPanel.setWidgetTopHeight(statusMessageView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			southLayoutPanel.setWidgetLeftRight(statusMessageView, 0.0, Unit.PX, rightOffset, Unit.PX);
 
 			this.resultsTabPanel = new TabLayoutPanel(24, Unit.PX);
 			southLayoutPanel.add(resultsTabPanel);
-			southLayoutPanel.setWidgetTopBottom(resultsTabPanel, StatusMessageView.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			southLayoutPanel.setWidgetTopBottom(resultsTabPanel, StatusMessageView.HEIGHT_PX+2.0, Unit.PX, 0.0, Unit.PX);
 			southLayoutPanel.setWidgetLeftRight(resultsTabPanel, 0.0, Unit.PX, 0.0, Unit.PX);
 			
 			this.resultsTabPanelWidgetList = new ArrayList<IResultsTabPanelWidget>();
@@ -227,28 +235,14 @@ public class DevelopmentPage extends CloudCoderPage {
 				}
 			});
 			
-			// The center panel is the ProblemDescriptionView (on the left), and
-			// the editor and DevActionsPanel (on the right).
+			// The center panel is the ProblemDescriptionView (on the left) and the editor (on the right).
 			SplitLayoutPanel centerPanel = new SplitLayoutPanel();
 			
-			// Left is ProblemDescriptionView, right is a LayoutPanel containing the editor layout panel
-			// and the DevActionsPanel.
+			// Left is ProblemDescriptionView, right is a LayoutPanel containing the editor layout panel.
 			problemDescriptionView = new ProblemDescriptionView();
 			centerPanel.addWest(problemDescriptionView, ProblemDescriptionView.DEFAULT_WIDTH_PX);
-			
-			LayoutPanel editorAndDevActionsPanel = new LayoutPanel();
 			editorLayoutPanel = new LayoutPanel();
-			editorAndDevActionsPanel.add(editorLayoutPanel);
-			editorAndDevActionsPanel.setWidgetTopBottom(editorLayoutPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
-			editorAndDevActionsPanel.setWidgetLeftRight(editorLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-			FlowPanel devActionsPanelWrapper = new FlowPanel();
-			devActionsPanel = new DevActionsPanel2();
-			devActionsPanel.asWidget().setStylePrimaryName("cc-devActionsPanel");
-			devActionsPanelWrapper.add(devActionsPanel);
-			editorAndDevActionsPanel.add(devActionsPanelWrapper);
-			editorAndDevActionsPanel.setWidgetBottomHeight(devActionsPanelWrapper, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
-			editorAndDevActionsPanel.setWidgetLeftRight(devActionsPanelWrapper, 0.0, Unit.PX, 0.0, Unit.PX);
-			centerPanel.add(editorAndDevActionsPanel);
+			centerPanel.add(editorLayoutPanel);
 			
 			dockLayoutPanel.add(centerPanel);
 			
@@ -373,17 +367,15 @@ public class DevelopmentPage extends CloudCoderPage {
 			southLayoutPanel.setWidgetLeftRight(
 					statusMessageView,
 					0.0, Unit.PX,
-					TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + VISUALIZE_BUTTON_WIDTH_PX + 26.0, Unit.PX);
+					this.statusMessageViewRightEdgeOffset - VISUALIZE_BUTTON_WIDTH_PX - 5.0,
+					Unit.PX);
 			
 			visualizeButton = new Button("Visualize!");
 			southLayoutPanel.add(visualizeButton);
-			southLayoutPanel.setWidgetTopHeight(
-					visualizeButton,
-					0.0, Unit.PX,
-					StatusMessageView.HEIGHT_PX, Unit.PX);
+			southLayoutPanel.setWidgetTopHeight(visualizeButton, 4.0, Unit.PX, 28.0, Unit.PX);
 			southLayoutPanel.setWidgetRightWidth(
 					visualizeButton,
-					TestOutcomeSummaryView.WIDTH_PX + QuizIndicatorView.WIDTH_PX + 16.0, Unit.PX,
+					this.statusMessageViewRightEdgeOffset, Unit.PX,
 					VISUALIZE_BUTTON_WIDTH_PX, Unit.PX);
 			
 			visualizeButton.addClickHandler(new ClickHandler() {

@@ -18,33 +18,35 @@
 
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.InlineHTML;
+import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
- * Implementation of {@link IDevActionsPanel} which uses a
- * FlowPanel for the buttons.  Provides more flexibility for layout
- * and flow than the original DevActionsPanel.
+ * Implementation of {@link IDevActionsPanel} which places
+ * the reset and submit buttons side-by-side.
  * 
  * @author David Hovemeyer
  */
 public class DevActionsPanel2 extends Composite implements IDevActionsPanel {
-	private static final double BUTTON_HEIGHT_PX = 32.0;
-	private static final double BUTTON_WIDTH_PX = 120.0;
+	private static final double BUTTON_HEIGHT_PX = 28.0;
+	private static final double SUBMIT_BUTTON_WIDTH_PX = 100.0;
+	private static final double RESET_BUTTON_WIDTH_PX = 80.00;
+	public static final double WIDTH_PX = RESET_BUTTON_WIDTH_PX + 5.0 + SUBMIT_BUTTON_WIDTH_PX;
 	private Runnable submitHandler;
 	private Runnable resetHandler;
 
 	public DevActionsPanel2() {
-		FlowPanel panel = new FlowPanel();
+		LayoutPanel panel = new LayoutPanel();
 
 		Button resetButton = new Button("Reset");
-		resetButton.setWidth(BUTTON_WIDTH_PX + "px");
-		resetButton.setHeight(BUTTON_HEIGHT_PX + "px");
 		panel.add(resetButton);
+		panel.setWidgetLeftWidth(resetButton, 0.0, Unit.PX, RESET_BUTTON_WIDTH_PX, Unit.PX);
+		panel.setWidgetTopHeight(resetButton, 0.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
 		resetButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -57,10 +59,10 @@ public class DevActionsPanel2 extends Composite implements IDevActionsPanel {
 		panel.add(new InlineHTML("&nbsp;"));
 		
 		Button submitButton = new Button("Submit!");
-		submitButton.setWidth(BUTTON_WIDTH_PX + "px");
-		submitButton.setHeight(BUTTON_HEIGHT_PX + "px");
 		submitButton.setStylePrimaryName("cc-emphButton");
 		panel.add(submitButton);
+		panel.setWidgetRightWidth(submitButton, 0.0, Unit.PX, SUBMIT_BUTTON_WIDTH_PX, Unit.PX);
+		panel.setWidgetTopHeight(submitButton, 0.0, Unit.PX, BUTTON_HEIGHT_PX, Unit.PX);
 		submitButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
