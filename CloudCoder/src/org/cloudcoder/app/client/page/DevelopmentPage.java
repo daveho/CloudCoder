@@ -329,6 +329,8 @@ public class DevelopmentPage extends CloudCoderPage {
 			devActionsPanel.setResetHandler(new Runnable() {
 				@Override
 				public void run() {
+					GWT.log("Executing reset handler...");
+					
 					// Do not allow reset if edits are disallowed
 					if (mode == Mode.PREVENT_EDITS) {
 						return;

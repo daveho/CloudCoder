@@ -56,8 +56,6 @@ public class DevActionsPanel2 extends Composite implements IDevActionsPanel {
 			}
 		});
 		
-		panel.add(new InlineHTML("&nbsp;"));
-		
 		Button submitButton = new Button("Submit!");
 		submitButton.setStylePrimaryName("cc-emphButton");
 		panel.add(submitButton);
