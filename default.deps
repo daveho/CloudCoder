@@ -26,6 +26,7 @@ http://repo1.maven.org/maven2/org/python/jython-standalone/2.5.3/jython-standalo
 https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/daemon-${daemon_version}.jar
   CloudCoderJetty/lib/daemon/daemon-${daemon_version}.jar
   CloudCoderBuilder2/lib/daemon-${daemon_version}.jar
+  CloudCoderHealthMonitor/lib/daemon-${daemon_version}.jar
 http://jruby.org.s3.amazonaws.com/downloads/1.7.0/jruby-complete-1.7.0.jar
   CloudCoderBuilder2/lib/jruby-complete-1.7.0.jar
 http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-ajp/7.4.4.v20110707/jetty-ajp-7.4.4.v20110707.jar
@@ -92,6 +93,7 @@ http://json-simple.googlecode.com/files/json-simple-1.1.1.jar
   CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar
   CloudCoder/war/WEB-INF/lib/json-simple-1.1.1.jar
   CloudCoderRepository/war/WEB-INF/lib/json-simple-1.1.1.jar
+  CloudCoderHealthMonitor/lib/json-simple-1.1.1.jar
 http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mail.jar
   CloudCoder/war/WEB-INF/lib/mail.jar
