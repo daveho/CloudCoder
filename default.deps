@@ -97,6 +97,7 @@ http://json-simple.googlecode.com/files/json-simple-1.1.1.jar
 http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mail.jar
   CloudCoder/war/WEB-INF/lib/mail.jar
+  CloudCoderHealthMonitor/lib/mail.jar
 http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar
   CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar
   CloudCoderRepository/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar

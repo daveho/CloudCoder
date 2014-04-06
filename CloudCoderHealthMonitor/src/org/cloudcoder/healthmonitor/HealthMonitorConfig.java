@@ -34,7 +34,7 @@ import org.cloudcoder.daemon.IOUtil;
  * 
  * @author David Hovemeyer
  */
-public class HealthMonitorConfig {
+public class HealthMonitorConfig implements Cloneable {
 	private List<String> webappInstanceList;
 	private String reportEmailAddress;
 	
@@ -60,6 +60,13 @@ public class HealthMonitorConfig {
 	 */
 	public List<String> getWebappInstanceList() {
 		return Collections.unmodifiableList(webappInstanceList);
+	}
+	
+	/**
+	 * @return the email address to which to report unhealthy webapp instances
+	 */
+	public String getReportEmailAddress() {
+		return reportEmailAddress;
 	}
 	
 	/**
@@ -91,6 +98,18 @@ public class HealthMonitorConfig {
 			load(fileName);
 		} finally {
 			IOUtil.closeQuietly(reader);
+		}
+	}
+	
+	@Override
+	protected HealthMonitorConfig clone() {
+		try {
+			HealthMonitorConfig dup = (HealthMonitorConfig) super.clone(); // shallow copy
+			dup.webappInstanceList = new ArrayList<String>();
+			dup.webappInstanceList.addAll(this.webappInstanceList); // deep copy
+			return dup;
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Should not happen", e);
 		}
 	}
 
