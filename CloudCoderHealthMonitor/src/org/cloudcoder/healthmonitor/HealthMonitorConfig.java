@@ -37,6 +37,10 @@ import org.cloudcoder.daemon.IOUtil;
 public class HealthMonitorConfig implements Cloneable {
 	private List<String> webappInstanceList;
 	private String reportEmailAddress;
+	private String smtpUsername;
+	private String smtpPassword;
+	private String smtpServer;
+	private int smtpPort;
 	
 	/**
 	 * Constructor.
@@ -70,6 +74,34 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
+	 * @return the SMTP username to use when sending email
+	 */
+	public String getSmtpUsername() {
+		return smtpUsername;
+	}
+	
+	/**
+	 * @return the SMTP password to use when sending email
+	 */
+	public String getSmtpPassword() {
+		return smtpPassword;
+	}
+	
+	/**
+	 * @return the SMTP server to use when sending email
+	 */
+	public String getSmtpServer() {
+		return smtpServer;
+	}
+	
+	/**
+	 * @return the SMTP port to use when sending email
+	 */
+	public int getSmtpPort() {
+		return smtpPort;
+	}
+	
+	/**
 	 * Load from a reader reading a properties file.
 	 * 
 	 * @param reader a Reader reading the properties file
@@ -83,7 +115,11 @@ public class HealthMonitorConfig implements Cloneable {
 		while (tok.hasMoreTokens()) {
 			webappInstanceList.add(tok.nextToken());
 		}
-		reportEmailAddress = getRequiredProperty(props, "cloudcoder.healthmonitor.email");
+		reportEmailAddress = getRequiredProperty(props, "cloudcoder.healthmonitor.reportEmail");
+		smtpUsername = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.user");
+		smtpPassword = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.passwd");
+		smtpServer = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.host");
+		smtpPort = Integer.parseInt(getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.port"));
 	}
 	
 	/**
