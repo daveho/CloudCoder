@@ -133,7 +133,9 @@ public class BatchMain {
 					ReflectionFactory.forClass(TestCase.class),
 					r);
 		} finally {
-			IOUtil.closeQuietly(r);
+			if (r != null) { // daemon-0.6 doesn't handle null Reader
+				IOUtil.closeQuietly(r);
+			}
 		}
 		
 		// Read the list of source files to test
