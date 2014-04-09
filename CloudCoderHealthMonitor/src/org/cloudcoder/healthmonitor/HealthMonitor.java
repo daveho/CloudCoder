@@ -107,6 +107,8 @@ public class HealthMonitor implements Runnable {
 					}
 					
 					// TODO: send email!
+				} else {
+					logger.debug("All instances are healthy");
 				}
 			} catch (InterruptedException e) {
 				logger.info("HealthMonitor interrupted (shutdown requested?)");
