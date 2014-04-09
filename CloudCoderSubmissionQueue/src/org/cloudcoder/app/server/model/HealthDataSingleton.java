@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -21,22 +21,25 @@ package org.cloudcoder.app.server.model;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
+import org.cloudcoder.app.shared.model.HealthData;
+
 /**
  * Singleton storing health data for the CloudCoder webapp.
  * This can be exposed via a servlet or other monitoring API.
  * 
  * @author David Hovemeyer
  */
-public class HealthData {
+public class HealthDataSingleton {
 	
-	private static final HealthData theInstance = new HealthData();
+	private static final HealthDataSingleton theInstance = new HealthDataSingleton();
 	
 	/**
 	 * Get the singleton instance.
 	 * 
 	 * @return the singleton instance
 	 */
-	public static HealthData getInstance() {
+	public static HealthDataSingleton getInstance() {
 		return theInstance;
 	}
 	
@@ -53,7 +56,7 @@ public class HealthData {
 	private volatile int submissionQueueSizeCurrent;
 	private volatile int submissionQueueSizeMaxLastFiveMinutes;
 	
-	private HealthData() {
+	private HealthDataSingleton() {
 		this.submissionQueueSizeSampleList = new LinkedList<SubmissionQueueSizeSample>();
 	}
 	
@@ -103,5 +106,18 @@ public class HealthData {
 	 */
 	public int getSubmissionQueueSizeMaxLastFiveMinutes() {
 		return submissionQueueSizeMaxLastFiveMinutes;
+	}
+
+	/**
+	 * Get current {@link HealthData}.
+	 * 
+	 * @return current {@link HealthData}
+	 */
+	public HealthData getHealthData() {
+		HealthData healthData = new HealthData();
+		healthData.setSubmissionQueueSizeCurrent(submissionQueueSizeCurrent);
+		healthData.setSubmissionQueueSizeMaxLastFiveMinutes(submissionQueueSizeMaxLastFiveMinutes);
+		healthData.setNumConnectedBuilderThreads(OutOfProcessSubmitService.getInstance().getNumBuilderThreads());
+		return healthData;
 	}
 }

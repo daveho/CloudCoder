@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -19,17 +19,16 @@
 package org.cloudcoder.app.server.servlet;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.cloudcoder.app.server.model.HealthData;
-import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
-import org.json.simple.JSONObject;
+import org.cloudcoder.app.server.model.HealthDataSingleton;
+import org.cloudcoder.app.shared.model.HealthData;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.json.simple.JSONValue;
 
 /**
  * Servlet to export health data about the CloudCoder webapp.
@@ -41,16 +40,11 @@ public class Health extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Map<String, Object> healthDataJSON = new TreeMap<String, Object>();
-		
-		HealthData healthData = HealthData.getInstance();
-		healthDataJSON.put("submissionQueueSizeCurrent", healthData.getSubmissionQueueSizeCurrent());
-		healthDataJSON.put("submissionQueueSizeMaxLastFiveMinutes", healthData.getSubmissionQueueSizeMaxLastFiveMinutes());
-		
-		healthDataJSON.put("numConnectedBuilderThreads", OutOfProcessSubmitService.getInstance().getNumBuilderThreads());
+		HealthData healthData = HealthDataSingleton.getInstance().getHealthData();
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.setContentType("application/json");
-		JSONObject.writeJSONString(healthDataJSON, resp.getWriter());
+		Object jsonValue = JSONConversion.convertModelObjectToJSON(healthData, healthData.getSchema());
+		JSONValue.writeJSONString(jsonValue, resp.getWriter());
 	}
 }

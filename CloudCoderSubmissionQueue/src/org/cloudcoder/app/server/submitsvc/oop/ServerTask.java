@@ -22,7 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.cloudcoder.app.server.model.HealthData;
+import org.cloudcoder.app.server.model.HealthDataSingleton;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class ServerTask implements Runnable {
     		while (!shutdownRequested) {
     			try {
     				int size = submissionQueue.size();
-    				HealthData.getInstance().updateSubmissionQueueSize(size);
+    				HealthDataSingleton.getInstance().updateSubmissionQueueSize(size);
     				
     				Thread.sleep(UPDATE_SUBMISSION_QUEUE_SIZE_INTERVAL);
     			} catch (InterruptedException e) {

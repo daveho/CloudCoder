@@ -18,6 +18,8 @@
 package org.cloudcoder.healthmonitor;
 
 import org.cloudcoder.daemon.IDaemon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The health monitor {@link IDaemon} implementation.
@@ -27,23 +29,48 @@ import org.cloudcoder.daemon.IDaemon;
  * @author David Hovemeyer
  */
 public class HealthMonitorDaemon implements IDaemon {
+	private static final Logger logger = LoggerFactory.getLogger(HealthMonitorDaemon.class);
+	
+	private HealthMonitorConfig config;
+	private HealthMonitor healthMonitor;
+	private Thread healthMonitorThread;
 
+	public void setConfig(HealthMonitorConfig config) {
+		this.config = config;
+	}
+	
 	@Override
 	public void start(String instanceName) {
-		// TODO Auto-generated method stub
-
+		// TODO: should read default configuration
+		
+		healthMonitor = new HealthMonitor();
+		healthMonitor.setConfig(config);
+		healthMonitorThread = new Thread(healthMonitor);
+		healthMonitorThread.start();
 	}
 
 	@Override
 	public void handleCommand(String command) {
-		// TODO Auto-generated method stub
-
+		// No commands are implemented at the moment
+		logger.info("Unrecognized command: {}", command);
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-
+		if (healthMonitorThread == null || !healthMonitorThread.isAlive()) {
+			logger.error("Health monitor is not running");
+		} else {
+			try {
+				healthMonitor.shutdown();
+				healthMonitorThread.interrupt();
+				
+				logger.info("Waiting for health monitor thread to finish...");
+				healthMonitorThread.join();
+				logger.info("Health monitor thread has finished");
+			} catch (InterruptedException e) {
+				logger.error("Interrupted while waiting for health monitor thread to exit");
+			}
+		}
 	}
 
 }

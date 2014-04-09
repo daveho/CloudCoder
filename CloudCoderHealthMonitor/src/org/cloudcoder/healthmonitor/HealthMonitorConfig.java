@@ -67,10 +67,28 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
+	 * Add a webapp instance to monitor.
+	 * 
+	 * @param instance the webapp instance to monitor
+	 */
+	public void addWebappInstance(String instance) {
+		webappInstanceList.add(instance);
+	}
+	
+	/**
 	 * @return the email address to which to report unhealthy webapp instances
 	 */
 	public String getReportEmailAddress() {
 		return reportEmailAddress;
+	}
+	
+	/**
+	 * Set the report email address.
+	 * 
+	 * @param reportEmailAddress the report email address to set
+	 */
+	public void setReportEmailAddress(String reportEmailAddress) {
+		this.reportEmailAddress = reportEmailAddress;
 	}
 	
 	/**
@@ -81,10 +99,28 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
+	 * Set the SMTP username.
+	 * 
+	 * @param smtpUsername the SMTP username to set
+	 */
+	public void setSmtpUsername(String smtpUsername) {
+		this.smtpUsername = smtpUsername;
+	}
+	
+	/**
 	 * @return the SMTP password to use when sending email
 	 */
 	public String getSmtpPassword() {
 		return smtpPassword;
+	}
+	
+	/**
+	 * Set the SMTP password.
+	 * 
+	 * @param smtpPassword the SMTP password to set
+	 */
+	public void setSmtpPassword(String smtpPassword) {
+		this.smtpPassword = smtpPassword;
 	}
 	
 	/**
@@ -95,10 +131,28 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
+	 * Set the SMTP server.
+	 * 
+	 * @param smtpServer the SMTP server to set.
+	 */
+	public void setSmtpServer(String smtpServer) {
+		this.smtpServer = smtpServer;
+	}
+	
+	/**
 	 * @return the SMTP port to use when sending email
 	 */
 	public int getSmtpPort() {
 		return smtpPort;
+	}
+	
+	/**
+	 * Set the SMTP port.
+	 * 
+	 * @param smtpPort the SMTP port to set.
+	 */
+	public void setSmtpPort(int smtpPort) {
+		this.smtpPort = smtpPort;
 	}
 	
 	/**

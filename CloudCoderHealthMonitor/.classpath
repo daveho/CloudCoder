@@ -13,6 +13,19 @@
 			<attribute name="javadoc_location" value="http://javamail.kenai.com/nonav/javadocs"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/httpclient-4.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/httpcore-4.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
