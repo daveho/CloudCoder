@@ -35,13 +35,13 @@ public class HealthData implements IModelObject<HealthData> {
 	};
 	
 	public static final ModelObjectField<HealthData, Integer> SUBMISSION_QUEUE_SIZE_MAX_LAST_FIVE_MINUTES = new ModelObjectField<HealthData, Integer>("submissionQueueSizeMaxLastFiveMinutes", Integer.class, 0) {
-		public void set(HealthData obj, Integer value) { obj.setSubmissionQueueSizeCurrent(value); }
-		public Integer get(HealthData obj) { return obj.getSubmissionQueueSizeCurrent(); }
+		public void set(HealthData obj, Integer value) { obj.setSubmissionQueueSizeMaxLastFiveMinutes(value); }
+		public Integer get(HealthData obj) { return obj.getSubmissionQueueSizeMaxLastFiveMinutes(); }
 	};
 	
 	public static final ModelObjectField<HealthData, Integer> NUM_CONNECTED_BUILDER_THREADS = new ModelObjectField<HealthData, Integer>("numConnectedBuilderThreads", Integer.class, 0) {
-		public void set(HealthData obj, Integer value) { obj.setSubmissionQueueSizeCurrent(value); }
-		public Integer get(HealthData obj) { return obj.getSubmissionQueueSizeCurrent(); }
+		public void set(HealthData obj, Integer value) { obj.setNumConnectedBuilderThreads(value); }
+		public Integer get(HealthData obj) { return obj.getNumConnectedBuilderThreads(); }
 	};
 	
 	/**
