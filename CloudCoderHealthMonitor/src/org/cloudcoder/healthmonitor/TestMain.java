@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Scanner;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -46,6 +47,16 @@ public class TestMain {
 		HealthMonitorConfig config = new HealthMonitorConfig();
 		config.addWebappInstance("https://cs.ycp.edu/cloudcoder");
 		config.addWebappInstance("https://cloudcoder.org/demo/");
+		config.addWebappInstance("http://localhost:8081/cloudcoder");
+		
+		// Prompt for info that we can't commit to a public git repository :-)
+		Scanner keyboard = new Scanner(System.in);
+		config.setReportEmailAddress(ask(keyboard, "Report email address: "));
+		config.setSmtpUsername(ask(keyboard, "SMTP username: "));
+		config.setSmtpPassword(ask(keyboard, "SMTP password: "));
+		config.setSmtpServer(ask(keyboard, "SMTP server: "));
+		config.setSmtpPort(Integer.parseInt(ask(keyboard, "SMTP port: ")));
+		config.setSmtpUseTLS(true);
 		
 		daemon.setConfig(config);
 		
@@ -65,5 +76,10 @@ public class TestMain {
 		System.out.println("Health monitor daemon shutting down...");
 		daemon.shutdown();
 		System.out.println("Done");
+	}
+
+	private static String ask(Scanner keyboard, String prompt) {
+		System.out.print(prompt);
+		return keyboard.nextLine();
 	}
 }

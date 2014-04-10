@@ -17,6 +17,16 @@
 
 package org.cloudcoder.healthmonitor;
 
+import java.util.Properties;
+
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -107,6 +117,8 @@ public class HealthMonitor implements Runnable {
 					}
 					
 					// TODO: send email!
+					//Session session = createMailSession(config);
+					sendReportEmail(report, config);
 				} else {
 					logger.debug("All instances are healthy");
 				}
@@ -161,4 +173,55 @@ public class HealthMonitor implements Runnable {
 		return result;
 	}
 
+	private void sendReportEmail(HealthMonitorReport report, HealthMonitorConfig config) {
+		try {
+			Session session = createMailSession(config);
+	
+			MimeMessage message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(config.getReportEmailAddress()));
+			message.addRecipient(RecipientType.TO, new InternetAddress(config.getReportEmailAddress()));
+			message.setSubject("CloudCoder health monitor failure report");
+			
+			StringBuilder body = new StringBuilder();
+			body.append("<h1>CloudCoder health monitor failure report</h1>");
+			body.append("<p>One or more CloudCoder webapp instances are unhealthy:</p>");
+			body.append("<ul>");
+			for (Entry entry : report.getEntryList()) {
+				if (entry.status != Status.HEALTHY) {
+					body.append("<li>");
+					body.append(entry.instance);
+					body.append(": ");
+					body.append(entry.status);
+					body.append("</li>");
+				}
+			}
+			
+			message.setContent(body.toString(), "text/html");
+			
+			Transport.send(message);
+		} catch (Exception e) {
+			// This is bad
+			logger.error("Error sending report email!", e);
+		}
+	}
+
+	private Session createMailSession(HealthMonitorConfig config) {
+		final PasswordAuthentication passwordAuthentication =
+				new PasswordAuthentication(config.getSmtpUsername(), config.getSmtpPassword());
+		
+		Properties properties = new Properties();
+		properties.putAll(System.getProperties());
+		properties.setProperty("mail.smtp.submitter", passwordAuthentication.getUserName());
+		properties.setProperty("mail.smtp.auth", "true");
+		properties.setProperty("mail.smtp.host", config.getSmtpServer());
+		properties.setProperty("mail.smtp.port", String.valueOf(config.getSmtpPort()));
+		properties.setProperty("mail.smtp.starttls.enable", String.valueOf(config.isSmtpUseTLS()));
+		
+		return Session.getInstance(properties, new Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return passwordAuthentication;
+			}
+		});
+	}
 }

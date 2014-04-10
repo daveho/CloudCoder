@@ -41,6 +41,7 @@ public class HealthMonitorConfig implements Cloneable {
 	private String smtpPassword;
 	private String smtpServer;
 	private int smtpPort;
+	private boolean smtpUseTLS;
 	
 	/**
 	 * Constructor.
@@ -153,6 +154,22 @@ public class HealthMonitorConfig implements Cloneable {
 	 */
 	public void setSmtpPort(int smtpPort) {
 		this.smtpPort = smtpPort;
+	}
+	
+	/**
+	 * Set whether SMTP should use TLS.
+	 * 
+	 * @param smtpUseTLS true if SMTP should use TLS, false if not 
+	 */
+	public void setSmtpUseTLS(boolean smtpUseTLS) {
+		this.smtpUseTLS = smtpUseTLS;
+	}
+	
+	/**
+	 * @return true if SMTP should use TLS, false if not
+	 */
+	public boolean isSmtpUseTLS() {
+		return smtpUseTLS;
 	}
 	
 	/**
