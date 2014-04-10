@@ -51,10 +51,12 @@ public class HealthMonitorReport {
 	public static class Entry {
 		public final String instance;
 		public final Status status;
+		public final long timestamp;
 		
-		public Entry(String instance, Status status) {
+		public Entry(String instance, Status status, long timestamp) {
 			this.instance = instance;
 			this.status = status;
+			this.timestamp = timestamp;
 		}
 	}
 	

@@ -17,6 +17,8 @@
 
 package org.cloudcoder.healthmonitor;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -146,6 +148,7 @@ public class HealthMonitor implements Runnable {
 		HttpGet request = new HttpGet(buf.toString());
 		
 		Entry result = null;
+		long timestamp = System.currentTimeMillis();
 		try {
 			HttpResponse response = client.execute(request);
 			String responseBody = EntityUtils.toString(response.getEntity());
@@ -155,17 +158,17 @@ public class HealthMonitor implements Runnable {
 			
 			// Create a report entry.
 			if (healthData.getNumConnectedBuilderThreads() == 0) {
-				result = new Entry(instance, Status.NO_BUILDER_THREADS);
+				result = new Entry(instance, Status.NO_BUILDER_THREADS, timestamp);
 			} else if (healthData.getSubmissionQueueSizeMaxLastFiveMinutes() >= SUBMISSION_QUEUE_DANGER_THRESHOLD) {
-				result = new Entry(instance, Status.EXCESSIVE_LOAD);
+				result = new Entry(instance, Status.EXCESSIVE_LOAD, timestamp);
 			} else {
 				// Woo-hoo, everything looks fine.
-				result = new Entry(instance, Status.HEALTHY);
+				result = new Entry(instance, Status.HEALTHY, timestamp);
 				logger.debug("Instance {} is healthy", instance);
 			}
 		} catch (Exception e) {
 			logger.error("Error connecting to instance " + instance + ": " + e.getMessage(), e);
-			result = new Entry(instance, Status.CANNOT_CONNECT);
+			result = new Entry(instance, Status.CANNOT_CONNECT, timestamp);
 		} finally {
 			client.getConnectionManager().shutdown();
 		}
@@ -192,6 +195,9 @@ public class HealthMonitor implements Runnable {
 					body.append(entry.instance);
 					body.append(": ");
 					body.append(entry.status);
+					body.append(" at ");
+					SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss");
+					body.append(fmt.format(new Date(entry.timestamp)));
 					body.append("</li>");
 				}
 			}
