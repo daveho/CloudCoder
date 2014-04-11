@@ -181,6 +181,15 @@ public class HealthMonitorConfig implements Cloneable {
 	public void load(Reader reader) throws IOException {
 		Properties props = new Properties();
 		props.load(reader);
+		load(props);
+	}
+
+	/**
+	 * Load from {@link Properties}.
+	 * 
+	 * @param props the properties to load from
+	 */
+	public void load(Properties props) {
 		String instances = getRequiredProperty(props, "cloudcoder.healthmonitor.instances");
 		StringTokenizer tok = new StringTokenizer(instances, ",");
 		while (tok.hasMoreTokens()) {
