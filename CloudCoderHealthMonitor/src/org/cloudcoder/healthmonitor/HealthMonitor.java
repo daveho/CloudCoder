@@ -224,17 +224,17 @@ public class HealthMonitor implements Runnable {
 			// Create a report entry.
 			if (healthData.getNumConnectedBuilderThreads() == 0) {
 				result = new Entry(instance, Status.NO_BUILDER_THREADS, timestamp);
-				logger.error("Unhealthy instance {} detected: {}", instance, Status.NO_BUILDER_THREADS);
+				logger.info("Unhealthy instance {} detected: {}", instance, Status.NO_BUILDER_THREADS);
 			} else if (healthData.getSubmissionQueueSizeMaxLastFiveMinutes() >= SUBMISSION_QUEUE_DANGER_THRESHOLD) {
 				result = new Entry(instance, Status.EXCESSIVE_LOAD, timestamp);
-				logger.error("Unhealthy instance {} detected: {}", instance, Status.EXCESSIVE_LOAD);
+				logger.info("Unhealthy instance {} detected: {}", instance, Status.EXCESSIVE_LOAD);
 			} else {
 				// Woo-hoo, everything looks fine.
 				result = new Entry(instance, Status.HEALTHY, timestamp);
 				logger.debug("Instance {} is healthy", instance);
 			}
 		} catch (Exception e) {
-			logger.error("Error connecting to instance " + instance + ": " + e.getMessage(), e);
+			logger.info("Error connecting to instance " + instance + ": " + e.getMessage(), e);
 			result = new Entry(instance, Status.CANNOT_CONNECT, timestamp);
 		} finally {
 			client.getConnectionManager().shutdown();
