@@ -4,31 +4,42 @@ use strict;
 use FileHandle;
 
 # Script to collect all configuration information needed to
-# build and deploy the CloudCoder webapp and Builder.
-# Generates a cloudcoder.properties file.
+# build and deploy the CloudCoder webapp, Builder, and
+# other components.  Generates a cloudcoder.properties file.
 
 my @propertyNames = ();
 my %properties = ();
 my %prior = ();
-my $configWebapp = 1;
-my $configRepoWebapp = 0;
-my $configBuilderWebService = 0;
+
+# Which features should be configured
+my %features = (
+	'webapp' => 1,
+	'repoWebApp' => 0,
+	'builderWebService' => 0,
+	'healthMonitor' => 0,
+	'all' => 0,
+);
+
 my $useDefaultKeystore = 0;
 
+# Handle command line options for feature configuration
 while (scalar(@ARGV) >= 1) {
-	# If the "--repo" command-line argument is specified, then
-	# include configuration for the repository webapp (and its
-	# webserver).
 	my $arg = shift @ARGV;
 	if ($arg eq '--repo') {
-		$configRepoWebapp = 1;
+		$features{'repoWebApp'} = 1;
 		print "Configuring for CloudCoder exercise repository\n\n";
 	} elsif ($arg eq '--bws') {
-		$configBuilderWebService = 1;
+		$features{'builderWebService'} = 1;
 		print "Configuring for CloudCoder builder web service\n\n";
 	} elsif ($arg eq '--nowebapp') {
+		$features{'webapp'} = 0;
 		print "NOT configuring CloudCoder webapp\n\n";
-		$configWebapp = 0;
+	} elsif ($arg eq '--healthmonitor') {
+		$features{'healthMonitor'} = 1;
+		print "Configuring for CloudCoder exercise monitor\n\n";
+	} elsif ($arg eq '--all') {
+		$features{'all'} = 1;
+		print "Configuring for all features\n\n";
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -55,7 +66,7 @@ if (-r "cloudcoder.properties") {
 	}
 }
 
-if ($configWebapp) {
+if (useFeature('webapp')) {
 	askprop("Where is your GWT SDK installed (the directory with webAppCreator in it)?",
 		"gwt.sdk", undef);
 	
@@ -92,6 +103,7 @@ if ($configWebapp) {
 	}
 }
 
+# FIXME: it should be possible to not configure the builder
 section("Builder properties");
 
 askprop("What host will the CloudCoder webapp be running on?\n" .
@@ -114,7 +126,7 @@ if ((lc $properties{"cloudcoder.submitsvc.oop.easysandbox.enable"}) eq 'true') {
 askprop("Are there JVM options that should be used when running the builder?",
 	"cloudcoder.builder2.jvmargs", "");
 
-section("TLS/SSL (secure communication between webapp and builder(s)");
+section("TLS/SSL (secure communication between webapp and builder(s))");
 
 my $useDefaultKeystoreYN = ask("Do you want to use the default keystore\n" .
 	"(Answer 'yes' for development, 'no' for production)", "no");
@@ -135,7 +147,7 @@ if ($useDefaultKeystore) {
 		"cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 }
 
-if ($configWebapp) {
+if (useFeature('webapp')) {
 	section("Web server properties (webapp)");
 	
 	askprop("What port will the CloudCoder web server listen on?",
@@ -150,7 +162,7 @@ if ($configWebapp) {
 		"cloudcoder.webserver.numThreads", "80");
 }
 
-if ($configRepoWebapp) {
+if (useFeature('repoWebApp')) {
 	section("Database configuration (repository webapp)");
 
 	askprop("What MySQL username will the repository webapp use to connect to the database?",
@@ -187,7 +199,7 @@ if ($configRepoWebapp) {
 		"cloudcoder.repoapp.smtp.passwd", undef);
 }
 
-if ($configBuilderWebService) {
+if (useFeature('builderWebService')) {
 	section("Webserver configuration (builder web service)");
 
 	askprop("What port will the builder web service listen on?",
@@ -205,6 +217,24 @@ if ($configBuilderWebService) {
 		"cloudcoder.builderwebservice.clientusername");
 	askprop("What password should the client provide?",
 		"cloudcoder.builderwebservice.clientpassword");
+}
+
+if (useFeature('healthMonitor')) {
+	section("Health monitor configuration");
+
+	askprop("Instances to check (separated by commas)\n" .
+		"Example: https://cs.ycp.edu/cloudcoder,https://cloudcoder.org/demo",
+		"cloudcoder.healthmonitor.instances");
+	askprop("Email address where health status reports should be sent",
+		"cloudcoder.healthmonitor.reportEmail");
+	askprop("SMTP username of account from which to send email",
+		"cloudcoder.healthmonitor.smtp.user");
+	askprop("SMTP password of account from which to send email",
+		"cloudcoder.healthmonitor.smtp.passwd");
+	askprop("SMTP server to use when sending email",
+		"cloudcoder.healthmonitor.smtp.host");
+	askprop("SMTP port to use when sending email",
+		"cloudcoder.healthmonitor.smtp.port");
 }
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");
@@ -233,6 +263,12 @@ if ($useDefaultKeystore) {
 			$properties{'cloudcoder.submitsvc.ssl.keystore.password'},
 			$properties{'cloudcoder.submitsvc.ssl.cn'});
 	}
+}
+
+sub useFeature {
+	my ($name) = @_;
+	(exists $features{$name}) || die "Unknown feature name: $name\n";
+	return $features{$name} || $features{'all'};
 }
 
 sub section {
