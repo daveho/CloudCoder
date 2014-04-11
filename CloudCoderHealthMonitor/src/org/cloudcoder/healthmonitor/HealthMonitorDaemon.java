@@ -53,7 +53,7 @@ public class HealthMonitorDaemon implements IDaemon {
 			config = new HealthMonitorConfig();
 			config.load(props);
 			
-			logger.info("Monitoring {} instances:", config.getWebappInstanceList().size());
+			logger.info("Monitoring {} instance(s):", config.getWebappInstanceList().size());
 			for (String instance : config.getWebappInstanceList()) {
 				logger.info("Instance: {}", instance);
 			}

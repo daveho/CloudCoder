@@ -235,6 +235,8 @@ if (useFeature('healthMonitor')) {
 		"cloudcoder.healthmonitor.smtp.host");
 	askprop("SMTP port to use when sending email",
 		"cloudcoder.healthmonitor.smtp.port");
+	askprop("Use TLS with SMTP?",
+		"cloudcoder.healthmonitor.smtp.useTLS", "true");
 }
 
 my $confirm = ask("Write configuration file (cloudcoder.properties)?", "yes");

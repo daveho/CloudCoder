@@ -200,6 +200,7 @@ public class HealthMonitorConfig implements Cloneable {
 		smtpPassword = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.passwd");
 		smtpServer = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.host");
 		smtpPort = Integer.parseInt(getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.port"));
+		smtpUseTLS = Boolean.parseBoolean(getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.useTLS"));
 	}
 	
 	/**
