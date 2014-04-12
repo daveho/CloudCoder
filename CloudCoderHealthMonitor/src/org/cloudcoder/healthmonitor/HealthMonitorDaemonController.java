@@ -30,7 +30,11 @@ public class HealthMonitorDaemonController extends DaemonController {
 	private static class Options extends DaemonController.Options {
 		@Override
 		public String getStdoutLogFileName() {
-			return "logs/stdout.log";
+			String logFileName = super.getStdoutLogFileName();
+			if (logFileName == null) {
+				logFileName = "logs/stdout.log";
+			}
+			return logFileName;
 		}
 	}
 	
