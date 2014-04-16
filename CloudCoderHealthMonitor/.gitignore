@@ -4,3 +4,4 @@
 /*.pid
 /*.fifo
 /cloudcoderHealthMonitor.jar
+/cloudcoder.properties
