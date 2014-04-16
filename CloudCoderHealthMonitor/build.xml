@@ -51,9 +51,24 @@
     </target>
 	
 	<!--
+		Target to create a cloudcoder.properties file with just the
+		health monitor properties.  This avoids unnecessarily exposing
+		usernames/passwords associated with the webapp, etc.
+	-->
+	<target name="cloudcoderProperties">
+		<copy file="../cloudcoder.properties" tofile="cloudcoder.properties">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="^cloudcoder\.healthmonitor\."/>
+				</linecontainsregexp>
+			</filterchain>
+		</copy>
+	</target>
+	
+	<!--
 		Build a single executable jarfile.
 	-->
-	<target name="jar" depends="build">
+	<target name="jar" depends="build,cloudcoderProperties">
 		<jar destfile="${jarname}" update="true">
 			<zipgroupfileset dir="lib" includes="**.jar"/>
 			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
@@ -63,8 +78,9 @@
 
 			<fileset dir="bin" includes="**" excludes="org/cloudcoder/builder2/tests/**"/>
 			
-			<!-- Inlcude cloudcoder configuration properties (cloudcoder.properties) -->
-			<zipfileset file="../cloudcoder.properties" fullpath="cloudcoder.properties"/>
+			<!-- Include cloudcoder configuration properties (cloudcoder.properties),
+				but just the ones that are actually needed by the health monitor -->
+			<zipfileset file="cloudcoder.properties" fullpath="cloudcoder.properties"/>
 			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.healthmonitor.HealthMonitorDaemonController"/>
@@ -77,6 +93,7 @@
         	<fileset dir="bin" includes="**"/>
         </delete>
     	<delete file="${jarname}"/>
+    	<delete file="cloudcoder.properties"/>
     </target>
 	
 	<!-- Clean everything (including projects on which this target depends -->
