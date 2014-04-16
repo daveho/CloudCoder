@@ -36,7 +36,7 @@ while (scalar(@ARGV) >= 1) {
 		print "NOT configuring CloudCoder webapp\n\n";
 	} elsif ($arg eq '--healthmonitor') {
 		$features{'healthMonitor'} = 1;
-		print "Configuring for CloudCoder exercise monitor\n\n";
+		print "Configuring for CloudCoder health monitor\n\n";
 	} elsif ($arg eq '--all') {
 		$features{'all'} = 1;
 		print "Configuring for all features\n\n";
