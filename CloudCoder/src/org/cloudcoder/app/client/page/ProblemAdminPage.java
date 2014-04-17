@@ -76,6 +76,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 		STATISTICS("Statistics", "See statistics on selected exercise"),
 		IMPORT("Import", "Import an exercise from the CloudCoder exercise repository"),
 		SHARE("Share", "Shared selected exercise(s) by publishing them to the CloudCoder exercise repository"),
+		IMPORT_COURSE("Import course", "Import all exercises from another course"),
 		MAKE_VISIBLE("Make visible", "Make selected exerise(s) visible to students"),
 		MAKE_INVISIBLE("Make invisible", "Make selected exercise(s) invisible to students"),
 		MAKE_PERMISSIVE("Make permissive", "Change license of exercises to a permissive Create Commons license"),
@@ -99,7 +100,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 		}
 		
 		public boolean isEnabledByDefault() {
-			return this == NEW || this == IMPORT;
+			return this == NEW || this == IMPORT || this == IMPORT_COURSE;
 		}
 	}
 	
@@ -253,6 +254,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 				
 			case IMPORT:
 				doImportProblem();
+				break;
+				
+			case IMPORT_COURSE:
+				doImportCourse();
 				break;
 				
 			case MAKE_VISIBLE:
@@ -466,6 +471,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 			});
 			
 			dialog.center();
+		}
+		
+		private void doImportCourse() {
+			GWT.log("Import all problems from course");
 		}
 
 		private void handleEditProblem() {
