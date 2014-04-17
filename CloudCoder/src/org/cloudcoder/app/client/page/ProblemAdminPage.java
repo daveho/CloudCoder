@@ -27,6 +27,7 @@ import org.cloudcoder.app.client.view.ButtonPanel;
 import org.cloudcoder.app.client.view.ChoiceDialogBox;
 import org.cloudcoder.app.client.view.CourseAdminProblemListView;
 import org.cloudcoder.app.client.view.IButtonPanelAction;
+import org.cloudcoder.app.client.view.ImportCourseDialogBox;
 import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -37,6 +38,7 @@ import org.cloudcoder.app.shared.dto.ShareExerciseStatus;
 import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Module;
@@ -475,6 +477,29 @@ public class ProblemAdminPage extends CloudCoderPage {
 		
 		private void doImportCourse() {
 			GWT.log("Import all problems from course");
+			
+			// Get all course registrations for user
+			SessionUtil.loadCourseAndCourseRegistrationList(
+					ProblemAdminPage.this,
+					// success callback
+					new ICallback<CourseAndCourseRegistration[]>() {
+						@Override
+						public void call(CourseAndCourseRegistration[] value) {
+							getSession().add(value);
+							
+							// Create dialog
+							ImportCourseDialogBox dialog = new ImportCourseDialogBox(getSession());
+							dialog.center();
+						}
+					},
+					// failure callback
+					new ICallback<Pair<String, Throwable>>() {
+						@Override
+						public void call(Pair<String, Throwable> value) {
+							getSession().add(StatusMessage.error(value.getLeft(), value.getRight()));
+						}
+					}
+			);
 		}
 
 		private void handleEditProblem() {
