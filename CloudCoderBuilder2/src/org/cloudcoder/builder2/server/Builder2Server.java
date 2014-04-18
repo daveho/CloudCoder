@@ -26,6 +26,7 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
@@ -43,17 +44,61 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  */
 public class Builder2Server implements Runnable {
+	/**
+	 * The maximum amount of time that the watchdog thread will
+	 * allow a wait for a problem id or keepalive signal from 
+	 * the webapp.  If the wait becomes longer then we will
+	 * assume that the connection between the builder and
+	 * the webapp has been broken and the watchdog will force
+	 * the server loop to reconnect.
+	 */
+	private static final long MAX_WAIT_MS = 60000L; // after 1 minute of waiting, assume connection is bad
+	
+	/**
+	 * Runnable for watchdog thread.
+	 */
+	private class Watchdog implements Runnable {
+		@Override
+		public void run() {
+			try {
+				while (!shutdownRequested) {
+					Thread.sleep(10000L);
+					long w = waitStart.get();
+					if (w >= 0L) {
+						long waitTime = System.currentTimeMillis() - w;
+						if (waitTime > MAX_WAIT_MS) {
+							// The server loop has waited too long to receive the
+							// problem id / keepalive signal.  Force a reconnect.
+							logger.warn("Watchdog: {} ms without keepalive, forcing reconnect", waitTime);
+							Socket s = socket;
+							if (s != null) {
+								try {
+									s.close();
+								} catch (IOException e) {
+									logger.warn("Watchdog: error closing socket", e);
+								}
+							}
+						}
+					}
+				}
+			} catch (InterruptedException e) {
+				logger.info("Watchdog interrupted, shutting down...");
+			}
+		}
+	}
 
     private static final Logger logger=LoggerFactory.getLogger(Builder2Server.class);
 
     private volatile boolean shutdownRequested;
     private volatile boolean working;
+    private AtomicLong waitStart;
     private NoConnectTimer noConnectTimer;
     private WebappSocketFactory webappSocketFactory;
     private Builder2 builder2;
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
+    private Thread watchdogThread;
 
     /**
      * Constructor.
@@ -64,6 +109,8 @@ public class Builder2Server implements Runnable {
      */
     public Builder2Server(WebappSocketFactory webappSocketFactory, Properties config) {
         this.shutdownRequested = false;
+        this.working = false;
+        this.waitStart = new AtomicLong(-1L);
         this.noConnectTimer = new NoConnectTimer();
         this.webappSocketFactory = webappSocketFactory;
         this.builder2 = new Builder2(config);
@@ -73,6 +120,8 @@ public class Builder2Server implements Runnable {
      * The main server loop.
      */
     public void run() {
+    	watchdogThread = new Thread(new Watchdog());
+    	watchdogThread.start();
         while (!shutdownRequested) {
             runOnce();
         }
@@ -90,7 +139,9 @@ public class Builder2Server implements Runnable {
             }
 
             working = false;
+            waitStart.set(System.currentTimeMillis()); // record the start time of the wait
             Integer problemId = safeReadObject();
+            waitStart.set(-1L); // problem id or keepalive signal received, wait finished
             working = true;
 
             // The CloudCoder app may send us a negative problem id as
@@ -174,20 +225,32 @@ public class Builder2Server implements Runnable {
     }
 
     public void shutdown() {
-        shutdownRequested = true;
-        if (working) {
-            logger.warn("shutdown(): cannot close worker socket because working=true");
-        } else {
-            try {
-                // Rude, but effective.
-                Socket s = socket;
-                if (s != null) {
-                    s.close();
-                }
-            } catch (IOException e) {
-                logger.error("Unable to close client socket, but Builder is shutting down anyway",e);
-            }
-        }
+    	shutdownRequested = true;
+
+    	// Shut down the watchdog thread
+    	watchdogThread.interrupt();
+    	try {
+    		watchdogThread.join();
+    	} catch (InterruptedException e) {
+    		logger.error("Interrupted waiting for watchdog thread to finish", e);
+    	}
+
+    	// Shut down the server loop
+    	if (working) {
+    		logger.warn("shutdown(): cannot close worker socket because working=true");
+    	} else {
+    		try {
+    			// Close the socket that the server loop is using
+    			// to communicate with the webapp.
+    			// Rude, but effective.
+    			Socket s = socket;
+    			if (s != null) {
+    				s.close();
+    			}
+    		} catch (IOException e) {
+    			logger.error("Unable to close client socket, but Builder is shutting down anyway",e);
+    		}
+    	}
     }
 
     /**

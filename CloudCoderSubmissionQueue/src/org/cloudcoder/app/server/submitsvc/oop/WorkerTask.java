@@ -42,9 +42,14 @@ public class WorkerTask implements Runnable {
 	 * Number of milliseconds between attempts to poll the
 	 * submission queue.
 	 */
-	private static final int POLL_INTERVAL_MILLIS = 1000;
+	private static final long POLL_INTERVAL_MILLIS = 1000L;
 
-	private static final long MAX_IDLE_TIME_MILLIS = 5000;
+	/**
+	 * Maximum number of milliseconds that the task is allowed to
+	 * be idle (no submissions available) before a keepalive signal
+	 * is sent to the builder.
+	 */
+	private static final long MAX_IDLE_TIME_MILLIS = 5000L;
 
 	private static Logger logger = LoggerFactory.getLogger(WorkerTask.class);
 	
