@@ -596,5 +596,30 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		return Database.getInstance().getTestResultsForSubmission(authenticatedUser, problem, receipt);
 	}
 
-    
+    @Override
+    public OperationResult importAllProblemsFromCourse(Course destinationCourse,
+    		Course sourceCourse) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+    	
+		// Make sure that the authenticated user is registered as an instructor for
+		// both the source and destination courses.
+		boolean sourceInstructor = false, destInstructor = false;
+		List<? extends Object[]> courses = Database.getInstance().getCoursesForUser(authenticatedUser);
+		for (Object[] triple : courses) {
+			CourseRegistration reg = (CourseRegistration) triple[2];
+			if (reg.getCourseId() == sourceCourse.getId() && reg.getRegistrationType().isInstructor()) {
+				sourceInstructor = true;
+			}
+			if (reg.getCourseId() == destinationCourse.getId() && reg.getRegistrationType().isInstructor()) {
+				destInstructor = true;
+			}
+		}
+		if (!sourceInstructor || !destInstructor) {
+			return new OperationResult(false, "Permission denied (not an instructor)");
+		}
+		
+		// TODO: do the actual operation
+		
+		return new OperationResult(true, "All exercises imported");
+    }
 }

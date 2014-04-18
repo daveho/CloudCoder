@@ -489,6 +489,12 @@ public class ProblemAdminPage extends CloudCoderPage {
 							
 							// Create dialog
 							ImportCourseDialogBox dialog = new ImportCourseDialogBox(getSession());
+							dialog.setSelectCourseCallback(new ICallback<CourseAndCourseRegistration>() {
+								@Override
+								public void call(CourseAndCourseRegistration value) {
+									doImportProblemsFromCourse(value);
+								}
+							});
 							dialog.center();
 						}
 					},
@@ -500,6 +506,13 @@ public class ProblemAdminPage extends CloudCoderPage {
 						}
 					}
 			);
+		}
+		
+		private void doImportProblemsFromCourse(CourseAndCourseRegistration sourceCourse) {
+			CourseSelection destCourse = getSession().get(CourseSelection.class);
+			
+			GWT.log("TODO: Import problems from " +
+					sourceCourse.getCourse().getName() + " - " + sourceCourse.getCourse().getTitle());
 		}
 
 		private void handleEditProblem() {

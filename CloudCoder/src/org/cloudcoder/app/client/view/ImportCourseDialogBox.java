@@ -18,6 +18,8 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.ICallback;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -30,6 +32,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
  * Dialog box for importing all problems from another course.
+ * Invokes a callback when the user selects a course.
  * 
  * @author David Hovemeyer
  */
@@ -41,12 +44,16 @@ public class ImportCourseDialogBox extends DialogBox {
 	public static final double BUTTON_WIDTH_PX = 160.0;
 	public static final double BUTTON_HEIGHT_PX = 28.0;
 	
+	public static final double ERROR_LABEL_HEIGHT_PX = 16.0;
+	
 	public static final double HEIGHT_PX =
-			BORDER_PX + LABEL_HEIGHT_PX + 10.0 + ImportCourseSelectionView.HEIGHT_PX + 10.0 + BUTTON_HEIGHT_PX + 10.0;
+			BORDER_PX + LABEL_HEIGHT_PX + 10.0 + ImportCourseSelectionView.HEIGHT_PX + 10.0 + ERROR_LABEL_HEIGHT_PX + 10.0 + BUTTON_HEIGHT_PX + 10.0;
 	
 	private ImportCourseSelectionView selectionView;
 	private Button importButton;
 	private Button cancelButton;
+	private InlineLabel errorLabel;
+	private ICallback<CourseAndCourseRegistration> selectCourseCallback;
 
 	public ImportCourseDialogBox(Session session) {
 		LayoutPanel panel = new LayoutPanel();
@@ -66,7 +73,15 @@ public class ImportCourseDialogBox extends DialogBox {
 		panel.setWidgetLeftRight(selectionView, BORDER_PX, Unit.PX, BORDER_PX, Unit.PX);
 		panel.setWidgetTopHeight(selectionView, selectionViewTop, Unit.PX, ImportCourseSelectionView.HEIGHT_PX, Unit.PX);
 		
-		double buttonTop = selectionViewTop + ImportCourseSelectionView.HEIGHT_PX + 10.0;
+		double errorLabelTop = selectionViewTop + ImportCourseSelectionView.HEIGHT_PX + 10.0;
+		
+		errorLabel = new InlineLabel("");
+		errorLabel.setStyleDependentName("cc-errorText", true);
+		panel.add(errorLabel);
+		panel.setWidgetLeftRight(errorLabel, BORDER_PX, Unit.PX, BORDER_PX, Unit.PX);
+		panel.setWidgetTopHeight(errorLabel, errorLabelTop, Unit.PX, ERROR_LABEL_HEIGHT_PX, Unit.PX);
+		
+		double buttonTop = errorLabelTop + ERROR_LABEL_HEIGHT_PX + 10.0;
 
 		importButton = new Button("Import problems");
 		panel.add(importButton);
@@ -94,9 +109,29 @@ public class ImportCourseDialogBox extends DialogBox {
 		
 		setWidget(panel);
 	}
+	
+	/**
+	 * Set the callback to invoke when a {@link CourseAndCourseRegistration} is selected.
+	 * 
+	 * @param selectCourseCallback the selectCourseCallback to set
+	 */
+	public void setSelectCourseCallback(
+			ICallback<CourseAndCourseRegistration> selectCourseCallback) {
+		this.selectCourseCallback = selectCourseCallback;
+	}
 
 	protected void handleImport() {
 		GWT.log("TODO: do the import!");
+		
+		CourseAndCourseRegistration selectedCourse = selectionView.getSelected();
+		if (selectedCourse == null) {
+			errorLabel.setText("Please select a course");
+		}
+		
+		if (selectCourseCallback != null) {
+			selectCourseCallback.call(selectedCourse);
+		}
+		
 		hide();
 	}
 }

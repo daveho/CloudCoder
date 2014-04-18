@@ -93,4 +93,7 @@ public interface GetCoursesAndProblemsServiceAsync {
     void submitExercises(Problem[] problems, String repoUsername,
         String repoPassword, AsyncCallback<ShareExercisesResult> asyncCallback);
 
+	void importAllProblemsFromCourse(Course destinationCourse,
+			Course sourceCourse, AsyncCallback<OperationResult> callback);
+
 }

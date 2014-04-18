@@ -26,12 +26,10 @@ import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.TermAndYear;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.InlineLabel;
-import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * UI for selecting a course from which to import all problems. 
@@ -44,6 +42,8 @@ public class ImportCourseSelectionView extends Composite {
 	private Session session;
 	private ArrayList<CourseAndCourseRegistration> instructorCourseList;
 	private DataGrid<CourseAndCourseRegistration> instructorCourseGrid;
+
+	private SingleSelectionModel<CourseAndCourseRegistration> selectionModel;
 	
 	private static class TermAndYearColumn extends TextColumn<CourseAndCourseRegistration>  {
 		@Override
@@ -60,6 +60,11 @@ public class ImportCourseSelectionView extends Composite {
 		}
 	}
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param session the {@link Session}
+	 */
 	public ImportCourseSelectionView(Session session) {
 		this.session = session;
 		this.instructorCourseList = new ArrayList<CourseAndCourseRegistration>();
@@ -71,8 +76,18 @@ public class ImportCourseSelectionView extends Composite {
 		instructorCourseGrid.addColumn(new CourseNameColumn(), "Course");
 		
 		instructorCourseGrid.setRowData(0, instructorCourseList);
+		
+		selectionModel = new SingleSelectionModel<CourseAndCourseRegistration>();
+		instructorCourseGrid.setSelectionModel(selectionModel);
 
 		initWidget(instructorCourseGrid);
+	}
+	
+	/**
+	 * @return selected {@link CourseAndCourseRegistration}
+	 */
+	public CourseAndCourseRegistration getSelected() {
+		return selectionModel.getSelectedObject();
 	}
 
 	private void populateInstructorCourseList() {
