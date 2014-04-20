@@ -21,7 +21,6 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.ICallback;
 
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -121,8 +120,6 @@ public class ImportCourseDialogBox extends DialogBox {
 	}
 
 	protected void handleImport() {
-		GWT.log("TODO: do the import!");
-		
 		CourseAndCourseRegistration selectedCourse = selectionView.getSelected();
 		if (selectedCourse == null) {
 			errorLabel.setText("Please select a course");

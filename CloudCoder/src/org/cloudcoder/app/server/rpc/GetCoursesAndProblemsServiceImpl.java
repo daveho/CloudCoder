@@ -1,5 +1,5 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -597,8 +597,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 
     @Override
-    public OperationResult importAllProblemsFromCourse(Course destinationCourse,
-    		Course sourceCourse) throws CloudCoderAuthenticationException {
+    public void startImportAllProblemsFromCourse(Course source, Course dest) throws CloudCoderAuthenticationException {
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
     	
 		// Make sure that the authenticated user is registered as an instructor for
@@ -607,19 +606,38 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		List<? extends Object[]> courses = Database.getInstance().getCoursesForUser(authenticatedUser);
 		for (Object[] triple : courses) {
 			CourseRegistration reg = (CourseRegistration) triple[2];
-			if (reg.getCourseId() == sourceCourse.getId() && reg.getRegistrationType().isInstructor()) {
+			if (reg.getCourseId() == source.getId() && reg.getRegistrationType().isInstructor()) {
 				sourceInstructor = true;
 			}
-			if (reg.getCourseId() == destinationCourse.getId() && reg.getRegistrationType().isInstructor()) {
+			if (reg.getCourseId() == dest.getId() && reg.getRegistrationType().isInstructor()) {
 				destInstructor = true;
 			}
 		}
+		
+		// Create a FutureImportCourseResult
+		FutureImportCourseResult result = new FutureImportCourseResult();
+		getThreadLocalRequest().getSession().setAttribute(SessionAttributeKeys.FUTURE_IMPORT_COURSE_RESULT_KEY, result);
+		
 		if (!sourceInstructor || !destInstructor) {
-			return new OperationResult(false, "Permission denied (not an instructor)");
+			result.set(new OperationResult(false, "Permission denied (not an instructor)"));
+			return;
 		}
 		
-		// TODO: do the actual operation
-		
-		return new OperationResult(true, "All exercises imported");
+		// Start the actual operation
+		result.start(source, dest);
+    }
+    
+    @Override
+    public OperationResult checkImportAllProblemsFromCourse() {
+    	FutureImportCourseResult result = (FutureImportCourseResult)
+    			getThreadLocalRequest().getSession().getAttribute(SessionAttributeKeys.FUTURE_IMPORT_COURSE_RESULT_KEY);
+    	if (result == null) {
+    		return new OperationResult(false, "There doesn't seem to be a pending operation to import exercises?");
+    	}
+    	OperationResult poll = result.poll();
+    	if (poll != null) {
+    		getThreadLocalRequest().getSession().removeAttribute(SessionAttributeKeys.FUTURE_IMPORT_COURSE_RESULT_KEY);
+    	}
+		return poll;
     }
 }

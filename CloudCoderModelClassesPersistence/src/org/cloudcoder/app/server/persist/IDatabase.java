@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -660,5 +660,17 @@ public interface IDatabase {
 	 * @return list of {@link RepoProblemRating}s for the exercise
 	 */
 	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId);
+	
+	/**
+	 * Import all of the problems from given source {@link Course}
+	 * to given destination {@link Course}.  Note that no authentication
+	 * is done: the current user is assumed to be registered as
+	 * an instructor in both courses.
+	 * 
+	 * @param source the source {@link Course}
+	 * @param dest   the destination {@link Course}
+	 * @return an {@link OperationResult} describing the success or failure of the operation
+	 */
+	public OperationResult importAllProblemsFromCourse(Course source, Course dest);
 
 }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -255,5 +255,15 @@ public class Course implements IModelObject<Course>, Serializable {
 		code *= 37;
 		code += year;
 		return code;
+	}
+
+	/**
+	 * Convenience method for getting a string with both the name and title
+	 * of the course, e.g., "CS 101 - Introduction to Computer Science".
+	 * 
+	 * @return a string with the course name and title
+	 */
+	public String getNameAndTitle() {
+		return getName() + " - " + getTitle();
 	}
 }

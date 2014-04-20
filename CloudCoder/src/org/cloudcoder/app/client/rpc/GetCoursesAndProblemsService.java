@@ -21,7 +21,6 @@ import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
-import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -281,13 +280,24 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 
 	/**
 	 * Import all courses from given source {@link Course} into the
-	 * given destination Course.
+	 * given destination Course.  This method starts the operation:
+	 * the client is expected to use {@link #checkImportAllProblemsFromCourse()}
+	 * to poll for the completion of the operation.
 	 * 
-	 * @param destinationCourse the destination {@link Course}
-	 * @param sourceCourse      the source {@link Course}
-	 * @return {@link OperationResult} indicating whether or not the operation was successful
+	 * @param source the source {@link Course}
+	 * @param dest   the destination {@link Course}
 	 * @throws CloudCoderAuthenticationException if the user is not logged in, or if the user is not
 	 *                                           an instructor in both courses
 	 */
-	public OperationResult importAllProblemsFromCourse(Course destinationCourse, Course sourceCourse) throws CloudCoderAuthenticationException;
+	public void startImportAllProblemsFromCourse(Course source, Course dest) throws CloudCoderAuthenticationException;
+
+	/**
+	 * Check for the result of importing all problems from a source
+	 * {@link Course} to a destination Course, started by a previous
+	 * call to {@link #startImportAllProblemsFromCourse(Course, Course)}.
+	 * 
+	 * @return the {@link OperationResult} indicating the success/failure of the operation,
+	 *         or null if the operation hasn't completed yet
+	 */
+	public OperationResult checkImportAllProblemsFromCourse();
 }

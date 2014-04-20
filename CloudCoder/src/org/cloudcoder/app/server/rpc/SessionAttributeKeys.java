@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -54,5 +54,10 @@ public interface SessionAttributeKeys {
 	 * Key to get the current {@link Quiz}, if any.
 	 */
 	public static final String QUIZ_KEY = "quiz";
+	
+	/**
+	 * Key to get the {@link FutureImportCourseResult}.
+	 */
+	public static final String FUTURE_IMPORT_COURSE_RESULT_KEY = "importCourseResult";
 
 }

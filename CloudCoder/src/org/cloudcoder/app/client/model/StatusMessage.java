@@ -1,6 +1,6 @@
 // CloudCloder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.cloudcoder.app.client.model;
+
+import org.cloudcoder.app.shared.model.OperationResult;
 
 /**
  * A status message describing the outcome of an operation
@@ -122,5 +124,15 @@ public class StatusMessage {
 	 */
 	public static StatusMessage information(String message) {
 		return new StatusMessage(Category.INFORMATION, message);
+	}
+
+	/**
+	 * Create a StatusMessage from an {@link OperationResult}.
+	 * 
+	 * @param result the {@link OperationResult}
+	 * @return the StatusMessage
+	 */
+	public static Object fromOperationResult(OperationResult result) {
+		return new StatusMessage(result.isSuccess() ? Category.GOOD_NEWS : Category.ERROR, result.getMessage());
 	}
 }

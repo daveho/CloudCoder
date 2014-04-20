@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -66,6 +66,7 @@ import org.cloudcoder.app.server.persist.txn.GetTestResultsForSubmission;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
+import org.cloudcoder.app.server.persist.txn.ImportAllProblemsFromCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
@@ -459,6 +460,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<RepoProblemRating> getRatingsForRepoProblem(int repoProblemId) {
 		return databaseRun(new GetRatingsForRepoProblem(repoProblemId));
+	}
+	
+	@Override
+	public OperationResult importAllProblemsFromCourse(Course source, Course dest) {
+		return databaseRun(new ImportAllProblemsFromCourse(source, dest));
 	}
 
 	/**
