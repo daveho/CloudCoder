@@ -63,6 +63,10 @@ public class ImportAllProblemsFromCourse extends AbstractDatabaseRunnableNoAuthE
 			problem.setProblemId(0);
 			problem.setCourseId(dest.getId());
 			
+			// Set visisbility to false (on the assumption that the instructor will
+			// want to explicitly make problems visible)
+			problem.setVisible(false);
+			
 			// Insert problem
 			Queries.doInsertProblem(problem, conn, this);
 			
