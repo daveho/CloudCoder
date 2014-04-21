@@ -37,8 +37,11 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  */
 public class ImportCourseDialogBox extends DialogBox {
 	public static final double BORDER_PX = 20.0;
-	public static final double LABEL_HEIGHT_PX = 32.0;
+	public static final double TITLE_LABEL_HEIGHT_PX = 32.0;
 	public static final double WIDTH_PX = 480.0;
+	
+	
+	public static final double INFO_LABEL_HEIGHT_PX = 24.0;
 	
 	public static final double BUTTON_WIDTH_PX = 160.0;
 	public static final double BUTTON_HEIGHT_PX = 28.0;
@@ -46,7 +49,9 @@ public class ImportCourseDialogBox extends DialogBox {
 	public static final double ERROR_LABEL_HEIGHT_PX = 16.0;
 	
 	public static final double HEIGHT_PX =
-			BORDER_PX + LABEL_HEIGHT_PX + 10.0 + ImportCourseSelectionView.HEIGHT_PX + 10.0 + ERROR_LABEL_HEIGHT_PX + 10.0 + BUTTON_HEIGHT_PX + 10.0;
+			BORDER_PX + TITLE_LABEL_HEIGHT_PX + 10.0 +
+			INFO_LABEL_HEIGHT_PX + 10.0 +
+			ImportCourseSelectionView.HEIGHT_PX + 10.0 + ERROR_LABEL_HEIGHT_PX + 10.0 + BUTTON_HEIGHT_PX + 10.0;
 	
 	private ImportCourseSelectionView selectionView;
 	private Button importButton;
@@ -63,9 +68,16 @@ public class ImportCourseDialogBox extends DialogBox {
 		title.setStylePrimaryName("cc-pageTitle");
 		panel.add(title);
 		panel.setWidgetLeftRight(title, BORDER_PX, Unit.PX, BORDER_PX, Unit.PX);
-		panel.setWidgetTopHeight(title, BORDER_PX, Unit.PX, LABEL_HEIGHT_PX, Unit.PX);
+		panel.setWidgetTopHeight(title, BORDER_PX, Unit.PX, TITLE_LABEL_HEIGHT_PX, Unit.PX);
 		
-		double selectionViewTop = BORDER_PX + LABEL_HEIGHT_PX + 10.0;
+		double infoLabelTop = BORDER_PX + TITLE_LABEL_HEIGHT_PX + 10.0;
+		
+		InlineLabel info = new InlineLabel("Select a course to import exercises from:");
+		panel.add(info);
+		panel.setWidgetLeftRight(info, BORDER_PX, Unit.PX, BORDER_PX, Unit.PX);
+		panel.setWidgetTopHeight(info, infoLabelTop, Unit.PX, INFO_LABEL_HEIGHT_PX, Unit.PX);
+		
+		double selectionViewTop = infoLabelTop + INFO_LABEL_HEIGHT_PX + 10.0;
 
 		selectionView = new ImportCourseSelectionView(session);
 		panel.add(selectionView);
