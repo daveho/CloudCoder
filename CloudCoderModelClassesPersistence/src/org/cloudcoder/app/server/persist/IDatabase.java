@@ -664,13 +664,14 @@ public interface IDatabase {
 	/**
 	 * Import all of the problems from given source {@link Course}
 	 * to given destination {@link Course}.  Note that no authentication
-	 * is done: the current user is assumed to be registered as
+	 * is done: the specified instructor is assumed to be registered as
 	 * an instructor in both courses.
 	 * 
 	 * @param source the source {@link Course}
 	 * @param dest   the destination {@link Course}
+	 * @param instructor a {@link User} that is an instructor in both courses
 	 * @return an {@link OperationResult} describing the success or failure of the operation
 	 */
-	public OperationResult importAllProblemsFromCourse(Course source, Course dest);
+	public OperationResult importAllProblemsFromCourse(Course source, Course dest, User instructor);
 
 }

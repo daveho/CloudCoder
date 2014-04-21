@@ -20,6 +20,7 @@ package org.cloudcoder.app.server.rpc;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.OperationResult;
+import org.cloudcoder.app.shared.model.User;
 
 
 /**
@@ -68,12 +69,13 @@ public class FutureImportCourseResult {
 	 * 
 	 * @param source the source {@link Course}
 	 * @param dest   the destination {@link Course}
+	 * @param instructor a {@link User} who is an instructor in both courses
 	 */
-	public void start(final Course source, final Course dest) {
+	public void start(final Course source, final Course dest, final User instructor) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				OperationResult result = Database.getInstance().importAllProblemsFromCourse(source, dest);
+				OperationResult result = Database.getInstance().importAllProblemsFromCourse(source, dest, instructor);
 				set(result);
 			}
 		}).start();

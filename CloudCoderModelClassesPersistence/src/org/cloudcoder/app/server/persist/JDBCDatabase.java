@@ -463,8 +463,8 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public OperationResult importAllProblemsFromCourse(Course source, Course dest) {
-		return databaseRun(new ImportAllProblemsFromCourse(source, dest));
+	public OperationResult importAllProblemsFromCourse(Course source, Course dest, User instructor) {
+		return databaseRun(new ImportAllProblemsFromCourse(source, dest, instructor));
 	}
 
 	/**

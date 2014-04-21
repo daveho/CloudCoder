@@ -552,6 +552,9 @@ public class ProblemAdminPage extends CloudCoderPage {
 								// Completed
 								addSessionObject(StatusMessage.fromOperationResult(result));
 								dialog.hide();
+								
+								// Reload problems
+								courseAdminProblemListView.loadProblems(getSession(), getSession().get(CourseSelection.class).getCourse());
 							} else {
 								// No result yet, wait and try again
 								doCheckImportProblemsFromCourse(dialog);

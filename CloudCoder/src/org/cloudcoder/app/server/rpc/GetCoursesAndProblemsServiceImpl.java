@@ -624,7 +624,7 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		}
 		
 		// Start the actual operation
-		result.start(source, dest);
+		result.start(source, dest, authenticatedUser);
     }
     
     @Override

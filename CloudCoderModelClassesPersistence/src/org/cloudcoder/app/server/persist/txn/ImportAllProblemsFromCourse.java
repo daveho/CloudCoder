@@ -19,11 +19,14 @@ package org.cloudcoder.app.server.persist.txn;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.User;
 
 /**
  * Database transaction to import all {@link Problem}s from an
@@ -34,22 +37,46 @@ import org.cloudcoder.app.shared.model.Problem;
 public class ImportAllProblemsFromCourse extends AbstractDatabaseRunnableNoAuthException<OperationResult> {
 	private Course source;
 	private Course dest;
+	private User instructor;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param source the course to import {@link Problem}s from
 	 * @param dest   the course to add the {@link Problem}s to
+	 * @param instructor a {@link User} that is an instructor in both courses
 	 */
-	public ImportAllProblemsFromCourse(Course source, Course dest) {
+	public ImportAllProblemsFromCourse(Course source, Course dest, User instructor) {
 		this.source = source;
 		this.dest = dest;
+		this.instructor = instructor;
 	}
 
 	@Override
 	public OperationResult run(Connection conn) throws SQLException {
-		// TODO: implement
-		return new OperationResult(true, "This doesn't actually do anything yet");
+		List<Problem> problemList = Queries.doGetProblemsInCourse(instructor, source, conn, this);
+		for (Problem problem : problemList) {
+			List<TestCase> testCaseList = Queries.doGetTestCasesForProblem(conn, problem.getProblemId(), this);
+			
+			// Reset problem id and course id (since we will be inserting
+			// a new copy of this problem in the destination course)
+			problem.setProblemId(0);
+			problem.setCourseId(dest.getId());
+			
+			// Insert problem
+			Queries.doInsertProblem(problem, conn, this);
+			
+			// Reset test case id and problem id of each test case
+			for (TestCase testCase : testCaseList) {
+				testCase.setTestCaseId(0);
+				testCase.setProblemId(problem.getProblemId());
+			}
+			
+			// Insert test cases
+			Queries.doInsertTestCases(problem, testCaseList, conn, this);
+		}
+		
+		return new OperationResult(true, "Successfully imported exercises");
 	}
 
 	@Override

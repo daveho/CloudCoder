@@ -1,5 +1,5 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -300,7 +300,13 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		return getProblemsFromProblemAndModule(selectionModel.getSelectedSet());
 	}
 
-	private void loadProblems(final Session session, final Course course) {
+	/**
+	 * Force {@link Problem}s to be reloaded.
+	 * 
+	 * @param session the current {@link Session}
+	 * @param course  the current {@link Course}
+	 */
+	public void loadProblems(final Session session, final Course course) {
 		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), (Module)null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
 			/* (non-Javadoc)
 			 * @see com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(java.lang.Object)
