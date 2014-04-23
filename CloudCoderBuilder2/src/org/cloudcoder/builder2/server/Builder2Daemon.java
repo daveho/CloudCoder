@@ -80,6 +80,14 @@ public class Builder2Daemon implements IDaemon {
 		public String getKeystorePassword() {
 			return config.getProperty("cloudcoder.submitsvc.ssl.keystore.password", "changeit");
 		}
+		
+		public boolean useSshTunnel() {
+			return Boolean.valueOf(config.getProperty("cloudcoder.submitsvc.ssl.ssh.useTunnel", "false"));
+		}
+		
+		public String getSshRemoteUser() {
+			return config.getProperty("cloudcoder.submitsvc.ssl.ssh.remoteUser", "");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -130,6 +138,10 @@ public class Builder2Daemon implements IDaemon {
 					options.getAppPort(),
 					options.getKeystoreFilename(),
 					options.getKeystorePassword());
+			if (options.useSshTunnel()) {
+				webappSocketFactory.setSshTunnel(true);
+				webappSocketFactory.setSshRemoteUser(options.getSshRemoteUser());
+			}
 		} catch (Exception e) {
 			logger.error("Could not create WebappSocketFactory", e);
 			throw new IllegalStateException("Could not create WebappSocketFactory", e);

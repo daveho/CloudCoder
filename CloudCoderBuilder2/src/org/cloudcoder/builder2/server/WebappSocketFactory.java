@@ -51,10 +51,8 @@ public class WebappSocketFactory {
 	private String keystoreFilename;
 	private String keystorePassword;
 	private SSLSocketFactory socketFactory;
-	/*
 	private boolean sshTunnel;
 	private String sshRemoteUser;
-	*/
 
 	/**
 	 * Constructor.
@@ -84,30 +82,30 @@ public class WebappSocketFactory {
 		logger.info("Builder: using keystore {}", this.keystoreFilename);
 	}
 	
-//	/**
-//	 * Set whether or not an ssh tunnel will be used.
-//	 * Defaults to false.  If true, an ssh tunnel will be
-//	 * used to allow a port on the local machine to connect
-//	 * to the remote webapp port on the webapp host machine.
-//	 * If set to true, the {@link #setSshRemoteUser(String)}
-//	 * method should be called to specify which user account
-//	 * will be used on the remote machine. 
-//	 * 
-//	 * @param sshTunnel true if ssh 
-//	 */
-//	public void setSshTunnel(boolean sshTunnel) {
-//		this.sshTunnel = sshTunnel;
-//	}
-//	
-//	/**
-//	 * Set the remote user account that ssh will use when creating
-//	 * the ssh tunnel.
-//	 * 
-//	 * @param sshRemoteUser the ssh remote user account
-//	 */
-//	public void setSshRemoteUser(String sshRemoteUser) {
-//		this.sshRemoteUser = sshRemoteUser;
-//	}
+	/**
+	 * Set whether or not an ssh tunnel will be used.
+	 * Defaults to false.  If true, an ssh tunnel will be
+	 * used to allow a port on the local machine to connect
+	 * to the remote webapp port on the webapp host machine.
+	 * If set to true, the {@link #setSshRemoteUser(String)}
+	 * method should be called to specify which user account
+	 * will be used on the remote machine. 
+	 * 
+	 * @param sshTunnel true if ssh 
+	 */
+	public void setSshTunnel(boolean sshTunnel) {
+		this.sshTunnel = sshTunnel;
+	}
+	
+	/**
+	 * Set the remote user account that ssh will use when creating
+	 * the ssh tunnel.
+	 * 
+	 * @param sshRemoteUser the ssh remote user account
+	 */
+	public void setSshRemoteUser(String sshRemoteUser) {
+		this.sshRemoteUser = sshRemoteUser;
+	}
 
 	private SSLSocketFactory createSocketFactory() throws IOException, GeneralSecurityException {
 		String keyStoreType = "JKS";
@@ -172,8 +170,28 @@ public class WebappSocketFactory {
 	 * @throws GeneralSecurityException
 	 */
 	public ISocket connectToWebapp() throws UnknownHostException, IOException {
-		SSLSocket socket = (SSLSocket) socketFactory.createSocket(host, port);
-		socket.setEnabledProtocols(new String[]{"TLSv1"});
-		return new SocketAdapter(socket);
+		if (sshTunnel) {
+			// Communicate over ssh tunnel.
+			// This is a bit redundant in the sense that ssh already implements
+			// authentication and encryption.  However, we have seen very
+			// strange issues creating TLS connections directly to the
+			// webapp port, even though ssh seems to work reliably. (?)
+			SshTunnelAdapter socket = new SshTunnelAdapter(socketFactory, host, port, sshRemoteUser);
+			boolean connected = false;
+			try {
+				socket.connect();
+				connected = true;
+				return socket;
+			} finally {
+				if (!connected) {
+					socket.close();
+				}
+			}
+		} else {
+			// Open TLS connection directly to webapp port.
+			SSLSocket socket = (SSLSocket) socketFactory.createSocket(host, port);
+			socket.setEnabledProtocols(new String[]{"TLSv1"});
+			return new SocketAdapter(socket);
+		}
 	}
 }

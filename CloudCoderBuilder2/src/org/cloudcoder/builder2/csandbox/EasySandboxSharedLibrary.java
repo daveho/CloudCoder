@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.model.WrapperMode;
-import org.cloudcoder.builder2.process.ProcessUtil;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
 import org.cloudcoder.builder2.util.FileUtil;
 import org.cloudcoder.builder2.util.SingletonHolder;
@@ -85,8 +84,8 @@ public class EasySandboxSharedLibrary {
 	
 	private void build(Properties config) throws IOException {
 		// Get source code for the EasySandbox source files
-		String source1 = ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/EasySandbox.c");
-		String source2 = ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/malloc.c");
+		String source1 = org.cloudcoder.builder2.util.ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/EasySandbox.c");
+		String source2 = org.cloudcoder.builder2.util.ProcessUtil.resourceToString("org/cloudcoder/builder2/csandbox/res/malloc.c");
 		
 		this.tempDir = FileUtil.makeTempDir(config);
 		

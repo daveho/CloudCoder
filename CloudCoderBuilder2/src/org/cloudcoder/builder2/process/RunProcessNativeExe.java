@@ -70,7 +70,7 @@ public class RunProcessNativeExe {
 	}
 
 	private void build(Properties config) throws IOException {
-		String source = ProcessUtil.resourceToString("org/cloudcoder/builder2/process/res/cRunProcess.c");
+		String source = org.cloudcoder.builder2.util.ProcessUtil.resourceToString("org/cloudcoder/builder2/process/res/cRunProcess.c");
 		
 		this.tempDir = FileUtil.makeTempDir(config);
 		
