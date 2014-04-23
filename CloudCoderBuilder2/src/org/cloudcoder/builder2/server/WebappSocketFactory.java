@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,6 @@ package org.cloudcoder.builder2.server;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -52,6 +51,10 @@ public class WebappSocketFactory {
 	private String keystoreFilename;
 	private String keystorePassword;
 	private SSLSocketFactory socketFactory;
+	/*
+	private boolean sshTunnel;
+	private String sshRemoteUser;
+	*/
 
 	/**
 	 * Constructor.
@@ -80,6 +83,31 @@ public class WebappSocketFactory {
 		this.socketFactory = createSocketFactory();
 		logger.info("Builder: using keystore {}", this.keystoreFilename);
 	}
+	
+//	/**
+//	 * Set whether or not an ssh tunnel will be used.
+//	 * Defaults to false.  If true, an ssh tunnel will be
+//	 * used to allow a port on the local machine to connect
+//	 * to the remote webapp port on the webapp host machine.
+//	 * If set to true, the {@link #setSshRemoteUser(String)}
+//	 * method should be called to specify which user account
+//	 * will be used on the remote machine. 
+//	 * 
+//	 * @param sshTunnel true if ssh 
+//	 */
+//	public void setSshTunnel(boolean sshTunnel) {
+//		this.sshTunnel = sshTunnel;
+//	}
+//	
+//	/**
+//	 * Set the remote user account that ssh will use when creating
+//	 * the ssh tunnel.
+//	 * 
+//	 * @param sshRemoteUser the ssh remote user account
+//	 */
+//	public void setSshRemoteUser(String sshRemoteUser) {
+//		this.sshRemoteUser = sshRemoteUser;
+//	}
 
 	private SSLSocketFactory createSocketFactory() throws IOException, GeneralSecurityException {
 		String keyStoreType = "JKS";
@@ -143,9 +171,9 @@ public class WebappSocketFactory {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public Socket connectToWebapp() throws UnknownHostException, IOException {
+	public ISocket connectToWebapp() throws UnknownHostException, IOException {
 		SSLSocket socket = (SSLSocket) socketFactory.createSocket(host, port);
 		socket.setEnabledProtocols(new String[]{"TLSv1"});
-		return socket;
+		return new SocketAdapter(socket);
 	}
 }

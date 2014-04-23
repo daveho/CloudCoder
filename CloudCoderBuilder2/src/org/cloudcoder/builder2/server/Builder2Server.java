@@ -70,7 +70,7 @@ public class Builder2Server implements Runnable {
 							// The server loop has waited too long to receive the
 							// problem id / keepalive signal.  Force a reconnect.
 							logger.warn("Watchdog: {} ms without keepalive, forcing reconnect", waitTime);
-							Socket s = socket;
+							ISocket s = socket;
 							if (s != null) {
 								try {
 									s.close();
@@ -95,7 +95,7 @@ public class Builder2Server implements Runnable {
     private NoConnectTimer noConnectTimer;
     private WebappSocketFactory webappSocketFactory;
     private Builder2 builder2;
-    private volatile Socket socket;
+    private volatile ISocket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private Thread watchdogThread;
@@ -188,7 +188,7 @@ public class Builder2Server implements Runnable {
         }
     }
 
-    private Socket createSecureSocket() throws IOException, GeneralSecurityException {
+    private ISocket createSecureSocket() throws IOException, GeneralSecurityException {
         return webappSocketFactory.connectToWebapp();
     }
 
@@ -243,7 +243,7 @@ public class Builder2Server implements Runnable {
     			// Close the socket that the server loop is using
     			// to communicate with the webapp.
     			// Rude, but effective.
-    			Socket s = socket;
+    			ISocket s = socket;
     			if (s != null) {
     				s.close();
     			}
