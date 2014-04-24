@@ -52,7 +52,10 @@ public class Builder2Daemon implements IDaemon {
 		}
 	}
 	
-	static class Options {
+	/**
+	 * Options describing how to connect to the webapp.
+	 */
+	public static class Options {
 		private Properties config;
 
 		public Options(Properties config) {
@@ -73,6 +76,10 @@ public class Builder2Daemon implements IDaemon {
 			return Integer.parseInt(config.getProperty("cloudcoder.submitsvc.oop.numThreads", "2"));
 		}
 		
+		public boolean useSSL() {
+			return Boolean.parseBoolean(config.getProperty("cloudcoder.submitsvc.oop.ssl.useSSL", "true"));
+		}
+		
 		public String getKeystoreFilename() {
 			return config.getProperty("cloudcoder.submitsvc.ssl.keystore", "defaultkeystore.jks");
 		}
@@ -82,11 +89,11 @@ public class Builder2Daemon implements IDaemon {
 		}
 		
 		public boolean useSshTunnel() {
-			return Boolean.valueOf(config.getProperty("cloudcoder.submitsvc.ssl.ssh.useTunnel", "false"));
+			return Boolean.valueOf(config.getProperty("cloudcoder.submitsvc.oop.ssh.useTunnel", "false"));
 		}
 		
 		public String getSshRemoteUser() {
-			return config.getProperty("cloudcoder.submitsvc.ssl.ssh.remoteUser", "");
+			return config.getProperty("cloudcoder.submitsvc.oop.ssh.remoteUser", "");
 		}
 	}
 
@@ -133,6 +140,7 @@ public class Builder2Daemon implements IDaemon {
 		// connections to the webapp.
 		WebappSocketFactory webappSocketFactory;
 		try {
+			/*
 			webappSocketFactory = new WebappSocketFactory(
 					options.getAppHost(),
 					options.getAppPort(),
@@ -142,6 +150,8 @@ public class Builder2Daemon implements IDaemon {
 				webappSocketFactory.setSshTunnel(true);
 				webappSocketFactory.setSshRemoteUser(options.getSshRemoteUser());
 			}
+			*/
+			webappSocketFactory = new WebappSocketFactory(options);
 		} catch (Exception e) {
 			logger.error("Could not create WebappSocketFactory", e);
 			throw new IllegalStateException("Could not create WebappSocketFactory", e);

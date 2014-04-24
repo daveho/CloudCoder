@@ -43,7 +43,7 @@ public class SshTunnelAdapter implements ISocket {
 	private static final int LOCAL_PORT_RANGE_START = 10000;
 	private static AtomicInteger localPortAllocator = new AtomicInteger(LOCAL_PORT_RANGE_START);
 	
-	private SSLSocketFactory socketFactory;
+	private ISocketFactory socketFactory;
 	private String host;
 	private int port;
 	private String sshRemoteUser;
@@ -65,7 +65,7 @@ public class SshTunnelAdapter implements ISocket {
 	 * @param port           the remote port
 	 * @param sshRemoteUser  the remote user (used to create the ssh tunnel)
 	 */
-	public SshTunnelAdapter(SSLSocketFactory socketFactory, String host, int port, String sshRemoteUser) {
+	public SshTunnelAdapter(ISocketFactory socketFactory, String host, int port, String sshRemoteUser) {
 		this.socketFactory = socketFactory;
 		this.host = host;
 		this.port = port;
