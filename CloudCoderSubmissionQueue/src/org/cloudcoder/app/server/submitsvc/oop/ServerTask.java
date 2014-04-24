@@ -18,8 +18,10 @@
 package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.cloudcoder.app.server.model.HealthDataSingleton;
@@ -61,12 +63,25 @@ public class ServerTask implements Runnable {
 	private WorkerTaskSet workerTaskSet;
 	private volatile boolean shutdownRequested;
 	private Thread healthMonitorThread;
+	private boolean usingSSL;
+	private String hostName;
 	
-	public ServerTask(ServerSocket serverSocket) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param serverSocket ServerSocket from which connections can be accepted
+	 * @param usingSSL     true if the client connections are authenticated/encrypted using SSL;
+	 *                     if false, we will reject connections originating from the
+	 *                     external network
+	 * @param hostName     the (external) hostname of this host 
+	 */
+	public ServerTask(ServerSocket serverSocket, boolean usingSSL, String hostName) {
 		this.submissionQueue = new LinkedBlockingQueue<OOPBuildServiceSubmission>();
 		this.serverSocket = serverSocket;
 		this.workerTaskSet = new WorkerTaskSet();
 		this.shutdownRequested = false;
+		this.usingSSL = usingSSL;
+		this.hostName = hostName;
 	}
 	
 	public int getNumWorkerTasks() {
@@ -83,16 +98,31 @@ public class ServerTask implements Runnable {
 		healthMonitorThread = new Thread(new HealthMonitorTask());
 		healthMonitorThread.start();
 		
+		
 		try {
+			InetAddress localHost = InetAddress.getByName("localhost");
+			InetAddress hostAddress = InetAddress.getByName(hostName);
+			
 			while (!shutdownRequested) {
 				Socket clientSocket = serverSocket.accept();
 				
-				logger.info("OOP build service: accepting connection from {}", clientSocket.getInetAddress());
-				
-				// create worker task and thread
-				workerTaskSet.createWorker(clientSocket, submissionQueue);
+				InetAddress clientAddress = clientSocket.getInetAddress();
+				logger.info("OOP build service: connection attempt from {}", clientAddress);
+
+				// If we're not using SSL, then don't accept connections from
+				// arbitrary client addresses.  An SSH tunnel should be used,
+				// which would cause the client address to be localhost or
+				// possibly the server's IP address.
+				if (!usingSSL && !clientAddress.equals(localHost) && !clientAddress.equals(hostAddress)) {
+					logger.info("Rejecting non-SSL connection from {}", clientAddress);
+				} else {
+					// create worker task and thread
+					workerTaskSet.createWorker(clientSocket, submissionQueue);
+				}
 			}
 		
+		} catch (UnknownHostException e) {
+			
 		} catch (IOException e) {
 			if (!shutdownRequested) {
 			    logger.error("IOException waiting for connections", e);

@@ -77,6 +77,7 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private volatile ServerTask serverTask;
 	private Thread serverThread;
 	private boolean useSSL;
+	private String hostName;
 	private String keystoreFilename;
 	private String keystorePassword;
 
@@ -212,13 +213,11 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	    } else {
 	    	// Server will listen for plain (unencrypted/unauthenticated)
 	    	// TCP connections.  This is fine if, for example, the builders
-	    	// are using SSH tunnels to connect.  In any case, we will
-	    	// only listen for non-SSL connections on localhost (not from
-	    	// the external network.)
-	    	serverSocket = new ServerSocket(port, -1, InetAddress.getByName("localhost"));
+	    	// are using SSH tunnels to connect.
+	    	serverSocket = new ServerSocket(port);
 	    }
 		
-		serverTask = new ServerTask(serverSocket);
+		serverTask = new ServerTask(serverSocket, useSSL, hostName);
 		serverThread = new Thread(serverTask);
 		serverThread.start();
 		logger.info("Out of process submit service server thread started");
@@ -242,6 +241,8 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 			this.useSSL = Boolean.parseBoolean(
 					getContextParameter(servletContext, "cloudcoder.submitsvc.oop.ssl.useSSL", "true"));
 			logger.info("OOP build service: useSSL={}", useSSL);
+			
+			this.hostName = getContextParameter(servletContext, "cloudcoder.submitsvc.oop.host", "localhost");
 			
 			if (useSSL) {
 				// Determine keystore filename and password
