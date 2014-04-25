@@ -131,6 +131,7 @@ public class SshTunnelAdapter implements ISocket {
 	@Override
 	public void close() throws IOException {
 		// Destroy the ssh tunnel subprocess
+		logger.info("Destroying ssh tunnel process");
 		proc.destroy();
 		boolean exited = false;
 		while (!exited) {

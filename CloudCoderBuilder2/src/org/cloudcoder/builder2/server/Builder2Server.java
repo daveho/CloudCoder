@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.daemon.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +73,7 @@ public class Builder2Server implements Runnable {
 							ISocket s = socket;
 							if (s != null) {
 								try {
+									logger.warn("Watchdog: attempting to forcibly close socket...");
 									s.close();
 								} catch (IOException e) {
 									logger.warn("Watchdog: error closing socket", e);
@@ -120,11 +121,15 @@ public class Builder2Server implements Runnable {
      * The main server loop.
      */
     public void run() {
-    	watchdogThread = new Thread(new Watchdog());
-    	watchdogThread.start();
-        while (!shutdownRequested) {
-            runOnce();
-        }
+    	try {
+	    	watchdogThread = new Thread(new Watchdog());
+	    	watchdogThread.start();
+	        while (!shutdownRequested) {
+	            runOnce();
+	        }
+    	} catch (Throwable e) {
+    		logger.error("Fatal exception in Builder2Server thread?", e);
+    	}
     }
 
     /**
@@ -138,14 +143,20 @@ public class Builder2Server implements Runnable {
                 return;
             }
 
+            // Read a message from the webapp, which will begin
+            // with an Integer problem id.
             working = false;
-            waitStart.set(System.currentTimeMillis()); // record the start time of the wait
+            long start = System.currentTimeMillis();
+			waitStart.set(start); // record the start time of the wait
+			//logger.info("Starting wait at {}", start);
             Integer problemId = safeReadObject();
             waitStart.set(-1L); // problem id or keepalive signal received, wait finished
+            //logger.info("Received problem id/keepalive from server at {}", System.currentTimeMillis());
             working = true;
 
-            // The CloudCoder app may send us a negative problem id as
-            // a keepalive signal.  We can just ignore these.
+            // The CloudCoder app will send us a negative problem id as
+            // a keepalive signal when there are no submissions that need building/testing.
+            // We can just ignore these.
             if (problemId < 0) {
                 return;
             }
@@ -204,8 +215,19 @@ public class Builder2Server implements Runnable {
             noConnectTimer.connected();
             this.out = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
+        	// It is possible to get an IOException when creating the ObjectInputStream
+        	// (e.g., if we get an immediate EOF).  Close the socket and its
+        	// input/output streams (if any) and set them to null to inform runOnce() that
+        	// there is no active connection.
+        	IOUtil.closeQuietly(this.socket);
+        	IOUtil.closeQuietly(this.in);
+        	IOUtil.closeQuietly(this.out);
+        	this.socket = null;
+        	this.in = null;
+        	this.out = null;
+        	
             // ClientCoder server may not be running right now...try again soon
-            //logger.error("Cannot connect to CloudCoder server");
+        	logger.info("Failed attempt to connect to server at {}", System.currentTimeMillis());
             noConnectTimer.notConnected(e);
             try {
                 Thread.sleep(5000);
