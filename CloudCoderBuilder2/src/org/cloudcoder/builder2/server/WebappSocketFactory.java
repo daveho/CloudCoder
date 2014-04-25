@@ -19,6 +19,7 @@ package org.cloudcoder.builder2.server;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -34,6 +35,7 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.IOUtils;
+import org.cloudcoder.builder2.server.Builder2Daemon.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,75 +48,27 @@ import org.slf4j.LoggerFactory;
 public class WebappSocketFactory {
 	private static final Logger logger = LoggerFactory.getLogger(WebappSocketFactory.class);
 
-	private String host;
-	private int port;
-	private String keystoreFilename;
-	private String keystorePassword;
-	private SSLSocketFactory socketFactory;
-	private boolean sshTunnel;
-	private String sshRemoteUser;
-
+	private Options options;
+	
 	/**
 	 * Constructor.
 	 * 
-	 * @param host               the host on which the webapp is running
-	 * @param port               the port the webapp is using to listen for connections from builders
-	 * @param keystoreFilename   the name of the keystore file containing the key(s) needed
-	 *                           for secure communication with the webapp
-	 * @param keystorePassword   the keystore password
-	 * @throws IOException
-	 * @throws GeneralSecurityException
+	 * @param options the {@link Options} describing how to connect to the webapp
 	 */
-	public WebappSocketFactory(String host, int port, String keystoreFilename, String keystorePassword)
-			throws IOException, GeneralSecurityException {
-		this.host = host;
-		this.port = port;
-		this.keystoreFilename = keystoreFilename;
-		this.keystorePassword = keystorePassword;
-		if (this.getClass().getClassLoader().getResource(keystoreFilename)==null) {
-		    //XXX this is a hack so that we can distribute jarfiles that communicate securely
-		    //TODO better documentation of generating new keystores
-		    // also should figure out how to generate keystores from Java programmatically
-		    this.keystoreFilename="defaultkeystore.jks";
-		    this.keystorePassword="changeit";
-		}
-		this.socketFactory = createSocketFactory();
-		logger.info("Builder: using keystore {}", this.keystoreFilename);
-	}
-	
-	/**
-	 * Set whether or not an ssh tunnel will be used.
-	 * Defaults to false.  If true, an ssh tunnel will be
-	 * used to allow a port on the local machine to connect
-	 * to the remote webapp port on the webapp host machine.
-	 * If set to true, the {@link #setSshRemoteUser(String)}
-	 * method should be called to specify which user account
-	 * will be used on the remote machine. 
-	 * 
-	 * @param sshTunnel true if ssh 
-	 */
-	public void setSshTunnel(boolean sshTunnel) {
-		this.sshTunnel = sshTunnel;
-	}
-	
-	/**
-	 * Set the remote user account that ssh will use when creating
-	 * the ssh tunnel.
-	 * 
-	 * @param sshRemoteUser the ssh remote user account
-	 */
-	public void setSshRemoteUser(String sshRemoteUser) {
-		this.sshRemoteUser = sshRemoteUser;
+	public WebappSocketFactory(Options options) {
+		this.options = options;
 	}
 
 	private SSLSocketFactory createSocketFactory() throws IOException, GeneralSecurityException {
 		String keyStoreType = "JKS";
+		String keystoreFilename = options.getKeystoreFilename();
 		InputStream keyStoreInputStream = this.getClass().getClassLoader().getResourceAsStream(keystoreFilename);
 		if (keyStoreInputStream == null) {
 			throw new IOException("Could not load keystore " + keystoreFilename);
 		}
 
 		KeyStore keyStore;
+		String keystorePassword = options.getKeystorePassword();
 		try {
 			keyStore = KeyStore.getInstance(keyStoreType);
 			keyStore.load(keyStoreInputStream, keystorePassword.toCharArray());
@@ -162,21 +116,35 @@ public class WebappSocketFactory {
 	}
 
 	/**
-	 * Create a secure connection to the webapp.
+	 * Create a connection to the webapp.
+	 * Note that a connection could be directly secured by SSL/TLS,
+	 * or indirectly secured by an ssh tunnel, or both. 
 	 * 
-	 * @return Socket through which the builder can communicate with the webapp
+	 * @return ISocket through which the builder can communicate with the webapp
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public ISocket connectToWebapp() throws UnknownHostException, IOException {
-		if (sshTunnel) {
+	public ISocket connectToWebapp() throws UnknownHostException, IOException, GeneralSecurityException {
+		// Create a socket factory that will create a socket to
+		// the webapp (either directly or via the ssh tunnel).
+		ISocketFactory socketFactory;
+		if (options.useSSL()) {
+			socketFactory = new SSLSocketFactoryAdapter(createSocketFactory());
+		} else {
+			socketFactory = new PlainSocketFactory();
+		}
+		
+		// Depending on whether or not an ssh tunnel is being created,
+		// use the socket factory to create the actual ISocket connection to the webapp.
+		if (options.useSshTunnel()) {
 			// Communicate over ssh tunnel.
 			// This is a bit redundant in the sense that ssh already implements
 			// authentication and encryption.  However, we have seen very
 			// strange issues creating TLS connections directly to the
 			// webapp port, even though ssh seems to work reliably. (?)
-			SshTunnelAdapter socket = new SshTunnelAdapter(socketFactory, host, port, sshRemoteUser);
+			SshTunnelAdapter socket =
+					new SshTunnelAdapter(socketFactory, options.getAppHost(), options.getAppPort(), options.getSshRemoteUser());
 			boolean connected = false;
 			try {
 				socket.connect();
@@ -188,9 +156,8 @@ public class WebappSocketFactory {
 				}
 			}
 		} else {
-			// Open TLS connection directly to webapp port.
-			SSLSocket socket = (SSLSocket) socketFactory.createSocket(host, port);
-			socket.setEnabledProtocols(new String[]{"TLSv1"});
+			// Open connection directly to webapp port.
+			Socket socket = socketFactory.createSocket(options.getAppHost(), options.getAppPort());
 			return new SocketAdapter(socket);
 		}
 	}

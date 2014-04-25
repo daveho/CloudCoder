@@ -19,6 +19,7 @@ package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
@@ -39,6 +40,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -74,6 +76,8 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 
 	private volatile ServerTask serverTask;
 	private Thread serverThread;
+	private boolean useSSL;
+	private String hostName;
 	private String keystoreFilename;
 	private String keystorePassword;
 
@@ -192,22 +196,28 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	}
 	
 	public void start(int port) throws IOException {
-		//ServerSocket serverSocket = new ServerSocket(port);
 	    ServerSocket serverSocket = null;
 		
-		try {
-	        serverSocket=createSSLServerSocket(port);
-	        if (serverSocket==null) {
-	            logger.error("Null SSLServerSocket");
-	            throw new RuntimeException("Null SSLServerSocket");
-	        }
-	        
-		} catch (Exception e) {
-		    logger.error("Error while creating SSLServerSocket", e);
-		    throw new RuntimeException(e);
-		}
+	    if (useSSL) {
+			try {
+		        serverSocket=createSSLServerSocket(port);
+		        if (serverSocket==null) {
+		            logger.error("Null SSLServerSocket");
+		            throw new RuntimeException("Null SSLServerSocket");
+		        }
+		        
+			} catch (Exception e) {
+			    logger.error("Error while creating SSLServerSocket", e);
+			    throw new RuntimeException(e);
+			}
+	    } else {
+	    	// Server will listen for plain (unencrypted/unauthenticated)
+	    	// TCP connections.  This is fine if, for example, the builders
+	    	// are using SSH tunnels to connect.
+	    	serverSocket = new ServerSocket(port);
+	    }
 		
-		serverTask = new ServerTask(serverSocket);
+		serverTask = new ServerTask(serverSocket, useSSL, hostName);
 		serverThread = new Thread(serverTask);
 		serverThread.start();
 		logger.info("Out of process submit service server thread started");
@@ -217,24 +227,38 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		serverTask.shutdown();
 		serverThread.join();
 	}
+	
+	private static String getContextParameter(ServletContext ctx, String propName, String defValue) {
+		String value = ctx.getInitParameter(propName);
+		return value != null ? value : defValue;
+	}
 
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		try {
-			// Determine keystore filename and password
-			keystoreFilename = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore");
-			if (keystoreFilename == null) {
-				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
-			}
-			keystorePassword = event.getServletContext().getInitParameter("cloudcoder.submitsvc.ssl.keystore.password");
-			if (keystorePassword == null) {
-				throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
-			}
+			ServletContext servletContext = event.getServletContext();
+
+			this.useSSL = Boolean.parseBoolean(
+					getContextParameter(servletContext, "cloudcoder.submitsvc.oop.ssl.useSSL", "true"));
+			logger.info("OOP build service: useSSL={}", useSSL);
 			
-			System.out.println("keystore=" + keystoreFilename + ",password=" + keystorePassword);
+			this.hostName = getContextParameter(servletContext, "cloudcoder.submitsvc.oop.host", "localhost");
+			
+			if (useSSL) {
+				// Determine keystore filename and password
+				keystoreFilename = servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore");
+				if (keystoreFilename == null) {
+					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
+				}
+				keystorePassword = servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore.password");
+				if (keystorePassword == null) {
+					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
+				}
+				System.out.println("keystore=" + keystoreFilename + ",password=" + keystorePassword);
+			}
 			
 			// See if a non-default port was specified
-			String p = event.getServletContext().getInitParameter("cloudcoder.submitsvc.oop.port");
+			String p = servletContext.getInitParameter("cloudcoder.submitsvc.oop.port");
 			int port = (p != null) ? Integer.parseInt(p) : DEFAULT_PORT;
 			
 			start(port);
