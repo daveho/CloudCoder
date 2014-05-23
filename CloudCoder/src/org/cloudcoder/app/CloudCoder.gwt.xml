@@ -24,6 +24,9 @@
   <!-- Other module inherits                                      -->
   <inherits name='edu.ycp.cs.dh.acegwt.AceGWT'/>
   
+  <!-- Use UTCDateBox and UTCTimeBox from gwt-traction -->
+  <inherits name='com.tractionsoftware.gwt.user.UTCDateTime'/>
+  
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.cloudcoder.app.client.CloudCoder'/>
 

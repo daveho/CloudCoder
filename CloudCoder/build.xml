@@ -25,6 +25,9 @@
     <pathelement location="war/WEB-INF/classes"/>
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
+  	
+  	<!-- GWT-traction (http://tractionsoftware.github.io/gwt-traction/) -->
+  	<pathelement location="srclib/gwt-traction-1.5.8.jar"/>
   </path>
 
   <target name="libs" description="Copy libs to WEB-INF/lib">

@@ -275,3 +275,13 @@
     margin-top: 4px;
  	float: right;
  }
+ 
+ /**
+  * Style for labeled date/time picker.
+  * Used in SetDatesPanel (for setting the assigned/due dates
+  * of many problems at once).
+  */
+.cc-labeledDateTimePicker {
+	display: inline-block;
+	margin: 10px 10px;
+}

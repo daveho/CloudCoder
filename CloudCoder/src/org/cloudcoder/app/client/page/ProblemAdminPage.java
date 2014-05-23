@@ -31,6 +31,7 @@ import org.cloudcoder.app.client.view.ImportCourseDialogBox;
 import org.cloudcoder.app.client.view.ImportProblemDialog;
 import org.cloudcoder.app.client.view.OkDialogBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
+import org.cloudcoder.app.client.view.SetDatesDialogBox;
 import org.cloudcoder.app.client.view.ShareManyProblemsDialog;
 import org.cloudcoder.app.client.view.ShareProblemDialog;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -84,6 +85,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 		IMPORT_COURSE("Import course", "Import all exercises from another course"),
 		MAKE_VISIBLE("Make visible", "Make selected exerise(s) visible to students"),
 		MAKE_INVISIBLE("Make invisible", "Make selected exercise(s) invisible to students"),
+		SET_DATES("Set dates/times", "Configure when selected exercise(s) are assigned and due"),
 		MAKE_PERMISSIVE("Make permissive", "Change license of exercises to a permissive Create Commons license"),
 		QUIZ("Quiz", "Give selected exercise as a quiz");
 		
@@ -270,6 +272,10 @@ public class ProblemAdminPage extends CloudCoderPage {
 				doChangeVisibility(action == ProblemAction.MAKE_VISIBLE);
 				break;
 				
+			case SET_DATES:
+				doSetDates();
+				break;
+				
 			case MAKE_PERMISSIVE:
 			    doMakePermissive();
 			    break;
@@ -332,6 +338,20 @@ public class ProblemAdminPage extends CloudCoderPage {
                 	}
 				});
             }
+		}
+		
+		private void doSetDates() {
+			SetDatesDialogBox dialog = new SetDatesDialogBox();
+			
+			Runnable callback = new Runnable() {
+				@Override
+				public void run() {
+					getSession().add(StatusMessage.information("Should be setting dates"));
+				}
+			};
+			
+			dialog.setOnSetDatesCallback(callback);
+			dialog.center();
 		}
 		
 		private void doShareProblem2() {
