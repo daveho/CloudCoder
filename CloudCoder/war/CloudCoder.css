@@ -285,3 +285,19 @@
 	display: inline-block;
 	margin: 10px 10px;
 }
+
+/**
+ * Increase the z-index for date box popups so that they
+ * are above the current dialog (which has a high z-index to
+ * ensure that it is visible above any Ace editor instance.
+ */
+.dateBoxPopup {
+	z-index: 1002 !important;
+}
+/*
+ * Same goes for the TimeBox menu (needs to float above
+ * dialogs).
+ */
+.gwt-TimeBox-menu {
+	z-index: 1002 !important;
+}
