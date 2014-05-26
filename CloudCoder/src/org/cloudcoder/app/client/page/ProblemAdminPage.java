@@ -356,34 +356,34 @@ public class ProblemAdminPage extends CloudCoderPage {
 					}
 					doUpdateProblemDates(selected);
 				}
-
-				private void doUpdateProblemDates(final Problem[] selected) {
-					RPC.getCoursesAndProblemsService.updateProblemDates(selected, new AsyncCallback<OperationResult>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							if (caught instanceof CloudCoderAuthenticationException) {
-								recoverFromServerSessionTimeout(new Runnable() {
-									@Override
-									public void run() {
-										doUpdateProblemDates(selected);
-									}
-								});
-							} else {
-								addSessionObject(StatusMessage.error("Could not update exercises", caught));
-							}
-						}
-						
-						@Override
-						public void onSuccess(OperationResult result) {
-							addSessionObject(StatusMessage.fromOperationResult(result));
-							reloadProblems(getCurrentCourse());
-						}
-					});;
-				}
 			};
 			
 			dialog.setOnSetDatesCallback(callback);
 			dialog.center();
+		}
+
+		private void doUpdateProblemDates(final Problem[] selected) {
+			RPC.getCoursesAndProblemsService.updateProblemDates(selected, new AsyncCallback<OperationResult>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					if (caught instanceof CloudCoderAuthenticationException) {
+						recoverFromServerSessionTimeout(new Runnable() {
+							@Override
+							public void run() {
+								doUpdateProblemDates(selected);
+							}
+						});
+					} else {
+						addSessionObject(StatusMessage.error("Could not update exercises", caught));
+					}
+				}
+				
+				@Override
+				public void onSuccess(OperationResult result) {
+					addSessionObject(StatusMessage.fromOperationResult(result));
+					reloadProblems(getCurrentCourse());
+				}
+			});;
 		}
 		
 		private void doShareProblem2() {
