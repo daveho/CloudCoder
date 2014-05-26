@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import java.util.Date;
+
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -24,13 +26,15 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.InlineHTML;
 import com.tractionsoftware.gwt.user.client.ui.UTCDateBox;
 import com.tractionsoftware.gwt.user.client.ui.UTCTimeBox;
 
 /**
  * Attempt at a date/time picker widget using UTCDateBox and
- * UTCTimeBox from GWT-Traction. 
+ * UTCTimeBox from GWT-Traction.  <em>Important</em>: this
+ * widget allows the user to pick a UTC time, and the result
+ * will likely need to be adjusted for the local timezone
+ * (which can be done with the {@link #utcToLocal(long)} method. 
  * 
  * @author David Hovemeyer
  */
@@ -90,5 +94,21 @@ public class DateTimePicker extends Composite implements HasValueChangeHandlers<
 		if (fireEvents) {
 			ValueChangeEvent.fire(this, value);
 		}
+	}
+	
+	/**
+	 * Convert a time in UTC to a local time.
+	 * E.g., convert 9:00 AM in UTC to 9:00 AM in the local
+	 * timezone.  Note that this is a <em>different time</em>
+	 * in the sense of not being the same instant as the UTC
+	 * time, which makes sense if the user thinks he/she
+	 * is editing a local time rather than a UTC time.
+	 * 
+	 * @param utcTime  a UTC time
+	 * @return a local time (adjusting for the current time zone offset)
+	 */
+	public static long utcToLocal(long utcTime) {
+		Date local = UTCDateBox.utc2date(utcTime);
+		return local.getTime();
 	}
 }

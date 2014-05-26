@@ -376,6 +376,7 @@ public class ProblemAdminPage extends CloudCoderPage {
 						@Override
 						public void onSuccess(OperationResult result) {
 							addSessionObject(StatusMessage.fromOperationResult(result));
+							reloadProblems(getCurrentCourse());
 						}
 					});;
 				}

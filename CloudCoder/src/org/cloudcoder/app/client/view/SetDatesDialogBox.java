@@ -88,13 +88,13 @@ public class SetDatesDialogBox extends DialogBox {
 	 * @return the "when assigned" date/time
 	 */
 	public long getWhenAssigned() {
-		return setDatesPanel.getWhenAssigned();
+		return DateTimePicker.utcToLocal(setDatesPanel.getWhenAssigned());
 	}
 
 	/**
 	 * @return the "when due" date/time
 	 */
 	public long getWhenDue() {
-		return setDatesPanel.getWhenDue();
+		return DateTimePicker.utcToLocal(setDatesPanel.getWhenDue());
 	}
 }
