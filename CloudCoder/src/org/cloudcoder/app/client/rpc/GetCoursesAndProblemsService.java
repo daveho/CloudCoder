@@ -300,4 +300,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         or null if the operation hasn't completed yet
 	 */
 	public OperationResult checkImportAllProblemsFromCourse();
+	
+	/**
+	 * Update the "when assigned" and "when due" dates/times for
+	 * given {@link Problem}s.
+	 * 
+	 * @param problems list of {@link Problem}s whose dates/times should be changed
+	 * @return {@link OperationResult} indicating the success or failure
+	 *         of the operation
+	 */
+	public OperationResult updateProblemDates(Problem[] problems) throws CloudCoderAuthenticationException;
 }

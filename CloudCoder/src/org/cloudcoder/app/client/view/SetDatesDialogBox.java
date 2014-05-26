@@ -71,8 +71,8 @@ public class SetDatesDialogBox extends DialogBox {
 		
 		panel.add(buttons);
 		
-		//setGlassEnabled(true);
-		setModal(false);
+		setGlassEnabled(true);
+		setModal(false); // Necessary to allow datebox and timebox popups to receive events
 
 		setWidget(panel);
 	}
@@ -82,5 +82,19 @@ public class SetDatesDialogBox extends DialogBox {
 	 */
 	public void setOnSetDatesCallback(Runnable onSetDatesCallback) {
 		this.onSetDatesCallback = onSetDatesCallback;
+	}
+
+	/**
+	 * @return the "when assigned" date/time
+	 */
+	public long getWhenAssigned() {
+		return setDatesPanel.getWhenAssigned();
+	}
+
+	/**
+	 * @return the "when due" date/time
+	 */
+	public long getWhenDue() {
+		return setDatesPanel.getWhenDue();
 	}
 }

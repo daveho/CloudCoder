@@ -341,12 +341,43 @@ public class ProblemAdminPage extends CloudCoderPage {
 		}
 		
 		private void doSetDates() {
-			SetDatesDialogBox dialog = new SetDatesDialogBox();
+			final SetDatesDialogBox dialog = new SetDatesDialogBox();
 			
 			Runnable callback = new Runnable() {
 				@Override
 				public void run() {
-					getSession().add(StatusMessage.information("Should be setting dates"));
+					long whenAssigned = dialog.getWhenAssigned();
+					long whenDue = dialog.getWhenDue();
+					Problem[] selected = getSession().get(Problem[].class);
+					//getSession().add(StatusMessage.information("Should be setting dates"));
+					for (Problem problem : selected) {
+						problem.setWhenAssigned(whenAssigned);
+						problem.setWhenDue(whenDue);
+					}
+					doUpdateProblemDates(selected);
+				}
+
+				private void doUpdateProblemDates(final Problem[] selected) {
+					RPC.getCoursesAndProblemsService.updateProblemDates(selected, new AsyncCallback<OperationResult>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							if (caught instanceof CloudCoderAuthenticationException) {
+								recoverFromServerSessionTimeout(new Runnable() {
+									@Override
+									public void run() {
+										doUpdateProblemDates(selected);
+									}
+								});
+							} else {
+								addSessionObject(StatusMessage.error("Could not update exercises", caught));
+							}
+						}
+						
+						@Override
+						public void onSuccess(OperationResult result) {
+							addSessionObject(StatusMessage.fromOperationResult(result));
+						}
+					});;
 				}
 			};
 			

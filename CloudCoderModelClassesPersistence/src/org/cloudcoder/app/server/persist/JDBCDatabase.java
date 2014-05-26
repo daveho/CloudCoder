@@ -77,6 +77,7 @@ import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
+import org.cloudcoder.app.server.persist.txn.SetProblemDates;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.txn.StoreProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
@@ -465,6 +466,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public OperationResult importAllProblemsFromCourse(Course source, Course dest, User instructor) {
 		return databaseRun(new ImportAllProblemsFromCourse(source, dest, instructor));
+	}
+	
+	@Override
+	public OperationResult updateProblemDates(User authenticatedUser, Problem[] problems) {
+		return databaseRun(new SetProblemDates(authenticatedUser, problems));
 	}
 
 	/**

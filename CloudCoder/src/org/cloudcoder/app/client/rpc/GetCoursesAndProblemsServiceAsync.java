@@ -99,4 +99,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 	void checkImportAllProblemsFromCourse(
 			AsyncCallback<OperationResult> callback);
 
+	void updateProblemDates(Problem[] problems,
+			AsyncCallback<OperationResult> callback);
+
 }

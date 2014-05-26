@@ -674,4 +674,15 @@ public interface IDatabase {
 	 */
 	public OperationResult importAllProblemsFromCourse(Course source, Course dest, User instructor);
 
+	/**
+	 * Update the when assigned/when due dates/times of all of the
+	 * given {@link Problem}s.  The authenticated user must be an instructor
+	 * of the course in which the problems are assigned.
+	 * 
+	 * @param authenticatedUser the authenticated user
+	 * @param problems          the problems to update
+	 * @return an {@link OperationResult} indicating the success or failure of the operation
+	 */
+	public OperationResult updateProblemDates(User authenticatedUser, Problem[] problems);
+
 }

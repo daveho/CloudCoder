@@ -640,4 +640,12 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
     	}
 		return poll;
     }
+    
+    @Override
+    public OperationResult updateProblemDates(Problem[] problems) throws CloudCoderAuthenticationException {
+    	// Get authenticated user
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+
+    	return Database.getInstance().updateProblemDates(authenticatedUser, problems);
+    }
 }
