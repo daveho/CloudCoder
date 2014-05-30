@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.cloudcoder.builder2.javacompiler.JavaCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.BytecodeExecutable;
 import org.cloudcoder.builder2.model.Command;
