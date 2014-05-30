@@ -111,4 +111,16 @@ public class DateTimePicker extends Composite implements HasValueChangeHandlers<
 		Date local = UTCDateBox.utc2date(utcTime);
 		return local.getTime();
 	}
+
+	/**
+	 * Convert a local time to a time in UTC.
+	 * This does a conversion that is the opposite of
+	 * {@link #utcToLocal(long)}.
+	 *
+	 * @param value a local time
+	 * @return UTC time
+	 */
+	public static Long localToUtc(long value) {
+		return UTCDateBox.date2utc(new Date(value));
+	}
 }

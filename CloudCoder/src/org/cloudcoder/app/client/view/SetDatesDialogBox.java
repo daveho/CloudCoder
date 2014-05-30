@@ -44,6 +44,10 @@ public class SetDatesDialogBox extends DialogBox {
 		this.setDatesPanel = new SetDatesPanel();
 		panel.add(setDatesPanel);
 		
+		long now = System.currentTimeMillis();
+		setDatesPanel.setWhenAssigned(now);
+		setDatesPanel.setWhenDue(now + 48L*60*60*1000);
+		
 		FlowPanel buttons = new FlowPanel();
 		
 		Button cancelButton = new Button("Cancel");
@@ -88,13 +92,15 @@ public class SetDatesDialogBox extends DialogBox {
 	 * @return the "when assigned" date/time
 	 */
 	public long getWhenAssigned() {
-		return DateTimePicker.utcToLocal(setDatesPanel.getWhenAssigned());
+//		return DateTimePicker.utcToLocal(setDatesPanel.getWhenAssigned());
+		return setDatesPanel.getWhenAssigned();
 	}
 
 	/**
 	 * @return the "when due" date/time
 	 */
 	public long getWhenDue() {
-		return DateTimePicker.utcToLocal(setDatesPanel.getWhenDue());
+//		return DateTimePicker.utcToLocal(setDatesPanel.getWhenDue());
+		return setDatesPanel.getWhenDue();
 	}
 }

@@ -28,36 +28,61 @@ import com.google.gwt.user.client.ui.Label;
  * @author David Hovemeyer
  */
 public class SetDatesPanel extends Composite {
+	// Note: DateTimePicker picks UTC dates/times.
+	// You will see code in this class to convert to/from local time.
 	private DateTimePicker whenAssignedPicker;
 	private DateTimePicker whenDuePicker;
 	
 	/**
 	 * Constructor.
+	 * <em>Important</em>: the {@link #setWhenAssigned(long)} and
+	 * {@link #setWhenDue(long)} methods should be called before
+	 * adding this panel to a UI.
 	 */
 	public SetDatesPanel() {
 		FlowPanel panel = new FlowPanel();
 		initWidget(panel);
-		
-		long now = System.currentTimeMillis();
+		whenAssignedPicker = createLabeledDateTimePicker(panel, "When assigned:");
+		whenDuePicker = createLabeledDateTimePicker(panel, "When due:");
+	}
 
-		whenAssignedPicker = createLabeledDateTimePicker(panel, "When assigned:", now);
-		whenDuePicker = createLabeledDateTimePicker(panel, "When due:", now + 48L*60*60*1000);
+	/**
+	 * Set the "when assigned" date/time.
+	 * 
+	 * @param value the "when assigned" date/time to set
+	 */
+	public void setWhenAssigned(long value) {
+		whenAssignedPicker.setValue(DateTimePicker.localToUtc(value));
 	}
 	
+	/**
+	 * Set the "when due" date/time.
+	 * 
+	 * @param value the "when due" date/time to set
+	 */
+	public void setWhenDue(long value) {
+		whenDuePicker.setValue(DateTimePicker.localToUtc(value));
+	}
+	
+	/**
+	 * @return the "when assigned" date/time
+	 */
 	public long getWhenAssigned() {
-		return whenAssignedPicker.getValue();
+		return DateTimePicker.utcToLocal(whenAssignedPicker.getValue());
 	}
 	
+	/**
+	 * @return the "when due" date/time
+	 */
 	public long getWhenDue() {
-		return whenDuePicker.getValue();
+		return DateTimePicker.utcToLocal(whenDuePicker.getValue());
 	}
 
-	public DateTimePicker createLabeledDateTimePicker(FlowPanel panel, String labelText, long time) {
+	public DateTimePicker createLabeledDateTimePicker(FlowPanel panel, String labelText) {
 		FlowPanel div = new FlowPanel();
 		div.setStyleName("cc-labeledDateTimePicker", true);
 		div.add(new Label(labelText));
 		DateTimePicker picker = new DateTimePicker();
-		picker.setValue(time);
 		div.add(picker);
 		panel.add(div);
 		return picker;
