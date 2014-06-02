@@ -34,6 +34,7 @@ import javax.tools.ToolProvider;
 import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,9 @@ public class InMemoryJavaCompiler
 	 */
 	public InMemoryJavaCompiler() {
 		compiler = ToolProvider.getSystemJavaCompiler();
+		if (compiler == null) {
+			throw new InternalBuilderException(InMemoryJavaCompiler.class, "No Java compiler found.");
+		}
 		fm = new MemoryFileManager(compiler.getStandardFileManager(null, null, null));
 		sources = new ArrayList<JavaFileObject>();
 	}
