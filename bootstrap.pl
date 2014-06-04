@@ -98,7 +98,7 @@ GREET
 	# the jar tool.
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jre-headless", "mysql-client-$mysqlVersion",
+		cmd => ["apt-get", "-y", "install", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	
