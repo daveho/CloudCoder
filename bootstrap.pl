@@ -400,7 +400,7 @@ sub EditApache2DefaultSsl {
 	);
 	my $pair;
 	foreach my $candidate (@apacheConfCandidates) {
-		if (-e $candidate) {
+		if (-e $candidate->[0]) {
 			$pair = $candidate;
 			last;
 		}
