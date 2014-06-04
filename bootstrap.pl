@@ -391,9 +391,23 @@ sub DebconfSetSelections {
 sub EditApache2DefaultSsl {
 	my ($ccHostname) = @_;
 
-	# Edit /etc/apache2/sites-available/default-ssl to add hostname
+	# Determine Apache conf file name.
+	my @apacheConfCandidates = (
+		"/etc/apache2/sites-available/default-ssl",  # Ubuntu server 12.04 LTS, other Debian?
+		"/etc/apache2/sites-available/default-ssl.conf", # Ubuntu server 14.04 LTS
+	);
+	my $apacheConf;
+	foreach my $candidate (@apacheConfCandidates) {
+		if (-e $candidate) {
+			$apacheConf = $candidate;
+			last;
+		}
+	}
+	die "Could not find Apache configuration file!" if (! defined $apacheConf);
+
+	# Edit Apache SSL conf file to add hostname
 	# and transparent proxy support for CloudCoder webapp
-	my $in = new FileHandle("</etc/apache2/sites-available/default-ssl");
+	my $in = new FileHandle("<$apacheConf");
 	my $out = new FileHandle(">/tmp/default-ssl-modified");
 
 	my $alreadyModified = 0;
@@ -429,17 +443,16 @@ ENDPROXY
 	$out->close();
 
 	if ($alreadyModified) {
-		print "/etc/apache2/sites-available/default-ssl Already modified?\n";
+		print "$apacheConf Already modified?\n";
 		return;
 	}
 
 	if ($modCount != 2) {
-		die "/etc/apache2/sites-available/default-ssl is not in expected format\n";
+		die "$apacheConf is not in expected format\n";
 	}
 
-	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified',
-		'/etc/apache2/sites-available/cloudcoder-ssl']);
-	RunAdmin(cmd => ['ln', '-s', '/etc/apache2/sites-available/cloudcoder-ssl', '/etc/apache2/sites-enabled/cloudcoder-ssl']);
+	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified', $apacheConf]);
+	RunAdmin(cmd => ['ln', '-s', $apacheConf, '/etc/apache2/sites-enabled/cloudcoder-ssl']);
 }
 
 sub GetLatestVersion {
