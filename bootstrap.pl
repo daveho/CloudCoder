@@ -98,7 +98,7 @@ GREET
 	# the jar tool.
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-6-jre-headless", "mysql-client-$mysqlVersion",
+		cmd => ["apt-get", "-y", "install", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion",
 			"mysql-server-$mysqlVersion", "apache2"]
 	);
 	
@@ -391,9 +391,27 @@ sub DebconfSetSelections {
 sub EditApache2DefaultSsl {
 	my ($ccHostname) = @_;
 
-	# Edit /etc/apache2/sites-available/default-ssl to add hostname
+	# Determine Apache conf file name, and target sites-available target file names.
+	my @apacheConfCandidates = (
+		# Ubuntu server 12.04 LTS, other Debian?
+		["/etc/apache2/sites-available/default-ssl", "/etc/apache2/sites-enabled/cloudcoder-ssl"],
+		# Ubuntu server 14.04 LTS
+		["/etc/apache2/sites-available/default-ssl.conf", "/etc/apache2/sites-enabled/001-cloudcoder-ssl.conf"],
+	);
+	my $pair;
+	foreach my $candidate (@apacheConfCandidates) {
+		if (-e $candidate->[0]) {
+			$pair = $candidate;
+			last;
+		}
+	}
+	die "Could not find Apache configuration file!" if (! defined $pair);
+	my $apacheConf = $pair->[0];
+	my $targetConf = $pair->[1];
+
+	# Edit Apache SSL conf file to add hostname
 	# and transparent proxy support for CloudCoder webapp
-	my $in = new FileHandle("</etc/apache2/sites-available/default-ssl");
+	my $in = new FileHandle("<$apacheConf");
 	my $out = new FileHandle(">/tmp/default-ssl-modified");
 
 	my $alreadyModified = 0;
@@ -429,17 +447,16 @@ ENDPROXY
 	$out->close();
 
 	if ($alreadyModified) {
-		print "/etc/apache2/sites-available/default-ssl Already modified?\n";
+		print "$apacheConf Already modified?\n";
 		return;
 	}
 
 	if ($modCount != 2) {
-		die "/etc/apache2/sites-available/default-ssl is not in expected format\n";
+		die "$apacheConf is not in expected format\n";
 	}
 
-	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified',
-		'/etc/apache2/sites-available/cloudcoder-ssl']);
-	RunAdmin(cmd => ['ln', '-s', '/etc/apache2/sites-available/cloudcoder-ssl', '/etc/apache2/sites-enabled/cloudcoder-ssl']);
+	RunAdmin(cmd => ['cp', '/tmp/default-ssl-modified', $apacheConf]);
+	RunAdmin(cmd => ['ln', '-s', $apacheConf, $targetConf]);
 }
 
 sub GetLatestVersion {
