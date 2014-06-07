@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011,2012 Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011,2012 David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2014 Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014 David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,18 +17,11 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +29,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A ServletContextListener to check that the schema versions of
  * the database tables match the schema versions of the model
- * object classes.  If there is a mismatch, we report it by
+ * object classes.  A {@link SchemaVersionChecker} object is used to
+ * do the actual checkin.  If there is a mismatch, we report it by
  * adding an error to the {@link InitErrorList} singleton. 
  * 
  * @author David Hovemeyer
@@ -58,44 +52,29 @@ public abstract class CheckSchemaVersionsServletContextListener implements Servl
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		final Map<String, Integer> schemaVersions = new HashMap<String, Integer>();
-		try {
-			Database.getInstance().databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-				@Override
-				public Boolean run(Connection conn) throws SQLException {
-					PreparedStatement stmt = prepareStatement(conn, "select * from cc_schema_version");
-					ResultSet resultSet = executeQuery(stmt);
-					while (resultSet.next()) {
-						String tableName = resultSet.getString(1);
-						int schemaVersion = resultSet.getInt(2);
-						schemaVersions.put(tableName, schemaVersion);
-					}
-					return true;
-				}
-				@Override
-				public String getDescription() {
-					return " check database table schema versions";
-				}
-			});
-		} catch (PersistenceException e) {
-			report("Error checking schema versions: " +
-					e.getMessage() +
-					": check database configuration");
-			return;
-		}
-
-		// Check schema versions
-		for (ModelObjectSchema<?> schema : tableList) {
-			Integer dbSchemaVersion = schemaVersions.get(schema.getDbTableName());
-			if (dbSchemaVersion == null) {
-				report("No schema version found for table " + schema.getDbTableName() +
+		SchemaVersionChecker checker = new SchemaVersionChecker();
+		checker.check(tableList, new SchemaVersionChecker.Reporter() {
+			@Override
+			public void reportGeneralError(String error) {
+				CheckSchemaVersionsServletContextListener.this.report(error);
+			}
+			
+			@Override
+			public void reportMissingSchemaVersion(ModelObjectSchema<?> table) {
+				CheckSchemaVersionsServletContextListener.this.report(
+						"No schema version found for table " + table.getDbTableName() +
 						": cc_schema_version table is incomplete");
-			} else if (dbSchemaVersion.intValue() != schema.getVersion()) {
-				report("Database table " +
+			}
+			
+			@Override
+			public void reportTableWrongVersion(ModelObjectSchema<?> schema,
+					int dbTableSchemaVersion) {
+				CheckSchemaVersionsServletContextListener.this.report(
+						"Database table " +
 						schema.getDbTableName() +
 						" is out of date: run java -jar cloudcoderApp.jar migratedb");
 			}
-		}
+		});
 	}
 
 	private void report(String error) {
