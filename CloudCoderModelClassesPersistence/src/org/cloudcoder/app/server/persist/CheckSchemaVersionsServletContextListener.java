@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * A ServletContextListener to check that the schema versions of
  * the database tables match the schema versions of the model
  * object classes.  A {@link SchemaVersionChecker} object is used to
- * do the actual checkin.  If there is a mismatch, we report it by
+ * do the actual checking.  If there is a mismatch, we report it by
  * adding an error to the {@link InitErrorList} singleton. 
  * 
  * @author David Hovemeyer
