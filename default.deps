@@ -177,3 +177,10 @@ ${mirrorServiceEclipse371}/org.eclipse.osgi.util_3.2.200.v20110110.jar
   CloudCoderAnalysis/lib/org.eclipse.osgi.util_3.2.200.v20110110.jar
 ${mirrorServiceEclipse371}/org.eclipse.text_3.5.101.r371_v20110810-0800.jar
   CloudCoderAnalysis/lib/org.eclipse.text_3.5.101.r371_v20110810-0800.jar
+
+#
+# CloudCoderDataAnalysis uses opencsv
+#
+opencsv_version=2.4
+https://opencsv.googlecode.com/files/opencsv-${opencsv_version}.jar
+  CloudCoderDataAnalysis/lib/opencsv-${opencsv_version}.jar
