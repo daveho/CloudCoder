@@ -233,10 +233,9 @@ public class Anonymize {
 				
 				// Generate fake usernames and change each user to have
 				// the same password
-				String genPasswordHash = PasswordUtil.hashPassword(genPasswd);
 				for (Anonymization a : anonymizationList) {
 					a.anonUsername = String.format("u%05d", a.userId);
-					a.genPassword = genPasswordHash;
+					a.genPassword = genPasswd;
 				}
 				
 				// Anonymize!
