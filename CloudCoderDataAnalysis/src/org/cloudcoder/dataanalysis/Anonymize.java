@@ -92,6 +92,8 @@ public class Anonymize {
 		
 		String identityFile = ask(keyboard, "Filename for mapping anon usernames to real identities: ");
 		
+		String genPasswd = ask(keyboard, "Password to use for all accounts: ");
+		
 		String dbName = JDBCDatabaseConfig.getInstance().getConfigProperties().getDatabaseName();
 		System.out.println("================================================================================");
 		System.out.println("You are about to destructively anonymize the database " + dbName);
@@ -111,7 +113,7 @@ public class Anonymize {
 		System.out.print("Anonymizing...");
 		System.out.flush();
 		final List<Anonymization> anonymizationList = new ArrayList<Anonymize.Anonymization>();
-		anonymizeUserData(db, anonymizationList);
+		anonymizeUserData(db, anonymizationList, genPasswd);
 		System.out.println("done");
 		
 		// Save anonymized identities
@@ -212,7 +214,7 @@ public class Anonymize {
 		}
 	}
 
-	private static void anonymizeUserData(IDatabase db, final List<Anonymization> anonymizationList) {
+	private static void anonymizeUserData(IDatabase db, final List<Anonymization> anonymizationList, final String genPasswd) {
 		AbstractDatabaseRunnableNoAuthException<Boolean> txn = new AbstractDatabaseRunnableNoAuthException<Boolean>() {
 			@Override
 			public Boolean run(Connection conn) throws SQLException {
@@ -229,12 +231,12 @@ public class Anonymize {
 				}
 				System.out.print("[" + anonymizationList.size() + " users]");
 				
-				// Generate fake usernames and passwords
-				Random rng = new Random();
-				Iterator<String> usernames = generateFakeUsernames(anonymizationList.size(), rng).iterator();
+				// Generate fake usernames and change each user to have
+				// the same password
+				String genPasswordHash = PasswordUtil.hashPassword(genPasswd);
 				for (Anonymization a : anonymizationList) {
-					a.anonUsername = usernames.next();
-					a.genPassword = generateFakePassword(rng);
+					a.anonUsername = String.format("u%05d", a.userId);
+					a.genPassword = genPasswordHash;
 				}
 				
 				// Anonymize!
@@ -283,28 +285,6 @@ public class Anonymize {
 		};
 		
 		db.databaseRun(txn);
-	}
-
-	protected static List<String> generateFakeUsernames(int size, Random rng) {
-		// Generate sequential usernames "u00001", "u00002", etc.
-		ArrayList<String> usernames = new ArrayList<String>();
-		for (int i = 1; i <= size; i++) {
-			usernames.add("u" + String.format("%05d", i));
-		}
-		
-		// Shuffle!
-		Collections.shuffle(usernames, rng);
-		
-		return usernames;
-	}
-
-	protected static String generateFakePassword(Random rng) {
-		String alpha = "abcdefghijklmnopqrstuvwxyz0123456789";
-		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < 8; i++) {
-			buf.append(alpha.charAt(rng.nextInt(alpha.length())));
-		}
-		return buf.toString();
 	}
 
 	private static void saveAnonymizedIdentities(PrintWriter pw, final List<Anonymization> anonymizationList) {
