@@ -20,8 +20,6 @@ package org.cloudcoder.builder2.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cloudcoder.builder2.util.ProcessUtil;
 import org.cloudcoder.builder2.util.StringUtil;
@@ -30,18 +28,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of {@link ISocket} that creates an ssh tunnel to
- * the webapp port on the remote webapp host.
+ * A variation of {@link SshTunnelAdapter} that creates a "direct"
+ * connection to a remote host/port via an SSH tunnel.  The connection
+ * is "direct" because it uses the <code>-W</code> ssh option
+ * to connect to the remote host/port.  This means that the
+ * process's stdin/stdout can be used to communicate to the remote
+ * host/port.  However, this prevents the use of an {@link ISocketFactory}
+ * to layer a communication protocol (e.g., SSL) on top of the
+ * ssh tunnel.  This isn't really a big loss because layering
+ * SSL over ssh is somewhat redundant: use of an SSH tunnel should
+ * be used <em>instead of</em> SSL.
  * 
  * @author David Hovemeyer
  */
-public class SshTunnelAdapter implements ISocketAdapter {
+public class DirectSshTunnelAdapter implements ISocketAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(SshTunnelAdapter.class);
 	
-	private static final int LOCAL_PORT_RANGE_START = 10000;
-	private static AtomicInteger localPortAllocator = new AtomicInteger(LOCAL_PORT_RANGE_START);
-	
-	private ISocketFactory socketFactory;
 	private String host;
 	private int port;
 	private String sshRemoteUser;
@@ -49,7 +51,6 @@ public class SshTunnelAdapter implements ISocketAdapter {
 	// These fields are volatile because the watchdog thread may
 	// close the connection asynchronously.
 	private volatile Process proc;
-	private volatile Socket socket;
 	private volatile InputStream in;
 	private volatile OutputStream out;
 
@@ -57,70 +58,39 @@ public class SshTunnelAdapter implements ISocketAdapter {
 	 * Constructor.  The {@link #connect()} method must be
 	 * called to create the actual ssh tunnel and socket connection.
 	 * 
-	 * @param socketFactory  the {@link ISocketFactory} to use to create the
-	 *                       connection to the webapp (layered over the ssh tunnel)
 	 * @param host           the remote host
 	 * @param port           the remote port
 	 * @param sshRemoteUser  the remote user (used to create the ssh tunnel)
 	 */
-	public SshTunnelAdapter(ISocketFactory socketFactory, String host, int port, String sshRemoteUser) {
-		this.socketFactory = socketFactory;
+	public DirectSshTunnelAdapter(String host, int port, String sshRemoteUser) {
 		this.host = host;
 		this.port = port;
 		this.sshRemoteUser = sshRemoteUser;
 	}
 
 	public void connect() throws IOException {
-		// Allocate a local port.
-		// Because each builder thread will use its own ssh tunnel,
-		// we need to assign a different port to each.
-		int localPort = allocateLocalPort();
-		
 		// Start the ssh tunnel.  We assume that the current user
 		// is authorized to connect to the remote host without
 		// providing an explicit username/password.
 		String[] cmd = {
 				"ssh",
 				"-o", "TCPKeepAlive=yes",
-				"-T", "-N",
-				"-L", localPort + ":" + host + ":" + port,
+				"-W", "localhost:" + port,
 				sshRemoteUser + "@" + host
 		};
-		logger.info("Starting ssh tunnel: {}", StringUtil.mergeOneLine(cmd));
+		logger.info("Starting direct ssh tunnel: {}", StringUtil.mergeOneLine(cmd));
 		this.proc = Runtime.getRuntime().exec(cmd, ProcessUtil.getEnvArray());
-		
-		// Wait for a bit to allow ssh to be ready to accept connections
-		try {
-			Thread.sleep(4000);
-		} catch (InterruptedException e) {
-			// should not happen
-		}
-		
-		// Create a socket connecting to the local side of the ssh tunnel.
-		this.socket = socketFactory.createSocket("localhost", localPort);
-		this.in = socket.getInputStream();
-		this.out = socket.getOutputStream();
-	}
 
-	private int allocateLocalPort() {
-		int localPort = 0;
-		while (localPort == 0) {
-			int p = localPortAllocator.getAndIncrement();
-			if (p < 65536) {
-				// Port number seems reasonable
-				localPort = p;
-			} else {
-				// Start at beginning of range again
-				localPortAllocator.set(LOCAL_PORT_RANGE_START);
-			}
-		}
-		return localPort;
+		// The ssh process's stdin/stdout are forwarded to the
+		// remote host/port.
+		this.in = proc.getInputStream();
+		this.out = proc.getOutputStream();
 	}
 
 	@Override
 	public void close() throws IOException {
 		// Destroy the ssh tunnel subprocess
-		logger.info("Destroying ssh tunnel process");
+		logger.info("Destroying direct ssh tunnel process");
 		proc.destroy();
 		boolean exited = false;
 		while (!exited) {
@@ -146,5 +116,4 @@ public class SshTunnelAdapter implements ISocketAdapter {
 	public OutputStream getOutputStream() throws IOException {
 		return out;
 	}
-
 }

@@ -126,6 +126,20 @@ public class WebappSocketFactory {
 	 * @throws GeneralSecurityException
 	 */
 	public ISocket connectToWebapp() throws UnknownHostException, IOException, GeneralSecurityException {
+		if (options.useSshTunnel() && !options.useSSL()) {
+			// Special case: we're using an SSH tunnel, but not SSL.
+			// We can use a DirectSshTunnelAdapter in this case.
+			// This is the preferred approach when using SSH tunnels,
+			// because it avoids the need for the local ssh processess
+			// to listen for local TCP connections.  Instread, the
+			// stdin/stdout of the ssh process is used directly to
+			// communicate with the remote host/port.
+			ISocketAdapter socket = new DirectSshTunnelAdapter(
+					options.getAppHost(), options.getAppPort(), options.getSshRemoteUser());
+			socket.connect();
+			return socket;
+		}
+		
 		// Create a socket factory that will create a socket to
 		// the webapp (either directly or via the ssh tunnel).
 		ISocketFactory socketFactory;
