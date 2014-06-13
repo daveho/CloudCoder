@@ -63,6 +63,13 @@ public class Builder2Server implements Runnable {
 			try {
 				while (!shutdownRequested) {
 					Thread.sleep(10000L);
+					
+					// The watchdog should only interfere with the builder
+					// if it is stuck waiting to receive a keepalive signal.
+					if (!waitingForKeepalive) {
+						continue;
+					}
+					
 					long w = waitStart.get();
 					if (w >= 0L) {
 						long waitTime = System.currentTimeMillis() - w;
@@ -91,6 +98,7 @@ public class Builder2Server implements Runnable {
     private static final Logger logger=LoggerFactory.getLogger(Builder2Server.class);
 
     private volatile boolean shutdownRequested;
+    private volatile boolean waitingForKeepalive;
     private volatile boolean working;
     private AtomicLong waitStart;
     private NoConnectTimer noConnectTimer;
@@ -110,6 +118,7 @@ public class Builder2Server implements Runnable {
      */
     public Builder2Server(WebappSocketFactory webappSocketFactory, Properties config) {
         this.shutdownRequested = false;
+        this.waitingForKeepalive = false;
         this.working = false;
         this.waitStart = new AtomicLong(-1L);
         this.noConnectTimer = new NoConnectTimer();
@@ -145,14 +154,14 @@ public class Builder2Server implements Runnable {
 
             // Read a message from the webapp, which will begin
             // with an Integer problem id.
-            working = false;
+            waitingForKeepalive = true;
             long start = System.currentTimeMillis();
 			waitStart.set(start); // record the start time of the wait
 			//logger.info("Starting wait at {}", start);
             Integer problemId = safeReadObject();
             waitStart.set(-1L); // problem id or keepalive signal received, wait finished
             //logger.info("Received problem id/keepalive from server at {}", System.currentTimeMillis());
-            working = true;
+            waitingForKeepalive = false;
 
             // The CloudCoder app will send us a negative problem id as
             // a keepalive signal when there are no submissions that need building/testing.
@@ -161,30 +170,38 @@ public class Builder2Server implements Runnable {
                 return;
             }
 
-            // The protocol allows the builder to cache Problems and TestCases by their problem id,
-            // but this is a very bad idea, since the Problem and TestCases could change on the
-            // webapp side (for example, if an instructor is editing an exercise).
-            // For this reason, we ALWAYS claim not to have the Problem/TestCases, forcing
-            // the webapp to send the most up to date versions.  It's a small amount
-            // of data, and it's important for correct behavior.
+            try {
+            	// Working on testing a submission: should not be forcibly shut down
+            	working = true;
             
-            // Tell the webapp we don't have this Problem/TestCases
-            out.writeObject(Boolean.FALSE);
-            out.flush();
-
-            // Receive the Problem and TestCases
-            Problem problem = safeReadObject();
-            List<TestCase> testCaseList = safeReadObject();
-
-            // read program text
-            String programText = safeReadObject();
-
-            // Test the submission!
-            SubmissionResult result = builder2.testSubmission(problem, testCaseList, programText);
-
-            // Send the SubmissionResult back to the webapp
-            out.writeObject(result);
-            out.flush();
+	            // The protocol allows the builder to cache Problems and TestCases by their problem id,
+	            // but this is a very bad idea, since the Problem and TestCases could change on the
+	            // webapp side (for example, if an instructor is editing an exercise).
+	            // For this reason, we ALWAYS claim not to have the Problem/TestCases, forcing
+	            // the webapp to send the most up to date versions.  It's a small amount
+	            // of data, and it's important for correct behavior.
+	            
+	            // Tell the webapp we don't have this Problem/TestCases
+	            out.writeObject(Boolean.FALSE);
+	            out.flush();
+	
+	            // Receive the Problem and TestCases
+	            Problem problem = safeReadObject();
+	            List<TestCase> testCaseList = safeReadObject();
+	
+	            // read program text
+	            String programText = safeReadObject();
+	
+	            // Test the submission!
+	            SubmissionResult result = builder2.testSubmission(problem, testCaseList, programText);
+	
+	            // Send the SubmissionResult back to the webapp
+	            out.writeObject(result);
+	            out.flush();
+            } finally {
+            	// No longer working on testing a submission
+            	working = false;
+            }
         } catch (IOException e) {
             // Quite possibly, this is a routine shutdown of the CloudCoder server.
             // We'll try connecting again soon.

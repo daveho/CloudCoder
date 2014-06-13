@@ -41,6 +41,13 @@ public class SshTunnelAdapter implements ISocket {
 	private static final Logger logger = LoggerFactory.getLogger(SshTunnelAdapter.class);
 	
 	private static final int LOCAL_PORT_RANGE_START = 10000;
+
+	/**
+	 * Give the ssh tunnel process a goodly amount of time to be ready to start
+	 * accepting connections.
+	 */
+	private static final long SSH_READY_WAIT_MS = 10000L;
+	
 	private static AtomicInteger localPortAllocator = new AtomicInteger(LOCAL_PORT_RANGE_START);
 	
 	private ISocketFactory socketFactory;
@@ -102,7 +109,7 @@ public class SshTunnelAdapter implements ISocket {
 		
 		// Wait for a bit to allow ssh to be ready to accept connections
 		try {
-			Thread.sleep(4000);
+			Thread.sleep(SSH_READY_WAIT_MS);
 		} catch (InterruptedException e) {
 			// should not happen
 		}
