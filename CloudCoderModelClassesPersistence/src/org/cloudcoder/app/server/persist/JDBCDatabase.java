@@ -41,6 +41,7 @@ import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAnd
 import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
 import org.cloudcoder.app.server.persist.txn.FindUnfinishedQuizForStudent;
 import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
+import org.cloudcoder.app.server.persist.txn.FindWorkSessions;
 import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetAllSubmissionReceiptsForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem;
@@ -123,6 +124,7 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.WorkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -485,6 +487,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<Anonymization> anonymizeUserData(String genPasswd, Runnable progressCallback) {
 		return databaseRun(new AnonymizeUserData(genPasswd, progressCallback));
+	}
+	
+	@Override
+	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds) {
+		return databaseRun(new FindWorkSessions(courseId, separationSeconds));
 	}
 
 	/**

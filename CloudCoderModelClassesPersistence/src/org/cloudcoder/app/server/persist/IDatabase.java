@@ -61,6 +61,7 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
+import org.cloudcoder.app.shared.model.WorkSession;
 
 /**
  * Thin abstraction layer for interactions with database.
@@ -684,5 +685,15 @@ public interface IDatabase {
 	 *         anonymization (this data should not be distributed publicly!)
 	 */
 	public List<Anonymization> anonymizeUserData(String genPasswd, Runnable progressCallback);
+
+	/**
+	 * Find all {@link WorkSession}s in given course.
+	 * 
+	 * @param courseId             the course id
+	 * @param separationSeconds    events separated by this much time are considered to be
+	 *                             in separate sessions
+	 * @return list of {@link WorkSession}s
+	 */
+	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds);
 
 }

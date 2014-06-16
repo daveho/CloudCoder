@@ -24,10 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.server.persist.CreateWebappDatabase;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
@@ -48,24 +44,24 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class Anonymize {
 	public static void main(String[] args) throws IOException {
-		configureLogging();
+		Util.configureLogging();
 		
 		Scanner keyboard = new Scanner(System.in);
 		
-		connectToDatabase(keyboard);
+		Util.connectToDatabase(keyboard);
 		System.out.println("Checking schema...");
 		checkSchema();
 		
-		String identityFile = ask(keyboard, "Filename for mapping anon usernames to real identities: ");
+		String identityFile = Util.ask(keyboard, "Filename for mapping anon usernames to real identities: ");
 		
-		String genPasswd = ask(keyboard, "Password to use for all accounts: ");
+		String genPasswd = Util.ask(keyboard, "Password to use for all accounts: ");
 		
 		String dbName = JDBCDatabaseConfig.getInstance().getConfigProperties().getDatabaseName();
 		System.out.println("================================================================================");
 		System.out.println("You are about to destructively anonymize the database " + dbName);
 		System.out.println("Are you sure you want to do this?  There is no going back if you say yes!");
 		System.out.println("================================================================================");
-		String ans = ask(keyboard, "Anonymize database " + dbName + " (yes/no)? ");
+		String ans = Util.ask(keyboard, "Anonymize database " + dbName + " (yes/no)? ");
 		if (!ans.toLowerCase().equals("yes")) {
 			System.out.println("Not anonymizing.  Bye!");
 			System.exit(0);
@@ -93,61 +89,6 @@ public class Anonymize {
 		saveAnonymizedIdentities(pw, anonymizationList);
 	}
 
-	private static void configureLogging() {
-		// From: http://stackoverflow.com/questions/8965946/configuring-log4j-loggers-programmatically
-		ConsoleAppender console = new ConsoleAppender(); //create appender
-		//configure the appender
-		String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-		console.setLayout(new PatternLayout(PATTERN)); 
-		console.setThreshold(Level.FATAL);
-		console.activateOptions();
-		//add appender to any Logger (here is root)
-		Logger.getRootLogger().addAppender(console);
-	}
-
-	private static void connectToDatabase(Scanner keyboard) {
-		final String dbName = ask(keyboard, "Database name: ");
-		final String dbUser = ask(keyboard, "Database username: ");
-		final String dbPasswd = ask(keyboard, "Database password: ");
-		final String dbHost = ask(keyboard, "Database hostname: ");
-		final String dbPortStr = ask(keyboard, "Database port string (e.g., ':8889' for MAMP): ");
-		
-		JDBCDatabaseConfig.ConfigProperties config = new JDBCDatabaseConfig.ConfigProperties() {
-			
-			@Override
-			public String getUser() {
-				return dbUser;
-			}
-			
-			@Override
-			public String getPortStr() {
-				return dbPortStr;
-			}
-			
-			@Override
-			public String getPasswd() {
-				return dbPasswd;
-			}
-			
-			@Override
-			public String getHost() {
-				return dbHost;
-			}
-			
-			@Override
-			public String getDatabaseName() {
-				return dbName;
-			}
-		};
-		
-		JDBCDatabaseConfig.create(config);
-	}
-
-	private static String ask(Scanner keyboard, String prompt) {
-		System.out.print(prompt);
-		return keyboard.nextLine();
-	}
-	
 	private static final class SchemaCheckReporter implements SchemaVersionChecker.Reporter {
 		private int numErrors = 0;
 		
