@@ -20,9 +20,11 @@ package org.cloudcoder.app.server.persist;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
+import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -439,25 +441,6 @@ public interface IDatabase {
 	 * @return true if the problem was deleted successfully, false otherwise
 	 */
 	public boolean deleteProblem(User user, Course course, Problem problem) throws CloudCoderAuthenticationException;
-	
-	/**
-	 * Run a database transaction.
-	 * 
-	 * @param databaseRunnable the database transaction to run
-	 * @return the result of the database transaction
-	 * @throws PersistenceException if an error occurs
-	 */
-	public<E> E databaseRun(AbstractDatabaseRunnableNoAuthException<E> databaseRunnable);
-	
-	/**
-	 * Run a database transaction that can throw an authorization exception.
-	 * 
-	 * @param databaseRunnable the database transaction to run
-	 * @return the result of the database transaction
-	 * @throws PersistenceException if an error occurs
-	 * @throws CloudCoderAuthenticationException if an authorization exception occurs
-	 */
-	public<E> E databaseRunAuth(AbstractDatabaseRunnable<E> databaseRunnable) throws CloudCoderAuthenticationException;
 
 	/**
 	 * Add a {@link UserRegistrationRequest} to the database.
@@ -684,5 +667,22 @@ public interface IDatabase {
 	 * @return an {@link OperationResult} indicating the success or failure of the operation
 	 */
 	public OperationResult updateProblemDates(User authenticatedUser, Problem[] problems);
+
+	/**
+	 * Get a map of database table names to schema versions.
+	 * 
+	 * @return map of database table names to schema versions
+	 */
+	public Map<String, Integer> getSchemaVersions();
+
+	/**
+	 * Destructively anonyize user data.
+	 *
+	 * @param genPasswd password to user for all anonymized user accounts
+	 * @param progressCallback callback to run as accounts are anonymized
+	 * @return list of {@link Anonymization} objects recording details about the
+	 *         anonymization (this data should not be distributed publicly!)
+	 */
+	public List<Anonymization> anonymizeUserData(String genPasswd, Runnable progressCallback);
 
 }

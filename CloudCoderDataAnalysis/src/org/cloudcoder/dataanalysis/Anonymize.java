@@ -20,16 +20,8 @@ package org.cloudcoder.dataanalysis;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
 import org.apache.log4j.ConsoleAppender;
@@ -38,14 +30,10 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.server.persist.CreateWebappDatabase;
 import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
-import org.cloudcoder.app.server.persist.PasswordUtil;
 import org.cloudcoder.app.server.persist.SchemaVersionChecker;
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
-import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
-import org.cloudcoder.app.shared.model.User;
 
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVWriteProc;
@@ -59,28 +47,6 @@ import au.com.bytecode.opencsv.CSVWriter;
  * @author David Hovemeyer
  */
 public class Anonymize {
-	private static class Anonymization {
-		int userId;
-		String anonUsername;
-		String genPassword;
-		String realUsername;
-		String realFirstname;
-		String realLastname;
-		String realEmail;
-		String realWebsite;
-		
-		Anonymization(int userId, String anonUsername, String genPassword, String realUsername, String realFirstname, String realLastname, String realEmail, String realWebsite) {
-			this.userId = userId;
-			this.anonUsername = anonUsername;
-			this.genPassword = genPassword;
-			this.realUsername = realUsername;
-			this.realFirstname = realFirstname;
-			this.realLastname = realLastname;
-			this.realEmail = realEmail;
-			this.realWebsite = realWebsite;
-		}
-	}
-
 	public static void main(String[] args) throws IOException {
 		configureLogging();
 		
@@ -108,12 +74,19 @@ public class Anonymize {
 		// File for mapping anon identities to real identities
 		PrintWriter pw = new PrintWriter(new FileWriter(identityFile));
 		
-		IDatabase db = Database.getInstance();
 		// Execute!
 		System.out.print("Anonymizing...");
 		System.out.flush();
-		final List<Anonymization> anonymizationList = new ArrayList<Anonymize.Anonymization>();
-		anonymizeUserData(db, anonymizationList, genPasswd);
+		List<Anonymization> anonymizationList = Database.getInstance().anonymizeUserData(
+				genPasswd,
+				new Runnable(){
+					@Override
+					public void run() {
+						System.out.print(".");
+						System.out.flush();
+					}
+				}
+		);
 		System.out.println("done");
 		
 		// Save anonymized identities
@@ -214,78 +187,6 @@ public class Anonymize {
 		}
 	}
 
-	private static void anonymizeUserData(IDatabase db, final List<Anonymization> anonymizationList, final String genPasswd) {
-		AbstractDatabaseRunnableNoAuthException<Boolean> txn = new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-			@Override
-			public Boolean run(Connection conn) throws SQLException {
-				// Get all users
-				PreparedStatement getUsers = prepareStatement(conn, "select * from cc_users");
-				ResultSet resultSet = executeQuery(getUsers);
-				while (resultSet.next()) {
-					User user = new User();
-					DBUtil.loadModelObjectFields(user, User.SCHEMA, resultSet);
-					
-					Anonymization a = new Anonymization(
-							user.getId(), "x", "x", user.getUsername(), user.getFirstname(), user.getLastname(), user.getEmail(), user.getWebsite());
-					anonymizationList.add(a);
-				}
-				System.out.print("[" + anonymizationList.size() + " users]");
-				
-				// Generate fake usernames and change each user to have
-				// the same password
-				for (Anonymization a : anonymizationList) {
-					a.anonUsername = String.format("u%05d", a.userId);
-					a.genPassword = genPasswd;
-				}
-				
-				// Anonymize!
-				PreparedStatement update = prepareStatement(
-						conn,
-						"update cc_users " +
-						"   set username = ?, password_hash = ?, firstname = ?, lastname = ?, email = ?, website = ? " +
-						" where id = ?" 
-				);
-				int numBatched = 0;
-				for (Anonymization a : anonymizationList) {
-					update.setString(1, a.anonUsername);
-					String passwordHash = PasswordUtil.hashPassword(a.genPassword);
-					update.setString(2, passwordHash);
-					update.setString(3, a.anonUsername);
-					update.setString(4, a.anonUsername);
-					update.setString(5, a.anonUsername + "@anon.edu");
-					update.setString(6, "x");
-					update.setInt(7, a.userId);
-					
-					update.addBatch();
-					
-					numBatched++;
-					
-					if (numBatched >= 20) {
-						update.executeBatch();
-						numBatched = 0;
-						System.out.print(".");
-						System.out.flush();
-					}
-				}
-				
-				if (numBatched > 0) {
-					update.executeBatch();
-					System.out.print(".");
-					System.out.flush();
-				}
-				
-				return true;
-			}
-			
-			@Override
-			public String getDescription() {
-				return " anonymizing user information";
-			}
-		};
-		
-		db.databaseRun(txn);
-	}
-
 	private static void saveAnonymizedIdentities(PrintWriter pw, final List<Anonymization> anonymizationList) {
 		CSV csv = CSV
 				.separator(',')  // delimiter of fields
@@ -296,7 +197,15 @@ public class Anonymize {
 			public void process(CSVWriter w) {
 				w.writeNext("id", "anonUsername", "genPassword", "realUsername", "realFirstname", "realLastname", "realEmail", "realWebsite");
 				for (Anonymization a : anonymizationList) {
-					w.writeNext(String.valueOf(a.userId), a.anonUsername, a.genPassword, a.realUsername, a.realFirstname, a.realLastname, a.realEmail, a.realWebsite);
+					w.writeNext(
+							String.valueOf(a.getUserId()),
+							a.getAnonUsername(),
+							a.getGenPassword(),
+							a.getRealUsername(),
+							a.getRealFirstname(),
+							a.getRealLastname(),
+							a.getRealEmail(),
+							a.getRealWebsite());
 				}
 			}
 		});

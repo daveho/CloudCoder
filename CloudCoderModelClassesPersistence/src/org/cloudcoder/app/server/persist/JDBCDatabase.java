@@ -22,11 +22,13 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudcoder.app.server.persist.txn.AddRepoProblemTag;
 import org.cloudcoder.app.server.persist.txn.AddTestCasesToProblem;
 import org.cloudcoder.app.server.persist.txn.AddUserRegistrationRequest;
 import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
+import org.cloudcoder.app.server.persist.txn.AnonymizeUserData;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.CompleteRegistration;
 import org.cloudcoder.app.server.persist.txn.CreateProblemSummary;
@@ -57,6 +59,7 @@ import org.cloudcoder.app.server.persist.txn.GetProblemsInCourse;
 import org.cloudcoder.app.server.persist.txn.GetRatingsForRepoProblem;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemAndTestCaseListGivenHash;
 import org.cloudcoder.app.server.persist.txn.GetRepoProblemTags;
+import org.cloudcoder.app.server.persist.txn.GetSchemaVersions;
 import org.cloudcoder.app.server.persist.txn.GetSectionsForCourse;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionText;
@@ -87,6 +90,7 @@ import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
+import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -471,6 +475,16 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public OperationResult updateProblemDates(User authenticatedUser, Problem[] problems) {
 		return databaseRun(new SetProblemDates(authenticatedUser, problems));
+	}
+	
+	@Override
+	public Map<String, Integer> getSchemaVersions() {
+		return databaseRun(new GetSchemaVersions());
+	}
+	
+	@Override
+	public List<Anonymization> anonymizeUserData(String genPasswd, Runnable progressCallback) {
+		return databaseRun(new AnonymizeUserData(genPasswd, progressCallback));
 	}
 
 	/**

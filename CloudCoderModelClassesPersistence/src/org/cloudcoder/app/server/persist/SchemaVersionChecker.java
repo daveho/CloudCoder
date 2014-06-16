@@ -17,15 +17,9 @@
 
 package org.cloudcoder.app.server.persist;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 
 /**
@@ -73,40 +67,24 @@ public class SchemaVersionChecker {
 	 * @param reporter reporter used to report errors
 	 */
 	public void check(List<ModelObjectSchema<?>> tableList, Reporter reporter) {
-		final Map<String, Integer> schemaVersions = new HashMap<String, Integer>();
 		try {
-			Database.getInstance().databaseRun(new AbstractDatabaseRunnableNoAuthException<Boolean>() {
-				@Override
-				public Boolean run(Connection conn) throws SQLException {
-					PreparedStatement stmt = prepareStatement(conn, "select * from cc_schema_version");
-					ResultSet resultSet = executeQuery(stmt);
-					while (resultSet.next()) {
-						String tableName = resultSet.getString(1);
-						int schemaVersion = resultSet.getInt(2);
-						schemaVersions.put(tableName, schemaVersion);
-					}
-					return true;
+			// Get schema versions
+			Map<String, Integer> schemaVersions = Database.getInstance().getSchemaVersions();
+			
+			// Check schema versions
+			for (ModelObjectSchema<?> schema : tableList) {
+				Integer dbSchemaVersion = schemaVersions.get(schema.getDbTableName());
+				if (dbSchemaVersion == null) {
+					reporter.reportMissingSchemaVersion(schema);
+				} else if (dbSchemaVersion.intValue() != schema.getVersion()) {
+					reporter.reportTableWrongVersion(schema, dbSchemaVersion.intValue());
 				}
-				@Override
-				public String getDescription() {
-					return " check database table schema versions";
-				}
-			});
+			}
 		} catch (PersistenceException e) {
 			reporter.reportGeneralError("Error checking schema versions: " +
 					e.getMessage() +
 					": check database configuration");
 			return;
-		}
-
-		// Check schema versions
-		for (ModelObjectSchema<?> schema : tableList) {
-			Integer dbSchemaVersion = schemaVersions.get(schema.getDbTableName());
-			if (dbSchemaVersion == null) {
-				reporter.reportMissingSchemaVersion(schema);
-			} else if (dbSchemaVersion.intValue() != schema.getVersion()) {
-				reporter.reportTableWrongVersion(schema, dbSchemaVersion.intValue());
-			}
 		}
 	}
 }
