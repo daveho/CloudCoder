@@ -21,6 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -85,6 +88,11 @@ public class CreateWebappDatabase {
 		public String ccInstitutionName;
 		public String ccRepoUrl;
 		
+		public List<String> termNames = new ArrayList<String>();
+
+		public Props() {
+			termNames.addAll(Arrays.asList("Winter", "Spring", "Summer", "Summer 1", "Summer 2", "Fall"));
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -163,7 +171,36 @@ public class CreateWebappDatabase {
 		props.ccInstitutionName = ConfigurationUtil.ask(keyboard, "What is your institution name (e.g, 'Unseen University')?");
 		props.ccRepoUrl = ConfigurationUtil.ask(keyboard, "Enter the URL of the exercise repository", "https://cloudcoder.org/repo");
 		
+		choseTerms(keyboard, props);
+		
 		doCreateWebappDatabase(props);
+	}
+
+	private static void choseTerms(Scanner keyboard, Props props) {
+		System.out.println("\nHere are the default academic terms that CloudCoder will use:");
+		for (String termName : props.termNames) {
+			System.out.println("  " + termName);
+		}
+		String ans = ConfigurationUtil.ask(keyboard, "\nUse these? (yes/no, answer no to define your own terms) ");
+		if (ans.toLowerCase().equals("yes")) {
+			return;
+		}
+		boolean done = false;
+		while (!done) {
+			int numTerms = Integer.parseInt(ConfigurationUtil.ask(keyboard, "How many terms? "));
+			List<String> termNames = new ArrayList<String>();
+			System.out.println("Please enter the terms in chronological order:");
+			for (int i = 0; i < numTerms; i++) {
+				String termName = ConfigurationUtil.ask(keyboard, "Name of term " + (i+1) + ": ");
+				termNames.add(termName);
+			}
+			String ans2 = ConfigurationUtil.ask(keyboard, "Are these terms correct? (yes/no) ");
+			if (ans2.toLowerCase().equals("yes")) {
+				props.termNames.clear();
+				props.termNames.addAll(termNames);
+				done = true;
+			}
+		}
 	}
 
 	private static void doCreateWebappDatabase(Props props)
@@ -206,16 +243,15 @@ public class CreateWebappDatabase {
 		
 		// Terms
 		System.out.println("Creating terms...");
-		CreateWebappDatabase.storeTerm(conn, "Winter", 0);
-		CreateWebappDatabase.storeTerm(conn, "Spring", 1);
-		CreateWebappDatabase.storeTerm(conn, "Summer", 2);
-		CreateWebappDatabase.storeTerm(conn, "Summer 1", 3);
-		CreateWebappDatabase.storeTerm(conn, "Summer 2", 4);
-		Term fall = CreateWebappDatabase.storeTerm(conn, "Fall", 5);
+		int count = 0;
+		Term lastTerm = null;
+		for (String termName : props.termNames) {
+			lastTerm = CreateWebappDatabase.storeTerm(conn, termName, count++);
+		}
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
-		int courseId = CreateSampleData.createDemoCourse(conn, fall);
+		int courseId = CreateSampleData.createDemoCourse(conn, lastTerm);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");

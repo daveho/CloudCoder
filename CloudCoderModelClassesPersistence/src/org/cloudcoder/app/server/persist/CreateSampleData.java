@@ -53,7 +53,7 @@ public class CreateSampleData {
 		course.setTitle("CloudCoder demo course");
 		course.setTermId(term.getId());
 		course.setTerm(term);
-		course.setYear(2012);
+		course.setYear(2014);
 		course.setUrl("http://cloudcoder.org/");
 		DBUtil.storeModelObject(conn, course);
 		return course.getId();
