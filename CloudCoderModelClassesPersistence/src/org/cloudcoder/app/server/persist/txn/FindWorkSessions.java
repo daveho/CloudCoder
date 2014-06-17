@@ -45,6 +45,8 @@ import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthExce
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.WorkSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Find all {@link WorkSession}s in a course.
@@ -52,7 +54,8 @@ import org.cloudcoder.app.shared.model.WorkSession;
  * @author David Hovemeyer
  */
 public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<List<WorkSession>> {
-
+	private static final Logger logger = LoggerFactory.getLogger(FindWorkSessions.class);
+	
 	private int courseId;
 	private int separationSeconds;
 
@@ -82,7 +85,9 @@ public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<Li
 		Event start = null;
 		Event end = null;
 		
+		int count = 0;
 		while (resultSet.next()) {
+			count++;
 			Event e = new Event();
 			DBUtil.loadModelObjectFields(e, Event.SCHEMA, resultSet);
 			
@@ -100,6 +105,7 @@ public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<Li
 		if (start != null) {
 			workSessions.add(createSession(start, end));
 		}
+		logger.info("FindWorkSessions: processed {} events\n", count);
 		
 		return workSessions;
 	}
