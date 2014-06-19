@@ -17,7 +17,10 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.util.Scanner;
+
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.server.persist.SnapshotCallback;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 
 /**
@@ -39,6 +42,26 @@ public class Retest {
 	}
 	
 	public void execute() {
-		//Database.getInstance().retrieveSnapshots(criteria, )
+		Database.getInstance().retrieveSnapshots(criteria, new SnapshotCallback() {
+			@Override
+			public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText) {
+				// FIXME just for testing
+				System.out.printf("submitEventId=%d,fullTextChangeId=%d,courseId=%d,problemId=%d,userId=%d\n",
+						submitEventId, fullTextChangeId, courseId, problemId, userId);
+			}
+		});
+	}
+	
+	public static void main(String[] args) {
+		Scanner keyboard = new Scanner(System.in);
+		Util.configureLogging();
+		Util.connectToDatabase(keyboard);
+		Retest retest = new Retest();
+		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
+		criteria.setCourseId(Integer.parseInt(Util.ask(keyboard, "Course id: ")));
+		criteria.setProblemId(Integer.parseInt(Util.ask(keyboard, "Problem id: ")));
+		criteria.setUserId(Integer.parseInt(Util.ask(keyboard, "User id: ")));
+		retest.setCriteria(criteria);
+		retest.execute();
 	}
 }

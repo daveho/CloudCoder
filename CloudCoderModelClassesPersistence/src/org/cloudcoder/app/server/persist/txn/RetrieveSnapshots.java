@@ -54,7 +54,7 @@ public class RetrieveSnapshots extends AbstractDatabaseRunnableNoAuthException<B
 		// FIXME: only supports retrieving explicit submissions, not intermediate snapshots
 		StringBuilder sql = new StringBuilder();
 		sql.append(
-				"select e.*, ch.*, p.course_id" +
+				"select e.*, ch.*, sr.event_id, p.course_id" +
 				"  from cc_submission_receipts as sr, cc_events as e, cc_changes as ch, cc_problems as p" +
 				" where sr.last_edit_event_id = e.id " +
 				"   and e.id = ch.event_id " +
@@ -87,17 +87,25 @@ public class RetrieveSnapshots extends AbstractDatabaseRunnableNoAuthException<B
 		
 		ResultSet resultSet = executeQuery(stmt);
 		while (resultSet.next()) {
-			Event e = new Event();
-			Change change = new Change();
+			Event e = new Event(); // the Event of the full-text Change event
+			Change change = new Change(); // the full-text Change
 			int index = 1;
+			
+			// Load the Event for the full-text Change
 			index = DBUtil.loadModelObjectFields(e, Event.SCHEMA, resultSet, index);
-			index = DBUtil.loadModelObjectFields(change, Change.SCHEMA, resultSet, index);
-			int courseId = resultSet.getInt(index);
+
+			// Load the full-text Change: note that loadModelObjectFields doesn't work for Change objects
+			Queries.load(change, resultSet, index);
+			index += Change.SCHEMA.getNumFields();
+			
+			// Retrieve the submit event id and the course id.
+			int submitEventId = resultSet.getInt(index++);
+			int courseId = resultSet.getInt(index++);
 			
 			if (change.getType() != ChangeType.FULL_TEXT) {
 				logger.error("Change event {} doesn't have a full text Change", e.getId());
 			} else {
-				callback.onSnapshotFound(courseId, e.getProblemId(), e.getUserId(), change.getText());
+				callback.onSnapshotFound(submitEventId, e.getId(), courseId, e.getProblemId(), e.getUserId(), change.getText());
 			}
 		}
 		

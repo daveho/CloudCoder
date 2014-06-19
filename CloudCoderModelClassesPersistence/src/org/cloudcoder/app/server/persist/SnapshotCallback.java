@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.server.persist;
 
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+
 /**
  * Callback interface for retrieving submissions/snapshots from the database.
  * 
@@ -26,10 +28,12 @@ public interface SnapshotCallback {
 	/**
 	 * Called on retrieval of a snapshot.
 	 * 
+	 * @param eventId      the submission event id (which also identifies the {@link SubmissionReceipt}
+	 * @param fullTextChangeId the event id id of the full text {@link Change} event
 	 * @param courseId     the course id
 	 * @param problemId    the problem id
 	 * @param userId       the user id
 	 * @param programText  the program text
 	 */
-	public void onSnapshotFound(int courseId, int problemId, int userId, String programText);
+	public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText);
 }
