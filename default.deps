@@ -27,6 +27,7 @@ https://s3.amazonaws.com/org.cloudcoder.daemon.binaries/daemon-${daemon_version}
   CloudCoderJetty/lib/daemon/daemon-${daemon_version}.jar
   CloudCoderBuilder2/lib/daemon-${daemon_version}.jar
   CloudCoderHealthMonitor/lib/daemon-${daemon_version}.jar
+  CloudCoderDataAnalysis/lib/daemon-${daemon_version}.jar
 http://jruby.org.s3.amazonaws.com/downloads/1.7.0/jruby-complete-1.7.0.jar
   CloudCoderBuilder2/lib/jruby-complete-1.7.0.jar
 http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-ajp/7.4.4.v20110707/jetty-ajp-7.4.4.v20110707.jar

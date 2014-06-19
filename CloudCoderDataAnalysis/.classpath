@@ -10,5 +10,7 @@
 			<attribute name="javadoc_location" value="http://opencsv.sourceforge.net/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/daemon-0.7.jar" sourcepath="lib/daemon-0.7.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueue"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
