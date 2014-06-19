@@ -52,6 +52,7 @@ import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -695,5 +696,13 @@ public interface IDatabase {
 	 * @return list of {@link WorkSession}s
 	 */
 	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds);
-
+	
+	/**
+	 * Retrieve submissions/snapshots matching given {@link SnapshotSelectionCriteria}.
+	 * 
+	 * @param criteria the {@link SnapshotSelectionCriteria}
+	 * @param callback the {@link SnapshotCallback} which will receive the retrieved
+	 *        snapshots
+	 */
+	public void retrieveSnapshots(SnapshotSelectionCriteria criteria, SnapshotCallback callback);
 }

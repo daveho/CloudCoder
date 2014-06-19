@@ -79,6 +79,7 @@ import org.cloudcoder.app.server.persist.txn.LoadChangesForAllUsersOnProblem;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
+import org.cloudcoder.app.server.persist.txn.RetrieveSnapshots;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
 import org.cloudcoder.app.server.persist.txn.SetProblemDates;
@@ -117,6 +118,7 @@ import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemSearchCriteria;
 import org.cloudcoder.app.shared.model.RepoProblemSearchResult;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -492,6 +494,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds) {
 		return databaseRun(new FindWorkSessions(courseId, separationSeconds));
+	}
+	
+	@Override
+	public void retrieveSnapshots(SnapshotSelectionCriteria criteria, SnapshotCallback callback) {
+		databaseRun(new RetrieveSnapshots(criteria, callback));
 	}
 
 	/**

@@ -15,30 +15,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.dataanalysis;
-
-import org.cloudcoder.app.server.persist.Database;
-import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
+package org.cloudcoder.app.server.persist;
 
 /**
- * Make submissions/snapshots drawn from the database available for retesting.
- * Acts as a submission queue, so any number of builders on any
- * number of machines can be used to do the retesting.
+ * Callback interface for retrieving submissions/snapshots from the database.
  * 
  * @author David Hovemeyer
  */
-public class Retest {
-	private SnapshotSelectionCriteria criteria;
-	
-	public Retest() {
-		
-	}
-	
-	public void setCriteria(SnapshotSelectionCriteria criteria) {
-		this.criteria = criteria;
-	}
-	
-	public void execute() {
-		//Database.getInstance().retrieveSnapshots(criteria, )
-	}
+public interface SnapshotCallback {
+	/**
+	 * Called on retrieval of a snapshot.
+	 * 
+	 * @param courseId     the course id
+	 * @param problemId    the problem id
+	 * @param userId       the user id
+	 * @param programText  the program text
+	 */
+	public void onSnapshotFound(int courseId, int problemId, int userId, String programText);
 }
