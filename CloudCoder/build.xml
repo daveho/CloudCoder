@@ -219,6 +219,13 @@ Test targets suppressed because -junit argument was not specified when running w
 
   <target name="clean" description="Cleans this project">
     <delete dir="war/WEB-INF/classes" failonerror="false" />
+  	<!--
+  		Having the wrong versions of the gwt*.jar files seems to cause
+  		gwtc to fail in mysterious ways.
+  	-->
+  	<delete>
+  		<fileset dir="war/WEB-INF/lib" includes="gwt*.jar"/>
+  	</delete>
     <delete dir="gwt-unitCache" failonerror="false"/>
     <delete dir="war/cloudcoder" failonerror="false" />
   </target>
