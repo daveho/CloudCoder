@@ -62,6 +62,11 @@
 	<target name="submissionQueue">
 		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
 	</target>
+
+	<!-- Ensure that the builder submission queue library servlet context listener is built. -->
+	<target name="submissionQueueServletContextListener">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueueServletContextListener" target="jar"/>
+	</target>
 	
 	<!-- Target to build the CloudCoder Jetty library. -->
 	<target name="jetty">
@@ -169,6 +174,11 @@
 			<zipfileset
 				file="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderSubmissionQueue.jar"/>
+			
+			<!-- Include the submission queue servlet context listener jar file in the webapp's WEB-INF/lib. -->
+			<zipfileset
+				file="../CloudCoderSubmissionQueueServletContextListener/cloudcoderSubmissionQueueServletContextListener.jar"
+				fullpath="war/WEB-INF/lib/cloudcoderSubmissionQueueServletContextListener.jar"/>
 
 			<!-- Include GWT requestfactory-server.jar if needed. -->
 			<zipfileset file="${requestFactorySource}" fullpath="${requestFactoryTarget}"/>
@@ -213,6 +223,7 @@
 		<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueueServletContextListener" target="clean"/>
 		<ant inheritall="false" dir="../CloudCoderJetty" target="clean"/>
 	</target>
 </project>

@@ -1,0 +1,47 @@
+<project name="CloudCoderSubmissionQueueServletContextListener" default="jar">
+	<property name="jarname" value="cloudcoderSubmissionQueueServletContextListener.jar"/>
+    <property name="model.class.jar" value="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+    <property name="submissionqueue.jar" value="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+
+	<path id="CloudCoderSubmissionQueueServletContextListener.classpath">
+		<pathelement location="${model.class.jar}"/>
+		<pathelement location="${submissionqueue.jar}"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		<fileset dir="../CloudCoderJetty/lib/jetty" includes="servlet-api-2.5.jar"/>
+	</path>
+	
+    <!-- make sure model classes jar file is built -->
+    <target name="modelClasses">
+    	<ant inheritall="false" dir="../CloudCoderModelClasses" target="jar" />
+    </target>
+	
+	<!-- make sure submission queue jar file is built -->
+	<target name="submissionQueue">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+	</target>
+	
+	<target name="javac" depends="modelClasses,submissionQueue">
+		<mkdir dir="bin"/>
+		<javac srcdir="src" destdir="bin"
+			classpathref="CloudCoderSubmissionQueueServletContextListener.classpath"
+			source="1.6" target="1.6" debug="true"/>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarname}">
+			<fileset dir="bin" includes="**/*.class"/>
+		</jar>
+	</target>
+	
+	<target name="depclean" depends="clean">
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="clean"/>
+	</target>
+
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete file="${jarname}"/>
+    </target>
+</project>

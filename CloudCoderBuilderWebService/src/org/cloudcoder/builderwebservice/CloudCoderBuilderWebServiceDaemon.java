@@ -21,6 +21,7 @@ package org.cloudcoder.builderwebservice;
 import java.util.Properties;
 
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
+import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitServiceServletContextListener;
 import org.cloudcoder.builderwebservice.servlets.Submit;
 import org.cloudcoder.daemon.Util;
 import org.cloudcoder.jetty.JettyDaemon;
@@ -87,8 +88,9 @@ public class CloudCoderBuilderWebServiceDaemon extends JettyDaemon<BuilderWebSer
 		ctxHandler.setContextPath(config.getContextPath());
 		server.setHandler(ctxHandler);
 		
-		// Register the OutOfProcessSubmitService as a servlet context listener
-		ctxHandler.addEventListener(new OutOfProcessSubmitService());
+		// Register the OutOfProcessSubmitServiceServletContextListener,
+		// which will manage connections from the builders
+		ctxHandler.addEventListener(new OutOfProcessSubmitServiceServletContextListener());
 
 		// Add the Submit servlet
 		ctxHandler.addServlet(new ServletHolder(new Submit()), "/submit/*");

@@ -228,7 +228,7 @@
     <listener-class>org.cloudcoder.app.server.login.LoginProviderServletContextListener</listener-class>
   </listener>
   <listener>
-    <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService</listener-class>
+    <listener-class>org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitServiceServletContextListener</listener-class>
   </listener>
   <listener>
     <listener-class>org.cloudcoder.app.server.persist.WebappDatabaseConfigServletContextListener</listener-class>

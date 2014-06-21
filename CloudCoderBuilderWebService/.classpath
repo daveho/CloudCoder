@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderWebServiceUtil"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueueServletContextListener"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

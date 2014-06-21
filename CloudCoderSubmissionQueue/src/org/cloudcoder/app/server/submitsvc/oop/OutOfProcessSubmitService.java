@@ -39,9 +39,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.ISubmitService;
@@ -59,9 +56,19 @@ import org.slf4j.LoggerFactory;
  * 
  * @author David Hovemeyer
  */
-public class OutOfProcessSubmitService implements ISubmitService, ServletContextListener {
+public class OutOfProcessSubmitService implements ISubmitService {
 	private static volatile OutOfProcessSubmitService instance;
 	private static final Logger logger=LoggerFactory.getLogger(OutOfProcessSubmitService.class);
+	
+	/**
+	 * Set the singleton instanceof of OutOfProcessSubmitService.
+	 * 
+	 * @param instance the instance to set
+	 */
+	public static void setInstance(OutOfProcessSubmitService instance) {
+		OutOfProcessSubmitService.instance = instance;
+	}
+	
 	/**
 	 * Get the singleton instance of OutOfProcessSubmitService.
 	 * 
@@ -79,6 +86,63 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 	private String hostName;
 	private String keystoreFilename;
 	private String keystorePassword;
+	
+	/**
+	 * Set whether or not to use SSL.
+	 * 
+	 * @param useSSL true if SSL should be used, false otherwise
+	 */
+	public void setUseSSL(boolean useSSL) {
+		this.useSSL = useSSL;
+	}
+	
+	/**
+	 * @return true if SSL should be used, false otherwise
+	 */
+	public boolean isUseSSL() {
+		return useSSL;
+	}
+	
+	/**
+	 * Set the server hostname.
+	 * 
+	 * @param hostName the server hostname
+	 */
+	public void setHostName(String hostName) {
+		this.hostName = hostName;
+	}
+	
+	/**
+	 * Set the keystore filename.
+	 * 
+	 * @param keystoreFilename the keystore filename to set
+	 */
+	public void setKeystoreFilename(String keystoreFilename) {
+		this.keystoreFilename = keystoreFilename;
+	}
+	
+	/**
+	 * @return the keystore filename
+	 */
+	public String getKeystoreFilename() {
+		return keystoreFilename;
+	}
+	
+	/**
+	 * Set the keystore password.
+	 * 
+	 * @param keystorePassword the keystore password to set
+	 */
+	public void setKeystorePassword(String keystorePassword) {
+		this.keystorePassword = keystorePassword;
+	}
+	
+	/**
+	 * @return the keystore password
+	 */
+	public String getKeystorePassword() {
+		return keystorePassword;
+	}
 
 	/**
 	 * Poll to see how many worker tasks, and thus how many connected builder threads,
@@ -227,53 +291,4 @@ public class OutOfProcessSubmitService implements ISubmitService, ServletContext
 		serverThread.join();
 	}
 	
-	private static String getContextParameter(ServletContext ctx, String propName, String defValue) {
-		String value = ctx.getInitParameter(propName);
-		return value != null ? value : defValue;
-	}
-
-	@Override
-	public void contextInitialized(ServletContextEvent event) {
-		try {
-			ServletContext servletContext = event.getServletContext();
-
-			this.useSSL = Boolean.parseBoolean(
-					getContextParameter(servletContext, "cloudcoder.submitsvc.oop.ssl.useSSL", "true"));
-			logger.info("OOP build service: useSSL={}", useSSL);
-			
-			this.hostName = getContextParameter(servletContext, "cloudcoder.submitsvc.oop.host", "localhost");
-			
-			if (useSSL) {
-				// Determine keystore filename and password
-				keystoreFilename = servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore");
-				if (keystoreFilename == null) {
-					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
-				}
-				keystorePassword = servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore.password");
-				if (keystorePassword == null) {
-					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
-				}
-				System.out.println("keystore=" + keystoreFilename + ",password=" + keystorePassword);
-			}
-			
-			// See if a non-default port was specified
-			String p = servletContext.getInitParameter("cloudcoder.submitsvc.oop.port");
-			int port = (p != null) ? Integer.parseInt(p) : DEFAULT_PORT;
-			
-			start(port);
-			instance = this;
-		} catch (IOException e) {
-			throw new IllegalStateException("Could not create server thread for oop submit service", e);
-		}
-	}
-
-	@Override
-	public void contextDestroyed(ServletContextEvent event) {
-		try {
-			shutdown();
-			instance = null;
-		} catch (InterruptedException e) {
-			throw new IllegalStateException("Interrupted while waiting for oop submit service server thread to shut down", e);
-		}
-	}
 }

@@ -11,9 +11,10 @@
 		<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
 		<pathelement location="../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar"/>
 		<pathelement location="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+		<pathelement location="../CloudCoderSubmissionQueueServletContextListener/cloudcoderSubmissionQueueServletContextListener.jar"/>
 	</path>
 	
-	<target name="javac" depends="cloudcoderJetty,modelClasses,modelClassesJSON,webServiceUtil,submissionQueue">
+	<target name="javac" depends="cloudcoderJetty,modelClasses,modelClassesJSON,webServiceUtil,submissionQueue,submissionQueueServletContextListener">
 		<mkdir dir="bin"/>
 		<javac srcdir="src" destdir="bin" source="1.6" target="1.6" debug="true">
 			<classpath refid="CloudCoderBuilderWebService.path"/>
@@ -34,6 +35,10 @@
 	
 	<target name="submissionQueue">
 		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+	</target>
+	
+	<target name="submissionQueueServletContextListener">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueueServletContextListener" target="jar"/>
 	</target>
 	
 	<target name="cloudcoderJetty">
@@ -62,6 +67,9 @@
 			
 			<!-- Include the submission queue classes. -->
 			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+			
+			<!-- Include the submission queue servlet context listener classes. -->
+			<zipfileset src="../CloudCoderSubmissionQueueServletContextListener/cloudcoderSubmissionQueueServletContextListener.jar"/>
 			
 			<!-- Include libraries needed for JSON serialization. -->
 			<zipfileset src="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"/>
@@ -98,6 +106,7 @@
 		<ant dir="../CloudCoderModelClassesJSON" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderJetty" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderSubmissionQueue" target="clean" inheritall="false"/>
+		<ant dir="../CloudCoderSubmissionQueueServletContextListener" target="clean" inheritall="false"/>
 		<ant dir="../CloudCoderWebServiceUtil" target="clean" inheritall="false"/>
 	</target>
 </project>
