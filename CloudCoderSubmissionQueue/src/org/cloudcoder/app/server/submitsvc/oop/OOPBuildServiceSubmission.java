@@ -44,19 +44,19 @@ public class OOPBuildServiceSubmission implements IFutureSubmissionResult {
 		this.submission = submission;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult#poll()
-	 */
 	@Override
-	public SubmissionResult poll() throws SubmissionException {
+	public SubmissionResult waitFor(long timeoutMs) throws SubmissionException, InterruptedException {
 		synchronized (lock) {
-			if (!ready) {
-				return null;
-			}
 			if (error != null) {
 				throw new SubmissionException("Error testing submission", error);
 			}
-			return submissionResult;
+			while (!ready && timeoutMs > 0L) {
+				long start = System.currentTimeMillis();
+				lock.wait(timeoutMs);
+				long end = System.currentTimeMillis();
+				timeoutMs -= (end - start);
+			}
+			return ready ? submissionResult : null;
 		}
 	}
 	

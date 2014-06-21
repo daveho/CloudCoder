@@ -79,7 +79,12 @@ public class Submit extends HttpServlet {
 				return;
 			}
 			
-			SubmissionResult submissionResult = result.poll();
+			SubmissionResult submissionResult;
+			try {
+				submissionResult = result.waitFor(IFutureSubmissionResult.STANDARD_POLL_WAIT_MS);
+			} catch (InterruptedException e) {
+				throw new ServletException("Unexpectedly interrupted waiting for submission result", e);
+			}
 			
 			Map<String, Object> resultObj = new HashMap<String, Object>();
 			if (submissionResult == null) {

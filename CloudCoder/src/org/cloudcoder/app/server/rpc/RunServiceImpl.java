@@ -108,13 +108,16 @@ public class RunServiceImpl extends RemoteServiceServlet implements RunService
         // See if the SubmissionResult is ready
         SubmissionResult result;
         try {
-            result = future.poll();
+            result = future.waitFor(IFutureSubmissionResult.STANDARD_POLL_WAIT_MS);
         } catch (SubmissionException e) {
             // If poll() throws an exception, the submission completed
             // with an error, but it did complete, so clear the session objects.
             session.removeAttribute(SessionAttributeKeys.FUTURE_SUBMISSION_RESULT_KEY);
             throw e;
-        }
+        } catch (InterruptedException e) {
+			logger.error("checkSubmission interrupted unexpectedly", e);
+			return null;
+		}
         if (result == null) {
             // submission result not ready yet
             return null;

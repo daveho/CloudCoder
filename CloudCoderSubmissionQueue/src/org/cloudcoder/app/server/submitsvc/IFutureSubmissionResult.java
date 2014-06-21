@@ -25,18 +25,25 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
  * that is in the process of being compiled and tested by
  * an {@link ISubmitService}.  It is expected that compilation/testing
  * with either complete in a timely manner, or will gracefully time out.
- * So, it is required that {@link IFutureSubmissionResult#poll()}
+ * So, it is required that {@link IFutureSubmissionResult#waitFor(long)}
  * return a non-null value after some reasonable interval.
  * 
  * @author David Hovemeyer
  */
 public interface IFutureSubmissionResult {
 	/**
-	 * Check to see if compilation/testing has completed for the submission.
-	 * 
-	 * @return a {@link SubmissionResult} if compilation/testing has completed,
-	 *         or null if compilation/testing is still in progress
-	 * @throws SubmissionException
+	 * A "standard" wait time in milliseconds.  This is suggested as being
+	 * a reasonable value to pass to {@link #waitFor(long)}.
 	 */
-	public SubmissionResult poll() throws SubmissionException;
+	public long STANDARD_POLL_WAIT_MS = 1000L;
+
+	/**
+	 * Synchronous timed wait for compilation/testing to complete.
+	 * 
+	 * @param timeoutMs maximum wait time in milliseconds
+	 * @return the {@link SubmissionResult}, or null if compilation/testing is still in progress
+	 * @throws SubmissionException
+	 * @throws InterruptedException 
+	 */
+	public SubmissionResult waitFor(long timeoutMs) throws SubmissionException, InterruptedException;
 }
