@@ -1,0 +1,82 @@
+<project name="CloudCoderDataAnalysis" default="jar">
+	<property name="jarfile" value="cloudcoderDataAnalysis.jar"/>
+	
+	<path id="dataanalysis.classpath">
+		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
+		<pathelement location="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+		<fileset dir="lib" includes="**.jar"/>
+	</path>
+	
+	<target name="modelClasses">
+		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
+	</target>
+		
+	<target name="modelClassesPersist">
+		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
+	</target>
+
+	<target name="submissionQueue">
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
+	</target>
+
+	<target name="deps" depends="modelClasses,modelClassesPersist,submissionQueue"/>
+	
+	<target name="javac" depends="deps">
+		<mkdir dir="bin"/>
+		<javac
+			source="1.6"
+			target="1.6"
+			debug="true"
+			classpathref="dataanalysis.classpath"
+			srcdir="src"
+			destdir="bin"/>
+		<!-- Copy all non-source files as resources. -->
+		<copy todir="bin">
+			<fileset dir="src" excludes="**/*.java"/>
+		</copy>
+	</target>
+	
+	<target name="jar" depends="javac">
+		<jar destfile="${jarfile}">
+			<fileset dir="bin" includes="**"/>
+			<fileset dir="../CloudCoder/war/WEB-INF/classes" includes="org/cloudcoder/app/client/rpc/*Service.class"/>
+			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar" excludes="META-INF/**"/>
+			
+			<!-- FIXME: is there a better way to do this? -->
+			<zipfileset src="../CloudCoderLogging/lib/log4j-1.2.16.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
+			
+			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+			
+			<zipfileset src="../CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar"/>
+			<zipfileset src="lib/daemon-0.7.jar"/>
+			<zipfileset src="lib/opencsv-2.4.jar"/>
+			
+			<!-- Include cloudcoder.properties -->
+			<fileset dir=".." includes="cloudcoder.properties"/>
+			
+			<manifest>
+				<attribute name="Main-Class" value="org.cloudcoder.dataanalysis.Main" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="clean">
+        <delete quiet="true">
+        	<fileset dir="bin" includes="**"/>
+        </delete>
+    	<delete quiet="true" file="${jarfile}"/>
+	</target>
+	
+	<!-- Clean this target and all depended-on targets. -->
+	<target name="depclean" depends="clean">
+		<ant inheritall="false" dir="../CloudCoder" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClassesPersistence" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="clean"/>
+	</target>
+</project>
