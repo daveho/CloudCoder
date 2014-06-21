@@ -17,6 +17,7 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.util.Properties;
 import java.util.Scanner;
 
 import org.apache.log4j.ConsoleAppender;
@@ -31,45 +32,18 @@ import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
  * @author David Hovemeyer
  */
 public class Util {
-
-	public static void connectToDatabase(Scanner keyboard) {
-		final String dbName = Util.ask(keyboard, "Database name: ");
-		final String dbUser = Util.ask(keyboard, "Database username: ");
-		final String dbPasswd = Util.ask(keyboard, "Database password: ");
-		final String dbHost = Util.ask(keyboard, "Database hostname: ");
-		final String dbPortStr = Util.ask(keyboard, "Database port string (e.g., ':8889' for MAMP): ");
-		
-		JDBCDatabaseConfig.ConfigProperties config = new JDBCDatabaseConfig.ConfigProperties() {
-			
-			@Override
-			public String getUser() {
-				return dbUser;
-			}
-			
-			@Override
-			public String getPortStr() {
-				return dbPortStr;
-			}
-			
-			@Override
-			public String getPasswd() {
-				return dbPasswd;
-			}
-			
-			@Override
-			public String getHost() {
-				return dbHost;
-			}
-			
-			@Override
-			public String getDatabaseName() {
-				return dbName;
-			}
-		};
-		
-		JDBCDatabaseConfig.create(config);
+	public static void readDatabaseProperties(Scanner keyboard, Properties config) {
+		config.setProperty("cloudcoder.db.databaseName", Util.ask(keyboard, "Database name: "));
+		config.setProperty("cloudcoder.db.user", Util.ask(keyboard, "Database username: "));
+		config.setProperty("cloudcoder.db.passwd", Util.ask(keyboard, "Database password: "));
+		config.setProperty("cloudcoder.db.host", Util.ask(keyboard, "Database hostname: "));
+		config.setProperty("cloudcoder.db.portStr", Util.ask(keyboard, "Database port string (e.g., ':8889' for MAMP): "));
 	}
 
+	public static void connectToDatabase(Properties config) {
+		JDBCDatabaseConfig.createFromProperties(config);
+	}
+	
 	public static String ask(Scanner keyboard, String prompt) {
 		System.out.print(prompt);
 		return keyboard.nextLine();

@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.Database;
@@ -43,8 +44,11 @@ public class FindWorkSessions {
 	public static void main(String[] args) throws IOException {
 		Util.configureLogging();
 		
+		Properties config = new Properties();
+		
 		Scanner keyboard = new Scanner(System.in);
-		Util.connectToDatabase(keyboard);
+		Util.readDatabaseProperties(keyboard, config);
+		Util.connectToDatabase(config);
 		
 		int courseId = Integer.parseInt(Util.ask(keyboard, "Course id: "));
 		int separationSeconds = Integer.parseInt(Util.ask(keyboard, "Separation in seconds: "));

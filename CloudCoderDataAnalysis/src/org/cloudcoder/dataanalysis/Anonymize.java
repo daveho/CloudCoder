@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.CreateWebappDatabase;
@@ -46,9 +47,13 @@ public class Anonymize {
 	public static void main(String[] args) throws IOException {
 		Util.configureLogging();
 		
+		Properties config = new Properties();
+		
 		Scanner keyboard = new Scanner(System.in);
 		
-		Util.connectToDatabase(keyboard);
+		Util.readDatabaseProperties(keyboard, config);
+		
+		Util.connectToDatabase(config);
 		System.out.println("Checking schema...");
 		checkSchema();
 		

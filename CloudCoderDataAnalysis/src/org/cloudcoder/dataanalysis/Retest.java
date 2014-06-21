@@ -17,6 +17,7 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.util.Properties;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.Database;
@@ -55,7 +56,9 @@ public class Retest {
 	public static void main(String[] args) {
 		Scanner keyboard = new Scanner(System.in);
 		Util.configureLogging();
-		Util.connectToDatabase(keyboard);
+		Properties config = new Properties();
+		Util.readDatabaseProperties(keyboard, config);
+		Util.connectToDatabase(config);
 		Retest retest = new Retest();
 		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
 		criteria.setCourseId(Integer.parseInt(Util.ask(keyboard, "Course id: ")));
