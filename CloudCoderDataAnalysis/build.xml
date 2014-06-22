@@ -50,11 +50,11 @@
 			<zipfileset src="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
 			
-			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
+			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar" excludes="META-INF/**"/>
 			
-			<zipfileset src="../CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar"/>
-			<zipfileset src="lib/daemon-0.7.jar"/>
-			<zipfileset src="lib/opencsv-2.4.jar"/>
+			<zipfileset src="../CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar" excludes="META-INF/**"/>
+			<zipfileset src="lib/daemon-0.7.jar" excludes="META-INF/**"/>
+			<zipfileset src="lib/opencsv-2.4.jar" excludes="META-INF/**"/>
 			
 			<!-- Include cloudcoder.properties -->
 			<fileset dir=".." includes="cloudcoder.properties"/>
