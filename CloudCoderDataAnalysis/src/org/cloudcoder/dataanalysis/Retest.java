@@ -17,13 +17,28 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.cloudcoder.app.server.model.HealthDataSingleton;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.SnapshotCallback;
+import org.cloudcoder.app.server.submitsvc.DefaultSubmitService;
+import org.cloudcoder.app.server.submitsvc.IFutureSubmissionResult;
 import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
+import org.cloudcoder.app.shared.model.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Make submissions/snapshots drawn from the database available for retesting.
@@ -33,35 +48,149 @@ import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
  * @author David Hovemeyer
  */
 public class Retest {
+	private static final Logger logger = LoggerFactory.getLogger(Retest.class);
+	
 	private SnapshotSelectionCriteria criteria;
+	private Properties config;
+	private Map<Integer, ProblemAndTestCaseList> exerciseMap;
+	
+	private static class RetestSnapshot {
+		int courseId;
+		int problemId;
+		int userId;
+		String programText;
+		
+		public RetestSnapshot(int courseId, int problemId, int userId, String programText) {
+			this.courseId = courseId;
+			this.problemId = problemId;
+			this.userId = userId;
+			this.programText = programText;
+		}
+	}
 	
 	public Retest() {
-		
+		exerciseMap = new HashMap<Integer, ProblemAndTestCaseList>();
 	}
 	
 	public void setCriteria(SnapshotSelectionCriteria criteria) {
 		this.criteria = criteria;
 	}
 	
-	public void execute() {
+	public void setConfig(Properties config) {
+		this.config = config;
+	}
+	
+	public void execute() throws IOException {
+		// Initialize OutOfProcessSubmitService
 		OutOfProcessSubmitService svc = new OutOfProcessSubmitService();
+		svc.initFromConfigProperties(config);
+		svc.start();
+		OutOfProcessSubmitService.setInstance(svc);
 		
+		// Pause a bit to allow builders to connect
+		System.out.println("Waiting for builders to connect...");
+		boolean buildersConnected = false;
+		while (!buildersConnected) {
+			HealthDataSingleton h = HealthDataSingleton.getInstance();
+			if (h.getHealthData().getNumConnectedBuilderThreads() > 0) {
+				buildersConnected = true;
+			} else {
+				try {
+					Thread.sleep(1000L);
+					System.out.print(".");
+					System.out.flush();
+				} catch (InterruptedException e) {
+					logger.error("Interrupted waiting for builders to connect", e);
+				}
+			}
+		}
+		
+		// Retrieve snapshots from database
+		final List<RetestSnapshot> snapshotList = new ArrayList<Retest.RetestSnapshot>();
 		Database.getInstance().retrieveSnapshots(criteria, new SnapshotCallback() {
 			@Override
 			public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText) {
 				// FIXME just for testing
-				System.out.printf("submitEventId=%d,fullTextChangeId=%d,courseId=%d,problemId=%d,userId=%d\n",
-						submitEventId, fullTextChangeId, courseId, problemId, userId);
+				snapshotList.add(new RetestSnapshot(courseId, problemId, userId, programText));
 			}
 		});
+		System.out.println(snapshotList.size() + " snapshots");
+		
+		// Add snapshots to submission queue, resolving problem/test cases as necessary.
+		// Add IFutureSubmissionResults to a list.
+		List<IFutureSubmissionResult> futureList = new ArrayList<IFutureSubmissionResult>();
+		for (RetestSnapshot snapshot : snapshotList) {
+			ProblemAndTestCaseList exercise = findExercise(snapshot.problemId);
+			IFutureSubmissionResult future;
+			try {
+				future = DefaultSubmitService.getInstance().submitAsync(exercise.getProblem(), exercise.getTestCaseData(), snapshot.programText);
+				futureList.add(future);
+			} catch (SubmissionException e) {
+				logger.error("Error submitting snapshot for retest", e);
+			}
+		}
+		
+		// Wait for all submission results.
+		for (IFutureSubmissionResult future : futureList) {
+			try {
+				SubmissionResult result = waitForSubmissionResult(future);
+				onSubmissionResult(result);
+			} catch (SubmissionException e) {
+				logger.error("Error testing snapshot (should not happen)", e);
+			} catch (InterruptedException e) {
+				logger.error("Interrupted waiting for submission result (should not happen)", e);
+			}
+		}
+		
+		System.out.print("All snapshots tested...");
+		System.out.flush();
+		try {
+			OutOfProcessSubmitService.getInstance().shutdown();
+		} catch (InterruptedException e) {
+			logger.error("Interrupted waiting for OutOfProcessBuildService to shutdown", e);
+		}
+		System.out.println("exiting");
 	}
-	
-	public static void main(String[] args) {
-		boolean interactive = false;
+
+	private SubmissionResult waitForSubmissionResult(IFutureSubmissionResult future) throws SubmissionException, InterruptedException {
+		System.out.print("Waiting for submission result...");
+		SubmissionResult submissionResult = null;
+		while (submissionResult == null) {
+			submissionResult = future.waitFor(IFutureSubmissionResult.STANDARD_POLL_WAIT_MS);
+			if (submissionResult == null) {
+				System.out.print(".");
+				System.out.flush();
+			}
+		}
+		System.out.println("done");
+		return submissionResult;
+	}
+
+	private ProblemAndTestCaseList findExercise(int problemId) {
+		ProblemAndTestCaseList exercise = exerciseMap.get(problemId);
+		if (exercise == null) {
+			Problem problem = Database.getInstance().getProblem(problemId);
+			List<TestCase> testCaseList = Database.getInstance().getTestCasesForProblem(problemId);
+			exercise = new ProblemAndTestCaseList();
+			exercise.setProblem(problem);
+			exercise.setTestCaseList(testCaseList);
+			exerciseMap.put(problemId, exercise);
+		}
+		return exercise;
+	}
+
+	private void onSubmissionResult(SubmissionResult result) {
+		// TODO: do something useful with the SubmissionResult
+		System.out.println("Submission result received: " + result.determineSubmissionStatus());
+	}
+
+	public static void main(String[] args) throws IOException {
+		boolean interactiveConfig = false;
 		
 		for (String arg : args) {
-			if (arg.equals("--interactive")) {
-				interactive = true;
+			if (arg.equals("--interactiveConfig")) {
+				// Configure interactively rather than using embedded cloudcoder.properties
+				interactiveConfig = true;
 			} else {
 				throw new IllegalArgumentException("Unknown option: " + arg);
 			}
@@ -70,11 +199,17 @@ public class Retest {
 		Scanner keyboard = new Scanner(System.in);
 		Util.configureLogging();
 		Properties config = new Properties();
-		if (interactive) {
+		if (interactiveConfig) {
 			Util.readDatabaseProperties(keyboard, config);
+			config.setProperty("cloudcoder.submitsvc.oop.host", Util.ask(keyboard, "Submission queue hostname: "));
+			config.setProperty("cloudcoder.submitsvc.oop.port", Util.ask(keyboard, "Submission queue port: "));
+			config.setProperty("cloudcoder.submitsvc.oop.ssl.useSSL", Util.ask(keyboard, "Use SSL (true/false): "));
+			if (Boolean.valueOf(config.getProperty("cloudcoder.submitsvc.oop.ssl.useSSL"))) {
+				config.setProperty("cloudcoder.submitsvc.ssl.keystore", Util.ask(keyboard, "Keystore filename: "));
+				config.setProperty("cloudcoder.submitsvc.ssl.keystore.password", Util.ask(keyboard, "Keystore password: "));
+			}
 		} else {
-			ClassLoader classLoader = Retest.class.getClassLoader();
-			Util.loadEmbeddedConfig(config, classLoader);
+			Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
 		}
 		Util.connectToDatabase(config);
 		Retest retest = new Retest();
@@ -83,6 +218,7 @@ public class Retest {
 		criteria.setProblemId(Integer.parseInt(Util.ask(keyboard, "Problem id: ")));
 		criteria.setUserId(Integer.parseInt(Util.ask(keyboard, "User id: ")));
 		retest.setCriteria(criteria);
+		retest.setConfig(config);
 		retest.execute();
 	}
 }

@@ -129,6 +129,7 @@ public class OutOfProcessSubmitService implements ISubmitService {
 		if (this.useSSL) {
 			this.keystoreFilename = getRequiredProperty(config, "cloudcoder.submitsvc.ssl.keystore");
 			this.keystorePassword = getRequiredProperty(config, "cloudcoder.submitsvc.ssl.keystore.password");
+			logger.info("Using keystore {}. password={}", this.keystoreFilename, this.keystorePassword);
 		}
 		this.port = Integer.parseInt(getRequiredProperty(config, "cloudcoder.submitsvc.oop.port"));
 	}

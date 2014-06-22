@@ -48,6 +48,7 @@
 			<zipfileset src="../CloudCoderLogging/lib/log4j-1.2.16.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderLogging/lib/commons-io-2.1.jar" excludes="META-INF/**"/>
 			
 			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar" excludes="META-INF/**"/>
 			
@@ -57,6 +58,10 @@
 			
 			<!-- Include cloudcoder.properties -->
 			<fileset dir=".." includes="cloudcoder.properties"/>
+			
+			<!-- Include keystores -->
+			<fileset dir=".." includes="defaultkeystore.jks"/>
+			<fileset dir=".." includes="keystore.jks"/>
 			
 			<manifest>
 				<attribute name="Main-Class" value="org.cloudcoder.dataanalysis.Main" />
