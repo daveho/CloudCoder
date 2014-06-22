@@ -33,7 +33,7 @@ public class Main {
 		} else if (app.equals("findWorkSessions")) {
 			FindWorkSessions.main(rest);
 		} else if (app.equals("retest")) {
-			Retest.main(args);
+			Retest.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);
