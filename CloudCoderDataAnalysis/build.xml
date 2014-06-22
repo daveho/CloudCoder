@@ -41,7 +41,6 @@
 	<target name="jar" depends="javac">
 		<jar destfile="${jarfile}">
 			<fileset dir="bin" includes="**"/>
-			<fileset dir="../CloudCoder/war/WEB-INF/classes" includes="org/cloudcoder/app/client/rpc/*Service.class"/>
 			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar" excludes="META-INF/**"/>
 			<zipfileset src="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar" excludes="META-INF/**"/>
 			
