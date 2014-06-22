@@ -54,10 +54,25 @@ public class Retest {
 	}
 	
 	public static void main(String[] args) {
+		boolean interactive = false;
+		
+		for (String arg : args) {
+			if (arg.equals("--interactive")) {
+				interactive = true;
+			} else {
+				throw new IllegalArgumentException("Unknown option: " + arg);
+			}
+		}
+		
 		Scanner keyboard = new Scanner(System.in);
 		Util.configureLogging();
 		Properties config = new Properties();
-		Util.readDatabaseProperties(keyboard, config);
+		if (interactive) {
+			Util.readDatabaseProperties(keyboard, config);
+		} else {
+			ClassLoader classLoader = Retest.class.getClassLoader();
+			Util.loadEmbeddedConfig(config, classLoader);
+		}
 		Util.connectToDatabase(config);
 		Retest retest = new Retest();
 		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();

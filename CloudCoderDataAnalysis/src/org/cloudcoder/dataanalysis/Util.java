@@ -61,4 +61,10 @@ public class Util {
 		Logger.getRootLogger().addAppender(console);
 	}
 
+	public static void loadEmbeddedConfig(Properties config, ClassLoader classLoader) {
+		Properties embeddedConfig =
+				org.cloudcoder.daemon.Util.loadPropertiesFromResource(classLoader, "cloudcoder.properties");
+		config.putAll(embeddedConfig);
+	}
+
 }
