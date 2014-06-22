@@ -22,6 +22,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.SnapshotCallback;
+import org.cloudcoder.app.server.submitsvc.oop.OutOfProcessSubmitService;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 
 /**
@@ -43,6 +44,8 @@ public class Retest {
 	}
 	
 	public void execute() {
+		OutOfProcessSubmitService svc = new OutOfProcessSubmitService();
+		
 		Database.getInstance().retrieveSnapshots(criteria, new SnapshotCallback() {
 			@Override
 			public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText) {

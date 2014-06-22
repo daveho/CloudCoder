@@ -29,6 +29,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.Properties;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -86,63 +87,7 @@ public class OutOfProcessSubmitService implements ISubmitService {
 	private String hostName;
 	private String keystoreFilename;
 	private String keystorePassword;
-	
-	/**
-	 * Set whether or not to use SSL.
-	 * 
-	 * @param useSSL true if SSL should be used, false otherwise
-	 */
-	public void setUseSSL(boolean useSSL) {
-		this.useSSL = useSSL;
-	}
-	
-	/**
-	 * @return true if SSL should be used, false otherwise
-	 */
-	public boolean isUseSSL() {
-		return useSSL;
-	}
-	
-	/**
-	 * Set the server hostname.
-	 * 
-	 * @param hostName the server hostname
-	 */
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-	
-	/**
-	 * Set the keystore filename.
-	 * 
-	 * @param keystoreFilename the keystore filename to set
-	 */
-	public void setKeystoreFilename(String keystoreFilename) {
-		this.keystoreFilename = keystoreFilename;
-	}
-	
-	/**
-	 * @return the keystore filename
-	 */
-	public String getKeystoreFilename() {
-		return keystoreFilename;
-	}
-	
-	/**
-	 * Set the keystore password.
-	 * 
-	 * @param keystorePassword the keystore password to set
-	 */
-	public void setKeystorePassword(String keystorePassword) {
-		this.keystorePassword = keystorePassword;
-	}
-	
-	/**
-	 * @return the keystore password
-	 */
-	public String getKeystorePassword() {
-		return keystorePassword;
-	}
+	private int port;
 
 	/**
 	 * Poll to see how many worker tasks, and thus how many connected builder threads,
@@ -161,6 +106,31 @@ public class OutOfProcessSubmitService implements ISubmitService {
 			return 0;
 		}
 		return theServerTask.getNumWorkerTasks();
+	}
+	
+	private String getRequiredProperty(Properties config, String propName) {
+		String value = config.getProperty(propName);
+		if (value == null) {
+			throw new IllegalArgumentException("Missing required property: " + propName);
+		}
+		return value;
+	}
+	
+	/**
+	 * Initialize from configuration properties (i.e., as specified in
+	 * cloudcoder.properties).  Note that no defaults are provided here,
+	 * so the parameter must specify all required properties must be set.
+	 * 
+	 * @param config the configuration properties
+	 */
+	public void initFromConfigProperties(Properties config) {
+		this.useSSL = Boolean.parseBoolean(getRequiredProperty(config, "cloudcoder.submitsvc.oop.ssl.useSSL"));
+		this.hostName = getRequiredProperty(config, "cloudcoder.submitsvc.oop.host");
+		if (this.useSSL) {
+			this.keystoreFilename = getRequiredProperty(config, "cloudcoder.submitsvc.ssl.keystore");
+			this.keystorePassword = getRequiredProperty(config, "cloudcoder.submitsvc.ssl.keystore.password");
+		}
+		this.port = Integer.parseInt(getRequiredProperty(config, "cloudcoder.submitsvc.oop.port"));
 	}
 	
 	@Override
@@ -258,7 +228,7 @@ public class OutOfProcessSubmitService implements ISubmitService {
         return serverSocket;
 	}
 	
-	public void start(int port) throws IOException {
+	public void start() throws IOException {
 	    ServerSocket serverSocket = null;
 		
 	    if (useSSL) {

@@ -18,6 +18,7 @@
 package org.cloudcoder.app.server.submitsvc.oop;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -29,6 +30,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Servlet context listener to create and destroy the
  * {@link OutOfProcessSubmitService} as necessary for a web application.
+ * Gets the configuration automatically from the webapp's servlet
+ * context init parameters.
  * 
  * @author David Hovemeyer
  */
@@ -37,42 +40,40 @@ public class OutOfProcessSubmitServiceServletContextListener implements ServletC
 	
 	private static String getContextParameter(ServletContext ctx, String propName, String defValue) {
 		String value = ctx.getInitParameter(propName);
+		if (value == null && defValue == null) {
+			logger.error("Missing configuration property: {}", propName);
+			throw new IllegalArgumentException("Missing configuration property: " + propName);
+		}
 		return value != null ? value : defValue;
+	}
+
+	private void setPropertyFromContextParameter(ServletContext ctx, Properties config, String propName, String defValue) {
+		config.setProperty(propName, getContextParameter(ctx, propName, defValue));
 	}
 
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		try {
+			// Create the singleton instance of OutOfProcessSubmitService
 			OutOfProcessSubmitService svc = new OutOfProcessSubmitService();
+			OutOfProcessSubmitService.setInstance(svc);
 			
 			ServletContext servletContext = event.getServletContext();
-
-			svc.setUseSSL(Boolean.parseBoolean(
-					getContextParameter(servletContext, "cloudcoder.submitsvc.oop.ssl.useSSL", "true")));
-			logger.info("OOP build service: useSSL={}", svc.isUseSSL());
 			
-			svc.setHostName(getContextParameter(servletContext, "cloudcoder.submitsvc.oop.host", "localhost"));
-			
-			if (svc.isUseSSL()) {
-				// Determine keystore filename and password
-				svc.setKeystoreFilename(servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore"));
-				if (svc.getKeystoreFilename() == null) {
-					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore property is not set");
-				}
-				svc.setKeystorePassword(servletContext.getInitParameter("cloudcoder.submitsvc.ssl.keystore.password"));
-				if (svc.getKeystorePassword() == null) {
-					throw new IllegalArgumentException("cloudcoder.submitsvc.ssl.keystore.password property is not set");
-				}
-				System.out.println("keystore=" + svc.getKeystoreFilename() + ",password=" + svc.getKeystorePassword());
+			// Use the servlet context parameters to initialized a Properties object
+			Properties config = new Properties();
+			setPropertyFromContextParameter(servletContext, config, "cloudcoder.submitsvc.oop.ssl.useSSL", "true");
+			setPropertyFromContextParameter(servletContext, config, "cloudcoder.submitsvc.oop.host", "localhost");
+			if (Boolean.valueOf(config.getProperty("cloudcoder.submitsvc.oop.ssl.useSSL"))) {
+				setPropertyFromContextParameter(servletContext, config, "cloudcoder.submitsvc.ssl.keystore", null);
+				setPropertyFromContextParameter(servletContext, config, "cloudcoder.submitsvc.ssl.keystore.password", null);
 			}
+			setPropertyFromContextParameter(servletContext, config, "cloudcoder.submitsvc.oop.port", String.valueOf(OutOfProcessSubmitService.DEFAULT_PORT));
+
+			// Initialize and start the OutOfProcessSubmitService
+			svc.initFromConfigProperties(config);
+			svc.start();
 			
-			// See if a non-default port was specified
-			String p = servletContext.getInitParameter("cloudcoder.submitsvc.oop.port");
-			int port = (p != null) ? Integer.parseInt(p) : OutOfProcessSubmitService.DEFAULT_PORT;
-			
-			svc.start(port);
-			//instance = this;
-			OutOfProcessSubmitService.setInstance(svc);
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not create server thread for oop submit service", e);
 		}
