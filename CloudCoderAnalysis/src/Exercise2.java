@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-import experimental.IVariableStore;
+//import experimental.IVariableStore;
 
 
 public class Exercise2
@@ -30,7 +30,7 @@ public class Exercise2
     
     static int ___currentLineNum=0;
     static int ___loop01iter=0;
-    static Map<Integer, IVariableStore> ___lineMap=new TreeMap<Integer,IVariableStore>();
+    //static Map<Integer, IVariableStore> ___lineMap=new TreeMap<Integer,IVariableStore>();
     
     
 
