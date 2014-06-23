@@ -33,7 +33,7 @@ public class CheckCommandResultsUsingRegexBuildStep implements IBuildStep {
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
 		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 		CommandResult[] commandResultList = submission.requireArtifact(this.getClass(), CommandResult[].class);
 		
 		// Create a TestResult for each TestCase/CommandResult
