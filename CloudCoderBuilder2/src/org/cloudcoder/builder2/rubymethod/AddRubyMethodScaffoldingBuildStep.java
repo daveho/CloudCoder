@@ -40,15 +40,8 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
-		
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		
 		if (programSourceList.length != 1) {
 			throw new InternalBuilderException(this.getClass(), "Only a single source file is supported");
@@ -59,10 +52,7 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 		}
 		int origNumLines = StringUtil.countLines(programText);
 		
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 		
 		StringBuilder buf = new StringBuilder();
 		

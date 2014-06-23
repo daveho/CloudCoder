@@ -50,15 +50,8 @@ public class BytecodeToBytecodeExecutableBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		Bytecode[] bytecodeList = submission.getArtifact(Bytecode[].class);
-		if (bytecodeList == null) {
-			throw new InternalBuilderException(this.getClass(), "No Bytecode list");
-		}
-		
-		FindJavaPackageAndClassNames[] packageAndClassNamesList = submission.getArtifact(FindJavaPackageAndClassNames[].class);
-		if (packageAndClassNamesList == null) {
-			throw new InternalBuilderException(this.getClass(), "No FindJavaPackageAndClassNames list");
-		}
+		Bytecode[] bytecodeList = submission.requireArtifact(this.getClass(), Bytecode[].class);
+		FindJavaPackageAndClassNames[] packageAndClassNamesList = submission.requireArtifact(this.getClass(), FindJavaPackageAndClassNames[].class);
 		
 		// Create temporary directory
 		File tempDir = FileUtil.makeTempDir(config);

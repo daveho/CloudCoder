@@ -49,10 +49,8 @@ public class CCompilerBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+		// Get ProgramSource list
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		
 		// For now, we only handle a single source file
 		if (programSourceList.length > 1) {

@@ -50,10 +50,7 @@ public class CreateSubmissionResultBuildStep implements IBuildStep {
 		submissionResult.setCompilationResult(compilationResult);
 		
 		// Get the TestResult list
-		TestResult[] testResultList = submission.getArtifact(TestResult[].class);
-		if (testResultList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestResult list");
-		}
+		TestResult[] testResultList = submission.requireArtifact(this.getClass(), TestResult[].class);
 		submissionResult.setTestResults(testResultList);
 		
 		// Adding the SubmissionResult artifact completes building/testing for this submission

@@ -42,15 +42,8 @@ public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
-		
-		Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
 
         StringBuilder tester = new StringBuilder();
         tester.append("public class Tester {\n");
@@ -76,10 +69,7 @@ public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
         ProgramSource testerProgramSource = new ProgramSource(testerCode);
 
         // Get existing ProgramSource objects
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+        ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 
 		// Build array of all ProgramSource
 		List<ProgramSource> allProgramSourceList = new ArrayList<ProgramSource>();

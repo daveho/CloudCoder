@@ -45,24 +45,15 @@ public class AddCFunctionScaffoldingBuildStep implements IBuildStep {
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
 
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		
 		if (programSourceList.length != 1) {
 			throw new InternalBuilderException(this.getClass(), "C_FUNCTION problems only support a single source file");
 		}
 
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 
-		Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
 
 		String programText = programSourceList[0].getProgramText();
 		if (!programText.endsWith("\n")) {

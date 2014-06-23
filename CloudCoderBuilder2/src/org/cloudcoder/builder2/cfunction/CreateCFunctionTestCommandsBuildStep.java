@@ -24,20 +24,9 @@ public class CreateCFunctionTestCommandsBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
-		
-		NativeExecutable nativeExe = submission.getArtifact(NativeExecutable.class);
-		if (nativeExe == null) {
-			throw new InternalBuilderException(this.getClass(), "No NativeExecutable");
-		}
-		
-		SecretSuccessAndFailureCodes codes = submission.getArtifact(SecretSuccessAndFailureCodes.class);
-		if (codes == null) {
-			throw new InternalBuilderException(this.getClass(), "No SecretSuccessAndFailureCodes");
-		}
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
+		NativeExecutable nativeExe = submission.requireArtifact(this.getClass(), NativeExecutable.class);
+		SecretSuccessAndFailureCodes codes = submission.requireArtifact(this.getClass(), SecretSuccessAndFailureCodes.class);
 		
 		Command[] commandList = new Command[testCaseList.length];
 		CommandInput[] commandInputList = new CommandInput[testCaseList.length];

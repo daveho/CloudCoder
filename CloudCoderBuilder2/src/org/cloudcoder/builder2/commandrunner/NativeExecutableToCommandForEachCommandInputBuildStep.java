@@ -50,18 +50,12 @@ public class NativeExecutableToCommandForEachCommandInputBuildStep implements IB
 	
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
-		if (commandInputList == null) {
-			throw new InternalBuilderException(this.getClass(), "No CommandInput list");
-		}
+		CommandInput[] commandInputList = submission.requireArtifact(this.getClass(), CommandInput[].class);
 		
 		List<Command> commandList = new ArrayList<Command>();
 		
 		for (int i = 0; i < commandInputList.length; i++) {
-			NativeExecutable nativeExe = submission.getArtifact(NativeExecutable.class);
-			if (nativeExe == null) {
-				throw new InternalBuilderException(this.getClass(), "No NativeExecutable");
-			}
+			NativeExecutable nativeExe = submission.requireArtifact(this.getClass(), NativeExecutable.class);
 			commandList.add(nativeExe.toCommand());
 		}
 		

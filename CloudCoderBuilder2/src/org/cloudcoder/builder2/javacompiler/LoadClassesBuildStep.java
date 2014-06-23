@@ -43,10 +43,7 @@ public class LoadClassesBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		Bytecode[] bytecodeList = submission.getArtifact(Bytecode[].class);
-		if (bytecodeList == null) {
-			throw new InternalBuilderException(this.getClass(), "No Bytecode list");
-		}
+		Bytecode[] bytecodeList = submission.requireArtifact(this.getClass(), Bytecode[].class);
 
 		Map<String, byte[]> classes = new HashMap<String, byte[]>();
 		for (Bytecode bytecode : bytecodeList) {

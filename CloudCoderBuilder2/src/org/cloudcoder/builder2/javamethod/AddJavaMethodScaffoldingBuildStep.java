@@ -37,10 +37,7 @@ public class AddJavaMethodScaffoldingBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		
 		if (programSourceList.length > 1) {
 			throw new InternalBuilderException(this.getClass(), "JAVA_METHOD testing can't handle multiple source files");

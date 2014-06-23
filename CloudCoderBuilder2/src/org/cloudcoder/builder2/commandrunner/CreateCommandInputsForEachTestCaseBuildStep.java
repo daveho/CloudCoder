@@ -38,10 +38,7 @@ public class CreateCommandInputsForEachTestCaseBuildStep implements IBuildStep {
 	
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 		
 		CommandInput[] commandInputList = new CommandInput[testCaseList.length];
 		for (int i = 0; i < testCaseList.length; i++) {

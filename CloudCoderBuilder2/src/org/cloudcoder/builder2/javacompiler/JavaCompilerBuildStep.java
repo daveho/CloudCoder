@@ -47,10 +47,7 @@ public class JavaCompilerBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		ProgramSource[] programSourceList = submission.getArtifact(ProgramSource[].class);
-		if (programSourceList == null) {
-			throw new InternalBuilderException(this.getClass(), "No ProgramSource list");
-		}
+		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 
 		// Determine the package name and top-level class name,
 		// add resulting FindJavaPackageAndClassNames object as submission artifact

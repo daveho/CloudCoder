@@ -51,23 +51,9 @@ public class ExecuteJavaMethodTestsBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		// Get Problem
-		Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
-
-		// Get LoadedClasses
-		LoadedClasses loadedClasses = submission.getArtifact(LoadedClasses.class);
-		if (loadedClasses == null) {
-			throw new InternalBuilderException(this.getClass(), "No LoadedClasses");
-		}
-		
-		// Get TestCase list
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+		LoadedClasses loadedClasses = submission.requireArtifact(this.getClass(), LoadedClasses.class);
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
 		
 		// Get the loaded Class for the Tester class
 		Class<?> testerCls_;

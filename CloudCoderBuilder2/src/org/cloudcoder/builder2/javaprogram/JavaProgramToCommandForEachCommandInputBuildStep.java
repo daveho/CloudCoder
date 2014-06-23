@@ -39,15 +39,8 @@ public class JavaProgramToCommandForEachCommandInputBuildStep implements IBuildS
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		BytecodeExecutable bytecodeExe = submission.getArtifact(BytecodeExecutable.class);
-		if (bytecodeExe == null) {
-			throw new InternalBuilderException(this.getClass(), "No BytecodeExecutable");
-		}
-		
-		CommandInput[] commandInputList = submission.getArtifact(CommandInput[].class);
-		if (commandInputList == null) {
-			throw new InternalBuilderException(this.getClass(), "No CommandInput list");
-		}
+		BytecodeExecutable bytecodeExe = submission.requireArtifact(this.getClass(), BytecodeExecutable.class);
+		CommandInput[] commandInputList = submission.requireArtifact(this.getClass(), CommandInput[].class);
 		
 		Command[] commandList = new Command[commandInputList.length];
 		

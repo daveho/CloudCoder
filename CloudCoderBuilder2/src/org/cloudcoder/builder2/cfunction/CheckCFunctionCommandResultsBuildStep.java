@@ -45,25 +45,10 @@ public class CheckCFunctionCommandResultsBuildStep implements IBuildStep {
 
 	@Override
 	public void execute(BuilderSubmission submission, Properties config) {
-		CommandResult[] commandResultList = submission.getArtifact(CommandResult[].class);
-		if (commandResultList == null) {
-			throw new InternalBuilderException(this.getClass(), "No CommandResult list");
-		}
-		
-		Problem problem = submission.getArtifact(Problem.class);
-		if (problem == null) {
-			throw new InternalBuilderException(this.getClass(), "No Problem");
-		}
-		
-		TestCase[] testCaseList = submission.getArtifact(TestCase[].class);
-		if (testCaseList == null) {
-			throw new InternalBuilderException(this.getClass(), "No TestCase list");
-		}
-		
-		SecretSuccessAndFailureCodes codes = submission.getArtifact(SecretSuccessAndFailureCodes.class);
-		if (codes == null) {
-			throw new InternalBuilderException(this.getClass(), "No SecretSuccessAndFailureCodes");
-		}
+		CommandResult[] commandResultList = submission.requireArtifact(this.getClass(), CommandResult[].class);
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+		TestCase[] testCaseList = submission.requireArtifact(this.getClass(), TestCase[].class);
+		SecretSuccessAndFailureCodes codes = submission.requireArtifact(this.getClass(), SecretSuccessAndFailureCodes.class);
 		
 		TestResult[] testResultList = new TestResult[commandResultList.length];
 		
