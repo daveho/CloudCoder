@@ -103,6 +103,13 @@ public class Compiler {
 	}
 	
 	/**
+	 * @return the work directory
+	 */
+	public File getWorkDir() {
+		return workDir;
+	}
+	
+	/**
 	 * Add a compiler flag.
 	 * The added flag will appear after the compile, but before the
 	 * option that specifies the name of the executable.

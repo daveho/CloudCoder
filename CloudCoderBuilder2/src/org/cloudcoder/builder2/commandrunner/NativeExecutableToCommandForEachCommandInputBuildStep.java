@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.cloudcoder.builder2.ccompiler.CCompilerBuildStep;
+import org.cloudcoder.builder2.ccompiler.ExecuteCCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandInput;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * where the executable file is located.
  * One {@link Command} is created for each {@link CommandInput}.
  * This is useful for executing the executable resulting from
- * the {@link CCompilerBuildStep} if it will be run without
+ * the {@link ExecuteCCompilerBuildStep} if it will be run without
  * arguments with a variety of inputs.  The resulting array of
  * {@link Command} objects is added to the submission as an artifact.
  * 
