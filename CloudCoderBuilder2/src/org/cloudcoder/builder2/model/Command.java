@@ -19,6 +19,8 @@ package org.cloudcoder.builder2.model;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A command to be executed with specified arguments.
@@ -28,6 +30,7 @@ import java.util.List;
 public class Command {
 	private File dir;
 	private List<String> args;
+	private Map<String, String> env;
 	
 	/**
 	 * Constructor.
@@ -40,6 +43,7 @@ public class Command {
 	public Command(File dir, List<String> args) {
 		this.dir = dir;
 		this.args = args;
+		this.env = new TreeMap<String, String>();
 	}
 	
 	/**
@@ -54,5 +58,24 @@ public class Command {
 	 */
 	public List<String> getArgs() {
 		return args;
+	}
+
+	/**
+	 * Set an environment variable.
+	 * 
+	 * @param varName name of the environment variable
+	 * @param value   value of the environment variable
+	 */
+	public void setEnvironmentVariable(String varName, String value) {
+		env.put(varName, value);
+	}
+	
+	/**
+	 * Get the environment variable map.
+	 * 
+	 * @return the environment variable map
+	 */
+	public Map<String, String> getEnv() {
+		return env;
 	}
 }

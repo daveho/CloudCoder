@@ -80,6 +80,17 @@ public class ProcessRunner {
 	}
 	
 	/**
+	 * Get the map that stores the environment variables to be used
+	 * when the process is run.  This map can be modified in order
+	 * to add, remove, or redefine environment variables.
+	 * 
+	 * @return environment variable map
+	 */
+	public Map<String, String> getEnv() {
+		return env;
+	}
+	
+	/**
 	 * Get the builder configuration properties.
 	 * 
 	 * @return the builder configuration properties.

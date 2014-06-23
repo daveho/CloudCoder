@@ -48,9 +48,26 @@ public class Compiler {
 
 	public static final String DEFAULT_COMPILER_EXE = "gcc";
 	
-	private static class Module {
-		String sourceFileName;
-		String code;
+	/**
+	 * A module to compile.
+	 */
+	public static class Module {
+		/**
+		 * Source file name.
+		 */
+		public final String sourceFileName;
+		
+		/**
+		 * Code.
+		 */
+		public final String code;
+
+		/**
+		 * Constructor.
+		 * 
+		 * @param sourceFileName the source file name
+		 * @param code the code
+		 */
 		Module(String sourceFileName, String code) {
 			this.sourceFileName = sourceFileName;
 			this.code = code;
@@ -139,6 +156,15 @@ public class Compiler {
 	 */
 	public void addModule(String sourceFileName, String code) {
 		this.modules.add(new Module(sourceFileName, code));
+	}
+	
+	/**
+	 * Get (read-only) list of {@link Module}s.
+	 * 
+	 * @return (read-only) list of {@link Module}s
+	 */
+	public List<Module> getModules() {
+		return Collections.unmodifiableList(modules);
 	}
 	
 	/**

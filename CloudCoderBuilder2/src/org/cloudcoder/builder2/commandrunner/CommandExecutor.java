@@ -112,6 +112,9 @@ public class CommandExecutor implements Runnable {
 		}
 
 		processRunner.setStdin(commandInput.getInput());
+		
+		// Set environment variables (if the Command specifies any)
+		processRunner.getEnv().putAll(command.getEnv());
 
 		String[] cmd = ArrayUtil.toArray(command.getArgs(), String.class);
 		processRunner.runAsynchronous(command.getDir(), cmd);

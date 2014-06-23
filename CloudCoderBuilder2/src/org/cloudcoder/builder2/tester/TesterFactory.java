@@ -23,6 +23,7 @@ import java.util.Map;
 import org.cloudcoder.app.shared.model.ProblemType;
 import org.cloudcoder.builder2.ccompiler.CreateCCompilerBuildStep;
 import org.cloudcoder.builder2.ccompiler.ExecuteCCompilerBuildStep;
+import org.cloudcoder.builder2.ccompiler.GCovCCompilerBuildStep;
 import org.cloudcoder.builder2.cfunction.AddCFunctionScaffoldingBuildStep;
 import org.cloudcoder.builder2.cfunction.CheckCFunctionCommandResultsBuildStep;
 import org.cloudcoder.builder2.cfunction.CreateCFunctionTestCommandsBuildStep;
@@ -31,6 +32,8 @@ import org.cloudcoder.builder2.commandrunner.CheckCommandResultsUsingRegexBuildS
 import org.cloudcoder.builder2.commandrunner.CreateCommandInputsForEachTestCaseBuildStep;
 import org.cloudcoder.builder2.commandrunner.CreateLimitedCommandExecutionPreferencesBuildStep;
 import org.cloudcoder.builder2.commandrunner.ExecuteCommandForEachCommandInputBuildStep;
+import org.cloudcoder.builder2.commandrunner.GCovCoverageResultsCollectorBuildStep;
+import org.cloudcoder.builder2.commandrunner.GCovNativeExecutableCommandModifierBuildStep;
 import org.cloudcoder.builder2.commandrunner.NativeExecutableToCommandForEachCommandInputBuildStep;
 import org.cloudcoder.builder2.extlib.FetchExternalLibraryBuildStep;
 import org.cloudcoder.builder2.javacompiler.BytecodeToBytecodeExecutableBuildStep;
@@ -70,13 +73,16 @@ public abstract class TesterFactory {
 	 */
 	private static final IBuildStep[] C_PROGRAM_TESTER_STEPS = {
 		new CreateCCompilerBuildStep(),
+		new GCovCCompilerBuildStep(),
 		new ExecuteCCompilerBuildStep(),
 		new CreateLimitedCommandExecutionPreferencesBuildStep(),
 		new CreateCommandInputsForEachTestCaseBuildStep(),
 		new NativeExecutableToCommandForEachCommandInputBuildStep(),
+		new GCovNativeExecutableCommandModifierBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
 		new CreateSubmissionResultBuildStep(),
+		new GCovCoverageResultsCollectorBuildStep(),
 	};
 	
 	/**
@@ -86,13 +92,16 @@ public abstract class TesterFactory {
 	private static final IBuildStep[] C_FUNCTION_TESTER_STEPS = {
 		new AddCFunctionScaffoldingBuildStep(),
 		new CreateCCompilerBuildStep(),
+		new GCovCCompilerBuildStep(),
 		new ExecuteCCompilerBuildStep(),
 		new CreateLimitedCommandExecutionPreferencesBuildStep(),
 		new CreateSecretSuccessAndFailureCodesBuildStep(),
 		new CreateCFunctionTestCommandsBuildStep(),
+		new GCovNativeExecutableCommandModifierBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCFunctionCommandResultsBuildStep(),
 		new CreateSubmissionResultBuildStep(),
+		new GCovCoverageResultsCollectorBuildStep(),
 	};
 	
 	/**
