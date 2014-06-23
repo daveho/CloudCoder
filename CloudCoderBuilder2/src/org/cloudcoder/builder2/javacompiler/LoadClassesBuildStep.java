@@ -31,8 +31,6 @@ import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.LoadedClasses;
 import org.cloudcoder.builder2.util.SubmissionResultUtil;
 
-import sun.org.mozilla.classfile.ByteCode;
-
 /**
  * Use a class loader to load all of the {@link ByteCode}
  * objects produced by an earlier {@link JavaCompilerBuildStep}.
