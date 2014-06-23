@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -19,26 +19,33 @@
 package org.cloudcoder.app.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Object describing the result of compiling and testing a submission.
  * Contains a {@link CompilationResult} and a sequence of {@link TestResult}s.
+ * May also contain {@link SubmissionResultAnnotation}s, which are generic
+ * key/value pairs describing additional (optional) properties of
+ * the submission, such as static analysis results, code coverage results,
+ * etc.
  * 
  * @author David Hovemeyer
  */
 public class SubmissionResult implements Serializable
 {
-    public static final long serialVersionUID=1L;
+    public static final long serialVersionUID = 2L; // bumped when support for annotations added 
     
     private TestResult[] testResults;
     private CompilationResult compilationResult;
-    //Can add in other stuff like static error warnings
+    private List<SubmissionResultAnnotation> annotationList;
     
     /**
      * Constructor.
      */
     public SubmissionResult() {
-    	
+    	this.annotationList = new ArrayList<SubmissionResultAnnotation>();
     }
     
     /**
@@ -48,6 +55,8 @@ public class SubmissionResult implements Serializable
      * @param compilationResult the {@link CompilationResult}
      */
     public SubmissionResult(CompilationResult compilationResult) {
+    	this();
+    	
         this.compilationResult=compilationResult;
         
         // Create empty list of TestResults
@@ -136,5 +145,23 @@ public class SubmissionResult implements Serializable
 			status = SubmissionStatus.BUILD_ERROR;
 		}
 		return status;
+	}
+	
+	/**
+	 * Add a {@link SubmissionResultAnnotation}.
+	 * 
+	 * @param annotation the annotation to add
+	 */
+	public void addAnnotation(SubmissionResultAnnotation annotation) {
+		annotationList.add(annotation);
+	}
+	
+	/**
+	 * Get (read-only) list of {@link SubmissionResultAnnotation}s.
+	 * 
+	 * @return (read-only) list of {@link SubmissionResultAnnotation}s
+	 */
+	public List<SubmissionResultAnnotation> getAnnotationList() {
+		return Collections.unmodifiableList(annotationList);
 	}
 }
