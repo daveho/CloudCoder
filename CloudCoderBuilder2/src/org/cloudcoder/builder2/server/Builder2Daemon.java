@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <dhovemey@ycp.edu>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -140,17 +140,6 @@ public class Builder2Daemon implements IDaemon {
 		// connections to the webapp.
 		WebappSocketFactory webappSocketFactory;
 		try {
-			/*
-			webappSocketFactory = new WebappSocketFactory(
-					options.getAppHost(),
-					options.getAppPort(),
-					options.getKeystoreFilename(),
-					options.getKeystorePassword());
-			if (options.useSshTunnel()) {
-				webappSocketFactory.setSshTunnel(true);
-				webappSocketFactory.setSshRemoteUser(options.getSshRemoteUser());
-			}
-			*/
 			webappSocketFactory = new WebappSocketFactory(options);
 		} catch (Exception e) {
 			logger.error("Could not create WebappSocketFactory", e);
