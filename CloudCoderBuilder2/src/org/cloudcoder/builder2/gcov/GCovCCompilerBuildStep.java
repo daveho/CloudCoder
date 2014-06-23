@@ -15,10 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.builder2.ccompiler;
+package org.cloudcoder.builder2.gcov;
 
 import java.util.Properties;
 
+import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.util.PropertyUtil;

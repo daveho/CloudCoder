@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.builder2.commandrunner;
+package org.cloudcoder.builder2.gcov;
 
 import java.io.BufferedReader;
 import java.io.File;
