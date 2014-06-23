@@ -16,12 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package org.cloudcoder.builder2.javasandbox;
 
-import java.io.FilePermission;
 import java.security.Permission;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.PropertyPermission;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

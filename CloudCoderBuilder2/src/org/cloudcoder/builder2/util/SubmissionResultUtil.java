@@ -23,7 +23,6 @@ import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.builder2.server.Builder2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

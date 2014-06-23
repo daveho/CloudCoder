@@ -26,7 +26,6 @@ import org.cloudcoder.builder2.model.CommandExecutionPreferences;
 import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.CommandResult;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 
 /**
  * An {@link IBuildStep} to execute a {@link Command} for each {@link CommandInput}

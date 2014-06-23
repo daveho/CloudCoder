@@ -26,7 +26,6 @@ import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 
 /**
  * Create a {@link SubmissionResult} containing all {@link TestResult}s,

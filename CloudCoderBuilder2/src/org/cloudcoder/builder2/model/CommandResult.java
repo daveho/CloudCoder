@@ -20,6 +20,8 @@ package org.cloudcoder.builder2.model;
 import java.util.Collections;
 import java.util.List;
 
+import org.cloudcoder.app.shared.model.TestCase;
+
 /**
  * Artifact representing the result of executing a {@link Command} using
  * the input of a particular {@link TestCase}.

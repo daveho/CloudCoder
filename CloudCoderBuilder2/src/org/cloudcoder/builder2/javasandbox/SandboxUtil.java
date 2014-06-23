@@ -23,10 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.shared.model.CompilationResult;
-import org.cloudcoder.app.shared.model.CompilerDiagnostic;
-import org.cloudcoder.app.shared.model.TestResult;
-import org.cloudcoder.builder2.model.ProgramSource;
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
@@ -44,6 +40,10 @@ import org.cloudcoder.builder2.model.ProgramSource;
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import org.cloudcoder.app.shared.model.CompilationOutcome;
+import org.cloudcoder.app.shared.model.CompilationResult;
+import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.builder2.model.ProgramSource;
 
 /**
  * Utility methods for working with sandboxed Java (and other JVM languages) code.

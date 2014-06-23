@@ -12,7 +12,6 @@ import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandResult;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.ProcessStatus;
 import org.cloudcoder.builder2.util.StringUtil;
 import org.cloudcoder.builder2.util.TestResultUtil;

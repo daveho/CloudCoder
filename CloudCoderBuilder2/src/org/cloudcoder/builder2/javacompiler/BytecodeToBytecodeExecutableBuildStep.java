@@ -32,7 +32,6 @@ import org.cloudcoder.builder2.model.Bytecode;
 import org.cloudcoder.builder2.model.BytecodeExecutable;
 import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.util.FileUtil;
 import org.cloudcoder.builder2.util.SubmissionResultUtil;
 

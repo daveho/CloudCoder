@@ -8,7 +8,6 @@ import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
 
 /**

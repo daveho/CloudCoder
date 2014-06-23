@@ -23,7 +23,6 @@ import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.CommandInput;
 import org.cloudcoder.builder2.model.IBuildStep;
-import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
