@@ -139,7 +139,7 @@ public class ProcessRunner {
 		return statusMessage;
 	}
 	
-	public boolean runSynchronous(File workingDir, String[] command) {
+	public boolean runSynchronous(File workingDir, String... command) {
 		// wrap command (by default, using the runProcess.sh script)
 		command = wrapCommand(command);
 		
@@ -290,7 +290,7 @@ public class ProcessRunner {
 		}
 	}
 
-	public void runAsynchronous(final File workingDir, final String[] command) {
+	public void runAsynchronous(final File workingDir, final String... command) {
 	    exitValueMonitor=new Thread() {
 	        public void run() {
 	            runSynchronous(workingDir, command);

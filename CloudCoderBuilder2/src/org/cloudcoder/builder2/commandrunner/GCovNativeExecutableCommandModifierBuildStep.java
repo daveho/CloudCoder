@@ -23,6 +23,8 @@ import java.util.Properties;
 import org.cloudcoder.builder2.ccompiler.GCovCCompilerBuildStep;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
+import org.cloudcoder.builder2.model.CommandExecutionPreferences;
+import org.cloudcoder.builder2.model.CommandLimit;
 import org.cloudcoder.builder2.model.IBuildStep;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
@@ -64,6 +66,14 @@ public class GCovNativeExecutableCommandModifierBuildStep implements IBuildStep 
 			// directory structure based on the absolute path of the executable,
 			// which is complicated and annoying.)
 			commandList[i].setEnvironmentVariable("GCOV_PREFIX_STRIP", "40");
+		}
+		
+		// Modify the CommandExecutionPreferences to disable sandboxing,
+		// and to allow the creation of files
+		CommandExecutionPreferences prefs = submission.getArtifact(CommandExecutionPreferences.class);
+		if (prefs != null) {
+			prefs.setLimit(CommandLimit.ENABLE_SANDBOX, 0);
+			prefs.setLimit(CommandLimit.FILE_SIZE_KB, 100000);
 		}
 	}
 

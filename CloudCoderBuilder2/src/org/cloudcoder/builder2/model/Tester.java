@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A Tester executes a series of {@link IBuildStep}s on a
  * {@link BuilderSubmission}.
@@ -28,6 +31,8 @@ import java.util.Properties;
  * @author David Hovemeyer
  */
 public class Tester {
+	private static final Logger logger = LoggerFactory.getLogger(Tester.class);
+	
 	private List<IBuildStep> buildStepList;
 	
 	/**
@@ -53,11 +58,11 @@ public class Tester {
      * @param config     configuration properties: i.e., properties from cloudcoder.properties file
 	 */
 	public void execute(BuilderSubmission submission, Properties config) {
+		logger.debug("Executing {} build step(s)", buildStepList.size());
+		
 		for (IBuildStep buildStep : buildStepList) {
+			logger.debug("Executing build step: {}", buildStep.getClass().getSimpleName());
 			buildStep.execute(submission, config);
-			if (submission.isComplete()) {
-				break;
-			}
 		}
 		
 		if (!submission.isComplete()) {
