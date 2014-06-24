@@ -25,9 +25,11 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.ccompiler.Compiler.Module;
+import org.cloudcoder.builder2.gcov.GCovFileParser.LineDataCallback;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -113,18 +115,18 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 				
 				System.out.println("Coverage results in " + covDataDirName);
 				
-				// For now, just read the contents and print them out
-				BufferedReader r = new BufferedReader(new FileReader(gcovFile));
+				// For now, just parse the contents and print them out
+				FileReader r = new FileReader(gcovFile);
 				try {
-					while (true) {
-						String line = r.readLine();
-						if (line == null) {
-							break;
+					GCovFileParser parser = new GCovFileParser(r);
+					parser.parse(new LineDataCallback() {
+						@Override
+						public void onLineData(int lineNumber, int timesExecuted) {
+							System.out.printf("gcov: line=%d, timesExecuted=%d\n", lineNumber, timesExecuted);
 						}
-						System.out.println("gcov: " + line);
-					}
+					});
 				} finally {
-					r.close();
+					IOUtils.closeQuietly(r);
 				}
 			}
 		} catch (IOException e) {
