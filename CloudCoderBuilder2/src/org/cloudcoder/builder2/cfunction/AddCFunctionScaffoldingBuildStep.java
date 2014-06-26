@@ -91,8 +91,7 @@ public class AddCFunctionScaffoldingBuildStep implements IBuildStep {
 
 		// Generate calls to execute test cases.
 		for (TestCase t : testCaseList) {
-			test.append("  if (strncmp(argv[1], \"" +t.getTestCaseName()+"\", "+
-					t.getTestCaseName().length()+")==0) {\n");
+			test.append("  if (strcmp(argv[1], \"" +t.getTestCaseName()+"\")==0) {\n");
 			test.append("    return eq("+problem.getTestname()+
 					"("+t.getInput()+"), ("+t.getOutput()+")) ? rcIfEqual : rcIfNotEqual;\n");
 			test.append("  }\n");
