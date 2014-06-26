@@ -215,12 +215,7 @@ public class ProblemData implements Serializable, IProblemData {
 	/**
 	 * Description of fields (schema version 5).
 	 * The size of the description field is increasing from
-	 * 16K to 128K.  Even though this is stored on disk as a
-	 * VARCHAR column, a CloudCoder database will have a relatively
-	 * small number of exercises, so the wasted space shouldn't
-	 * be a concern, and there are some legitimate reasons to
-	 * allow large problem description (such as HTML generated
-	 * by a WYSIWYG editor of some type.) 
+	 * 16K to 128K. 
 	 */
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5)
 		.increaseFieldSize(DESCRIPTION)
