@@ -323,9 +323,15 @@ public class DBUtil {
 	 */
 	private static String getSQLDatatype(ModelObjectField<?,?> field) {
 		if (field.getType() == String.class) {
-			// If the field length is Integer.MAX_VALUE, make it a text field.
-			// Otherwise, make it VARCHAR.
-			return field.getSize() == Integer.MAX_VALUE ? "text" : ("varchar(" + field.getSize() + ")");
+			// If the field is "large", use text or mediumtext.
+			// Otherwise, use varchar.
+			if (field.getSize() > 32768) {
+				return "mediumtext";
+			} else if (field.getSize() > 16384) {
+				return "text";
+			} else {
+				return "varchar(" + field.getSize() + ")";
+			}
 		} else if (field.getType() == Short.class) {
 			return "mediumint(9)";
 		} else if (field.getType() == Integer.class) {

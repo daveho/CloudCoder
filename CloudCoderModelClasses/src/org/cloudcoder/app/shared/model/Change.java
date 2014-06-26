@@ -89,7 +89,7 @@ public class Change implements Serializable, IContainsEvent, IModelObject<Change
 	};
 	/** {@link ModelObjectField} for long change text. */
 	public static final ModelObjectField<Change, String> TEXT =
-			new ModelObjectField<Change, String>("text", String.class, Integer.MAX_VALUE, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
+			new ModelObjectField<Change, String>("text", String.class, 32768, ModelObjectIndexType.NONE, ModelObjectField.ALLOW_NULL) {
 		public void set(Change obj, String value) { obj.setText(value); }
 		public String get(Change obj) { return obj.getText(); }
 	};

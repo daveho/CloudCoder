@@ -77,9 +77,15 @@ public class ProblemData implements Serializable, IProblemData {
 		public void set(IProblemData obj, String value) { obj.setDescription(value); }
 		public String get(IProblemData obj) { return obj.getDescription(); }
 	};
+	/** {@link ModelObjectField} for description (schema verions 3-6). */
+	public static final ModelObjectField<IProblemData, String> DESCRIPTION_V3_V6 =
+			new ModelObjectField<IProblemData, String>("description", String.class, 16384, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
+		public void set(IProblemData obj, String value) { obj.setDescription(value); }
+		public String get(IProblemData obj) { return obj.getDescription(); }
+	};
 	/** {@link ModelObjectField} for description. */
 	public static final ModelObjectField<IProblemData, String> DESCRIPTION =
-			new ModelObjectField<IProblemData, String>("description", String.class, 16384, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
+			new ModelObjectField<IProblemData, String>("description", String.class, 131072, ModelObjectIndexType.NONE, ModelObjectField.LITERAL) {
 		public void set(IProblemData obj, String value) { obj.setDescription(value); }
 		public String get(IProblemData obj) { return obj.getDescription(); }
 	};
@@ -184,7 +190,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * Description of fields (schema version 3).
 	 */
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V3 = ModelObjectSchema.basedOn(SCHEMA_V2)
-		.increaseFieldSize(DESCRIPTION)
+		.increaseFieldSize(DESCRIPTION_V3_V6)
 		.finishDelta();
 	
 	/**
@@ -207,9 +213,23 @@ public class ProblemData implements Serializable, IProblemData {
 		.finishDelta();
 
 	/**
+	 * Description of fields (schema version 5).
+	 * The size of the description field is increasing from
+	 * 16K to 128K.  Even though this is stored on disk as a
+	 * VARCHAR column, a CloudCoder database will have a relatively
+	 * small number of exercises, so the wasted space shouldn't
+	 * be a concern, and there are some legitimate reasons to
+	 * allow large problem description (such as HTML generated
+	 * by a WYSIWYG editor of some type.) 
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5)
+		.increaseFieldSize(DESCRIPTION)
+		.finishDelta();
+
+	/**
 	 * Description of fields (current schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V5;
+	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V6;
 
 	/**
 	 * Constructor.

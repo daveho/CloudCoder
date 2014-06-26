@@ -112,9 +112,17 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 		.finishDelta();
 	
 	/**
+	 * Description of fields (schema version 6).
+	 * The size of the problem description field increased.
+	 */
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5)
+		.addDeltasFrom(ProblemData.SCHEMA_V6)
+		.finishDelta();
+	
+	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA = SCHEMA_V5;
+	public static final ModelObjectSchema<RepoProblem> SCHEMA = SCHEMA_V6;
 	
 	/** Number of fields. */
 	public static final int NUM_FIELDS = SCHEMA.getNumFields();
