@@ -81,8 +81,8 @@ public abstract class TesterFactory {
 		new GCovNativeExecutableCommandModifierBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCommandResultsUsingRegexBuildStep(),
-		new CreateSubmissionResultBuildStep(),
 		new GCovCoverageResultsCollectorBuildStep(),
+		new CreateSubmissionResultBuildStep(),
 	};
 	
 	/**
@@ -100,8 +100,8 @@ public abstract class TesterFactory {
 		new GCovNativeExecutableCommandModifierBuildStep(),
 		new ExecuteCommandForEachCommandInputBuildStep(),
 		new CheckCFunctionCommandResultsBuildStep(),
-		new CreateSubmissionResultBuildStep(),
 		new GCovCoverageResultsCollectorBuildStep(),
+		new CreateSubmissionResultBuildStep(),
 	};
 	
 	/**

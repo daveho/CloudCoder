@@ -63,6 +63,14 @@ public class Tester {
 		for (IBuildStep buildStep : buildStepList) {
 			logger.debug("Executing build step: {}", buildStep.getClass().getSimpleName());
 			buildStep.execute(submission, config);
+			
+			// If a SubmissionResult was created, then we finish immediately,
+			// even if there are more steps remaining.  This handles, e.g.,
+			// a case where the compilation failed and trying to execute
+			// the program would be pointless and incorrect.
+			if (submission.isComplete()) {
+				break;
+			}
 		}
 		
 		if (!submission.isComplete()) {
