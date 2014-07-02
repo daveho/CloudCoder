@@ -17,22 +17,28 @@
 
 package org.cloudcoder.builder2.gcov;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.cloudcoder.app.shared.model.LineCoverage;
+import org.cloudcoder.app.shared.model.LineCoverageRecord;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.SubmissionResultAnnotation;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.ccompiler.Compiler.Module;
 import org.cloudcoder.builder2.gcov.GCovFileParser.LineDataCallback;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.Command;
 import org.cloudcoder.builder2.model.IBuildStep;
+import org.cloudcoder.builder2.model.ISubmissionResultHook;
 import org.cloudcoder.builder2.model.InternalBuilderException;
 import org.cloudcoder.builder2.model.NativeExecutable;
 import org.cloudcoder.builder2.model.ProcessStatus;
@@ -40,6 +46,9 @@ import org.cloudcoder.builder2.process.ProcessRunner;
 import org.cloudcoder.builder2.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Build step to collect coverage results and add them
@@ -71,12 +80,45 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 		Module module = compiler.getModules().get(0);
 
 		// Run the gcov command for each command / test case
+		// and collect the results as LineCoverage objects
+		List<LineCoverage> lineCoverageResults = new ArrayList<LineCoverage>();
+		int testCaseCount = 0;
 		for (Command command : commandList) {
-			collectCoverageResults(command, compileDir, module, config);
+			LineCoverage results = collectCoverageResults(command, compileDir, module, config, testCaseCount++);
+			lineCoverageResults.add(results);
+		}
+		
+		// Convert the entire list of LineCoverage results to a JSON array
+		try {
+			// Convert to JSON
+			final String jsonLineCoverageResults =
+					JSONConversion.genericConvertPojoToString(lineCoverageResults);
+			
+			// Use a submission result hook to add the coverage results
+			// as an annotation
+			submission.addSubmissionResultHook(new ISubmissionResultHook() {
+				@Override
+				public void invoke(SubmissionResult result) {
+					logger.info("Annotating SubmissionResult with LineCoverage...");
+					SubmissionResultAnnotation annotation = new SubmissionResultAnnotation();
+					annotation.setKey("LineCoverage");
+					annotation.setValue(jsonLineCoverageResults);
+					result.addAnnotation(annotation);
+				}
+			});
+		} catch (JsonGenerationException e) {
+			logger.error("Could not convert coverage results to JSON", e);
+		} catch (JsonMappingException e) {
+			logger.error("Could not convert coverage results to JSON", e);
 		}
 	}
 
-	private void collectCoverageResults(Command command, File compileDir, Module module, Properties config) {
+	private LineCoverage collectCoverageResults(
+			Command command,
+			File compileDir,
+			Module module,
+			Properties config,
+			final int testCaseNumber) {
 		String covDataDirName = command.getEnv().get("GCOV_PREFIX");
 		File covDataDir = new File(compileDir, covDataDirName);
 		
@@ -94,15 +136,20 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 		// file in that coverage data directory containing the coverage for
 		// that specific test case.
 		try {
+			// Get all of the required files into the per-testcase directory
+			// for this testcase.
 			FileUtils.copyFile(new File(compileDir, module.sourceFileName), new File(covDataDir, module.sourceFileName));
 			String gcnoFileName = FilenameUtils.getBaseName(module.sourceFileName) + ".gcno";
 			FileUtils.copyFile(new File(compileDir, gcnoFileName), new File(covDataDir, gcnoFileName));
 			
-			// TODO: run gcov, collect the coverage data
+			// Run gcov, collect the coverage data
 			ProcessRunner gcovRunner = new ProcessRunner(config);
 			gcovRunner.runSynchronous(covDataDir, "gcov", module.sourceFileName);
 			String gcovFileName = module.sourceFileName + ".gcov";
 			File gcovFile = new File(covDataDir, gcovFileName);
+
+			final LineCoverage results = new LineCoverage();
+			results.setTestCaseNumber(testCaseNumber);
 
 			if (gcovRunner.getStatus() != ProcessStatus.EXITED) {
 				logger.error("gcov process failed with status={}", gcovRunner.getStatus());
@@ -111,24 +158,23 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 			} else if (!gcovFile.exists()) {
 				logger.error("gcov failed to produce expected output file {}", gcovFile.getPath());
 			} else {
-				// TODO: annotate the submission result
-				
-				System.out.println("Coverage results in " + covDataDirName);
-				
-				// For now, just parse the contents and print them out
+				// Use a GCovFileParser to populate the LineCoverage object
 				FileReader r = new FileReader(gcovFile);
 				try {
 					GCovFileParser parser = new GCovFileParser(r);
 					parser.parse(new LineDataCallback() {
 						@Override
 						public void onLineData(int lineNumber, int timesExecuted) {
-							System.out.printf("gcov: line=%d, timesExecuted=%d\n", lineNumber, timesExecuted);
+							//System.out.printf("gcov: line=%d, timesExecuted=%d\n", lineNumber, timesExecuted);
+							results.addRecord(new LineCoverageRecord(lineNumber, timesExecuted));
 						}
 					});
 				} finally {
 					IOUtils.closeQuietly(r);
 				}
 			}
+			
+			return results;
 		} catch (IOException e) {
 			throw new InternalBuilderException("Error collecting coverage data", e);
 		}

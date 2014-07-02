@@ -19,8 +19,11 @@ package org.cloudcoder.app.shared.model.json;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +31,8 @@ import java.util.Map;
 
 import org.cloudcoder.app.shared.model.IFactory;
 import org.cloudcoder.app.shared.model.IProblemAndTestCaseData;
+import org.cloudcoder.app.shared.model.LineCoverage;
+import org.cloudcoder.app.shared.model.LineCoverageRecord;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -39,6 +44,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Methods for converting CloudCoder model objects to and from JSON.
@@ -350,5 +360,77 @@ public class JSONConversion {
 		}
 		
 		throw new IOException("Cannot convert " + jsonFieldValue.getClass().getName() + " to " + type.getName());
+	}
+
+	private static final ObjectMapper objectMapper = new ObjectMapper();
+	
+	/**
+	 * Generic method to serialize a POJO using the Jackson ObjectMapper.
+	 * This is almost certainly the easiest way to convert an object
+	 * to JSON, but should only be used for objects whose external
+	 * representation isn't tied to their {@link ModelObjectSchema}.
+	 * 
+	 * @param writer  the Writer to write to
+	 * @param pojo    the POJO to serialize as JSON
+	 * @throws IOException
+	 * @throws IOException
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 */
+	public static void genericWritePojo(Writer writer, Object pojo)
+			throws IOException, JsonGenerationException, JsonMappingException {
+		objectMapper.writeValue(writer, pojo);
+	}
+	
+	/**
+	 * Generic method to deserialize a POJO using the Jackson ObjectMapper.
+	 * This is almost certainly the easiest way to convert an object
+	 * from JSON, but should only be used for objects whose external
+	 * representation isn't tied to their {@link ModelObjectSchema}.
+	 * 
+	 * @param reader  the Reader to read from
+	 * @param cls     the type of the object to deserialize
+	 * @return the deserialized object
+	 * @throws IOException, JsonParseException, JsonMappingException
+	 */
+	public static<E> E genericReadPojo(Reader reader, Class<E> cls) throws IOException, JsonParseException, JsonMappingException {
+		return objectMapper.readValue(reader, cls);
+	}
+	
+	/**
+	 * Convert a POJO to a JSON-encoded string using {@link #genericWritePojo(Writer, Object)}.
+	 * 
+	 * @param pojo the POJO
+	 * @return string with the JSON representation of the POJO
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 */
+	public static String genericConvertPojoToString(Object pojo) throws JsonGenerationException, JsonMappingException {
+		StringWriter sw = new StringWriter();
+		try {
+			genericWritePojo(sw, pojo);
+			return sw.toString();
+		} catch (IOException e) {
+			throw new IllegalStateException("Should not happen", e);
+		}
+	}
+	
+	/**
+	 * Convert a JSON-encoded string to a POJO using {@link #genericReadPojo(Reader, Class)}.
+	 * 
+	 * @param str string containing the JSON encoding of a POJO
+	 * @param cls the POJO's type
+	 * @return the POJO
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 */
+	public static<E> E genericConvertPojoFromString(String str, Class<E> cls)
+			throws JsonParseException, JsonMappingException {
+		StringReader sr = new StringReader(str);
+		try {
+			return genericReadPojo(sr, cls);
+		} catch (IOException e) {
+			throw new IllegalStateException("Should not happen", e);
+		}
 	}
 }

@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.CompilationOutcome;
 import org.cloudcoder.app.shared.model.CompilationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.SubmissionResultAnnotation;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.builder2.model.BuilderSubmission;
@@ -91,6 +92,9 @@ public class Builder2 {
 			 if (result == null) {
 				throw new InternalBuilderException("Tester did not create a SubmissionResult");
 			 }
+			 
+			 // Run submission result hooks (if any).
+			 submission.executeAllSubmissionResultHooks();
 		  } finally {
 			 // Clean up all temporary resources created during building/testing
 			 submission.executeAllCleanupActions();
@@ -103,6 +107,9 @@ public class Builder2 {
 	   }
 
 	   logger.info("Sending SubmissionResult back to server");
+	   for (SubmissionResultAnnotation annotation : result.getAnnotationList()) {
+		   logger.info("Annotation: key={}, value={}", annotation.getKey(), annotation.getValue());
+	   }
 
 	   // Paranoia: sanitize the SubmissionResult and it contents,
 	   // in case any fields were mistakenly left uninitialized

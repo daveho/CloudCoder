@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.SubmissionResult;
+import org.cloudcoder.app.shared.model.SubmissionResultAnnotation;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,6 +201,12 @@ public class WorkerTask implements Runnable {
 		
 		// Read list of TestResults
 		SubmissionResult result= (SubmissionResult) in.readObject();
+		
+		logger.info("Received submission results");
+		for (SubmissionResultAnnotation annotation : result.getAnnotationList()) {
+			logger.info("key={}, value={}", annotation.getKey(), annotation.getValue());
+		}
+		
 		submission.setSubmissionResult(result);
 		submission.setReady();
 	}

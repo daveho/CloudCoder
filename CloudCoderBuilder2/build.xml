@@ -19,6 +19,7 @@
 		<pathelement location="bin"/>
 		<fileset dir="lib" includes="**/*.jar"/>
     	<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
+    	<fileset dir="../CloudCoderModelClassesJSON/lib" includes="*.jar"/>
     </path>
 
     <target name="init">

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,9 @@
 
 package org.cloudcoder.builder2.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cloudcoder.app.shared.model.Problem;
@@ -39,6 +41,7 @@ import org.cloudcoder.app.shared.model.TestCase;
 public class BuilderSubmission {
 	private Map<Class<?>, Object> artifactMap;
 	private CleanupActionStack cleanupActionStack;
+	private List<ISubmissionResultHook> submissionResultHooks;
 
 	/**
 	 * Constructor.
@@ -46,6 +49,7 @@ public class BuilderSubmission {
 	public BuilderSubmission() {
 		artifactMap = new HashMap<Class<?>, Object>();
 		cleanupActionStack = new CleanupActionStack();
+		submissionResultHooks = new ArrayList<ISubmissionResultHook>();
 	}
 	
 	/**
@@ -126,5 +130,26 @@ public class BuilderSubmission {
 	 */
 	public void executeAllCleanupActions() {
 		cleanupActionStack.executeAll();
+	}
+	
+	/**
+	 * Add a {@link ISubmissionResultHook} to be executed on the finished
+	 * {@link SubmissionResult}.
+	 * 
+	 * @param hook the {@link ISubmissionResultHook}
+	 */
+	public void addSubmissionResultHook(ISubmissionResultHook hook) {
+		submissionResultHooks.add(hook);
+	}
+	
+	/**
+	 * Execute all {@link ISubmissionResultHook}s on the {@link SubmissionResult}.
+	 * This should not be called unless {@link #isComplete()} returns true.
+	 */
+	public void executeAllSubmissionResultHooks() {
+		SubmissionResult result = requireArtifact(this.getClass(), SubmissionResult.class);
+		for (ISubmissionResultHook hook : submissionResultHooks) {
+			hook.invoke(result);
+		}
 	}
 }
