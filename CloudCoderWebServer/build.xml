@@ -165,10 +165,9 @@
 				file="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"
 				fullpath="war/WEB-INF/lib/cloudcoderModelClassesJSON.jar"/>
 			
-			<!-- Include libraries needed for JSON serialization. -->
-			<zipfileset
-				file="../CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar"
-				fullpath="war/WEB-INF/lib/json-simple-1.1.1.jar"/>
+			<!-- Libraries needed for JSON serialization should already be in
+				the war/WEB-INF/lib directory of the webapp, so there's no need
+				to include them explicitly. -->
 			
 			<!-- Include the submission queue jar file in the webapp's WEB-INF/lib. -->
 			<zipfileset
