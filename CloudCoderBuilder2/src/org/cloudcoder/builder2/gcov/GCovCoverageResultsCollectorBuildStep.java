@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.LineCoverage;
+import org.cloudcoder.app.shared.model.LineCoverageAggregator;
 import org.cloudcoder.app.shared.model.LineCoverageRecord;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.SubmissionResultAnnotation;
@@ -81,18 +82,26 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 
 		// Run the gcov command for each command / test case
 		// and collect the results as LineCoverage objects
-		List<LineCoverage> lineCoverageResults = new ArrayList<LineCoverage>();
+		List<LineCoverage> allResults = new ArrayList<LineCoverage>();
 		int testCaseCount = 0;
 		for (Command command : commandList) {
-			LineCoverage results = collectCoverageResults(command, compileDir, module, config, testCaseCount++);
-			lineCoverageResults.add(results);
+			LineCoverage resultsForTestCase = collectCoverageResults(command, compileDir, module, config, testCaseCount++);
+			allResults.add(resultsForTestCase);
 		}
 		
-		// Convert the entire list of LineCoverage results to a JSON array
+		// Aggregate line coverage
+		LineCoverageAggregator aggregator = new LineCoverageAggregator();
+		for (LineCoverage resultsForTestCase : allResults) {
+			aggregator.process(resultsForTestCase);
+		}
+		LineCoverage aggregateResults = aggregator.getAggregate();
+		
+		// Convert LineCoverage results (both per-test-case and aggregate) to JSON
 		try {
-			// Convert to JSON
 			final String jsonLineCoverageResults =
-					JSONConversion.genericConvertPojoToString(lineCoverageResults);
+					JSONConversion.genericConvertPojoToString(allResults);
+			final String jsonAggregateLineCoverageResults =
+					JSONConversion.genericConvertPojoToString(aggregateResults);
 			
 			// Use a submission result hook to add the coverage results
 			// as an annotation
@@ -104,6 +113,10 @@ public class GCovCoverageResultsCollectorBuildStep implements IBuildStep {
 					annotation.setKey("LineCoverage");
 					annotation.setValue(jsonLineCoverageResults);
 					result.addAnnotation(annotation);
+					SubmissionResultAnnotation annotation2 = new SubmissionResultAnnotation();
+					annotation2.setKey("LineCoverageAggregate");
+					annotation2.setValue(jsonAggregateLineCoverageResults);
+					result.addAnnotation(annotation2);
 				}
 			});
 		} catch (JsonGenerationException e) {
