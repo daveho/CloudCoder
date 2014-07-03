@@ -68,4 +68,22 @@ public class LineCoverage {
 	public List<LineCoverageRecord> getRecordList() {
 		return Collections.unmodifiableList(recordList);
 	}
+	
+	/**
+	 * Get the percentage of lines covered.
+	 *
+	 * @return the percentage of lines covered
+	 */
+	public double getPercent() {
+		if (recordList.size() == 0) {
+			return 0.0;
+		}
+		int coveredLines = 0;
+		for (LineCoverageRecord record : recordList) {
+			if (record.getTimesExecuted() > 0) {
+				coveredLines++;
+			}
+		}
+		return (((double)coveredLines) / recordList.size()) * 100.0;
+	}
 }
