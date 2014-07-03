@@ -202,10 +202,10 @@ public class WorkerTask implements Runnable {
 		// Read list of TestResults
 		SubmissionResult result= (SubmissionResult) in.readObject();
 		
-		logger.info("Received submission results");
-		for (SubmissionResultAnnotation annotation : result.getAnnotationList()) {
-			logger.info("key={}, value={}", annotation.getKey(), annotation.getValue());
-		}
+//		logger.info("Received submission results");
+//		for (SubmissionResultAnnotation annotation : result.getAnnotationList()) {
+//			logger.info("key={}, value={}", annotation.getKey(), annotation.getValue());
+//		}
 		
 		submission.setSubmissionResult(result);
 		submission.setReady();

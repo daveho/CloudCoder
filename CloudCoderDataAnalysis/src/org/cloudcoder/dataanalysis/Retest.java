@@ -17,9 +17,12 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -53,23 +56,14 @@ public class Retest {
 	private SnapshotSelectionCriteria criteria;
 	private Properties config;
 	private Map<Integer, ProblemAndTestCaseList> exerciseMap;
-	
-	private static class RetestSnapshot {
-		int courseId;
-		int problemId;
-		int userId;
-		String programText;
-		
-		public RetestSnapshot(int courseId, int problemId, int userId, String programText) {
-			this.courseId = courseId;
-			this.problemId = problemId;
-			this.userId = userId;
-			this.programText = programText;
-		}
-	}
+	private IdentityHashMap<IFutureSubmissionResult, RetestSnapshot> snapshotMap;
+	private File outputDirectory;
+	private List<IRetestSubmissionResultVisitor> visitorList;
 	
 	public Retest() {
 		exerciseMap = new HashMap<Integer, ProblemAndTestCaseList>();
+		snapshotMap = new IdentityHashMap<IFutureSubmissionResult, RetestSnapshot>();
+		visitorList = new LinkedList<IRetestSubmissionResultVisitor>();
 	}
 	
 	public void setCriteria(SnapshotSelectionCriteria criteria) {
@@ -78,6 +72,14 @@ public class Retest {
 	
 	public void setConfig(Properties config) {
 		this.config = config;
+	}
+	
+	public void setOutputDirectory(File outputDirectory) {
+		this.outputDirectory = outputDirectory;
+	}
+	
+	public void addVisitor(IRetestSubmissionResultVisitor visitor) {
+		visitorList.add(visitor);
 	}
 	
 	public void execute() throws IOException {
@@ -106,12 +108,12 @@ public class Retest {
 		}
 		
 		// Retrieve snapshots from database
-		final List<RetestSnapshot> snapshotList = new ArrayList<Retest.RetestSnapshot>();
+		final List<RetestSnapshot> snapshotList = new ArrayList<RetestSnapshot>();
 		Database.getInstance().retrieveSnapshots(criteria, new SnapshotCallback() {
 			@Override
 			public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText) {
 				// FIXME just for testing
-				snapshotList.add(new RetestSnapshot(courseId, problemId, userId, programText));
+				snapshotList.add(new RetestSnapshot(courseId, problemId, userId, submitEventId, fullTextChangeId, programText));
 			}
 		});
 		System.out.println(snapshotList.size() + " snapshots");
@@ -125,16 +127,30 @@ public class Retest {
 			try {
 				future = DefaultSubmitService.getInstance().submitAsync(exercise.getProblem(), exercise.getTestCaseData(), snapshot.programText);
 				futureList.add(future);
+				
+				// Map the future to its snapshot
+				// FIXME: this could consume a lot of main memory
+				snapshotMap.put(future, snapshot);
 			} catch (SubmissionException e) {
 				logger.error("Error submitting snapshot for retest", e);
 			}
+		}
+		
+		// The snapshot list can be cleared now to release memory
+		snapshotList.clear();
+		
+		// Initialize visitors
+		outputDirectory.mkdirs();
+		for (IRetestSubmissionResultVisitor visitor : visitorList) {
+			visitor.init(outputDirectory);
 		}
 		
 		// Wait for all submission results.
 		for (IFutureSubmissionResult future : futureList) {
 			try {
 				SubmissionResult result = waitForSubmissionResult(future);
-				onSubmissionResult(result);
+				RetestSnapshot snapshot = snapshotMap.get(future);
+				onSubmissionResult(result, snapshot);
 			} catch (SubmissionException e) {
 				logger.error("Error testing snapshot (should not happen)", e);
 			} catch (InterruptedException e) {
@@ -179,9 +195,13 @@ public class Retest {
 		return exercise;
 	}
 
-	private void onSubmissionResult(SubmissionResult result) {
-		// TODO: do something useful with the SubmissionResult
-		System.out.println("Submission result received: " + result.determineSubmissionStatus());
+	private void onSubmissionResult(SubmissionResult result, RetestSnapshot snapshot) {
+		//System.out.println("Submission result received: " + result.determineSubmissionStatus());
+
+		// Deliver submission result to visitors
+		for (IRetestSubmissionResultVisitor visitor : visitorList) {
+			visitor.onSubmissionResult(result, snapshot);
+		}
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -219,6 +239,13 @@ public class Retest {
 		criteria.setUserId(Integer.parseInt(Util.ask(keyboard, "User id: ")));
 		retest.setCriteria(criteria);
 		retest.setConfig(config);
+		
+		File outputDirectory = new File(Util.ask(keyboard, "Data output directory: "));
+		retest.setOutputDirectory(outputDirectory);
+		
+		// For now the visitors are hard-coded
+		retest.addVisitor(new LineCoverageRetestSubmissionResultVisitor());
+		
 		retest.execute();
 	}
 }

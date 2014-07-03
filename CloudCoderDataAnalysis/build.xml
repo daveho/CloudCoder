@@ -3,15 +3,22 @@
 	
 	<path id="dataanalysis.classpath">
 		<pathelement location="../CloudCoderModelClasses/cloudcoderModelClasses.jar"/>
+		<pathelement location="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar"/>
 		<pathelement location="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar"/>
 		<pathelement location="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar"/>
 		<fileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+    	<fileset dir="../CloudCoderModelClassesJSON/lib" includes="*.jar"/>
 		<fileset dir="lib" includes="**.jar"/>
 	</path>
 	
 	<target name="modelClasses">
 		<ant dir="../CloudCoderModelClasses" target="jar" inheritall="false"/>
 	</target>
+
+    <!-- make sure model classes JSON conversion jar file is built -->
+    <target name="modelClassesJSON">
+    	<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="jar" />
+    </target>
 		
 	<target name="modelClassesPersist">
 		<ant dir="../CloudCoderModelClassesPersistence" target="jar" inheritall="false"/>
@@ -21,7 +28,7 @@
 		<ant inheritall="false" dir="../CloudCoderSubmissionQueue" target="jar"/>
 	</target>
 
-	<target name="deps" depends="modelClasses,modelClassesPersist,submissionQueue"/>
+	<target name="deps" depends="modelClasses,modelClassesJSON,modelClassesPersist,submissionQueue"/>
 	
 	<target name="javac" depends="deps">
 		<mkdir dir="bin"/>
@@ -38,23 +45,25 @@
 		</copy>
 	</target>
 	
-	<target name="jar" depends="javac">
+	<target name="jardeps">
+		<jar destfile="deps.jar">
+			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar" excludes="META-INF/**"/>
+			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar" excludes="META-INF/**"/>
+			<zipgroupfileset dir="../CloudCoderLogging/lib" includes="**.jar"/>
+			<zipgroupfileset dir="../CloudCoderModelClassesJSON/lib" includes="**.jar"/>
+			<zipgroupfileset dir="../CloudCoderModelClassesPersistence/lib" includes="**.jar"/>
+			<zipgroupfileset dir="./lib" includes="**.jar"/>
+		</jar>
+	</target>
+	
+	<target name="jar" depends="javac,jardeps">
 		<jar destfile="${jarfile}">
 			<fileset dir="bin" includes="**"/>
-			<zipfileset src="../CloudCoderModelClasses/cloudcoderModelClasses.jar" excludes="META-INF/**"/>
-			<zipfileset src="../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar" excludes="META-INF/**"/>
 			
-			<!-- FIXME: is there a better way to do this? -->
-			<zipfileset src="../CloudCoderLogging/lib/log4j-1.2.16.jar" excludes="META-INF/**"/>
-			<zipfileset src="../CloudCoderLogging/lib/slf4j-api-1.6.4.jar" excludes="META-INF/**"/>
-			<zipfileset src="../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar" excludes="META-INF/**"/>
-			<zipfileset src="../CloudCoderLogging/lib/commons-io-2.1.jar" excludes="META-INF/**"/>
-			
-			<zipfileset src="../CloudCoderSubmissionQueue/cloudcoderSubmissionQueue.jar" excludes="META-INF/**"/>
-			
-			<zipfileset src="../CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar" excludes="META-INF/**"/>
-			<zipfileset src="lib/daemon-0.7.jar" excludes="META-INF/**"/>
-			<zipfileset src="lib/opencsv-2.4.jar" excludes="META-INF/**"/>
+			<!-- Include dependencies (but without any META-INF files) -->
+			<zipfileset src="deps.jar" excludes="META-INF/**"/>
 			
 			<!-- Include cloudcoder.properties -->
 			<fileset dir=".." includes="cloudcoder.properties"/>
@@ -74,6 +83,7 @@
         	<fileset dir="bin" includes="**"/>
         </delete>
     	<delete quiet="true" file="${jarfile}"/>
+		<delete quiet="true" file="deps.jar"/>
 	</target>
 	
 	<!-- Clean this target and all depended-on targets. -->

@@ -45,6 +45,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -363,6 +364,17 @@ public class JSONConversion {
 	}
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
+	
+	// Some object mapper special cases
+	private static abstract class IgnoreGetPercent {
+		@JsonIgnore public abstract double getPercent();
+	}
+	
+	static {
+		// Don't try to serialize 'percent' as a property, since
+		// there is no corresponding field
+		objectMapper.addMixInAnnotations(LineCoverage.class, IgnoreGetPercent.class);
+	}
 	
 	/**
 	 * Generic method to serialize a POJO using the Jackson ObjectMapper.
