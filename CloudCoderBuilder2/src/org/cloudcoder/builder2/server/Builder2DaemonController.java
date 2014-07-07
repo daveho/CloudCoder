@@ -62,7 +62,14 @@ public class Builder2DaemonController extends DaemonController {
 		@Override
 		// Create the stdout log in the "log" directory.
 		public String getStdoutLogFileName() {
-			return "log/stdout.log";
+			// If a stdout log filename was specified on the command line,
+			// honor it.  Otherwise use the default of "log/stdout.log".
+			String stdoutLogFilename = super.getStdoutLogFileName();
+			if (stdoutLogFilename == null) {
+				// Use the default stdout log filename.
+				stdoutLogFilename = "log/stdout.log";
+			}
+			return stdoutLogFilename;
 		}
 		
 		@Override
