@@ -108,6 +108,14 @@ public class OutOfProcessSubmitService implements ISubmitService {
 		return theServerTask.getNumWorkerTasks();
 	}
 	
+	private String getOptionalProperty(Properties config, String propName, String defVal) {
+		String value = config.getProperty(propName);
+		if (value == null) {
+			value = defVal;
+		}
+		return value;
+	}
+	
 	private String getRequiredProperty(Properties config, String propName) {
 		String value = config.getProperty(propName);
 		if (value == null) {
@@ -124,7 +132,7 @@ public class OutOfProcessSubmitService implements ISubmitService {
 	 * @param config the configuration properties
 	 */
 	public void initFromConfigProperties(Properties config) {
-		this.useSSL = Boolean.parseBoolean(getRequiredProperty(config, "cloudcoder.submitsvc.oop.ssl.useSSL"));
+		this.useSSL = Boolean.parseBoolean(getOptionalProperty(config, "cloudcoder.submitsvc.oop.ssl.useSSL", "true"));
 		this.hostName = getRequiredProperty(config, "cloudcoder.submitsvc.oop.host");
 		if (this.useSSL) {
 			this.keystoreFilename = getRequiredProperty(config, "cloudcoder.submitsvc.ssl.keystore");
