@@ -213,18 +213,26 @@ public class ProblemData implements Serializable, IProblemData {
 		.finishDelta();
 
 	/**
-	 * Description of fields (schema version 5).
+	 * Description of fields (schema version 6).
 	 * The size of the description field is increasing from
 	 * 16K to 128K. 
 	 */
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5)
 		.increaseFieldSize(DESCRIPTION)
 		.finishDelta();
+	
+	/**
+	 * Description of firlds (schema version 7).
+	 * No field changes, but new {@link ProblemType} members
+	 * have been added.
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6)
+		.finishDelta();
 
 	/**
 	 * Description of fields (current schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V6;
+	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V7;
 
 	/**
 	 * Constructor.

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.builder2.ccompiler.Compiler;
 import org.cloudcoder.builder2.model.WrapperMode;
 import org.cloudcoder.builder2.util.DeleteDirectoryRecursively;
@@ -77,7 +78,7 @@ public class RunProcessNativeExe {
 		Compiler compiler = new Compiler(tempDir, EXE_NAME, config);
 		compiler.setWrapperMode(WrapperMode.SCRIPT); // critical: cRunProcess.exe can't be used to help compile itself!
 		compiler.addModule("cRunProcess.c", source);
-		compiler.setCompilerExe("gcc"); // important: code is not valid C++, can't use g++
+		compiler.setLanguage(Language.C); // important: code is not valid C++, can't use g++
 		compiler.addFlag("-std=gnu99");
 		compiler.addFlag("-D_BSD_SOURCE");
 

@@ -21,6 +21,7 @@ package org.cloudcoder.builder2.ccompiler;
 import java.io.File;
 import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
 import org.cloudcoder.builder2.model.IBuildStep;
@@ -51,9 +52,12 @@ public class CreateCCompilerBuildStep implements IBuildStep {
 		// Get ProgramSource list
 		ProgramSource[] programSourceList = submission.requireArtifact(this.getClass(), ProgramSource[].class);
 		
+		// Get Problem
+		Problem problem = submission.requireArtifact(this.getClass(), Problem.class);
+		
 		// For now, we only handle a single source file
 		if (programSourceList.length > 1) {
-			throw new InternalBuilderException(this.getClass(), "Multiple C source files are not supported yet");
+			throw new InternalBuilderException(this.getClass(), "Multiple C/C++ source files are not supported yet");
 		}
 		
 		ProgramSource programSource = programSourceList[0];
@@ -68,7 +72,7 @@ public class CreateCCompilerBuildStep implements IBuildStep {
 		submission.addCleanupAction(new DeleteDirectoryCleanupAction(tempDir));
 		
 		Compiler compiler = new Compiler(programSource.getProgramText(), tempDir, DEFAULT_PROG_NAME, config);
-		compiler.setCompilerExe("g++"); // FIXME: should make this configurable
+		compiler.setLanguage(problem.getProblemType().getLanguage());
 		
 		submission.addArtifact(compiler);
 	}

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -30,23 +30,24 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.shared.model.CompilerDiagnostic;
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.builder2.model.WrapperMode;
 import org.cloudcoder.builder2.process.ProcessRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Compile a C/C++ program consisting of one or more source files
+ * Compile a C or C++ program consisting of one or more source files
  * into an executable or shared library.
- * FIXME: currently is hard-coded to use gcc.  Would be nice to support other compilers.
+ * The {@link #setLanguage(Language)} method
+ * can be called to set the language to C or C++.
+ * (The default is C.)
  * 
  * @author David Hovemeyer
  * @author Jaime Spacco
  */
 public class Compiler {
 	private static final Logger logger=LoggerFactory.getLogger(Compiler.class);
-
-	public static final String DEFAULT_COMPILER_EXE = "gcc";
 	
 	/**
 	 * A module to compile.
@@ -75,7 +76,6 @@ public class Compiler {
 	}
 
 	private Properties config;
-	private String compilerExe;
 	private String progName;
 	private File workDir;
 	private List<String> flags;
@@ -84,6 +84,7 @@ public class Compiler {
 	private String statusMessage;
 	private List<String> compilerOutput;
 	private WrapperMode wrapperMode;
+	private Language language;
 
 	/**
 	 * Constructor for programs compiled from a single source file.
@@ -108,7 +109,6 @@ public class Compiler {
 	 */
 	public Compiler(File workDir, String progName, Properties config) {
 		this.config = config;
-		this.compilerExe = DEFAULT_COMPILER_EXE;
 		this.progName = progName;
 		this.workDir = workDir;
 		this.flags = new ArrayList<String>();
@@ -117,6 +117,7 @@ public class Compiler {
 		this.statusMessage = "";
 		this.compilerOutput = new LinkedList<String>();
 		this.wrapperMode = WrapperMode.SCRIPT; // safe default
+		this.language = Language.C;
 	}
 	
 	/**
@@ -165,15 +166,6 @@ public class Compiler {
 	 */
 	public List<Module> getModules() {
 		return Collections.unmodifiableList(modules);
-	}
-	
-	/**
-	 * Set the name of the compiler executable (e.g., "gcc").
-	 * 
-	 * @param compilerExe the compiler executable to set
-	 */
-	public void setCompilerExe(String compilerExe) {
-		this.compilerExe = compilerExe;
 	}
 
 	/**
@@ -227,7 +219,7 @@ public class Compiler {
 
 	private String[] getCompileCmd() {
 		List<String> cmd = new ArrayList<String>();
-		cmd.add(this.compilerExe);
+		cmd.add(getCompilerExe());
 		cmd.add("-Wall");// ALWAYS use -Wall
 		cmd.addAll(flags);
 		cmd.add("-o");
@@ -237,6 +229,17 @@ public class Compiler {
 		}
 		cmd.addAll(endFlags);
 		return cmd.toArray(new String[cmd.size()]);
+	}
+	
+	private String getCompilerExe() {
+		switch (language) {
+		case C:
+			return "gcc";
+		case CPLUSPLUS:
+			return "g++";
+		default:
+			throw new IllegalStateException("Don't know how to compile " + language);
+		}
 	}
 
 	private String getExeFileName() {
@@ -300,5 +303,18 @@ public class Compiler {
 	 */
 	public void setWrapperMode(WrapperMode wrapperMode) {
 		this.wrapperMode = wrapperMode;
+	}
+	
+	/**
+	 * Set the {@link Language}, which must be either
+	 * {@link Language#C} or {@link Language#CPLUSPLUS}.
+	 * 
+	 * @param language the {@link Language}
+	 */
+	public void setLanguage(Language language) {
+		if (language != Language.C && language != Language.CPLUSPLUS) {
+			throw new IllegalArgumentException("Unsupported language: " + language);
+		}
+		this.language = language;
 	}
 }

@@ -38,6 +38,8 @@ public enum ProblemType {
 	
 	/**
 	 * Problem involving writing a complete C function.
+	 * Note that this problem type should <em>not</em> be used
+	 * for C++. 
 	 */
 	C_FUNCTION(Language.C, true),
 	
@@ -48,6 +50,8 @@ public enum ProblemType {
 	 * Correctness is judged by testing each line of output against
 	 * a regular expression.  If the regexp matches one line,
 	 * then the output is judged to be correct.
+	 * Note that this problem type should <em>not</em> be used
+	 * for C++. 
 	 */
 	C_PROGRAM(Language.C, false),
 	
@@ -63,6 +67,18 @@ public enum ProblemType {
 	 * Problem involving writing a complete Ruby method.
 	 */
 	RUBY_METHOD(Language.RUBY, true),
+	
+	/**
+	 * Problem involving writing a C++ function.
+	 * Like {@link #C_FUNCTION}, but C++ rather than C.
+	 */
+	CPLUSPLUS_FUNCTION(Language.CPLUSPLUS, true),
+	
+	/**
+	 * Problem involving writing a C++ program.
+	 * Like {@link #C_PROGRAM}, but C++ rather than C.
+	 */
+	CPLUSPLUS_PROGRAM(Language.CPLUSPLUS, false),
 	;
 	
 	private Language language;

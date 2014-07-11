@@ -69,7 +69,7 @@ public abstract class TesterFactory {
 	
 	/**
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_PROGRAM}
-	 * submission.
+	 * or {@link ProblemType#CPLUSPLUS_PROGRAM} submission.
 	 */
 	private static final IBuildStep[] C_PROGRAM_TESTER_STEPS = {
 		new CreateCCompilerBuildStep(),
@@ -87,7 +87,7 @@ public abstract class TesterFactory {
 	
 	/**
 	 * Array of {@link IBuildStep}s needed to test a {@link ProblemType#C_FUNCTION}
-	 * submission.
+	 * or {@link ProblemType#CPLUSPLUS_FUNCTION} submission.
 	 */
 	private static final IBuildStep[] C_FUNCTION_TESTER_STEPS = {
 		new AddCFunctionScaffoldingBuildStep(),
@@ -172,6 +172,8 @@ public abstract class TesterFactory {
 	static {
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.C_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.CPLUSPLUS_PROGRAM, createTester(C_PROGRAM_TESTER_STEPS));
+		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.CPLUSPLUS_FUNCTION, createTester(C_FUNCTION_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_PROGRAM, createTester(JAVA_PROGRAM_TESTER_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.JAVA_METHOD, createTester(JAVA_METHOD_BUILD_STEPS));
 		PROBLEM_TYPE_TO_TESTER_MAP.put(ProblemType.PYTHON_FUNCTION, createTester(PYTHON_FUNCTION_BUILD_STEPS));
