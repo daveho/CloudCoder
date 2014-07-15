@@ -58,7 +58,7 @@ public class FindWorkSessions {
 		
 		PrintWriter pw = new PrintWriter(new FileWriter(resultFileName));
 		CSV csv = CSV
-				.separator(',')  // delimiter of fields
+				.separator('|')  // delimiter of fields
 				.quote('"')      // quote character
 				.create();       // new instance is immutable
 		csv.write(pw, new CSVWriteProc() {

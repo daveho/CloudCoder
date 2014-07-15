@@ -34,7 +34,7 @@ public class LineCoverageRetestSubmissionResultVisitor implements IRetestSubmiss
 			writer = new BufferedWriter(new FileWriter(new File(outputDirectory, "coverage.csv")));
 			//csvWriter = 
 			CSV csv = CSV
-					.separator(',')  // delimiter of fields
+					.separator('|')  // delimiter of fields
 					.quote('"')      // quote character
 					.create();       // new instance is immutable
 			csvWriter = csv.writer(writer);
@@ -70,6 +70,7 @@ public class LineCoverageRetestSubmissionResultVisitor implements IRetestSubmiss
 			record.addAll(Arrays.asList(
 					snapshot.submitEventId,
 					snapshot.fullTextChangeId,
+					snapshot.courseId,
 					snapshot.problemId,
 					snapshot.userId,
 					result.getCompilationResult().getOutcome().ordinal()
