@@ -160,6 +160,13 @@ public class Retest {
 		
 		System.out.print("All snapshots tested...");
 		System.out.flush();
+		
+		// Allow retest submission result visitors to shut down.
+		for (IRetestSubmissionResultVisitor visitor : visitorList) {
+			visitor.cleanup();
+		}
+		
+		// Shut down the submission queue.
 		try {
 			OutOfProcessSubmitService.getInstance().shutdown();
 		} catch (InterruptedException e) {
