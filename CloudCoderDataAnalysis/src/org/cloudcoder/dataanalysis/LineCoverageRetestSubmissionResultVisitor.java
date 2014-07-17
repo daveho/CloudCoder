@@ -40,7 +40,18 @@ public class LineCoverageRetestSubmissionResultVisitor implements IRetestSubmiss
 			csvWriter = csv.writer(writer);
 
 			// We put a heck of a lot of information in each CSV record
-			csvWriter.writeNext("submitEventId","fullTextChangeId","courseId","problemId","userId","compilationOutcome","aggregateCoveragePercent","individualCoveragePercent(multi)","aggregateCoverage","individualCoverage(multi)");
+			csvWriter.writeNext(
+				"submitEventId",
+				"fullTextChangeId",
+				"courseId",
+				"problemId",
+				"userId",
+				"compilationOutcome",
+				"aggregateCoveragePercent",
+				"aggregateCoverage",
+				"individualCoveragePercent(multi)",
+				"individualCoverage(multi)"
+			);
 		} catch (IOException e) {
 			logger.error("Couldn't open coverage results data file", e);
 		}
@@ -65,21 +76,30 @@ public class LineCoverageRetestSubmissionResultVisitor implements IRetestSubmiss
 			}
 		}
 		
-		if (aggregate != null && individual != null) {
-			List<Object> record = new ArrayList<Object>();
-			record.addAll(Arrays.asList(
-					snapshot.submitEventId,
-					snapshot.fullTextChangeId,
-					snapshot.courseId,
-					snapshot.problemId,
-					snapshot.userId,
-					result.getCompilationResult().getOutcome().ordinal()
-			));
+		List<Object> record = new ArrayList<Object>();
+
+		record.addAll(Arrays.asList(
+				snapshot.submitEventId,
+				snapshot.fullTextChangeId,
+				snapshot.courseId,
+				snapshot.problemId,
+				snapshot.userId,
+				result.getCompilationResult().getOutcome().ordinal()
+		));
+
+		if (aggregate != null) {
 			record.add(aggregate.getPercent());
+		}
+
+		if (aggregateAsString != null) {
+			record.add(aggregateAsString);
+		}
+
+		if (individual != null) {
 			for (LineCoverage l : individual) {
 				record.add(l.getPercent());
 			}
-			record.add(aggregateAsString);
+
 			for (LineCoverage l : individual) {
 				// The exceptions here shouldn't happen because the LineCoverage
 				// objects in the individual list were parsed from JSON, so converting
@@ -92,8 +112,10 @@ public class LineCoverageRetestSubmissionResultVisitor implements IRetestSubmiss
 					logger.error("Shouldn't happen", e);
 				}
 			}
-			
-			// Write coverage data for this submission result / snapshot
+		}
+
+		// Write coverage data for this submission result / snapshot
+		if (!record.isEmpty()) {
 			writeAll(record);
 		}
 	}
