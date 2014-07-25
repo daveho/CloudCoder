@@ -38,6 +38,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.SubmissionException;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.slf4j.Logger;
@@ -111,8 +112,9 @@ public class Retest {
 		final List<RetestSnapshot> snapshotList = new ArrayList<RetestSnapshot>();
 		Database.getInstance().retrieveSnapshots(criteria, new SnapshotCallback() {
 			@Override
-			public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText) {
-				// FIXME just for testing
+			public void onSnapshotFound(int submitEventId,
+					int fullTextChangeId, int courseId, int problemId,
+					int userId, String programText, SubmissionReceipt receipt) {
 				snapshotList.add(new RetestSnapshot(courseId, problemId, userId, submitEventId, fullTextChangeId, programText));
 			}
 		});
@@ -240,10 +242,7 @@ public class Retest {
 		}
 		Util.connectToDatabase(config);
 		Retest retest = new Retest();
-		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
-		criteria.setCourseId(Integer.parseInt(Util.ask(keyboard, "Course id: ")));
-		criteria.setProblemId(Integer.parseInt(Util.ask(keyboard, "Problem id: ")));
-		criteria.setUserId(Integer.parseInt(Util.ask(keyboard, "User id: ")));
+		SnapshotSelectionCriteria criteria = Util.getSnapshotSelectionCriteria(keyboard);
 		retest.setCriteria(criteria);
 		retest.setConfig(config);
 		

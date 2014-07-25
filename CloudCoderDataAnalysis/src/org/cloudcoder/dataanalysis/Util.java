@@ -25,6 +25,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.cloudcoder.app.server.persist.JDBCDatabaseConfig;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 
 /**
  * Data analysis utility methods.
@@ -65,6 +66,20 @@ public class Util {
 		Properties embeddedConfig =
 				org.cloudcoder.daemon.Util.loadPropertiesFromResource(classLoader, "cloudcoder.properties");
 		config.putAll(embeddedConfig);
+	}
+
+	/**
+	 * Prompt user for {@link SnapshotSelectionCriteria}.
+	 * 
+	 * @param keyboard the scanner reading from the keyboard
+	 * @return the {@link SnapshotSelectionCriteria}
+	 */
+	public static SnapshotSelectionCriteria getSnapshotSelectionCriteria(Scanner keyboard) {
+		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
+		criteria.setCourseId(Integer.parseInt(ask(keyboard, "Course id: ")));
+		criteria.setProblemId(Integer.parseInt(ask(keyboard, "Problem id: ")));
+		criteria.setUserId(Integer.parseInt(ask(keyboard, "User id: ")));
+		return criteria;
 	}
 
 }

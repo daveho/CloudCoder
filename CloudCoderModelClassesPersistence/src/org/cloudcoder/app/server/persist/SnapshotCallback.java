@@ -34,6 +34,7 @@ public interface SnapshotCallback {
 	 * @param problemId    the problem id
 	 * @param userId       the user id
 	 * @param programText  the program text
+	 * @param receipt      the {@link SubmissionReceipt}, if the snapshot was a submission
 	 */
-	public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText);
+	public void onSnapshotFound(int submitEventId, int fullTextChangeId, int courseId, int problemId, int userId, String programText, SubmissionReceipt receipt);
 }

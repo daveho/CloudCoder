@@ -34,6 +34,8 @@ public class Main {
 			FindWorkSessions.main(rest);
 		} else if (app.equals("retest")) {
 			Retest.main(rest);
+		} else if (app.equals("attempts")) {
+			Attempts.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);
