@@ -222,6 +222,15 @@ public class TimeToSolve {
 	}
 	
 	public static void main(String[] args) throws IOException {
+		boolean interactive = false;
+		for (String arg : args) {
+			if (arg.equals("--interactiveConfig")) {
+				interactive = true;
+			} else {
+				throw new IllegalArgumentException("Unknown option: " + arg);
+			}
+		}
+		
 		Util.configureLogging();
 		
 		TimeToSolve t = new TimeToSolve();
@@ -232,7 +241,11 @@ public class TimeToSolve {
 		int separation = Integer.parseInt(Util.ask(keyboard, "Separation in seconds: "));
 		t.setSeparation(separation);
 		Properties config = new Properties();
-		Util.readDatabaseProperties(keyboard, config);
+		if (interactive) {
+			Util.readDatabaseProperties(keyboard, config);
+		} else {
+			Util.loadEmbeddedConfig(config, TimeToSolve.class.getClassLoader());
+		}
 		t.setConfig(config);
 		String outputFile = Util.ask(keyboard, "Name of output file: ");
 		t.setOutputFile(outputFile);
