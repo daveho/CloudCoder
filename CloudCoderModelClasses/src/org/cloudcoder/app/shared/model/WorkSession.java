@@ -90,4 +90,8 @@ public class WorkSession {
 	public long getEndTime() {
 		return endTime;
 	}
+
+	public long getTotalTime() {
+		return endTime - startTime;
+	}
 }
