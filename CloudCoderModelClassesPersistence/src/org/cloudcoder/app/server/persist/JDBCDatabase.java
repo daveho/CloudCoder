@@ -492,8 +492,8 @@ public class JDBCDatabase implements IDatabase {
 	}
 	
 	@Override
-	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds) {
-		return databaseRun(new FindWorkSessions(courseId, separationSeconds));
+	public List<WorkSession> findWorkSessions(SnapshotSelectionCriteria criteria, int separationSeconds) {
+		return databaseRun(new FindWorkSessions(criteria, separationSeconds));
 	}
 	
 	@Override

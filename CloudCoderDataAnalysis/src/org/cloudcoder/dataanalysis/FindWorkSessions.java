@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import org.cloudcoder.app.server.persist.Database;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.WorkSession;
 
 import au.com.bytecode.opencsv.CSV;
@@ -50,11 +51,12 @@ public class FindWorkSessions {
 		Util.readDatabaseProperties(keyboard, config);
 		Util.connectToDatabase(config);
 		
-		int courseId = Integer.parseInt(Util.ask(keyboard, "Course id: "));
+		//int courseId = Integer.parseInt(Util.ask(keyboard, "Course id: "));
+		SnapshotSelectionCriteria criteria = Util.getSnapshotSelectionCriteria(keyboard);
 		int separationSeconds = Integer.parseInt(Util.ask(keyboard, "Separation in seconds: "));
 		String resultFileName = Util.ask(keyboard, "Result filename: ");
 		
-		final List<WorkSession> workSessions = Database.getInstance().findWorkSessions(courseId, separationSeconds);
+		final List<WorkSession> workSessions = Database.getInstance().findWorkSessions(criteria, separationSeconds);
 		
 		PrintWriter pw = new PrintWriter(new FileWriter(resultFileName));
 		CSV csv = CSV

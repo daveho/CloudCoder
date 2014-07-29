@@ -44,6 +44,7 @@ import java.util.List;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.WorkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +57,21 @@ import org.slf4j.LoggerFactory;
 public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<List<WorkSession>> {
 	private static final Logger logger = LoggerFactory.getLogger(FindWorkSessions.class);
 	
-	private int courseId;
+	private SnapshotSelectionCriteria criteria;
 	private int separationSeconds;
 
-	public FindWorkSessions(int courseId, int separationSeconds) {
-		this.courseId = courseId;
+	public FindWorkSessions(SnapshotSelectionCriteria criteria, int separationSeconds) {
+		this.criteria = criteria;
 		this.separationSeconds = separationSeconds;
+	}
+	
+	private static class EventInCourse {
+		Event event;
+		int courseId;
+		public EventInCourse(Event e, int courseId) {
+			this.event = e;
+			this.courseId = courseId;
+		}
 	}
 
 	@Override
@@ -69,12 +79,19 @@ public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<Li
 		// Select all events, ordered first by user id, then by timestamp
 		PreparedStatement stmt = prepareStatement(
 				conn,
-				"select e.* from cc_events as e, cc_problems as p " +
+				"select e.*, p.course_id from cc_events as e, cc_problems as p " +
 				" where e.problem_id = p.problem_id " +
-				"   and p.course_id = ? " +
+				"   and (? < 0 or p.course_id = ?) " +
+				"   and (? < 0 or e.user_id = ?) " +
+				"   and (? < 0 or p.problem_id = ?) " +
 				" order by e.user_id, e.timestamp"
 		);
-		stmt.setInt(1, courseId);
+		stmt.setInt(1, criteria.getCourseId());
+		stmt.setInt(2, criteria.getCourseId());
+		stmt.setInt(3, criteria.getUserId());
+		stmt.setInt(4, criteria.getUserId());
+		stmt.setInt(5, criteria.getProblemId());
+		stmt.setInt(6, criteria.getProblemId());
 		
 		List<WorkSession> workSessions = new ArrayList<WorkSession>();
 		ResultSet resultSet = executeQuery(stmt);
@@ -82,24 +99,27 @@ public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<Li
 		// Scan results to find sequences of events representing work on the same
 		// problem by the same user, not separated by more than the maximum
 		// separation in time.
-		Event start = null;
-		Event end = null;
+		EventInCourse start = null;
+		EventInCourse end = null;
 		
 		int count = 0;
 		while (resultSet.next()) {
 			count++;
 			Event e = new Event();
-			DBUtil.loadModelObjectFields(e, Event.SCHEMA, resultSet);
+			int index = DBUtil.loadModelObjectFields(e, Event.SCHEMA, resultSet);
+			int courseId = resultSet.getInt(index);
+			
+			EventInCourse eventInCourse = new EventInCourse(e, courseId);
 			
 			if (start == null) {
-				start = e;
-				end = e;
-			} else if (isDifferentSession(start, e)) {
+				start = eventInCourse;
+				end = eventInCourse;
+			} else if (isDifferentSession(start, eventInCourse)) {
 				workSessions.add(createSession(start, end));
-				start = e;
-				end = e;
+				start = eventInCourse;
+				end = eventInCourse;
 			} else {
-				end = e;
+				end = eventInCourse;
 			}
 		}
 		if (start != null) {
@@ -110,21 +130,22 @@ public class FindWorkSessions extends AbstractDatabaseRunnableNoAuthException<Li
 		return workSessions;
 	}
 
-	private boolean isDifferentSession(Event start, Event e) {
-		return start.getUserId() != e.getUserId()
-				|| start.getProblemId() != e.getProblemId()
-				|| e.getTimestamp() - start.getTimestamp() > separationSeconds * 1000L;
+	private boolean isDifferentSession(EventInCourse start, EventInCourse e) {
+		return start.event.getUserId() != e.event.getUserId()
+				|| start.event.getProblemId() != e.event.getProblemId()
+				|| start.courseId != e.courseId
+				|| e.event.getTimestamp() - start.event.getTimestamp() > separationSeconds * 1000L;
 	}
 
-	private WorkSession createSession(Event start, Event end) {
+	private WorkSession createSession(EventInCourse start, EventInCourse end) {
 		WorkSession session = new WorkSession();
-		session.setCourseId(courseId);
-		session.setProblemId(start.getProblemId());
-		session.setUserId(start.getUserId());
-		session.setStartEventId(start.getId());
-		session.setEndEventId(end.getId());
-		session.setStartTime(start.getTimestamp());
-		session.setEndTime(end.getTimestamp());
+		session.setCourseId(start.courseId);
+		session.setProblemId(start.event.getProblemId());
+		session.setUserId(start.event.getUserId());
+		session.setStartEventId(start.event.getId());
+		session.setEndEventId(end.event.getId());
+		session.setStartTime(start.event.getTimestamp());
+		session.setEndTime(end.event.getTimestamp());
 		return session;
 	}
 

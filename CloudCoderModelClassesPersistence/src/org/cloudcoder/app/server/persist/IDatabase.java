@@ -688,14 +688,14 @@ public interface IDatabase {
 	public List<Anonymization> anonymizeUserData(String genPasswd, Runnable progressCallback);
 
 	/**
-	 * Find all {@link WorkSession}s in given course.
+	 * Find all {@link WorkSession}s matching given {@link SnapshotSelectionCriteria}.
 	 * 
-	 * @param courseId             the course id
+	 * @param criteria             the {@link SnapshotSelectionCriteria}
 	 * @param separationSeconds    events separated by this much time are considered to be
 	 *                             in separate sessions
 	 * @return list of {@link WorkSession}s
 	 */
-	public List<WorkSession> findWorkSessions(int courseId, int separationSeconds);
+	public List<WorkSession> findWorkSessions(SnapshotSelectionCriteria criteria, int separationSeconds);
 	
 	/**
 	 * Retrieve submissions/snapshots matching given {@link SnapshotSelectionCriteria}.
