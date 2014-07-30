@@ -183,10 +183,10 @@ public class TimeToSolve {
 	}
 	
 	private void writeOutput() throws IOException {
-		FileWriter fw = null;
+		BufferedWriter w = null;
 		try {
-			fw = new FileWriter(outputFile);
-			BufferedWriter w = new BufferedWriter(fw);
+			FileWriter fw = new FileWriter(outputFile);
+			w = new BufferedWriter(fw);
 			
 			w.write("userId");
 			
@@ -216,8 +216,10 @@ public class TimeToSolve {
 				}
 				w.write("\n");
 			}
+			
+			w.flush();
 		} finally {
-			IOUtils.closeQuietly(fw);
+			IOUtils.closeQuietly(w);
 		}
 	}
 	
