@@ -188,7 +188,7 @@ public class TimeToSolve {
 			fw = new FileWriter(outputFile);
 			BufferedWriter w = new BufferedWriter(fw);
 			
-			w.write("userId,");
+			w.write("userId");
 			
 			List<Integer> problems = new ArrayList<Integer>();
 			problems.addAll(allProblemsIds);
