@@ -49,6 +49,8 @@ public class PauseTimes implements IAnalyzeSnapshots {
 			List<WorkSession> sessions = Database.getInstance().findWorkSessions(criteria, separation);
 			System.out.println("Found " + sessions.size() + " work sessions");
 			
+			int count = 0;
+			
 			for (WorkSession ws : sessions) {
 				List<Pair<Event, Change>> events =
 						Database.getInstance().getEventsWithChanges(ws.getUserId(), ws.getProblemId(), ws.getStartEventId(), ws.getEndEventId());
@@ -62,8 +64,12 @@ public class PauseTimes implements IAnalyzeSnapshots {
 					}
 					if (last > 0L) {
 						w.write(ws.getUserId() + "," + (pair.getLeft().getTimestamp() - last) + "\n");
-						System.out.print(".");
-						System.out.flush();
+						
+						count++;
+						if (count % 200 == 0) {
+							System.out.print(".");
+							System.out.flush();
+						}
 					}
 					last = pair.getLeft().getTimestamp();
 				}
