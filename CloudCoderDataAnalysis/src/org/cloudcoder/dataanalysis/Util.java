@@ -104,6 +104,8 @@ public class Util {
 		} else {
 			loadEmbeddedConfig(config, TimeToSolve.class.getClassLoader());
 		}
+		Util.connectToDatabase(config);
+		
 		t.setConfig(config);
 	}
 

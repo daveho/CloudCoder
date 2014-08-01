@@ -41,7 +41,7 @@ import org.cloudcoder.app.shared.model.SubmissionStatus;
  * 
  * @author David Hovemeyer
  */
-public class Attempts {
+public class Attempts implements IAnalyzeSnapshots {
 	private SnapshotSelectionCriteria criteria;
 	private Set<Integer> problems;
 	// Map of user ids to maps of problem ids to "best" submission status
@@ -54,8 +54,14 @@ public class Attempts {
 		this.resultMap = new HashMap<Integer, Map<Integer,SubmissionStatus>>();
 	}
 	
+	@Override
 	public void setCriteria(SnapshotSelectionCriteria criteria) {
 		this.criteria = criteria;
+	}
+	
+	@Override
+	public void setConfig(Properties config) {
+		// do nothing
 	}
 	
 	public void setOutputFile(String outputFile) {
@@ -156,30 +162,10 @@ public class Attempts {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		boolean interactiveConfig = false;
-		
-		for (String arg : args) {
-			if (arg.equals("--interactiveConfig")) {
-				// Configure interactively rather than using embedded cloudcoder.properties
-				interactiveConfig = true;
-			} else {
-				throw new IllegalArgumentException("Unknown option: " + arg);
-			}
-		}
-		
-		Scanner keyboard = new Scanner(System.in);
-		Util.configureLogging();
-		Properties config = new Properties();
-		if (interactiveConfig) {
-			Util.readDatabaseProperties(keyboard, config);
-		} else {
-			Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
-		}
-		Util.connectToDatabase(config);
-		
 		Attempts attempts = new Attempts();
-		SnapshotSelectionCriteria criteria = Util.getSnapshotSelectionCriteria(keyboard);
-		attempts.setCriteria(criteria);
+		Scanner keyboard = new Scanner(System.in);
+
+		Util.configureCriteriaAndDatabase(keyboard, attempts, args);
 		
 		String outputFile = Util.ask(keyboard, "Output CSV filename: ");
 		attempts.setOutputFile(outputFile);

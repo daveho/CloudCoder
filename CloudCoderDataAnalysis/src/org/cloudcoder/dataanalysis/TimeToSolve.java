@@ -90,8 +90,6 @@ public class TimeToSolve implements IAnalyzeSnapshots {
 	}
 
 	private void execute() throws IOException {
-		Util.connectToDatabase(config);
-		
 		System.out.print("Getting work sessions...");
 		System.out.flush();
 		List<WorkSession> sessions = Database.getInstance().findWorkSessions(criteria, separation);
