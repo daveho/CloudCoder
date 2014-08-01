@@ -38,6 +38,8 @@ public class Main {
 			Attempts.main(rest);
 		} else if (app.equals("tts")) {
 			TimeToSolve.main(rest);
+		} else if (app.equals("pauseTimes")) {
+			PauseTimes.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);
