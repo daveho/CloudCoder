@@ -76,9 +76,9 @@ public class Util {
 	 */
 	public static SnapshotSelectionCriteria getSnapshotSelectionCriteria(Scanner keyboard) {
 		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
-		criteria.setCourseId(Integer.parseInt(ask(keyboard, "Course id: ")));
-		criteria.setProblemId(Integer.parseInt(ask(keyboard, "Problem id: ")));
-		criteria.setUserId(Integer.parseInt(ask(keyboard, "User id: ")));
+		criteria.setCourseId(Integer.parseInt(ask(keyboard, "Course id (-1 for all): ")));
+		criteria.setProblemId(Integer.parseInt(ask(keyboard, "Problem id (-1 for all): ")));
+		criteria.setUserId(Integer.parseInt(ask(keyboard, "User id (-1 for all): ")));
 		return criteria;
 	}
 
