@@ -429,6 +429,7 @@ public class ConfigurationUtil
             }
             if (!usersInCourse.contains(userId)) {
                 registerUser(conn, userId, courseId, CourseRegistrationType.STUDENT, section);
+                numAdded++;
             }
             long register=System.currentTimeMillis()-start;
             logger.info(register+" millis to register "+username);
@@ -444,8 +445,9 @@ public class ConfigurationUtil
         PreparedStatement stmt = null;
         ResultSet resultSet = null;
         try {
-            stmt = conn.prepareStatement("select * from " + CourseRegistration.SCHEMA.getDbTableName()+
-                    " where course_id = ?");
+            stmt = conn.prepareStatement(
+            		"select u.* from cc_users as u, cc_course_registrations as cr "+
+                    " where u.id = cr.user_id and cr.course_id = ?");
             stmt.setInt(1, courseId);
             Set<Integer> users=new HashSet<Integer>();
 
@@ -459,7 +461,8 @@ public class ConfigurationUtil
         } finally {
             DBUtil.closeQuietly(resultSet);
             DBUtil.closeQuietly(stmt);
-        }    }
+        }
+    }
 
     private static Map<String, User> getAllUsers(Connection conn)
     throws SQLException
