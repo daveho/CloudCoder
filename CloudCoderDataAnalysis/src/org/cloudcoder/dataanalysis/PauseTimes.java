@@ -46,6 +46,8 @@ public class PauseTimes implements IAnalyzeSnapshots {
 			FileWriter fw = new FileWriter(outputFile);
 			w = new BufferedWriter(fw);
 			
+			w.write("userId,pauseTime\n");
+			
 			List<WorkSession> sessions = Database.getInstance().findWorkSessions(criteria, separation);
 			System.out.println("Found " + sessions.size() + " work sessions");
 			
