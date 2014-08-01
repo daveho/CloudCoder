@@ -82,4 +82,29 @@ public class Util {
 		return criteria;
 	}
 
+	public static void configureCriteriaAndDatabase(Scanner keyboard, IAnalyzeSnapshots t, String[] args) {
+		boolean interactive = false;
+		for (String arg : args) {
+			if (arg.equals("--interactiveConfig")) {
+				interactive = true;
+			} else {
+				throw new IllegalArgumentException("Unknown option: " + arg);
+			}
+		}
+		
+		configureLogging();
+		
+		SnapshotSelectionCriteria criteria = getSnapshotSelectionCriteria(keyboard);
+	
+		t.setCriteria(criteria);
+	
+		Properties config = new Properties();
+		if (interactive) {
+			readDatabaseProperties(keyboard, config);
+		} else {
+			loadEmbeddedConfig(config, TimeToSolve.class.getClassLoader());
+		}
+		t.setConfig(config);
+	}
+
 }
