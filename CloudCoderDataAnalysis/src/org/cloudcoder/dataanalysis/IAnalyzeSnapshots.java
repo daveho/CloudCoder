@@ -17,32 +17,26 @@
 
 package org.cloudcoder.dataanalysis;
 
-public class Main {
-	public static void main(String[] args) throws Exception {
-		if (args.length == 0) {
-			System.out.println("Command name required");
-			System.exit(1);
-		}
-		
-		String app = args[0];
-		String[] rest = new String[args.length - 1];
-		System.arraycopy(args, 1, rest, 0, args.length - 1);
-		
-		if (app.equals("anonymize")) {
-			Anonymize.main(rest);
-		} else if (app.equals("findWorkSessions")) {
-			FindWorkSessions.main(rest);
-		} else if (app.equals("retest")) {
-			Retest.main(rest);
-		} else if (app.equals("attempts")) {
-			Attempts.main(rest);
-		} else if (app.equals("tts")) {
-			TimeToSolve.main(rest);
-		} else if (app.equals("pauseTimes")) {
-			PauseTimes.main(rest);
-		} else {
-			System.out.println("Unknown app name: " + app);
-			System.exit(1);
-		}
-	}
+import java.util.Properties;
+
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
+
+/**
+ * Implemented by classes which analyze snapshots and/or work sessions.
+ * @author David Hovemeyer
+ */
+public interface IAnalyzeSnapshots {
+	/**
+	 * Set configuration properties.
+	 * 
+	 * @param config the configuration properties to set
+	 */
+	public void setConfig(Properties config);
+	
+	/**
+	 * Set the {@link SnapshotSelectionCriteria}.
+	 * 
+	 * @param criteria the {@link SnapshotSelectionCriteria} to set
+	 */
+	public void setCriteria(SnapshotSelectionCriteria criteria);
 }

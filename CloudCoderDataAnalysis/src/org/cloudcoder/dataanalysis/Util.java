@@ -76,10 +76,37 @@ public class Util {
 	 */
 	public static SnapshotSelectionCriteria getSnapshotSelectionCriteria(Scanner keyboard) {
 		SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
-		criteria.setCourseId(Integer.parseInt(ask(keyboard, "Course id: ")));
-		criteria.setProblemId(Integer.parseInt(ask(keyboard, "Problem id: ")));
-		criteria.setUserId(Integer.parseInt(ask(keyboard, "User id: ")));
+		criteria.setCourseId(Integer.parseInt(ask(keyboard, "Course id (-1 for all): ")));
+		criteria.setProblemId(Integer.parseInt(ask(keyboard, "Problem id (-1 for all): ")));
+		criteria.setUserId(Integer.parseInt(ask(keyboard, "User id (-1 for all): ")));
 		return criteria;
+	}
+
+	public static void configureCriteriaAndDatabase(Scanner keyboard, IAnalyzeSnapshots t, String[] args) {
+		boolean interactive = false;
+		for (String arg : args) {
+			if (arg.equals("--interactiveConfig")) {
+				interactive = true;
+			} else {
+				throw new IllegalArgumentException("Unknown option: " + arg);
+			}
+		}
+		
+		configureLogging();
+		
+		SnapshotSelectionCriteria criteria = getSnapshotSelectionCriteria(keyboard);
+	
+		t.setCriteria(criteria);
+	
+		Properties config = new Properties();
+		if (interactive) {
+			readDatabaseProperties(keyboard, config);
+		} else {
+			loadEmbeddedConfig(config, TimeToSolve.class.getClassLoader());
+		}
+		Util.connectToDatabase(config);
+		
+		t.setConfig(config);
 	}
 
 }

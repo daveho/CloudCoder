@@ -34,6 +34,7 @@ import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -705,4 +706,18 @@ public interface IDatabase {
 	 *        snapshots
 	 */
 	public void retrieveSnapshots(SnapshotSelectionCriteria criteria, SnapshotCallback callback);
+
+	/**
+	 * Get all {@link Event}s for given user/problem within specified range of event ids.
+	 * For each event that is a {@link Change}, get the Change objects as well.
+	 * 
+	 * @param userId        the user id
+	 * @param problemId     the problem id
+	 * @param startEventId  the start event id
+	 * @param endEventId    the end event id
+	 * @return list of {@link Pair}s of Event and Change (Change is null if the event is
+	 *         not a change event)
+	 */
+	public List<Pair<Event, Change>> getEventsWithChanges(int userId,
+			int problemId, int startEventId, int endEventId);
 }
