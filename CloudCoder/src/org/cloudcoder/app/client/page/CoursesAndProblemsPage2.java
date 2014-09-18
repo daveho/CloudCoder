@@ -268,6 +268,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			getCourseAndCourseRegistrationsRPC(session);
 		}
 
+		// FIXME: make this a static method in SessionUtil
 		protected void getCourseAndCourseRegistrationsRPC(final Session session) {
 			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
 				@Override
