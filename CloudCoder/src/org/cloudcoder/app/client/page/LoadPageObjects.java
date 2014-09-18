@@ -247,6 +247,7 @@ public class LoadPageObjects {
 				GWT.log("User self-selection");
 				UserSelection userSelection = new UserSelection();
 				userSelection.setUser(loggedInUser);
+				session.add(userSelection);
 				onSuccess.run();
 				return;
 			}
