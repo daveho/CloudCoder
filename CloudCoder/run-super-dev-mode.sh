@@ -43,6 +43,17 @@
 #
 # I have only tested this with GWT 2.6.0.
 
+# Transform a list of items by prepending a prefix and appending a
+# suffix to each item.
+pp() {
+	list="$1"
+	pfx="$2"
+	sfx="$3"
+	for item in $list; do
+		echo -n "${pfx}${item}${sfx}"
+	done
+}
+
 # Read cloudcoder.properties to find where the GWT SDK is located.
 gwt_dir=$(egrep '^gwt\.sdk' ../cloudcoder.properties | cut -d= -f 2)
 
@@ -58,8 +69,8 @@ cc_srcprojs="CloudCoderModelClasses"
 # Jars containing required GWT modules (as source)
 cc_srclibs="gwt-traction-1.5.8"
 
-bincp1=$(for j in $gwt_libs; do echo -n "${gwt_dir}/${j}.jar:"; done)
-srccp1=$(for d in $cc_srcprojs; do echo -n " -src ../${d}/src"; done)
+bincp1=$(pp "$gwt_libs" "${gwt_dir}/" ".jar:")
+srccp1=$(pp "$cc_srcprojs" " -src ../" "/src ")
 
 # The GWT CodeServer doesn't seem to be able to find sources in
 # a jar file (which is stupid, since gwtc most definitely CAN
@@ -67,11 +78,12 @@ srccp1=$(for d in $cc_srcprojs; do echo -n " -src ../${d}/src"; done)
 # for each source jar.
 srccp2=''
 tmpdirs=''
-allsrcjars=$(for j in $cc_srclibs; do echo "srclib/$j "; done)$(for j in $gwt_srclibs; do echo "${gwt_dir}/$j "; done)
+allsrcjars="$(pp "$cc_srclibs" "srclib/" " ") $(pp "$gwt_srclibs" "${gwt_dir}/" " ")"
 #echo allsrcjars=$allsrcjars
 for j in $allsrcjars; do
 	td=$(mktemp -d)
 	mkdir -p $td
+	echo "Extracting source jar ${j}.jar into ${td}..."
 	cat ${j}.jar | (cd $td && jar x)
 	srccp2="$srccp2 -src $td"
 	tmpdirs="$tmpdirs $td"
