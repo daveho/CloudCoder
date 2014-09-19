@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='cloudcoder'>
+  <inherits name='org.cloudcoder.app.CloudCoder'/>
+
+  <!-- Super dev mode -->
+  <add-linker name="xsiframe" />
+  <set-configuration-property name="devModeRedirectEnabled" value="true"/>
+  <set-property name="compiler.useSourceMaps" value="true" />
+</module>
