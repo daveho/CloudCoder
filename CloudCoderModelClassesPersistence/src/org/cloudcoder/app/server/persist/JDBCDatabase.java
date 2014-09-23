@@ -49,6 +49,7 @@ import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem
 import org.cloudcoder.app.server.persist.txn.GetChangeGivenChangeEventId;
 import org.cloudcoder.app.server.persist.txn.GetConfigurationSetting;
 import org.cloudcoder.app.server.persist.txn.GetCoursesForUser;
+import org.cloudcoder.app.server.persist.txn.GetEventsWithChanges;
 import org.cloudcoder.app.server.persist.txn.GetModulesForCourse;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentChangeForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetMostRecentFullTextChange;
@@ -101,6 +102,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -499,6 +501,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public void retrieveSnapshots(SnapshotSelectionCriteria criteria, SnapshotCallback callback) {
 		databaseRun(new RetrieveSnapshots(criteria, callback));
+	}
+	
+	@Override
+	public List<Pair<Event, Change>> getEventsWithChanges(int userId, int problemId, int startEventId, int endEventId) {
+		return databaseRun(new GetEventsWithChanges(userId, problemId, startEventId, endEventId));
 	}
 
 	/**

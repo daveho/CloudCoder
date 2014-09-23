@@ -33,6 +33,7 @@ import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.QuizPage;
 import org.cloudcoder.app.client.page.StatisticsPage;
 import org.cloudcoder.app.client.page.UserAccountPage;
+import org.cloudcoder.app.client.page.UserAccountPage2;
 import org.cloudcoder.app.client.page.UserAdminPage;
 import org.cloudcoder.app.client.page.UserProblemSubmissionsPage;
 import org.cloudcoder.app.client.page.UserProgressPage;
@@ -259,7 +260,8 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			page = new QuizPage();
 			break;
 		case USER_ACCOUNT:
-			page = new UserAccountPage();
+			//page = new UserAccountPage();
+			page = new UserAccountPage2();
 			break;
 		case USER_PROBLEM_SUBMISSIONS:
 			page = new UserProblemSubmissionsPage();

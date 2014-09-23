@@ -47,7 +47,7 @@ import org.cloudcoder.app.shared.model.WorkSession;
  * 
  * @author David Hovemeyer
  */
-public class TimeToSolve {
+public class TimeToSolve implements IAnalyzeSnapshots {
 	private static class Progress {
 		boolean solved;
 		long timeSpent;
@@ -71,6 +71,7 @@ public class TimeToSolve {
 		this.allProblemsIds = new HashSet<Integer>();
 	}
 
+	@Override
 	public void setCriteria(SnapshotSelectionCriteria criteria) {
 		this.criteria = criteria;
 	}
@@ -79,7 +80,8 @@ public class TimeToSolve {
 		this.separation = separation;
 	}
 	
-	private void setConfig(Properties config) {
+	@Override
+	public void setConfig(Properties config) {
 		this.config = config;
 	}
 	
@@ -88,8 +90,6 @@ public class TimeToSolve {
 	}
 
 	private void execute() throws IOException {
-		Util.connectToDatabase(config);
-		
 		System.out.print("Getting work sessions...");
 		System.out.flush();
 		List<WorkSession> sessions = Database.getInstance().findWorkSessions(criteria, separation);
@@ -224,31 +224,14 @@ public class TimeToSolve {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		boolean interactive = false;
-		for (String arg : args) {
-			if (arg.equals("--interactiveConfig")) {
-				interactive = true;
-			} else {
-				throw new IllegalArgumentException("Unknown option: " + arg);
-			}
-		}
-		
-		Util.configureLogging();
-		
 		TimeToSolve t = new TimeToSolve();
-		
 		Scanner keyboard = new Scanner(System.in);
-		SnapshotSelectionCriteria criteria = Util.getSnapshotSelectionCriteria(keyboard);
-		t.setCriteria(criteria);
+
+		Util.configureCriteriaAndDatabase(keyboard, t, args);
+
 		int separation = Integer.parseInt(Util.ask(keyboard, "Separation in seconds: "));
 		t.setSeparation(separation);
-		Properties config = new Properties();
-		if (interactive) {
-			Util.readDatabaseProperties(keyboard, config);
-		} else {
-			Util.loadEmbeddedConfig(config, TimeToSolve.class.getClassLoader());
-		}
-		t.setConfig(config);
+		
 		String outputFile = Util.ask(keyboard, "Name of output file: ");
 		t.setOutputFile(outputFile);
 		t.execute();

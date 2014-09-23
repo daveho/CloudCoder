@@ -21,8 +21,9 @@
 #      as indicated if you have not already done so.  Then click
 #      on the cloudcoder module link.
 #
-#   2. In Eclipse, run the CloudCoder process as usual
-#      (Run As->Web Application).
+#   2. In Eclipse, right-click CloudCoderSuperDevMode.gwt.xml
+#      (in the org.cloudcoder.app package), and choose
+#      Run As->Web Application.
 #
 #   3. Copy the development mode URL.  Paste it into your web
 #      browser, but omit the part of the URL that ends
@@ -42,24 +43,34 @@
 #
 # I have only tested this with GWT 2.6.0.
 
+# Transform a list of items by prepending a prefix and appending a
+# suffix to each item.
+pp() {
+	list="$1"
+	pfx="$2"
+	sfx="$3"
+	for item in $list; do
+		echo -n "${pfx}${item}${sfx}"
+	done
+}
+
 # Read cloudcoder.properties to find where the GWT SDK is located.
 gwt_dir=$(egrep '^gwt\.sdk' ../cloudcoder.properties | cut -d= -f 2)
 
 # GWT jarfiles that should be on the classpath
-gwt_libs="codeserver dev user"
+gwt_libs="gwt-codeserver gwt-user gwt-dev validation-api-1.0.0.GA"
+
+# GWT source jarfiles that should be on the source classpath
+gwt_srclibs="validation-api-1.0.0.GA-sources"
 
 # CloudCoder projects that should be on the classpath (as source)
 cc_srcprojs="CloudCoderModelClasses"
 
-# CloudCoder projects that should be on the classpath (as compiled classes)
-cc_binprojs="CloudCoderLogging CloudCoderModelClassesJSON CloudCoderModelClassesPersistence CloudCoderSubmissionQueue"
-
 # Jars containing required GWT modules (as source)
 cc_srclibs="gwt-traction-1.5.8"
 
-bincp1=$(for j in $gwt_libs; do echo -n "${gwt_dir}/gwt-${j}.jar:"; done)
-bincp2=$(for b in $cc_binprojs; do echo -n "../${b}/bin:"; done)
-srccp1=$(for d in $cc_srcprojs; do echo -n " -src ../${d}/src"; done)
+bincp1=$(pp "$gwt_libs" "${gwt_dir}/" ".jar:")
+srccp1=$(pp "$cc_srcprojs" " -src ../" "/src ")
 
 # The GWT CodeServer doesn't seem to be able to find sources in
 # a jar file (which is stupid, since gwtc most definitely CAN
@@ -67,15 +78,18 @@ srccp1=$(for d in $cc_srcprojs; do echo -n " -src ../${d}/src"; done)
 # for each source jar.
 srccp2=''
 tmpdirs=''
-for j in $cc_srclibs; do
+allsrcjars="$(pp "$cc_srclibs" "srclib/" " ") $(pp "$gwt_srclibs" "${gwt_dir}/" " ")"
+#echo allsrcjars=$allsrcjars
+for j in $allsrcjars; do
 	td=$(mktemp -d)
 	mkdir -p $td
-	cat srclib/${j}.jar | (cd $td && jar x)
+	echo "Extracting source jar ${j}.jar into ${td}..."
+	cat ${j}.jar | (cd $td && jar x)
 	srccp2="$srccp2 -src $td"
 	tmpdirs="$tmpdirs $td"
 done
 
-cmd="java -classpath ${bincp1}${bincp2} -Xmx1024m com.google.gwt.dev.codeserver.CodeServer -src src/ $srccp1 $srccp2 org.cloudcoder.app.CloudCoder"
+cmd="java -classpath ${bincp1} -Xmx1024m com.google.gwt.dev.codeserver.CodeServer -src src/ $srccp1 $srccp2 org.cloudcoder.app.CloudCoderSuperDevMode"
 
 echo "cmd=${cmd}"
 

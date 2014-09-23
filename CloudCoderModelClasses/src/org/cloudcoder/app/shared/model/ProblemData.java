@@ -239,6 +239,8 @@ public class ProblemData implements Serializable, IProblemData {
 	 */
 	public ProblemData() {
 		super();
+		externalLibraryUrl = "";
+		externalLibraryMD5 = "";
 	}
 
 	/* (non-Javadoc)
