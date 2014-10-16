@@ -419,7 +419,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			GWT.log("My account button clicked");
 			Course course = getCurrentCourse();
 			if(course != null) {
-				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT); //******USE THIS TO NAV BETWEEN PAGES****//
+				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT); 
 			}
 		}
 		
