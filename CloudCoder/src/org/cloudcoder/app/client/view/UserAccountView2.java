@@ -26,6 +26,7 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -164,10 +165,21 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	}
 	
 	protected void handleProgressButtonClick(){
-		//final CourseSelection course = session.get(CourseSelection.class);
-		//if(course != null) {
-			session.get(PageStack.class).push(PageId.USER_PROGRESS); //******USE THIS TO NAV BETWEEN PAGES****//
-		//}
+		// The UserProgressPage requires a UserSelection object to be in the
+		// session.  The idea here is that the User object in the session
+		// represents the logged-in user, and the UserSelection object
+		// represents the "selected" user (the user whose progress we
+		// want to see.)  We are basically allowing the user to
+		// see his/her own progress.
+		UserSelection userSelection = new UserSelection(session.get(User.class));
+		session.add(userSelection);
+		
+		final CourseSelection course = session.get(CourseSelection.class);
+		if (course != null) {
+			GWT.log("Can't view user progress because no course is selected");
+			return;
+		}
+		session.get(PageStack.class).push(PageId.USER_PROGRESS); //******USE THIS TO NAV BETWEEN PAGES****//
 	}
 
 	protected void handleEditButtonClick() {
