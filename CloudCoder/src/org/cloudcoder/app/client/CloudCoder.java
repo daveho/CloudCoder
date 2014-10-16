@@ -32,7 +32,6 @@ import org.cloudcoder.app.client.page.PlaygroundPage;
 import org.cloudcoder.app.client.page.ProblemAdminPage;
 import org.cloudcoder.app.client.page.QuizPage;
 import org.cloudcoder.app.client.page.StatisticsPage;
-import org.cloudcoder.app.client.page.UserAccountPage;
 import org.cloudcoder.app.client.page.UserAccountPage2;
 import org.cloudcoder.app.client.page.UserAdminPage;
 import org.cloudcoder.app.client.page.UserProblemSubmissionsPage;
@@ -48,7 +47,6 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.activity.shared.Activity;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;

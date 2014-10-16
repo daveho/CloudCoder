@@ -265,35 +265,35 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			this.pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 
 			// Load courses
-			getCourseAndCourseRegistrationsRPC(session);
+			SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage2.this, session);
 		}
 
 		// FIXME: make this a static method in SessionUtil
-		protected void getCourseAndCourseRegistrationsRPC(final Session session) {
-			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
-				@Override
-				public void onSuccess(CourseAndCourseRegistration[] result) {
-					GWT.log(result.length + " course(s) loaded");
-					addSessionObject(result);
-				}
-
-				@Override
-				public void onFailure(Throwable caught) {
-					if (caught instanceof CloudCoderAuthenticationException) {
-						recoverFromServerSessionTimeout(new Runnable() {
-							@Override
-							public void run() {
-								// Try again!
-								getCourseAndCourseRegistrationsRPC(session);
-							}
-						});
-					} else {
-						GWT.log("Error loading courses", caught);
-						session.add(StatusMessage.error("Error loading courses", caught));
-					}
-				}
-			});
-		}
+//		protected void getCourseAndCourseRegistrationsRPC(final Session session) {
+//			RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
+//				@Override
+//				public void onSuccess(CourseAndCourseRegistration[] result) {
+//					GWT.log(result.length + " course(s) loaded");
+//					addSessionObject(result);
+//				}
+//
+//				@Override
+//				public void onFailure(Throwable caught) {
+//					if (caught instanceof CloudCoderAuthenticationException) {
+//						recoverFromServerSessionTimeout(new Runnable() {
+//							@Override
+//							public void run() {
+//								// Try again!
+//								getCourseAndCourseRegistrationsRPC(session);
+//							}
+//						});
+//					} else {
+//						GWT.log("Error loading courses", caught);
+//						session.add(StatusMessage.error("Error loading courses", caught));
+//					}
+//				}
+//			});
+//		}
 
 		/* (non-Javadoc)
 		 * @see org.cloudcoder.app.shared.util.Subscriber#eventOccurred(java.lang.Object, org.cloudcoder.app.shared.util.Publisher, java.lang.Object)
@@ -419,7 +419,7 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			GWT.log("My account button clicked");
 			Course course = getCurrentCourse();
 			if(course != null) {
-				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT);
+				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT); //******USE THIS TO NAV BETWEEN PAGES****//
 			}
 		}
 		
