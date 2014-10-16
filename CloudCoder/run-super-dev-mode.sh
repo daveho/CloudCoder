@@ -81,7 +81,7 @@ tmpdirs=''
 allsrcjars="$(pp "$cc_srclibs" "srclib/" " ") $(pp "$gwt_srclibs" "${gwt_dir}/" " ")"
 #echo allsrcjars=$allsrcjars
 for j in $allsrcjars; do
-	td=$(mktemp -d)
+	td=$(mktemp -d -tccsdev)
 	mkdir -p $td
 	echo "Extracting source jar ${j}.jar into ${td}..."
 	cat ${j}.jar | (cd $td && jar x)

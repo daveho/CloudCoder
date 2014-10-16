@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.client.page.CloudCoderPage;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -182,6 +183,34 @@ public class SessionUtil {
 			@Override
 			public void onSuccess(User[] result) {
 				onSuccess.call(result);
+			}
+		});
+	}
+	
+	public static void getCourseAndCourseRegistrationsRPC(
+			final CloudCoderPage page,
+			final Session session) {
+		RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
+			@Override
+			public void onSuccess(CourseAndCourseRegistration[] result) {
+				GWT.log(result.length + " course(s) loaded");
+				page.addSessionObject(result);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				if (caught instanceof CloudCoderAuthenticationException) {
+					page.recoverFromServerSessionTimeout(new Runnable() {
+						@Override
+						public void run() {
+							// Try again!
+							getCourseAndCourseRegistrationsRPC(page, session);
+						}
+					});
+				} else {
+					GWT.log("Error loading courses", caught);
+					session.add(StatusMessage.error("Error loading courses", caught));
+				}
 			}
 		});
 	}
