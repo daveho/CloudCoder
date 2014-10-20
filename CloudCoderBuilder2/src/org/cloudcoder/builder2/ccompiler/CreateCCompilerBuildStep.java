@@ -21,6 +21,7 @@ package org.cloudcoder.builder2.ccompiler;
 import java.io.File;
 import java.util.Properties;
 
+import org.cloudcoder.app.shared.model.Language;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.builder2.model.BuilderSubmission;
 import org.cloudcoder.builder2.model.DeleteDirectoryCleanupAction;
@@ -73,6 +74,11 @@ public class CreateCCompilerBuildStep implements IBuildStep {
 		
 		Compiler compiler = new Compiler(programSource.getProgramText(), tempDir, DEFAULT_PROG_NAME, config);
 		compiler.setLanguage(problem.getProblemType().getLanguage());
+		
+		// Make sure -std=gnu++0x is passed for C++ submissions.
+		if (problem.getProblemType().getLanguage() == Language.CPLUSPLUS) {
+			compiler.addFlag("-std=gnu++0x");
+		}
 		
 		submission.addArtifact(compiler);
 	}
