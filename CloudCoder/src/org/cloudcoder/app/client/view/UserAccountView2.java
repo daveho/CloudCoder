@@ -17,6 +17,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package org.cloudcoder.app.client.view;
 
+import java.awt.Dimension;
+
+//import javax.swing.JScrollPane;
+//import javax.swing.JTextArea;
+
+
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -45,6 +51,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.ResizeComposite;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -55,6 +62,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 {
 	private Session session;
 	private LayoutPanel panel;
+	private ScrollPanel scrollPanel;
 	private Label passwordLabel;
 	private Label usernameLabel;
 	private Label firstNameLabel;
@@ -72,8 +80,15 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	 * Constructor.
 	 */
 	public UserAccountView2() {
-
+		
+		
 		panel = new LayoutPanel();
+		
+		//scrollPanel = new ScrollPanel(panel);
+		
+		scrollPanel = new ScrollPanel();
+		
+		//scrollPanel.add(panel);
 
 		panel.add(new HTML(new SafeHtmlBuilder().appendEscapedLines("Change the fields you want to edit.\n" +
 				"Any fields left blank will be unchanged\n\n").toSafeHtml()));
@@ -90,22 +105,22 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetTopHeight(firstNameLabel, 70.0, Unit.PX, 200.0, Unit.PX);
 
 		//first name text box
-		firstnameTextBox = new TextBox();
+	/*	firstnameTextBox = new TextBox();
 		panel.add(firstnameTextBox);
 		panel.setWidgetLeftWidth(firstnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(firstnameTextBox, 85.0, Unit.PX, 32.0, Unit.PX);
-
+	*/
 		lastNameLabel = new Label("last name");
 		panel.add(lastNameLabel);
 		panel.setWidgetLeftWidth(lastNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(lastNameLabel, 130.0, Unit.PX, 200.0, Unit.PX);
-
-		//last name text box
+	
+	/*	//last name text box
 		lastnameTextBox = new TextBox();
 		panel.add(lastnameTextBox);
 		panel.setWidgetLeftWidth(lastnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(lastnameTextBox, 145.0, Unit.PX, 32.0, Unit.PX);
-
+	*/
 		emailLabel = new Label("email");
 		panel.add(emailLabel);
 		panel.setWidgetLeftWidth(emailLabel, 20.0, Unit.PX, 200.0, Unit.PX);
@@ -159,7 +174,11 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetLeftWidth(userProgressButton, 275.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(userProgressButton, 350.0, Unit.PX, 32.0, Unit.PX);
 		
-		initWidget(panel);
+		// TODO: create course list widget
+		
+		scrollPanel.add(panel);
+		initWidget(scrollPanel);
+		//initWidget(panel);
 
 
 	}
@@ -171,6 +190,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		// represents the "selected" user (the user whose progress we
 		// want to see.)  We are basically allowing the user to
 		// see his/her own progress.
+		
+		//TODO: add mechanism so that the user can select which course they want to 
+		//view their progress in
+		
 		UserSelection userSelection = new UserSelection(session.get(User.class));
 		session.add(userSelection);
 		

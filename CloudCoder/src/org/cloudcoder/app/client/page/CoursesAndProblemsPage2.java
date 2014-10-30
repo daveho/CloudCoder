@@ -415,12 +415,12 @@ public class CoursesAndProblemsPage2 extends CloudCoderPage {
 			}
 		}
 
+
 		protected void handleAccountButtonClicked() {
+			
 			GWT.log("My account button clicked");
-			Course course = getCurrentCourse();
-			if(course != null) {
-				getSession().get(PageStack.class).push(PageId.USER_ACCOUNT); 
-			}
+			getSession().get(PageStack.class).push(PageId.USER_ACCOUNT); 
+		
 		}
 		
 		protected void handleRefreshProblemListButtonClicked() {
