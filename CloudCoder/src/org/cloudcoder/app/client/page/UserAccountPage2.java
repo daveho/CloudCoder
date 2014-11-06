@@ -148,7 +148,7 @@ public class UserAccountPage2 extends CloudCoderPage
 
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[]{ CourseSelection.class, User.class }; //get rid of this
+		return new Class<?>[]{ User.class }; //get rid of this
 	}
 
 	/* (non-Javadoc)

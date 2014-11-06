@@ -274,6 +274,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		firstNameLabel.setText("First name: " + user.getFirstname());
 		lastNameLabel.setText("Last name: " + user.getLastname());
 		emailLabel.setText("Email: " + user.getEmail());
+		
+		// Activate the course selection list (allowing it to populate
+		// the list of courses the user is registered for)
+		courseSelectionList.activate(session, subscriptionRegistrar);
 
 	}
 
