@@ -75,6 +75,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	private PasswordTextBox passwordTextBox;
 	private PasswordTextBox passwordCheckBox;
 	private User user;
+	private CourseSelectionListBox courseSelectionList;
 
 	/**
 	 * Constructor.
@@ -175,6 +176,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetTopHeight(userProgressButton, 350.0, Unit.PX, 32.0, Unit.PX);
 		
 		// TODO: create course list widget
+		courseSelectionList = new CourseSelectionListBox();
+		panel.add(courseSelectionList);
+		panel.setWidgetLeftWidth(courseSelectionList, 500, Unit.PX, 200.0, Unit.PX);
+		panel.setWidgetTopHeight(courseSelectionList, 300, Unit.PX, 200.0, Unit.PX);
 		
 		scrollPanel.add(panel);
 		initWidget(scrollPanel);

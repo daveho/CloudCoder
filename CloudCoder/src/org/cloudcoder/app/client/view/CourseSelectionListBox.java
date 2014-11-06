@@ -25,6 +25,9 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 
@@ -36,6 +39,7 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	
 	private ListBox listBox;
 	private Session session;
+	private int selectedIndex;
 	private CourseAndCourseRegistration[] courseAndCourseRegistrationList;
 	
 	public CourseSelectionListBox() {
@@ -45,7 +49,31 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 		//   The handler should create a CourseSelection object and add it to the session
 		//   (the Module in the CourseSelection can be null)
 		
+		
+		
+		//setting the visible item count to 1 would turn the listBox into a drop-down list
+		listBox.setVisibleItemCount(5);
+		
+		
+		listBox.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				handleChangeEvent(event);
+			}
+		});
+		
+		
 		initWidget(listBox);
+	}
+
+	/**
+	 * @param event
+	 */
+	protected void handleChangeEvent(ChangeEvent event) {
+		Window.alert("Selection changed?");
+		//selectedIndex = listBox.getSelectedIndex();
+		//session.add(courseAndCourseRegistrationList[selectedIndex]);
+		
 	}
 
 	@Override
@@ -58,6 +86,9 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 		courseAndCourseRegistrationList = session.get(CourseAndCourseRegistration[].class);
 		if (courseAndCourseRegistrationList != null) {
 			// TODO: add CourseAndCourseRegistration objects as list items
+			for(int i = 0; i < courseAndCourseRegistrationList.length; i++){
+				listBox.addItem(courseAndCourseRegistrationList[i].toString());
+			}
 		}
 
 	}
