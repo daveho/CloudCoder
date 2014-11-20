@@ -17,12 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package org.cloudcoder.app.client.view;
 
-import java.awt.Dimension;
-
-//import javax.swing.JScrollPane;
-//import javax.swing.JTextArea;
-
-
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -201,7 +195,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		session.add(userSelection);
 		
 		final CourseSelection course = session.get(CourseSelection.class);
-		if (course != null) {
+		if (course == null) {
 			GWT.log("Can't view user progress because no course is selected");
 			return;
 		}
@@ -219,8 +213,8 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		final CourseSelection course = session.get(CourseSelection.class);
 
 
-		if (user.getFirstname().equals(firstnameTextBox.getValue()) ||
-				user.getLastname().equals(lastnameTextBox.getValue()) ||
+		if (/*user.getFirstname().equals(firstnameTextBox.getValue()) ||
+				user.getLastname().equals(lastnameTextBox.getValue()) ||*/
 				user.getEmail().equals(emailTextBox.getValue()) ||
 				passwordTextBox.getValue().length()>0)
 		{
@@ -234,8 +228,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 				return;
 			}
 			// set the new fields to be saved into the DB
+			/*
 			user.setFirstname(firstnameTextBox.getValue());
 			user.setLastname(lastnameTextBox.getValue());
+			*/
 			user.setEmail(emailTextBox.getValue());
 			//user.setConsent(consent);
 			if (passwordTextBox.getValue().length()>0) {

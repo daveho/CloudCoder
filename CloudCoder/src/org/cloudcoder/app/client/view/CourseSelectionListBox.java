@@ -71,6 +71,15 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 		selectedIndex = listBox.getSelectedIndex();
 		session.add(courseAndCourseRegistrationList[selectedIndex]);
 		
+		//session.add(courseAndCourseRegistrationList[selectedIndex]);
+
+		// Construct a CourseSelection for the selected CourseAndCourseRegistration
+		CourseSelection courseSelection =
+				new CourseSelection(courseAndCourseRegistrationList[selectedIndex].getCourse(), null);
+
+		// Add it to the session
+		session.add(courseSelection);
+
 	}
 
 	@Override
