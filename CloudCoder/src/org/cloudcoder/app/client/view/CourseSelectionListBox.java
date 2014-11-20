@@ -46,10 +46,6 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	public CourseSelectionListBox() {
 		listBox = new ListBox();
 		
-		// TODO: handle item selection events (make sure that single-selection is enabled)
-		//   The handler should create a CourseSelection object and add it to the session
-		//   (the Module in the CourseSelection can be null)
-		
 		
 		
 		//setting the visible item count to 1 would turn the listBox into a drop-down list
@@ -72,8 +68,8 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	 */
 	protected void handleChangeEvent(ChangeEvent event) {
 		Window.alert("Selection changed?");
-		//selectedIndex = listBox.getSelectedIndex();
-		//session.add(courseAndCourseRegistrationList[selectedIndex]);
+		selectedIndex = listBox.getSelectedIndex();
+		session.add(courseAndCourseRegistrationList[selectedIndex]);
 		
 	}
 
@@ -86,7 +82,7 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 		
 		courseAndCourseRegistrationList = session.get(CourseAndCourseRegistration[].class);
 		if (courseAndCourseRegistrationList != null) {
-			// TODO: add CourseAndCourseRegistration objects as list items
+			//add CourseAndCourseRegistration objects as list items
 			for(int i = 0; i < courseAndCourseRegistrationList.length; i++){
 				listBox.addItem(format(courseAndCourseRegistrationList[i]));
 			}

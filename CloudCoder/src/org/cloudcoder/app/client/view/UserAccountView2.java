@@ -69,8 +69,8 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	private Label lastNameLabel;
 	private Label emailLabel;
 	private Label passwordCheckLabel;
-	private TextBox firstnameTextBox;
-	private TextBox lastnameTextBox;
+//	private TextBox firstnameTextBox;
+//	private TextBox lastnameTextBox;
 	private TextBox emailTextBox;
 	private PasswordTextBox passwordTextBox;
 	private PasswordTextBox passwordCheckBox;
@@ -100,7 +100,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetTopHeight(usernameLabel, 50.0, Unit.PX, 200.0, Unit.PX);
 
 
-		firstNameLabel = new Label("first name");
+		firstNameLabel = new Label("");
 		panel.add(firstNameLabel);
 		panel.setWidgetLeftWidth(firstNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(firstNameLabel, 70.0, Unit.PX, 200.0, Unit.PX);
@@ -111,7 +111,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetLeftWidth(firstnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(firstnameTextBox, 85.0, Unit.PX, 32.0, Unit.PX);
 	*/
-		lastNameLabel = new Label("last name");
+		lastNameLabel = new Label("");
 		panel.add(lastNameLabel);
 		panel.setWidgetLeftWidth(lastNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(lastNameLabel, 130.0, Unit.PX, 200.0, Unit.PX);
@@ -122,7 +122,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetLeftWidth(lastnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(lastnameTextBox, 145.0, Unit.PX, 32.0, Unit.PX);
 	*/
-		emailLabel = new Label("email");
+		emailLabel = new Label("");
 		panel.add(emailLabel);
 		panel.setWidgetLeftWidth(emailLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(emailLabel, 185.0, Unit.PX, 200.0, Unit.PX);
@@ -196,8 +196,6 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		// want to see.)  We are basically allowing the user to
 		// see his/her own progress.
 		
-		//TODO: add mechanism so that the user can select which course they want to 
-		//view their progress in
 		
 		UserSelection userSelection = new UserSelection(session.get(User.class));
 		session.add(userSelection);
@@ -208,6 +206,9 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 			return;
 		}
 		session.get(PageStack.class).push(PageId.USER_PROGRESS); //******USE THIS TO NAV BETWEEN PAGES****//
+		
+		
+		
 	}
 
 	protected void handleEditButtonClick() {
