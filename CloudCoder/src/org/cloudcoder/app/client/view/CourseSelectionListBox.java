@@ -46,8 +46,7 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	public CourseSelectionListBox() {
 		listBox = new ListBox();
 		
-		
-		
+
 		//setting the visible item count to 1 would turn the listBox into a drop-down list
 		listBox.setVisibleItemCount(5);
 		

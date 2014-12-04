@@ -78,12 +78,8 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		
 		
 		panel = new LayoutPanel();
-		
-		//scrollPanel = new ScrollPanel(panel);
-		
+
 		scrollPanel = new ScrollPanel();
-		
-		//scrollPanel.add(panel);
 
 		panel.add(new HTML(new SafeHtmlBuilder().appendEscapedLines("Change the fields you want to edit.\n" +
 				"Any fields left blank will be unchanged\n\n").toSafeHtml()));
@@ -177,7 +173,6 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		
 		scrollPanel.add(panel);
 		initWidget(scrollPanel);
-		//initWidget(panel);
 
 
 	}
@@ -190,7 +185,6 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		// want to see.)  We are basically allowing the user to
 		// see his/her own progress.
 		
-		
 		UserSelection userSelection = new UserSelection(session.get(User.class));
 		session.add(userSelection);
 		
@@ -200,8 +194,6 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 			return;
 		}
 		session.get(PageStack.class).push(PageId.USER_PROGRESS); //******USE THIS TO NAV BETWEEN PAGES****//
-		
-		
 		
 	}
 
@@ -213,9 +205,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		final CourseSelection course = session.get(CourseSelection.class);
 
 
-		if (/*user.getFirstname().equals(firstnameTextBox.getValue()) ||
-				user.getLastname().equals(lastnameTextBox.getValue()) ||*/
-				user.getEmail().equals(emailTextBox.getValue()) ||
+		if (user.getEmail().equals(emailTextBox.getValue()) ||
 				passwordTextBox.getValue().length()>0)
 		{
 			if (!passwordTextBox.getValue().equals(passwordCheckBox.getValue())) {
@@ -228,10 +218,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 				return;
 			}
 			// set the new fields to be saved into the DB
-			/*
-			user.setFirstname(firstnameTextBox.getValue());
-			user.setLastname(lastnameTextBox.getValue());
-			*/
+
 			user.setEmail(emailTextBox.getValue());
 			//user.setConsent(consent);
 			if (passwordTextBox.getValue().length()>0) {

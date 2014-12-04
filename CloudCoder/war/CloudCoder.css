@@ -292,7 +292,7 @@
 
 }
 
-.cc-exerciseSummaryExercise {
+.cc-exerciseSummaryItem {
 	width: 40px;
 	height: 32px;
 	background: silver;
@@ -302,6 +302,18 @@
 
 .cc-completedExercise {
 	background: green !important;
+}
+
+.cc-exerciseStarted {
+	background: yellow !important;
+}
+
+.cc-exerciseCompileError{
+	background: orange !important;
+}
+
+.cc-exerciseBuildError{
+	background: black !important;
 }
 
 .cc-failingExercise {
