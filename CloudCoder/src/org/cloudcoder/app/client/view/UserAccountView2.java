@@ -63,8 +63,6 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	private Label lastNameLabel;
 	private Label emailLabel;
 	private Label passwordCheckLabel;
-//	private TextBox firstnameTextBox;
-//	private TextBox lastnameTextBox;
 	private TextBox emailTextBox;
 	private PasswordTextBox passwordTextBox;
 	private PasswordTextBox passwordCheckBox;
@@ -95,23 +93,11 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		panel.setWidgetLeftWidth(firstNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(firstNameLabel, 70.0, Unit.PX, 200.0, Unit.PX);
 
-		//first name text box
-	/*	firstnameTextBox = new TextBox();
-		panel.add(firstnameTextBox);
-		panel.setWidgetLeftWidth(firstnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(firstnameTextBox, 85.0, Unit.PX, 32.0, Unit.PX);
-	*/
 		lastNameLabel = new Label("");
 		panel.add(lastNameLabel);
 		panel.setWidgetLeftWidth(lastNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
 		panel.setWidgetTopHeight(lastNameLabel, 130.0, Unit.PX, 200.0, Unit.PX);
 	
-	/*	//last name text box
-		lastnameTextBox = new TextBox();
-		panel.add(lastnameTextBox);
-		panel.setWidgetLeftWidth(lastnameTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(lastnameTextBox, 145.0, Unit.PX, 32.0, Unit.PX);
-	*/
 		emailLabel = new Label("");
 		panel.add(emailLabel);
 		panel.setWidgetLeftWidth(emailLabel, 20.0, Unit.PX, 200.0, Unit.PX);
@@ -220,7 +206,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 			// set the new fields to be saved into the DB
 
 			user.setEmail(emailTextBox.getValue());
-			//user.setConsent(consent);
+			
 			if (passwordTextBox.getValue().length()>0) {
 				user.setPasswordHash(passwordTextBox.getValue());
 			}
