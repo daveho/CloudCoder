@@ -1,3 +1,20 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package org.cloudcoder.app.server.persist.util;
 
 import java.io.BufferedInputStream;
@@ -19,7 +36,6 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.Date;
 
-import sun.security.x509.CertAndKeyGen;
 import sun.security.x509.X500Name;
 
 public class KeystoreUtil
@@ -124,10 +140,11 @@ public class KeystoreUtil
          * to add entries and then not call store. I believe it will update 
          * the existing store you load it from and not just in memory. 
          */  
-        ks.store( new FileOutputStream( "NewClientKeyStore" ), "MyPass".toCharArray() );
+        FileOutputStream stream = new FileOutputStream( "NewClientKeyStore" );
+		ks.store( stream, "MyPass".toCharArray() );
     }
     
-    private static final java.util.ResourceBundle rb = java.util.ResourceBundle.getBundle("sun.security.util.Resources");
+    //private static final java.util.ResourceBundle rb = java.util.ResourceBundle.getBundle("sun.security.util.Resources");
 
     /**
      * This code is based on code from OpenJDK-6, available here:
@@ -163,7 +180,7 @@ public class KeystoreUtil
             }
         }
         if (keyStore.containsAlias(alias)) {
-            MessageFormat form = new MessageFormat(rb.getString("Key pair not generated, alias <alias> already exists"));
+            MessageFormat form = new MessageFormat("Key pair not generated, alias already exists");
             Object[] source = {alias};
             throw new IllegalArgumentException(form.format(source));
         }
@@ -175,28 +192,54 @@ public class KeystoreUtil
             } else if ("EC".equalsIgnoreCase(keyAlgName)) {
                 sigAlgName = "SHA1withECDSA";
             } else {
-                throw new IllegalArgumentException(rb.getString("Cannot derive signature algorithm"));
+                throw new IllegalArgumentException("Cannot derive signature algorithm");
             }
         }
-        //CertAndKeyGen keypair = new CertAndKeyGen(keyAlgName, sigAlgName, providerName);
-        CertAndKeyGen keypair = new CertAndKeyGen(keyAlgName, sigAlgName);
-        // If DN is provided, parse it. Otherwise, prompt the user for it.
-        X500Name x500Name= new X500Name(dname);
-        keypair.generate(keysize);
-        PrivateKey privKey = keypair.getPrivateKey();
+        
+        addKeypair(keyStore, validity, alias, dname, keyAlgName, sigAlgName, keysize, keyPass);
+    }
+
+    // This method uses reflection to create a self-signed certificate
+    // and add it to the keystore.  The reason we use reflection is because
+    // the CertAndKeyGen class was moved from sun.security.x509.CertAndKeyGen
+    // to sun.security.tools.keytool.CertAndKeyGen in JDK 1.8.
+    // What a pain.
+    private static void addKeypair(
+    		KeyStore keyStore,
+    		int validity,
+    		String alias,
+    		String dname,
+    		String keyAlgName,
+    		String sigAlgName,
+    		int keysize,
+    		String keyPass) throws IOException, KeyStoreException {
+    	// Find CertAndKeyGen class
+    	Class<?> certAndKeyGenCls;
+    	certAndKeyGenCls = ReflectionUtil.findClass("sun.security.x509.CertAndKeyGen");
+    	if (certAndKeyGenCls == null) {
+    		certAndKeyGenCls = ReflectionUtil.findClass("sun.security.tools.keytool.CertAndKeyGen");
+    	}
+    	if (certAndKeyGenCls == null) {
+    		throw new IllegalStateException("Cannot find CertAndKeyGen class");
+    	}
+    	
+    	// Create CertAndKeyGen object by reflection
+    	Object keypair = ReflectionUtil.createExact(certAndKeyGenCls, keyAlgName, sigAlgName);
+
+    	// Generate a self-signed certificate and add it to the keystore
+    	X500Name x500Name= new X500Name(dname);
+        ReflectionUtil.call(keypair, "generate", new Class<?>[]{Integer.TYPE}, keysize);
+        PrivateKey privKey = (PrivateKey) ReflectionUtil.callExact(keypair, "getPrivateKey");
         X509Certificate[] chain = new X509Certificate[1];
-        chain[0] = keypair.getSelfCertificate(x500Name, new Date(), validity*24L*60L*60L);
-        if (true) {
-            MessageFormat form = new MessageFormat(rb.getString
-                    ("Generating keysize bit keyAlgName key pair and self-signed certificate " +
-                            "(sigAlgName) with a validity of validality days\n\tfor: x500Name"));
-            Object[] source = {new Integer(keysize),
-                    privKey.getAlgorithm(),
-                    chain[0].getSigAlgName(),
-                    new Long(validity),
-                    x500Name};
-            System.err.println(form.format(source));
-        }
+
+        chain[0] = (X509Certificate) ReflectionUtil.call(
+        		keypair,
+        		"getSelfCertificate",
+        		new Class<?>[]{X500Name.class, Date.class, Long.TYPE},
+        		x500Name,
+        		new Date(),
+        		validity*24L*60L*60L);
+        
         keyStore.setKeyEntry(alias, privKey, keyPass.toCharArray(), chain);
     }
 }
