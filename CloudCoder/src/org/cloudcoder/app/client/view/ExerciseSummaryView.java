@@ -1,0 +1,129 @@
+// CloudCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+package org.cloudcoder.app.client.view;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
+import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.util.Publisher;
+import org.cloudcoder.app.shared.util.Subscriber;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
+
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
+
+/**
+ * @author shanembonner
+ *
+ */
+public class ExerciseSummaryView extends Composite implements Subscriber, SessionObserver{
+	private FlowPanel flowPanel;
+	private List<ExerciseSummaryItem> itemList;
+	private Session session;
+	private User user;
+
+	/**
+	 * @param html
+	 */
+	public ExerciseSummaryView() {
+		itemList = new ArrayList<ExerciseSummaryItem>();
+		
+		this.flowPanel = new FlowPanel();
+		flowPanel.setStyleName("cc-exerciseSummary", true);
+		initWidget(flowPanel);
+	}
+
+	public void addExerciseSummaryItem(ExerciseSummaryItem item) {
+		itemList.add(item);
+		flowPanel.add(item);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
+	 */
+	@Override
+	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
+	{
+		this.session = session;
+		
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
+		this.user = session.get(User.class);
+		
+		ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts = session.get(ProblemAndSubmissionReceipt[].class);
+		if (problemAndSubmissionReceipts != null) {
+			loadData(problemAndSubmissionReceipts);
+		}
+		
+	}
+
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof ProblemAndSubmissionReceipt[]) {
+			loadData((ProblemAndSubmissionReceipt[]) hint);
+		}
+	}
+
+	/**
+	 * @param problemAndSubmissionReceipts
+	 */
+	private void loadData(ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts) {
+		// TODO Auto-generated method stub
+		// clear current data, load new data
+		itemList.clear();
+		flowPanel.clear();
+		
+		//loop through the problem and submission receipt, HOW DO I ACESS THIS?
+		//create exerciseSummaryItem for each, and set each box's status (completed, failed, etc)
+		
+		for(int i = 0; i < problemAndSubmissionReceipts.length; i++){
+			ProblemAndSubmissionReceipt item = problemAndSubmissionReceipts[i];
+			SubmissionReceipt receipt = item.getReceipt();
+			SubmissionStatus status = receipt.getStatus();
+			
+			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
+			summaryItem.setStyleName("cc-exerciseSummaryItem", true);
+			
+			//determine status, create ExerciseSummaryItem and use method addExerciseSummaryItem
+			if(status == SubmissionStatus.STARTED){
+				summaryItem.setStyleName("cc-exerciseStarted", true);
+			}
+			if(status == SubmissionStatus.TESTS_PASSED){
+				summaryItem.setStyleName("cc-completedExercise", true);
+			}
+			if(status == SubmissionStatus.TESTS_FAILED){
+				summaryItem.setStyleName("cc-failingExercise", true);
+			}
+			if(status == SubmissionStatus.COMPILE_ERROR){
+				summaryItem.setStyleName("cc-exerciseCompileError", true);
+			}
+			if(status == SubmissionStatus.BUILD_ERROR){
+				summaryItem.setStyleName("cc-exerciseBuildError", true);
+			}
+			addExerciseSummaryItem(summaryItem);
+		}
+	}
+
+}

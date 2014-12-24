@@ -54,6 +54,17 @@ pp() {
 	done
 }
 
+# The GNU/Linux mktemp program has different options than
+# the BSD/MacOS mktemp program.
+my_mktemp() {
+	osname=$(uname)
+	if [ "$osname" = "Linux" ]; then
+		mktemp -d
+	else
+		mktemp -d -tccsdev
+	fi
+}
+
 # Read cloudcoder.properties to find where the GWT SDK is located.
 gwt_dir=$(egrep '^gwt\.sdk' ../cloudcoder.properties | cut -d= -f 2)
 
@@ -81,7 +92,7 @@ tmpdirs=''
 allsrcjars="$(pp "$cc_srclibs" "srclib/" " ") $(pp "$gwt_srclibs" "${gwt_dir}/" " ")"
 #echo allsrcjars=$allsrcjars
 for j in $allsrcjars; do
-	td=$(mktemp -d)
+	td=$(my_mktemp)
 	mkdir -p $td
 	echo "Extracting source jar ${j}.jar into ${td}..."
 	cat ${j}.jar | (cd $td && jar x)

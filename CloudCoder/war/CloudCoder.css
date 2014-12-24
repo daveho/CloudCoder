@@ -285,6 +285,40 @@
 	display: inline-block;
 	margin: 10px 10px;
 }
+/**
+ *Implementation for the exerciseSummary objects
+ */
+ .cc-exerciseSummary {
+
+}
+
+.cc-exerciseSummaryItem {
+	width: 40px;
+	height: 32px;
+	background: silver;
+	display: inline-block;
+	margin: 4px 4px;
+}
+
+.cc-completedExercise {
+	background: green !important;
+}
+
+.cc-exerciseStarted {
+	background: yellow !important;
+}
+
+.cc-exerciseCompileError{
+	background: orange !important;
+}
+
+.cc-exerciseBuildError{
+	background: black !important;
+}
+
+.cc-failingExercise {
+	background: red !important;
+}
 
 /**
  * Increase the z-index for date box popups so that they

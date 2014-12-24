@@ -22,6 +22,7 @@ use strict;
 # Handle command line options.
 my $depsFile = 'default.deps';
 my $mode = 'fetch';
+my $use_curl = 0;
 if (scalar(@ARGV) > 0) {
 	my $arg = shift @ARGV;
 	if ($arg =~ /^--deps=(.*)$/) {
@@ -32,6 +33,8 @@ if (scalar(@ARGV) > 0) {
 		$mode = 'list';
 	} elsif ($arg eq '--check') {
 		$mode = 'check';
+	} elsif ($arg eq '--curl') {
+		$use_curl = 1;
 	} else {
 		die "Unknown option: $arg\n";
 	}
@@ -104,7 +107,11 @@ sub Download {
 	EnsureDirExists($toFile);
 	my $file = File($jar);
 	print "Fetching $jar...\n";
-	Run('wget', $jar, "--output-document=$toFile");
+	if ($use_curl) {
+		Run('curl', '-o', $toFile, $jar);
+	} else {
+		Run('wget', $jar, "--output-document=$toFile");
+	}
 }
 
 sub Copy {
