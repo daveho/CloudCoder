@@ -48,10 +48,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 public class UserAccountPage2 extends CloudCoderPage
 {
 	private class UI extends Composite implements SessionObserver, Subscriber {
-		private static final double USERS_BUTTON_BAR_HEIGHT_PX = 28.0;
-
 		private PageNavPanel pageNavPanel;
-		private String rawCourseTitle;
 		private Label header;
 		private UserAccountView2 userAccountView; //***LINE TO FIX ACCOUNT VIEWS
 		private StatusMessageView statusMessageView;
@@ -96,9 +93,6 @@ public class UserAccountPage2 extends CloudCoderPage
 			initWidget(dockLayoutPanel);
 		}
 		
-		/* (non-Javadoc)
-		 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
-		 */
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
@@ -109,8 +103,7 @@ public class UserAccountPage2 extends CloudCoderPage
 			statusMessageView.activate(session, subscriptionRegistrar);
 
 			// The session should contain a course
-			rawCourseTitle = "Account Settings";
-			header.setText(rawCourseTitle);
+			header.setText("My account");
 			header.setStyleName("cc-dialogTitle");
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 		}
@@ -120,9 +113,6 @@ public class UserAccountPage2 extends CloudCoderPage
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#createWidget()
-	 */
 	@Override
 	public void createWidget() {
 		setWidget(new UI());
@@ -130,12 +120,9 @@ public class UserAccountPage2 extends CloudCoderPage
 
 	@Override
 	public Class<?>[] getRequiredPageObjects() {
-		return new Class<?>[]{ User.class }; //get rid of this
+		return new Class<?>[]{ User.class };
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.CloudCoderPage#activate()
-	 */
 	@Override
 	public void activate() {
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());

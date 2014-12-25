@@ -57,21 +57,14 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	private Session session;
 	private LayoutPanel panel;
 	private ScrollPanel scrollPanel;
-	//	private Label passwordLabel;
-	//	private Label usernameLabel;
-	//	private Label firstNameLabel;
-	//	private Label lastNameLabel;
-	//	private Label emailLabel;
-	//	private Label passwordCheckLabel;
-	//	private TextBox emailTextBox;
 	private PasswordTextBox passwordTextBox;
 	private PasswordTextBox passwordCheckBox;
-//	private User user;
 	private CourseSelectionListBox courseSelectionList;
 	private Label userIdentityLabel;
 	private Label passwordLabel;
 	private Label passwordCheckLabel;
 	private Button editPasswordButton;
+	private Button userProgressButton;
 
 	/**
 	 * Constructor.
@@ -80,88 +73,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		this.page = page;
 		
 		panel = new LayoutPanel();
-
-		/*
-		panel.add(new HTML(new SafeHtmlBuilder().appendEscapedLines("Change the fields you want to edit.\n" +
-				"Any fields left blank will be unchanged\n\n").toSafeHtml()));
-
-		usernameLabel = new Label("");
-		panel.add(usernameLabel);
-		panel.setWidgetLeftWidth(usernameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(usernameLabel, 50.0, Unit.PX, 200.0, Unit.PX);
-
-
-		firstNameLabel = new Label("");
-		panel.add(firstNameLabel);
-		panel.setWidgetLeftWidth(firstNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(firstNameLabel, 70.0, Unit.PX, 200.0, Unit.PX);
-
-		lastNameLabel = new Label("");
-		panel.add(lastNameLabel);
-		panel.setWidgetLeftWidth(lastNameLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(lastNameLabel, 130.0, Unit.PX, 200.0, Unit.PX);
-
-		emailLabel = new Label("");
-		panel.add(emailLabel);
-		panel.setWidgetLeftWidth(emailLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(emailLabel, 185.0, Unit.PX, 200.0, Unit.PX);
-
-		//email textbox
-		emailTextBox = new TextBox();
-		panel.add(emailTextBox);
-		panel.setWidgetLeftWidth(emailTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(emailTextBox, 200.0, Unit.PX, 32.0, Unit.PX);
-
-		passwordLabel = new Label("Enter a new password:");
-		panel.add(passwordLabel);
-		panel.setWidgetLeftWidth(passwordLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordLabel, 250.0, Unit.PX, 32.0, Unit.PX);
-
-		passwordTextBox = new PasswordTextBox();
-		panel.add(passwordTextBox);
-		panel.setWidgetLeftWidth(passwordTextBox, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordTextBox, 265.0, Unit.PX, 32.0, Unit.PX);
-
-		passwordCheckLabel = new Label("Re-enter password:");
-		panel.add(passwordCheckLabel);
-		panel.setWidgetLeftWidth(passwordCheckLabel, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordCheckLabel, 300.0, Unit.PX, 32.0, Unit.PX);
-
-		passwordCheckBox = new PasswordTextBox();
-		panel.add(passwordCheckBox);
-		panel.setWidgetLeftWidth(passwordCheckBox, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordCheckBox, 315.0, Unit.PX, 32.0, Unit.PX);
-
-
-		Button editUserButton = new Button("Edit user", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				handleEditButtonClick();
-			}
-		});
-		panel.add(editUserButton);
-		panel.setWidgetLeftWidth(editUserButton, 20.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(editUserButton, 350.0, Unit.PX, 32.0, Unit.PX);
-
-		Button userProgressButton = new Button("User Progress", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event){
-				handleProgressButtonClick();
-
-			}
-		});
-		panel.add(userProgressButton);
-		panel.setWidgetLeftWidth(userProgressButton, 275.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(userProgressButton, 350.0, Unit.PX, 32.0, Unit.PX);
-
-		// TODO: create course list widget
-		courseSelectionList = new CourseSelectionListBox();
-		panel.add(courseSelectionList);
-		panel.setWidgetLeftWidth(courseSelectionList, 500, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(courseSelectionList, 300, Unit.PX, 200.0, Unit.PX);
-		 */
 		
-		final double top = 10.0;
+		final double top = 0.0;
+		
+		// UI for changing password
 
 		this.userIdentityLabel = new Label();
 		userIdentityLabel.setStyleName("cc-userIdentity", true);
@@ -172,13 +87,13 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		Label passwordChangeLabel = new Label("Change your password");
 		passwordChangeLabel.setStyleName("cc-sectionLabel", true);
 		panel.add(passwordChangeLabel);
-		panel.setWidgetLeftWidth(passwordChangeLabel, 40.0, Unit.PX, 400.0, Unit.PX);
+		panel.setWidgetLeftWidth(passwordChangeLabel, 40.0, Unit.PX, 540.0, Unit.PX);
 		panel.setWidgetTopHeight(passwordChangeLabel, top + 40.0, Unit.PX, 24.0, Unit.PX);
 		
 		passwordLabel = new Label("Enter a new password:");
 		panel.add(passwordLabel);
 		panel.setWidgetLeftWidth(passwordLabel, 40.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordLabel, top + 80.0, Unit.PX, 32.0, Unit.PX);
+		panel.setWidgetTopHeight(passwordLabel, top + 80.0, Unit.PX, 16.0, Unit.PX);
 
 		passwordTextBox = new PasswordTextBox();
 		panel.add(passwordTextBox);
@@ -188,7 +103,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		passwordCheckLabel = new Label("Re-enter password:");
 		panel.add(passwordCheckLabel);
 		panel.setWidgetLeftWidth(passwordCheckLabel, 40.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(passwordCheckLabel, top + 150.0, Unit.PX, 32.0, Unit.PX);
+		panel.setWidgetTopHeight(passwordCheckLabel, top + 150.0, Unit.PX, 16.0, Unit.PX);
 
 		passwordCheckBox = new PasswordTextBox();
 		panel.add(passwordCheckBox);
@@ -198,20 +113,46 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		editPasswordButton = new Button("Update password");
 		panel.add(editPasswordButton);
 		panel.setWidgetLeftWidth(editPasswordButton, 40.0, Unit.PX, 200.0, Unit.PX);
-		panel.setWidgetTopHeight(editPasswordButton, 240.0, Unit.PX, 32.0, Unit.PX);
+		panel.setWidgetTopHeight(editPasswordButton, top + 220.0, Unit.PX, 32.0, Unit.PX);
 		editPasswordButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				handleEditButtonClick();
 			}
 		});
+		
+		// UI for viewing progress in course
+		
+		Label viewProgressLabel = new Label("View your progress");
+		viewProgressLabel.setStyleName("cc-sectionLabel", true);
+		panel.add(viewProgressLabel);
+		panel.setWidgetLeftWidth(viewProgressLabel, 40.0, Unit.PX, 540.0, Unit.PX);
+		panel.setWidgetTopHeight(viewProgressLabel, top + 280.0, Unit.PX, 24.0, Unit.PX);
+		
+		Label selectCourseLabel = new Label("Select a course:");
+		panel.add(selectCourseLabel);
+		panel.setWidgetLeftRight(selectCourseLabel, 40.0, Unit.PX, 0.0, Unit.PX);
+		panel.setWidgetTopHeight(selectCourseLabel, top + 320.0, Unit.PX, 16.0, Unit.PX);
+		
+		this.courseSelectionList = new CourseSelectionListBox(page);
+		panel.add(courseSelectionList);
+		panel.setWidgetLeftWidth(courseSelectionList, 40.0, Unit.PX, 200.0, Unit.PX);
+		panel.setWidgetTopHeight(courseSelectionList, top + 340.0, Unit.PX, 120.0, Unit.PX);
+		
+		this.userProgressButton = new Button("View progress", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event){
+				handleProgressButtonClick();
+			}
+		});
+		panel.add(userProgressButton);
+		panel.setWidgetLeftWidth(userProgressButton, 320.0, Unit.PX, 200.0, Unit.PX);
+		panel.setWidgetTopHeight(userProgressButton, top + 340.0, Unit.PX, 32.0, Unit.PX);
 
 		// Allow the view to scroll if necessary
 		scrollPanel = new ScrollPanel();
 		scrollPanel.add(panel);
 		initWidget(scrollPanel);
-
-
 	}
 
 	protected void handleProgressButtonClick(){
@@ -270,18 +211,20 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
 	{
 		this.session = session;
-//		this.user = session.get(User.class);
-//		usernameLabel.setText("Username: " + user.getUsername());
-//		firstNameLabel.setText("First name: " + user.getFirstname());
-//		lastNameLabel.setText("Last name: " + user.getLastname());
-//		emailLabel.setText("Email: " + user.getEmail());
+		
+		// Subscribe to ADDED_OBJECT events
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+		
 		User user = session.get(User.class);
 		userIdentityLabel.setText(user.getFirstname() + " " + user.getLastname() + " - " + user.getUsername());
 
-//		// Activate the course selection list (allowing it to populate
-//		// the list of courses the user is registered for)
-//		courseSelectionList.activate(session, subscriptionRegistrar);
-
+		// Activate the course selection list (allowing it to populate
+		// the list of courses the user is registered for)
+		courseSelectionList.activate(session, subscriptionRegistrar);
+		
+		// Enable/disable the "view progress" button depending on whether or
+		// not there is a CourseSelection
+		userProgressButton.setEnabled(session.get(CourseSelection.class) != null);
 	}
 
 	/* (non-Javadoc)
@@ -289,5 +232,10 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 	 */
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+			// In case the user progress button wasn't enabled previously,
+			// it's fine to enable it now
+			userProgressButton.setEnabled(true);
+		}
 	}
 }
