@@ -1,6 +1,8 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2012-2013, Andrei Papancea
+// Copyright (C) 2014, Shane Bonner
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,48 +22,28 @@ package org.cloudcoder.app.client.page;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
-import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.StatusMessageView;
-import org.cloudcoder.app.client.view.UserAccountView;
 import org.cloudcoder.app.client.view.UserAccountView2;
-import org.cloudcoder.app.client.view.UserProgressListView;
-import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.CourseRegistrationType;
-import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
- * @author jspacco
- * @author apapance
- * @author sbonner1 
- *
+ * Improved user account page.
+ * 
+ * @author Jaime Spacco
+ * @author Andrei Papancea
+ * @author Shane Bonner
+ * @author David Hovemeyer
  */
 public class UserAccountPage2 extends CloudCoderPage
 {
@@ -98,9 +80,9 @@ public class UserAccountPage2 extends CloudCoderPage
 			LayoutPanel centerPanel = new LayoutPanel();
 
 			// Create users list
-			this.userAccountView = new UserAccountView2();
+			this.userAccountView = new UserAccountView2(UserAccountPage2.this);
 			centerPanel.add(userAccountView);
-			centerPanel.setWidgetTopBottom(userAccountView, USERS_BUTTON_BAR_HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			centerPanel.setWidgetTopBottom(userAccountView, 0.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 			centerPanel.setWidgetLeftRight(userAccountView, 0.0, Unit.PX, 0.0, Unit.PX);
 
 			// Create a StatusMessageView

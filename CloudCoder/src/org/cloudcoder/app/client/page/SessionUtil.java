@@ -214,4 +214,39 @@ public class SessionUtil {
 			}
 		});
 	}
+
+	/**
+	 * Update (edit) user information, handling a session timeout
+	 * if one has occurred.
+	 * 
+	 * @param page     the {@link CloudCoderPage}
+	 * @param user     the updated {@link User}
+	 * @param session  the {@link Session}
+	 */
+	public static void editUser(final CloudCoderPage page, final User user, final Session session, final Runnable onSuccess) {
+		RPC.usersService.editUser(
+				user,
+				new AsyncCallback<Boolean>() { 
+					@Override
+					public void onSuccess(Boolean result) {
+						session.add(StatusMessage.goodNews("Successfully updated user " + user.getUsername()));
+						onSuccess.run();
+					}
+		
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									editUser(page, user, session, onSuccess);
+								}
+							});
+						} else {
+							GWT.log("Failed to edit user");
+							session.add(StatusMessage.error("Error updating user " + user.getUsername(), caught));
+						}
+					}
+				});
+	}
 }
