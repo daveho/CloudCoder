@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.client.view.UserAccountView2;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
@@ -66,7 +67,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double REFRESH_BUTTON_WIDTH_PX = 60.0;
 		private static final double LOAD_EXERCISE_BUTTON_WIDTH_PX = 120.0;
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
-		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = 32.0 + 4.0 + 32.0;
+		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
+		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = ADMIN_BUTTON_HEIGHT_PX*2 + 4.0;
+		private static final double ADMIN_BUTTON_WIDTH_PX = 200.0;
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
@@ -76,6 +79,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private ExerciseSummaryView progressSummaryView;
 		private ProblemListView2 exerciseList;
 		private UserAccountView2 userAccountView;
+		private Button manageExercisesButton;
+		private Button manageUsersButton;
 
 		
 		public UI() {
@@ -246,48 +251,110 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		@Override
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseAndCourseRegistration[]) {
-				CourseAndCourseRegistration[] courseAndRegList = (CourseAndCourseRegistration[]) hint;
+				onCourseAndCourseRegistrationsLoaded((CourseAndCourseRegistration[]) hint);
+			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+				CourseSelection sel = (CourseSelection) hint;
+				onCourseSelected(sel);
+			}
+		}
 
-				boolean isInstructor = false;
+		private void onCourseAndCourseRegistrationsLoaded(
+				CourseAndCourseRegistration[] courseAndRegList) {
+			boolean isInstructor = false;
 
-				// Determine if the user is an instructor for any of the courses
-				for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
-					if (courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR) {
-						GWT.log("Instructor for course " +  courseAndReg.getCourse().getName());
-						isInstructor = true;
-					}
+			// Determine if the user is an instructor for any of the courses
+			for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+				if (courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR) {
+					GWT.log("Instructor for course " +  courseAndReg.getCourse().getName());
+					isInstructor = true;
 				}
-				// Courses are loaded - populate TermAndCourseTreeView.
-				// If the user is an instructor for at least one course, leave some room for
-				// the "Course admin" button.
-				termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
-				west.add(termAndCourseTreeView);
-				west.setWidgetTopBottom(
-						termAndCourseTreeView,
-						0.0,
-						Unit.PX,
-						SectionLabel.HEIGHT_PX + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX : 0.0),
-						Unit.PX);
-				west.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
+			}
+			
+			// Courses are loaded - populate TermAndCourseTreeView.
+			// If the user is an instructor for at least one course, leave some room for
+			// the "Course admin" button.
+			termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
+			west.add(termAndCourseTreeView);
+			west.setWidgetTopBottom(
+					termAndCourseTreeView,
+					0.0,
+					Unit.PX,
+					SectionLabel.HEIGHT_PX + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX : 0.0),
+					Unit.PX);
+			west.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
 
-				// Create the "Problems" and "User" admin buttons if appropriate.
-				if (isInstructor) {
-					// TODO
-				}
-
-				// add selection event handler
-				termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
+			// Create the "Problems" and "User" admin buttons if appropriate.
+			if (isInstructor) {
+				this.manageExercisesButton = new Button("Manage exercises");
+				west.add(manageExercisesButton);
+				west.setWidgetLeftWidth(manageExercisesButton, 0.0, Unit.PX, ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+				west.setWidgetBottomHeight(manageExercisesButton, ADMIN_BUTTON_HEIGHT_PX+4.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+				manageExercisesButton.addClickHandler(new ClickHandler() {
 					@Override
-					public void onSelectionChange(SelectionChangeEvent event) {
-						CourseSelection courseSelection = termAndCourseTreeView.getSelectedCourseAndModule();
-						if (courseSelection != null) {
-							getSession().add(courseSelection);
-						}
+					public void onClick(ClickEvent event) {
+						handleManageExercisesButtonPress();
 					}
 				});
-			}			
+				this.manageUsersButton = new Button("Manage users");
+				west.add(manageUsersButton);
+				west.setWidgetLeftWidth(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+				west.setWidgetBottomHeight(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
+				manageUsersButton.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						handleManageUsersButtonPress();
+					}
+				});
+				
+				// Admin buttons are disabled initially, and will be enabled
+				// dynamically when a course for which the current user is an
+				// administrator is selected
+				manageExercisesButton.setEnabled(false);
+				manageUsersButton.setEnabled(false);
+			}
+
+			// add selection event handler
+			termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
+				@Override
+				public void onSelectionChange(SelectionChangeEvent event) {
+					CourseSelection courseSelection = termAndCourseTreeView.getSelectedCourseAndModule();
+					if (courseSelection != null) {
+						getSession().add(courseSelection);
+					}
+				}
+			});
 		}
-		
+
+		public void onCourseSelected(CourseSelection sel) {
+			Course course = sel.getCourse();
+
+			if (manageExercisesButton != null || manageUsersButton != null) {
+				// Find the CourseRegistration for this Course
+				CourseAndCourseRegistration[] courseAndRegList = getSession().get(CourseAndCourseRegistration[].class);
+				for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
+					if (courseAndReg.getCourse() == course) {
+						// Enable or disable the courseAdminButton (and userAdminButton) depending on whether or not
+						// user is an instructor.
+						boolean isInstructor = courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR;
+						manageExercisesButton.setEnabled(isInstructor);
+						manageUsersButton.setEnabled(isInstructor);
+						GWT.log((isInstructor ? "enable" : "disable") + " courseAdminButton");
+					}
+				}
+			}
+		}
+
+		protected void handleManageExercisesButtonPress() {
+			if (getSession().get(CourseSelection.class) != null) {
+				getSession().get(PageStack.class).push(PageId.PROBLEM_ADMIN);
+			}
+		}
+
+		protected void handleManageUsersButtonPress() {
+			if (getSession().get(CourseSelection.class) != null) {
+				getSession().get(PageStack.class).push(PageId.USER_ADMIN);
+			}
+		}
 	}
 
 	@Override
