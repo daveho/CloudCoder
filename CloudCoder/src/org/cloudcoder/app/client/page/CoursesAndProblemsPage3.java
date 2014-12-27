@@ -108,13 +108,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			IsWidget account = createAccountTab();
 			panel.add(account, "Account");
 			
-			
 			// Playground tab
-			
-			
-			LayoutPanel playground = new LayoutPanel();
-			
-			
+			IsWidget playground = createPlaygroundTab();
 			panel.add(playground, "Playground");
 			
 			full.add(panel);
@@ -232,6 +227,36 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				// Switch to DevelopmentPage
 				getSession().get(PageStack.class).push(PageId.DEVELOPMENT);
 			}
+		}
+		
+		private IsWidget createPlaygroundTab() {
+			LayoutPanel panel = new LayoutPanel();
+			
+			double top = 30.0;
+			
+			Label playgroundDesc = new Label("The playground allows free-form programming.");
+			panel.add(playgroundDesc);
+			panel.setWidgetLeftRight(playgroundDesc, 40.0, Unit.PX, 0.0, Unit.PX);
+			panel.setWidgetTopHeight(playgroundDesc, top, Unit.PX, 24.0, Unit.PX);
+			
+			Button playgroundButton = new Button("Enter the playground!");
+			playgroundButton.setStyleName("cc-emphButton", true);
+			panel.add(playgroundButton);
+			panel.setWidgetLeftWidth(playgroundButton, 80.0, Unit.PX, 240.0, Unit.PX);
+			panel.setWidgetTopHeight(playgroundButton, top + 30.0, Unit.PX, 32.0, Unit.PX);
+			
+			playgroundButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					handlePlaygroundButtonPress();
+				}
+			});
+			
+			return panel;
+		}
+
+		protected void handlePlaygroundButtonPress() {
+			getSession().get(PageStack.class).push(PageId.PLAYGROUND_PAGE);
 		}
 
 		@Override

@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
+import org.cloudcoder.app.client.page.CoursesAndProblemsPage3;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
 import org.cloudcoder.app.client.page.InitErrorPage;
@@ -233,7 +234,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 		CloudCoderPage page;
 		switch (pageId) {
 		case COURSES_AND_PROBLEMS:
-			page = new CoursesAndProblemsPage2();
+			page = new CoursesAndProblemsPage3();
 			break;
 		case DEVELOPMENT:
 		    page = new DevelopmentPage();
