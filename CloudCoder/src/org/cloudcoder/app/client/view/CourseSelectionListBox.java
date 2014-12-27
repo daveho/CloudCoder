@@ -102,6 +102,7 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	}
 
 	private void displayCourses() {
+		listBox.clear();
 		//add CourseAndCourseRegistration objects as list items
 		for(int i = 0; i < courseAndCourseRegistrationList.length; i++){
 			listBox.addItem(format(courseAndCourseRegistrationList[i]));

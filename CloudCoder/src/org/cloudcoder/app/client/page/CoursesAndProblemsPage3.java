@@ -29,6 +29,7 @@ import org.cloudcoder.app.client.view.ProblemListView2;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
+import org.cloudcoder.app.client.view.UserAccountView2;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
@@ -74,6 +75,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
 		private ProblemListView2 exerciseList;
+		private UserAccountView2 userAccountView;
 
 		
 		public UI() {
@@ -98,8 +100,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			panel.add(exercises, "Exercises");
 			
 			// Account tab
-			LayoutPanel account = new LayoutPanel();
-			
+			IsWidget account = createAccountTab();
 			panel.add(account, "Account");
 			
 			
@@ -202,6 +203,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			return wrap;
 		}
 
+		private IsWidget createAccountTab() {
+			// This is super easy
+			LayoutPanel wrap = new LayoutPanel();
+			this.userAccountView = new UserAccountView2(CoursesAndProblemsPage3.this);
+			wrap.add(userAccountView);
+			wrap.setWidgetLeftRight(userAccountView, 10.0, Unit.PX, 10.0, Unit.PX);
+			wrap.setWidgetTopBottom(userAccountView, 10.0, Unit.PX, 10.0, Unit.PX);
+			return wrap;
+		}
 
 		protected void handleRefreshButtonPress() {
 			CourseSelection courseSelection = getSession().get(CourseSelection.class);
@@ -227,6 +237,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			progressSummaryView.activate(session, subscriptionRegistrar);
 			exerciseList.activate(session, subscriptionRegistrar);
+			userAccountView.activate(session, subscriptionRegistrar);
 
 			// Load courses
 			SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage3.this, session);
