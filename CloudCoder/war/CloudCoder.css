@@ -285,40 +285,27 @@
 	display: inline-block;
 	margin: 10px 10px;
 }
+
 /**
- *Implementation for the exerciseSummary objects
+ * ExerciseSummaryView and ExerciseSummaryItem styles.
  */
- .cc-exerciseSummary {
-
+.cc-exerciseSummary {
 }
 
+/* Basic style for an exercise summary item. */
 .cc-exerciseSummaryItem {
-	width: 40px;
-	height: 32px;
-	background: silver;
+	width: 24px;
+	height: 24px;
 	display: inline-block;
-	margin: 4px 4px;
+	margin: 2px 2px;
 }
 
-.cc-completedExercise {
-	background: green !important;
-}
-
-.cc-exerciseStarted {
-	background: yellow !important;
-}
-
-.cc-exerciseCompileError{
-	background: orange !important;
-}
-
-.cc-exerciseBuildError{
-	background: black !important;
-}
-
-.cc-failingExercise {
-	background: red !important;
-}
+/* Styles for exercises summary items: these correspond to SubmissionStatus enumeration members. */
+.cc-exerciseNotStarted, .cc-exerciseStarted { background: silver; }
+.cc-exerciseTestsPassed { background: green; }
+.cc-exerciseCompileError { background: orange; }
+.cc-exerciseBuildError { background: black; }
+.cc-exerciseTestsFailed { background: red; }
 
 /**
  * Increase the z-index for date box popups so that they

@@ -1,6 +1,7 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2014, Shane Bonner
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -25,27 +26,26 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
-import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
 
 /**
- * @author shanembonner
- *
+ * Exercise summary view: provides a quick visual summary of
+ * completed and incomplete exercises.
+ * 
+ * @author Shane Bonner
+ * @author David Hovemeyer
  */
 public class ExerciseSummaryView extends Composite implements Subscriber, SessionObserver{
 	private FlowPanel flowPanel;
 	private List<ExerciseSummaryItem> itemList;
-	private Session session;
-	private User user;
 
 	/**
-	 * @param html
+	 * Constructor.
 	 */
 	public ExerciseSummaryView() {
 		itemList = new ArrayList<ExerciseSummaryItem>();
@@ -66,17 +66,11 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 	@Override
 	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
 	{
-		this.session = session;
-		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		
-		this.user = session.get(User.class);
-		
 		ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts = session.get(ProblemAndSubmissionReceipt[].class);
 		if (problemAndSubmissionReceipts != null) {
 			loadData(problemAndSubmissionReceipts);
 		}
-		
 	}
 
 	@Override
@@ -101,26 +95,28 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 		for(int i = 0; i < problemAndSubmissionReceipts.length; i++){
 			ProblemAndSubmissionReceipt item = problemAndSubmissionReceipts[i];
 			SubmissionReceipt receipt = item.getReceipt();
-			SubmissionStatus status = receipt.getStatus();
+			SubmissionStatus status = receipt != null ? receipt.getStatus() : SubmissionStatus.NOT_STARTED;
 			
 			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
 			summaryItem.setStyleName("cc-exerciseSummaryItem", true);
 			
 			//determine status, create ExerciseSummaryItem and use method addExerciseSummaryItem
-			if(status == SubmissionStatus.STARTED){
-				summaryItem.setStyleName("cc-exerciseStarted", true);
-			}
-			if(status == SubmissionStatus.TESTS_PASSED){
-				summaryItem.setStyleName("cc-completedExercise", true);
-			}
-			if(status == SubmissionStatus.TESTS_FAILED){
-				summaryItem.setStyleName("cc-failingExercise", true);
-			}
-			if(status == SubmissionStatus.COMPILE_ERROR){
-				summaryItem.setStyleName("cc-exerciseCompileError", true);
-			}
-			if(status == SubmissionStatus.BUILD_ERROR){
-				summaryItem.setStyleName("cc-exerciseBuildError", true);
+			
+			switch (status) {
+			case NOT_STARTED:
+				summaryItem.setStyleName("cc-exerciseNotStarted", true); break;
+			case STARTED:
+				summaryItem.setStyleName("cc-exerciseStarted", true); break;
+			case TESTS_FAILED:
+				summaryItem.setStyleName("cc-exerciseTestsFailed", true); break;
+			case COMPILE_ERROR:
+				summaryItem.setStyleName("cc-exerciseCompileError", true); break;
+			case BUILD_ERROR:
+				summaryItem.setStyleName("cc-exerciseBuildError", true); break;
+			case TESTS_PASSED:
+				summaryItem.setStyleName("cc-exerciseTestsPassed", true); break;
+			default:
+				summaryItem.setStyleName("cc-exerciseStatusUnknown", true); break;
 			}
 			addExerciseSummaryItem(summaryItem);
 		}

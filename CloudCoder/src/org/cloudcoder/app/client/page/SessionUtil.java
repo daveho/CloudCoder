@@ -51,7 +51,8 @@ public class SessionUtil {
 	 * @param session  the {@link Session}
 	 */
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final Course course, final Session session) {
-        RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), (Module)null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
+		GWT.log("RPC to load problems and submission receipts for course " + course.getNameAndTitle());
+		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), (Module)null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
             @Override
             public void onFailure(Throwable caught) {
             	if (caught instanceof CloudCoderAuthenticationException) {
