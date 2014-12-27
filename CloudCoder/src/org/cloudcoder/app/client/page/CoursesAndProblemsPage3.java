@@ -32,6 +32,7 @@ import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
@@ -203,13 +204,19 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 
 
 		protected void handleRefreshButtonPress() {
-			// TODO Auto-generated method stub
-			
+			CourseSelection courseSelection = getSession().get(CourseSelection.class);
+			if (courseSelection != null) {
+				// Force a reload of the course
+				getSession().add(courseSelection);
+			}
 		}
 
 		protected void handleLoadExerciseButtonPress() {
-			// TODO Auto-generated method stub
-			
+			Problem problem = getSession().get(Problem.class);
+			if (problem != null) {
+				// Switch to DevelopmentPage
+				getSession().get(PageStack.class).push(PageId.DEVELOPMENT);
+			}
 		}
 
 		@Override
