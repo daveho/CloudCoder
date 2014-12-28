@@ -307,10 +307,10 @@
 
 /* Styles for exercises summary items: these correspond to SubmissionStatus enumeration members. */
 .cc-exerciseNotStarted, .cc-exerciseStarted { background: silver; }
-.cc-exerciseTestsPassed { background: green; }
+.cc-exerciseTestsPassed { background: #44dd44; }
 .cc-exerciseCompileError { background: orange; }
 .cc-exerciseBuildError { background: black; }
-.cc-exerciseTestsFailed { background: red; }
+.cc-exerciseTestsFailed { background: #ff2222; }
 
 /**
  * Increase the z-index for date box popups so that they
