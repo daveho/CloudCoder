@@ -18,8 +18,11 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 
@@ -31,16 +34,57 @@ import com.google.gwt.user.client.ui.HTML;
  * @author David Hovemeyer
  */
 public class ExerciseSummaryItem extends Composite {
+	private int index;
 	private SubmissionStatus status;
 	private HTML html;
+	private ICallback<ExerciseSummaryItem> clickHandler;
 
 	/**
 	 * Constructor.
 	 */
 	public ExerciseSummaryItem() {
 		this.html = new HTML("<span></span>");
+		html.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				onClickEvent();
+			}
+		});
 		setStatus(SubmissionStatus.NOT_STARTED); // just a default status
 		initWidget(html);
+	}
+
+	protected void onClickEvent() {
+		if (clickHandler != null) {
+			clickHandler.call(this);
+		}
+	}
+
+	/**
+	 * Set the index of this item.
+	 * 
+	 * @param index the index to set
+	 */
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	/**
+	 * Set a callback to be invoked when the user clicks on this
+	 * item.  The {@link ExerciseSummaryView} will use this to
+	 * handle item clicks.
+	 * 
+	 * @param clickHandler the click handler to set
+	 */
+	public void setClickHandler(ICallback<ExerciseSummaryItem> clickHandler) {
+		this.clickHandler = clickHandler;
+	}
+	
+	/**
+	 * @return the index of this item
+	 */
+	public int getIndex() {
+		return index;
 	}
 	
 	/**

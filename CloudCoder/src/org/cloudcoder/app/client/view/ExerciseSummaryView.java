@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
@@ -42,13 +43,17 @@ import com.google.gwt.user.client.ui.ScrollPanel;
  * @author David Hovemeyer
  */
 public class ExerciseSummaryView extends Composite implements Subscriber, SessionObserver{
+	private Session session;
 	private FlowPanel flowPanel;
 	private List<ExerciseSummaryItem> itemList;
+	private ICallback<ExerciseSummaryItem> clickHandler;
 
 	/**
 	 * Constructor.
 	 */
 	public ExerciseSummaryView() {
+		this.session = session;
+		
 		itemList = new ArrayList<ExerciseSummaryItem>();
 		
 		// This widget is basically a div containing ExerciseSummaryItems
@@ -60,19 +65,29 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 		wrap.add(flowPanel);
 		
 		initWidget(wrap);
+		
+		// Create a callback to handle item clicks
+		this.clickHandler = new ICallback<ExerciseSummaryItem>() {
+			@Override
+			public void call(ExerciseSummaryItem value) {
+				handleItemClick(value);
+			}
+		};
 	}
 
-	public void addExerciseSummaryItem(ExerciseSummaryItem item) {
-		itemList.add(item);
-		flowPanel.add(item);
+	protected void handleItemClick(ExerciseSummaryItem value) {
+		// Add the Problem to the session (to select the problem)
+		int index = value.getIndex();
+		ProblemAndSubmissionReceipt[] probs = session.get(ProblemAndSubmissionReceipt[].class);
+		ProblemAndSubmissionReceipt p = probs[index];
+		session.add(p.getProblem());
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
-	 */
+
 	@Override
 	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
 	{
+		this.session = session;
+		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 		ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts = session.get(ProblemAndSubmissionReceipt[].class);
 		if (problemAndSubmissionReceipts != null) {
@@ -91,12 +106,11 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 	 * @param problemAndSubmissionReceipts
 	 */
 	private void loadData(ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts) {
-		// TODO Auto-generated method stub
 		// clear current data, load new data
 		itemList.clear();
 		flowPanel.clear();
 		
-		//loop through the problem and submission receipt, HOW DO I ACESS THIS?
+		//loop through the problem and submission receipt,
 		//create exerciseSummaryItem for each, and set each box's status (completed, failed, etc)
 		
 		for(int i = 0; i < problemAndSubmissionReceipts.length; i++){
@@ -107,9 +121,12 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
 			
 			//determine status, create ExerciseSummaryItem and use method addExerciseSummaryItem
+			summaryItem.setIndex(i);
 			summaryItem.setStatus(status);
 			summaryItem.setTooltip(item.getProblem().getTestname() + " - " + status.getDescription());
-			addExerciseSummaryItem(summaryItem);
+			summaryItem.setClickHandler(clickHandler);
+			itemList.add(summaryItem);
+			flowPanel.add(summaryItem);
 		}
 	}
 
