@@ -69,7 +69,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
 		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
 		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = ADMIN_BUTTON_HEIGHT_PX*2 + 4.0;
-		private static final double ADMIN_BUTTON_WIDTH_PX = 200.0;
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
@@ -151,14 +150,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			SplitLayoutPanel center = new SplitLayoutPanel();
 			LayoutPanel south = new LayoutPanel();
+			double southTop = 10.0;
 			SectionLabel progressSummaryLabel = new SectionLabel("Progress summary");
 			south.add(progressSummaryLabel);
 			south.setWidgetLeftRight(progressSummaryLabel, 0.0, Unit.PX, 0.0, Unit.PX);
-			south.setWidgetTopHeight(progressSummaryLabel, 0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
+			south.setWidgetTopHeight(progressSummaryLabel, southTop+0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
 			this.progressSummaryView = new ExerciseSummaryView();
 			south.add(progressSummaryView);
 			south.setWidgetLeftRight(progressSummaryView, 0.0, Unit.PX, 0.0, Unit.PX);
-			south.setWidgetTopBottom(progressSummaryView, SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			south.setWidgetTopBottom(progressSummaryView, southTop+SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			center.addSouth(south, PROGRESS_SUMMARY_HEIGHT_PX);
 			LayoutPanel top = new LayoutPanel();
 			SectionLabel exercisesLabel = new SectionLabel("Exercises");
@@ -312,7 +312,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			if (isInstructor) {
 				this.manageExercisesButton = new Button("Manage exercises");
 				west.add(manageExercisesButton);
-				west.setWidgetLeftWidth(manageExercisesButton, 0.0, Unit.PX, ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+				west.setWidgetLeftRight(manageExercisesButton, 10.0, Unit.PX, 10.0, Unit.PX);
 				west.setWidgetBottomHeight(manageExercisesButton, ADMIN_BUTTON_HEIGHT_PX+4.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 				manageExercisesButton.addClickHandler(new ClickHandler() {
 					@Override
@@ -322,7 +322,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				});
 				this.manageUsersButton = new Button("Manage users");
 				west.add(manageUsersButton);
-				west.setWidgetLeftWidth(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_WIDTH_PX, Unit.PX);
+				west.setWidgetLeftRight(manageUsersButton, 10.0, Unit.PX, 10.0, Unit.PX);
 				west.setWidgetBottomHeight(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
 				manageUsersButton.addClickHandler(new ClickHandler() {
 					@Override

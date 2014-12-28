@@ -298,6 +298,11 @@
 	height: 24px;
 	display: inline-block;
 	margin: 2px 2px;
+	border: 3px solid transparent;
+}
+
+.cc-exerciseSummaryItem:hover {
+	border: 3px solid black;
 }
 
 /* Styles for exercises summary items: these correspond to SubmissionStatus enumeration members. */

@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 
 /**
  * Exercise summary view: provides a quick visual summary of
@@ -50,9 +51,15 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 	public ExerciseSummaryView() {
 		itemList = new ArrayList<ExerciseSummaryItem>();
 		
+		// This widget is basically a div containing ExerciseSummaryItems
 		this.flowPanel = new FlowPanel();
 		flowPanel.setStyleName("cc-exerciseSummary", true);
-		initWidget(flowPanel);
+
+		// Allow it to scroll
+		ScrollPanel wrap = new ScrollPanel();
+		wrap.add(flowPanel);
+		
+		initWidget(wrap);
 	}
 
 	public void addExerciseSummaryItem(ExerciseSummaryItem item) {
