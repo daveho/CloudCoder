@@ -24,6 +24,7 @@ import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.page.SessionUtil;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -157,6 +158,9 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 			// This can happen because the current page has done something to change
 			// the list (e.g., adding or removing a problem) for the current course.
 			displayLoadedProblems((ProblemAndSubmissionReceipt[])hint);
+		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof Problem) {
+			// The Problem selection has changed, update selection as appropriate
+			onProblemSelected((Problem) hint);
 		}
 	}
 
@@ -168,5 +172,23 @@ public class ProblemListView2 extends ResizeComposite implements SessionObserver
 	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
 		GWT.log("Displaying " + problemList.length + " problems/submission receipts");
 		cellTable.setRowData(Arrays.asList(problemList));
+	}
+
+	private void onProblemSelected(Problem selectedProblem) {
+		ProblemAndSubmissionReceipt[] data = session.get(ProblemAndSubmissionReceipt[].class);
+		SingleSelectionModel<? super ProblemAndSubmissionReceipt> sm =
+				(SingleSelectionModel<? super ProblemAndSubmissionReceipt>) cellTable.getSelectionModel();
+		for (ProblemAndSubmissionReceipt p : data) {
+			if (p.getProblem().getProblemId().equals(selectedProblem.getProblemId())) {
+				// Found the selected problem, so change the selected row
+				sm.clear();
+				sm.setSelected(p, true);
+				return;
+			}
+		}
+		
+		// The selected problem isn't being viewed currently,
+		// so just clear the selection
+		sm.clear();
 	}
 }
