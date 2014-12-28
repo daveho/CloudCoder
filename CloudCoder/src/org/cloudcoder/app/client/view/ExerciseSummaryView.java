@@ -105,26 +105,10 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 			SubmissionStatus status = receipt != null ? receipt.getStatus() : SubmissionStatus.NOT_STARTED;
 			
 			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
-			summaryItem.setStyleName("cc-exerciseSummaryItem", true);
 			
 			//determine status, create ExerciseSummaryItem and use method addExerciseSummaryItem
-			
-			switch (status) {
-			case NOT_STARTED:
-				summaryItem.setStyleName("cc-exerciseNotStarted", true); break;
-			case STARTED:
-				summaryItem.setStyleName("cc-exerciseStarted", true); break;
-			case TESTS_FAILED:
-				summaryItem.setStyleName("cc-exerciseTestsFailed", true); break;
-			case COMPILE_ERROR:
-				summaryItem.setStyleName("cc-exerciseCompileError", true); break;
-			case BUILD_ERROR:
-				summaryItem.setStyleName("cc-exerciseBuildError", true); break;
-			case TESTS_PASSED:
-				summaryItem.setStyleName("cc-exerciseTestsPassed", true); break;
-			default:
-				summaryItem.setStyleName("cc-exerciseStatusUnknown", true); break;
-			}
+			summaryItem.setStatus(status);
+			summaryItem.setTooltip(item.getProblem().getTestname() + " - " + status.getDescription());
 			addExerciseSummaryItem(summaryItem);
 		}
 	}

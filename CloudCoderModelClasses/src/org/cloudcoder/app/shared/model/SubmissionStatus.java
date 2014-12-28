@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -24,26 +24,41 @@ package org.cloudcoder.app.shared.model;
  */
 public enum SubmissionStatus {
 	/** All tests passed.  This is a completely working submission. */
-	TESTS_PASSED,
+	TESTS_PASSED("all tests passed"),
 	
 	/** At least one test failed. */
-	TESTS_FAILED,
+	TESTS_FAILED("failed test(s)"),
 	
 	/** Submission did not compile because there was a syntax or semantic error. */
-	COMPILE_ERROR,
+	COMPILE_ERROR("compile error"),
 	
 	/** Submission could not be built/tested for some unspecified reason. */
-	BUILD_ERROR,
+	BUILD_ERROR("build error"),
 	
 	/**
 	 * When the user starts working on a problem, we add a Submission
 	 * entry with this status.
 	 */
-	STARTED,
+	STARTED("started"),
 	
 	/**
 	 * A special submission status that indicates that a problem
 	 * has not been started yet.
 	 */
-	NOT_STARTED,
+	NOT_STARTED("not started");
+	
+	private String description;
+	
+	private SubmissionStatus(String description) {
+		this.description = description;
+	}
+	
+	/**
+	 * Get a readable description of the submission status.
+	 * 
+	 * @return the readable description
+	 */
+	public String getDescription() {
+		return description;
+	}
 }
