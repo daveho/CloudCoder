@@ -26,6 +26,7 @@
 .cc-problemDescription {
 	overflow: auto; /* Allow problem description text to scroll. */
 	background-color: #fffacd;
+	padding: 0px 8px;
 }
 .cc-centered {
 	margin-left: 0 auto;
