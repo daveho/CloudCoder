@@ -262,6 +262,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+			
+			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 
 			statusMessageView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
