@@ -26,7 +26,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class ProblemAndSubmissionReceipt implements Serializable {
+public class ProblemAndSubmissionReceipt implements Serializable, IHasSubmissionReceipt {
 	private static final long serialVersionUID = 1L;
 
 	private Problem problem;

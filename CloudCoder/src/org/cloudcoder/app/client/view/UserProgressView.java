@@ -34,11 +34,8 @@ import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -110,47 +107,9 @@ public class UserProgressView extends Composite implements SessionObserver {
 		}
 	}
 	
-	private class BestScoreBarCell extends AbstractCell<ProblemAndSubmissionReceipt> {
-		/* (non-Javadoc)
-		 * @see com.google.gwt.cell.client.AbstractCell#render(com.google.gwt.cell.client.Cell.Context, java.lang.Object, com.google.gwt.safehtml.shared.SafeHtmlBuilder)
-		 */
-		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context, ProblemAndSubmissionReceipt value, SafeHtmlBuilder sb) {
-			if (value == null) {
-				// Data not available, or student did not attempt this problem
-				appendNoInfoBar(sb);
-				return;
-			}
-			
-			// If we don't know the total number of test cases, don't display anything
-			SubmissionReceipt receipt = value.getReceipt();
-			if (receipt == null || receipt.getNumTestsAttempted() == 0) {
-				appendNoInfoBar(sb);
-				return;
-			}
-			
-			int numTests = receipt.getNumTestsAttempted();
-			int numPassed = receipt.getNumTestsPassed();
-			
-			StringBuilder buf = new StringBuilder();
-			buf.append("<div class=\"cc-barOuter\"><div class=\"cc-barInner\" style=\"width: ");
-			int pct = (numPassed * 10000) / (numTests * 100);
-			buf.append(pct);
-			buf.append("%\"></div></div>");
-			
-			String s= buf.toString();
-			
-			sb.append(SafeHtmlUtils.fromSafeConstant(s));
-		}
-
-		private void appendNoInfoBar(SafeHtmlBuilder sb) {
-			sb.append(SafeHtmlUtils.fromSafeConstant("<div class=\"cc-barNoInfo\"></div>"));
-		}
-	}
-	
 	private class BestScoreBarColumn extends Column<ProblemAndSubmissionReceipt, ProblemAndSubmissionReceipt> {
 		public BestScoreBarColumn() {
-			super(new BestScoreBarCell());
+			super(new BestScoreBarCell<ProblemAndSubmissionReceipt>());
 		}
 		
 		@Override

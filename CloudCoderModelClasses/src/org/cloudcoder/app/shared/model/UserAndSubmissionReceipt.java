@@ -26,7 +26,9 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class UserAndSubmissionReceipt implements Serializable {
+public class UserAndSubmissionReceipt implements Serializable, IHasSubmissionReceipt {
+	private static final long serialVersionUID = 1L;
+
 	private User user;
 	private SubmissionReceipt submissionReceipt;
 	
@@ -58,14 +60,14 @@ public class UserAndSubmissionReceipt implements Serializable {
 	 * 
 	 * @param submissionReceipt the submission receipt to set
 	 */
-	public void setSubmissionReceipt(SubmissionReceipt submissionReceipt) {
+	public void setReceipt(SubmissionReceipt submissionReceipt) {
 		this.submissionReceipt = submissionReceipt;
 	}
 	
 	/**
 	 * @return the submission receipt
 	 */
-	public SubmissionReceipt getSubmissionReceipt() {
+	public SubmissionReceipt getReceipt() {
 		return submissionReceipt;
 	}
 }

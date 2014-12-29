@@ -149,7 +149,7 @@ public class Problems extends HttpServlet {
 			List<String> entry = new ArrayList<String>();
 			entry.add(pair.getUser().getUsername());
 			
-			int numPassed = (pair.getSubmissionReceipt() != null) ? pair.getSubmissionReceipt().getNumTestsPassed() : 0;
+			int numPassed = (pair.getReceipt() != null) ? pair.getReceipt().getNumTestsPassed() : 0;
 			
 			entry.add(String.valueOf(numPassed+" out of "+numTests));
 			

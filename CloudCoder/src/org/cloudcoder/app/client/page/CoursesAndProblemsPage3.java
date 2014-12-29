@@ -25,7 +25,7 @@ import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
-import org.cloudcoder.app.client.view.ProblemListView2;
+import org.cloudcoder.app.client.view.ProblemListView3;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
@@ -76,7 +76,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private LayoutPanel west; // term and course tree view will go here
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
-		private ProblemListView2 exerciseList;
+		private ProblemListView3 exerciseList;
 		private UserAccountView2 userAccountView;
 		private Button manageExercisesButton;
 		private Button manageUsersButton;
@@ -187,7 +187,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 					handleLoadExerciseButtonPress();
 				}
 			});
-			this.exerciseList = new ProblemListView2(CoursesAndProblemsPage3.this);
+			this.exerciseList = new ProblemListView3(CoursesAndProblemsPage3.this);
 			top.add(exerciseList);
 			top.setWidgetLeftRight(exerciseList, 0.0, Unit.PX, 0.0, Unit.PX);
 			top.setWidgetTopBottom(exerciseList, SectionLabel.HEIGHT_PX + 8.0, Unit.PX, 0.0, Unit.PX);

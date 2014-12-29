@@ -107,11 +107,11 @@
  * Styles for the test result outcome column.
  */
 .cc-passedTest {
-	color: green;
+	color: #44dd44;
 	font-weight: bold;
 }
 .cc-failedTest {
-	color: red;
+	color: #ff2222;
 	font-weight: bold;
 }
 
@@ -147,14 +147,14 @@
 	background-color: white;
 }
 .cc-testOutcomeSummaryInnerBackgroundNonEmpty {
-	background-color: red;
+	background-color: #ff2222;
 }
 .cc-testOutcomeSummaryPassedTests {
 	position: absolute;
 	left: 0px;
 	top: 0px;
 	bottom: 0px;
-	background-color: green;
+	background-color: #44dd44;
 }
 
 /* Give the edit problem center scroll panel a distinctive background. */
@@ -227,7 +227,7 @@
 	height: 12px;
 	width: 120px;
 	position: relative;
-	background: red;
+	background: #ff2222;
 	margin: 0px;
 	border: 0px;
 	padding: 0px;
@@ -235,7 +235,7 @@
 .cc-barInner { /* nested inside cc-barInner div to make a green bar: set width to desired percentage */
 	height: 12px;
 	left: 0px;
-	background: green;
+	background: #44dd44;
 	margin: 0px;
 	border: 0px;
 	padding: 0px;

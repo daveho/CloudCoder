@@ -34,12 +34,9 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -113,7 +110,7 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 	private class StartedColumn extends TextColumn<UserAndSubmissionReceipt> {
 		@Override
 		public String getValue(UserAndSubmissionReceipt object) {
-			return object.getSubmissionReceipt() == null ? "false" : "true";
+			return object.getReceipt() == null ? "false" : "true";
 		}
 	}
 	
@@ -121,8 +118,8 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 		public String getValue(UserAndSubmissionReceipt object) {
 			StringBuilder buf = new StringBuilder();
 
-			if (object.getSubmissionReceipt() != null) {
-				buf.append(object.getSubmissionReceipt().getNumTestsPassed());
+			if (object.getReceipt() != null) {
+				buf.append(object.getReceipt().getNumTestsPassed());
 			} else {
 				buf.append(0);
 			}
@@ -135,51 +132,14 @@ public class ProblemProgressView extends Composite implements Subscriber, Sessio
 		}
 	}
 	
-	private class BestScoreBarCell extends AbstractCell<SubmissionReceipt> {
-		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context, SubmissionReceipt value, SafeHtmlBuilder sb) {
-			if (value == null) {
-				// Data not available, or student did not attempt this problem
-				appendNoInfoBar(sb);
-				return;
-			}
-			
-			// If we don't know the total number of test cases, don't display anything
-			int numTests = testCaseList.length;
-			if (testCaseList == null || numTests == 0) {
-				appendNoInfoBar(sb);
-				return;
-			}
-			
-			int numPassed = value.getNumTestsPassed();
-			
-			StringBuilder buf = new StringBuilder();
-			buf.append("<div class=\"cc-barOuter\"><div class=\"cc-barInner\" style=\"width: ");
-			int pct = (numPassed * 10000) / (numTests * 100);
-			buf.append(pct);
-			buf.append("%\"></div></div>");
-			
-			String s= buf.toString();
-			
-			sb.append(SafeHtmlUtils.fromSafeConstant(s));
-		}
-
-		/**
-		 * @param sb
-		 */
-		private void appendNoInfoBar(SafeHtmlBuilder sb) {
-			sb.append(SafeHtmlUtils.fromSafeConstant("<div class=\"cc-barNoInfo\"></div>"));
-		}
-	}
-	
 	private class BestScoreBarColumn extends Column<UserAndSubmissionReceipt, SubmissionReceipt> {
 		public BestScoreBarColumn() {
-			super(new BestScoreBarCell());
+			super(new BestScoreBarCell<SubmissionReceipt>());
 		}
 		
 		@Override
 		public SubmissionReceipt getValue(UserAndSubmissionReceipt object) {
-			return object.getSubmissionReceipt();
+			return object.getReceipt();
 		}
 	}
 	

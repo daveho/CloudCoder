@@ -790,7 +790,7 @@ public class Queries {
 			
 			UserAndSubmissionReceipt pair = new UserAndSubmissionReceipt();
 			pair.setUser(user);
-			pair.setSubmissionReceipt(receipt);
+			pair.setReceipt(receipt);
 			
 			result.add(pair);
 		}

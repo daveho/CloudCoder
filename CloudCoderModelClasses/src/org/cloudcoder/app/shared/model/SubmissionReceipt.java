@@ -29,7 +29,7 @@ import java.io.Serializable;
  * 
  * @author David Hovemeyer
  */
-public class SubmissionReceipt implements Serializable, IContainsEvent, IModelObject<SubmissionReceipt> {
+public class SubmissionReceipt implements Serializable, IContainsEvent, IModelObject<SubmissionReceipt>, IHasSubmissionReceipt {
 	private static final long serialVersionUID = 1L;
 
 	private int eventId;
@@ -218,5 +218,10 @@ public class SubmissionReceipt implements Serializable, IContainsEvent, IModelOb
 		receipt.setNumTestsAttempted(numTestsAttempted);
 		receipt.setNumTestsPassed(numTestsPassed);
 		return receipt;
+	}
+	
+	@Override
+	public SubmissionReceipt getReceipt() {
+		return this;
 	}
 }
