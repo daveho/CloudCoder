@@ -242,7 +242,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			Button playgroundButton = new Button("Enter the playground!");
 			playgroundButton.setStyleName("cc-emphButton", true);
 			panel.add(playgroundButton);
-			panel.setWidgetLeftWidth(playgroundButton, 80.0, Unit.PX, 240.0, Unit.PX);
+			panel.setWidgetLeftWidth(playgroundButton, 40.0, Unit.PX, 240.0, Unit.PX);
 			panel.setWidgetTopHeight(playgroundButton, top + 30.0, Unit.PX, 32.0, Unit.PX);
 			
 			playgroundButton.addClickHandler(new ClickHandler() {
