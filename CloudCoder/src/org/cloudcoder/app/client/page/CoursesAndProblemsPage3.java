@@ -50,6 +50,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.view.client.SelectionChangeEvent;
@@ -72,8 +73,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
-		private TermAndCourseTreeView termAndCourseTreeView;
-		private LayoutPanel west; // term and course tree view will go here
+		private ScrollPanel termAndCourseTreeViewScrollPanel; // term and course tree view will go here
+		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
 		private ProblemListView3 exerciseList;
@@ -289,12 +290,12 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				CourseAndCourseRegistration[] courseAndRegList) {
 			
 			GWT.log("Courses and course registrations loaded...");
-			if (termAndCourseTreeView != null) {
+			if (termAndCourseTreeViewScrollPanel != null) {
 				// It is possible for the CourseAndCourseRegistrations to be loaded
 				// multiple times.  Make sure that there is only one
 				// TermAndCourseTreeView widget!
-				west.remove(termAndCourseTreeView);
-				termAndCourseTreeView = null;
+				west.remove(termAndCourseTreeViewScrollPanel);
+				termAndCourseTreeViewScrollPanel = null;
 			}
 			
 			boolean isInstructor = false;
@@ -310,24 +311,21 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			// Courses are loaded - populate TermAndCourseTreeView.
 			// If the user is an instructor for at least one course, leave some room for
 			// the "Course admin" button.
-			termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
-			termAndCourseTreeView.getElement().setId("termAndCourseTreeView");
-			west.add(termAndCourseTreeView);
+			// Wrap the TermAndCourseTreeView in a ScrollPanel
+			this.termAndCourseTreeViewScrollPanel = new ScrollPanel();
+			west.add(termAndCourseTreeViewScrollPanel);
 			west.setWidgetTopBottom(
-					termAndCourseTreeView,
-					// Note: you'd expect us to use SectionLabel.HEIGHT_PX as the
-					// top offset.  However, CellTree (for some reason) puts a huge
-					// vertical chunk of space above the first tree node, so it
-					// actually looks correct if we overlap the TermAndCourseTreeView
-					// and the SectionLabel.)
-					0.0,
+					termAndCourseTreeViewScrollPanel,
+					SectionLabel.HEIGHT_PX,
 					Unit.PX,
 					(isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 8.0 : 0.0),
 					Unit.PX);
-			west.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
+			west.setWidgetLeftRight(termAndCourseTreeViewScrollPanel, 0.0, Unit.PX, SEP_PX, Unit.PX);
+			final TermAndCourseTreeView termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
+			termAndCourseTreeViewScrollPanel.add(termAndCourseTreeView);
 
 			// Create the "Problems" and "User" admin buttons if appropriate.
-			if (isInstructor) {
+			if (isInstructor && manageExercisesButton == null) {
 				this.manageExercisesButton = new Button("Manage exercises");
 				west.add(manageExercisesButton);
 				west.setWidgetLeftRight(manageExercisesButton, 10.0, Unit.PX, 10.0, Unit.PX);
