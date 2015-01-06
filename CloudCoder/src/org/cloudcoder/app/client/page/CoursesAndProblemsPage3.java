@@ -287,6 +287,16 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 
 		private void onCourseAndCourseRegistrationsLoaded(
 				CourseAndCourseRegistration[] courseAndRegList) {
+			
+			GWT.log("Courses and course registrations loaded...");
+			if (termAndCourseTreeView != null) {
+				// It is possible for the CourseAndCourseRegistrations to be loaded
+				// multiple times.  Make sure that there is only one
+				// TermAndCourseTreeView widget!
+				west.remove(termAndCourseTreeView);
+				termAndCourseTreeView = null;
+			}
+			
 			boolean isInstructor = false;
 
 			// Determine if the user is an instructor for any of the courses
@@ -301,12 +311,18 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			// If the user is an instructor for at least one course, leave some room for
 			// the "Course admin" button.
 			termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
+			termAndCourseTreeView.getElement().setId("termAndCourseTreeView");
 			west.add(termAndCourseTreeView);
 			west.setWidgetTopBottom(
 					termAndCourseTreeView,
+					// Note: you'd expect us to use SectionLabel.HEIGHT_PX as the
+					// top offset.  However, CellTree (for some reason) puts a huge
+					// vertical chunk of space above the first tree node, so it
+					// actually looks correct if we overlap the TermAndCourseTreeView
+					// and the SectionLabel.)
 					0.0,
 					Unit.PX,
-					SectionLabel.HEIGHT_PX + (isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX : 0.0),
+					(isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 8.0 : 0.0),
 					Unit.PX);
 			west.setWidgetLeftRight(termAndCourseTreeView, 0.0, Unit.PX, SEP_PX, Unit.PX);
 
