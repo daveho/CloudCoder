@@ -234,6 +234,7 @@ Test targets suppressed because -junit argument was not specified when running w
   	</delete>
     <delete dir="gwt-unitCache" failonerror="false"/>
     <delete dir="war/cloudcoder" failonerror="false" />
+    <delete dir="war/logs" failonerror="false" />
   </target>
 
   <target name="depclean" depends="clean">
