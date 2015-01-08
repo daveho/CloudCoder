@@ -18,6 +18,7 @@
 package org.cloudcoder.app.client.view;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -154,7 +155,25 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 
 	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
 		GWT.log("Displaying " + problemList.length + " problems/submission receipts");
-		cellTable.setRowData(Arrays.asList(problemList));
+		
+		// Sort by due date
+		ProblemAndSubmissionReceipt[] list = problemList;
+		Arrays.sort(list, new Comparator<ProblemAndSubmissionReceipt>() {
+			@Override
+			public int compare(ProblemAndSubmissionReceipt o1, ProblemAndSubmissionReceipt o2) {
+				long left = o1.getProblem().getWhenDue();
+				long right = o2.getProblem().getWhenDue();
+				if (left < right) {
+					return -1;
+				} else if (left > right) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+		});
+		
+		cellTable.setRowData(Arrays.asList(list));
 	}
 
 	private void onProblemSelected(Problem selectedProblem) {
