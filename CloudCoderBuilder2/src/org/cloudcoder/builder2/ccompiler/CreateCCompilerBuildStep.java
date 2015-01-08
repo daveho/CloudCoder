@@ -80,6 +80,13 @@ public class CreateCCompilerBuildStep implements IBuildStep {
 			compiler.addFlag("-std=gnu++0x");
 		}
 		
+		// Make sure -std=gnu99 is passed for C submissions.
+		// You'd think C99 would be the default, considering it's now
+		// 2015, but no.
+		if (problem.getProblemType().getLanguage() == Language.C) {
+			compiler.addFlag("-std=gnu99");
+		}
+		
 		submission.addArtifact(compiler);
 	}
 
