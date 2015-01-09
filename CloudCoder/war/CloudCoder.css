@@ -307,7 +307,8 @@
 }
 
 /* Styles for exercises summary items: these correspond to SubmissionStatus enumeration members. */
-.cc-exerciseNotStarted, .cc-exerciseStarted { background: silver; }
+.cc-exerciseNotStarted { background: gray; }
+.cc-exerciseStarted { background: silver; }
 .cc-exerciseTestsPassed { background: #44dd44; }
 .cc-exerciseCompileError { background: orange; }
 .cc-exerciseBuildError { background: black; }
