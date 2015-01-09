@@ -107,11 +107,11 @@
  * Styles for the test result outcome column.
  */
 .cc-passedTest {
-	color: #44dd44;
+	color: #006400;
 	font-weight: bold;
 }
 .cc-failedTest {
-	color: #ff2222;
+	color: #b22222;
 	font-weight: bold;
 }
 
