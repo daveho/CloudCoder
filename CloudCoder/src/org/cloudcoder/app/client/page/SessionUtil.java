@@ -45,14 +45,28 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class SessionUtil {
 	/**
 	 * Retrieve list of {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
+	 * This method retrieves problems in all {@link Module}s.
 	 * 
 	 * @param page     the {@link CloudCoderPage} which initiated the loading of problems
 	 * @param course   the {@link Course}
 	 * @param session  the {@link Session}
 	 */
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final Course course, final Session session) {
+		loadProblemAndSubmissionReceiptsInCourse(page, new CourseSelection(course, null), session);
+	}
+
+	/**
+	 * Retrieve list of {@link ProblemAndSubmissionReceipt}s for given {@link CourseSelection}.
+	 * 
+	 * @param page             the {@link CloudCoderPage} which initiated the loading of problems
+	 * @param courseSelection  the {@link CourseSelection}
+	 * @param session          the {@link Session}
+	 */
+	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final CourseSelection courseSelection, final Session session) {
+		Course course = courseSelection.getCourse();
+		Module module = courseSelection.getModule();
 		GWT.log("RPC to load problems and submission receipts for course " + course.getNameAndTitle());
-		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), (Module)null, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
+		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), module, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
             @Override
             public void onFailure(Throwable caught) {
             	if (caught instanceof CloudCoderAuthenticationException) {
@@ -60,7 +74,7 @@ public class SessionUtil {
             		page.recoverFromServerSessionTimeout(new Runnable() {
             			public void run() {
             				// Try again!
-            				loadProblemAndSubmissionReceiptsInCourse(page, course, session);
+            				loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
             			}
             		});
             	} else {
@@ -75,7 +89,6 @@ public class SessionUtil {
                 session.add(result);
             }
         });
-		
 	}
 
 	/**

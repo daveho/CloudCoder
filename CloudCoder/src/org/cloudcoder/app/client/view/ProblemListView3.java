@@ -149,7 +149,7 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 
 	public void loadProblemsForCourse(final CourseSelection courseSelection) {
 		GWT.log("Loading problems and submission receipts for course " + courseSelection.getCourse().getNameAndTitle());
-		SessionUtil.loadProblemAndSubmissionReceiptsInCourse(page, courseSelection.getCourse(), session);
+		SessionUtil.loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
 	}
 
 	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
