@@ -52,8 +52,6 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 	 * Constructor.
 	 */
 	public ExerciseSummaryView() {
-		this.session = session;
-		
 		itemList = new ArrayList<ExerciseSummaryItem>();
 		
 		// This widget is basically a div containing ExerciseSummaryItems
@@ -110,11 +108,16 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 		itemList.clear();
 		flowPanel.clear();
 		
-		//loop through the problem and submission receipt,
+		// Sort by due date
+		ProblemAndSubmissionReceipt[] list = new ProblemAndSubmissionReceipt[problemAndSubmissionReceipts.length]; //problemAndSubmissionReceipts.clone();
+		System.arraycopy(problemAndSubmissionReceipts, 0, list, 0, problemAndSubmissionReceipts.length);
+		ViewUtil.sortProblemsByDueDate(list);
+		
+		//loop through the problem and submission receipts,
 		//create exerciseSummaryItem for each, and set each box's status (completed, failed, etc)
 		
-		for(int i = 0; i < problemAndSubmissionReceipts.length; i++){
-			ProblemAndSubmissionReceipt item = problemAndSubmissionReceipts[i];
+		for(int i = 0; i < list.length; i++){
+			ProblemAndSubmissionReceipt item = list[i];
 			SubmissionReceipt receipt = item.getReceipt();
 			SubmissionStatus status = receipt != null ? receipt.getStatus() : SubmissionStatus.NOT_STARTED;
 			

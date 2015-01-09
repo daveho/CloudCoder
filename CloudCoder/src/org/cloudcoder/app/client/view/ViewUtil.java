@@ -17,9 +17,12 @@
 
 package org.cloudcoder.app.client.view;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 
 import org.cloudcoder.app.shared.model.Language;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -108,4 +111,27 @@ public class ViewUtil {
         }
         return grid;
     }
+
+    /**
+     * Sort array of {@link ProblemAndSubmissionReceipt}s by their due date/time.
+     * This is important for helping students to focus on what is due when.
+     * 
+     * @param list array of {@link ProblemAndSubmissionReceipt}s to sort
+     */
+	public static void sortProblemsByDueDate(ProblemAndSubmissionReceipt[] list) {
+		Arrays.sort(list, new Comparator<ProblemAndSubmissionReceipt>() {
+			@Override
+			public int compare(ProblemAndSubmissionReceipt o1, ProblemAndSubmissionReceipt o2) {
+				long left = o1.getProblem().getWhenDue();
+				long right = o2.getProblem().getWhenDue();
+				if (left < right) {
+					return -1;
+				} else if (left > right) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+		});
+	}
 }
