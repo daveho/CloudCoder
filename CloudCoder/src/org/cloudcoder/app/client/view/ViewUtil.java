@@ -129,7 +129,10 @@ public class ViewUtil {
 				} else if (left > right) {
 					return 1;
 				} else {
-					return 0;
+					// Use problem id as tiebreaker
+					int leftId = o1.getProblem().getProblemId();
+					int rightId = o2.getProblem().getProblemId();
+					return leftId - rightId; // We'll take a chance that underflow won't occur
 				}
 			}
 		});
