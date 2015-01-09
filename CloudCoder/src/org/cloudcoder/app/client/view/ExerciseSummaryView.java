@@ -18,15 +18,10 @@
 
 package org.cloudcoder.app.client.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
-import org.cloudcoder.app.shared.model.SubmissionReceipt;
-import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -45,15 +40,12 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 public class ExerciseSummaryView extends Composite implements Subscriber, SessionObserver{
 	private Session session;
 	private FlowPanel flowPanel;
-	private List<ExerciseSummaryItem> itemList;
 	private ICallback<ExerciseSummaryItem> clickHandler;
 
 	/**
 	 * Constructor.
 	 */
 	public ExerciseSummaryView() {
-		itemList = new ArrayList<ExerciseSummaryItem>();
-		
 		// This widget is basically a div containing ExerciseSummaryItems
 		this.flowPanel = new FlowPanel();
 		flowPanel.setStyleName("cc-exerciseSummary", true);
@@ -75,9 +67,7 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 
 	protected void handleItemClick(ExerciseSummaryItem value) {
 		// Add the Problem to the session (to select the problem)
-		int index = value.getIndex();
-		ProblemAndSubmissionReceipt[] probs = session.get(ProblemAndSubmissionReceipt[].class);
-		ProblemAndSubmissionReceipt p = probs[index];
+		ProblemAndSubmissionReceipt p = value.getProblemAndSubmissionReceipt();
 		session.add(p.getProblem());
 	}
 
@@ -105,7 +95,6 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 	 */
 	private void loadData(ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts) {
 		// clear current data, load new data
-		itemList.clear();
 		flowPanel.clear();
 		
 		// Sort by due date
@@ -116,19 +105,11 @@ public class ExerciseSummaryView extends Composite implements Subscriber, Sessio
 		//loop through the problem and submission receipts,
 		//create exerciseSummaryItem for each, and set each box's status (completed, failed, etc)
 		
-		for(int i = 0; i < list.length; i++){
-			ProblemAndSubmissionReceipt item = list[i];
-			SubmissionReceipt receipt = item.getReceipt();
-			SubmissionStatus status = receipt != null ? receipt.getStatus() : SubmissionStatus.NOT_STARTED;
-			
+		for (ProblemAndSubmissionReceipt item : list){
+			// Create ExerciseSummaryItem
 			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
-			
-			//determine status, create ExerciseSummaryItem and use method addExerciseSummaryItem
-			summaryItem.setIndex(i);
-			summaryItem.setStatus(status);
-			summaryItem.setTooltip(item.getProblem().getTestname() + " - " + status.getDescription());
+			summaryItem.setProblemAndSubmissionReceipt(item);
 			summaryItem.setClickHandler(clickHandler);
-			itemList.add(summaryItem);
 			flowPanel.add(summaryItem);
 		}
 	}

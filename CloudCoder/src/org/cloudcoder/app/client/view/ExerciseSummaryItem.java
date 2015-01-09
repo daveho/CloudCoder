@@ -19,6 +19,8 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -34,8 +36,7 @@ import com.google.gwt.user.client.ui.HTML;
  * @author David Hovemeyer
  */
 public class ExerciseSummaryItem extends Composite {
-	private int index;
-	private SubmissionStatus status;
+	private ProblemAndSubmissionReceipt problemAndSubmissionReceipt;
 	private HTML html;
 	private ICallback<ExerciseSummaryItem> clickHandler;
 
@@ -50,7 +51,7 @@ public class ExerciseSummaryItem extends Composite {
 				onClickEvent();
 			}
 		});
-		setStatus(SubmissionStatus.NOT_STARTED); // just a default status
+		configureStyle(); // Just set a default style
 		initWidget(html);
 	}
 
@@ -61,12 +62,21 @@ public class ExerciseSummaryItem extends Composite {
 	}
 
 	/**
-	 * Set the index of this item.
+	 * Set the {@link ProblemAndSubmissionReceipt} for this item.
 	 * 
-	 * @param index the index to set
+	 * @param item the {@link ProblemAndSubmissionReceipt} to set
 	 */
-	public void setIndex(int index) {
-		this.index = index;
+	public void setProblemAndSubmissionReceipt(ProblemAndSubmissionReceipt item) {
+		this.problemAndSubmissionReceipt = item;
+		configureStyle();
+		setTooltip(item.getProblem().getTestname() + " - " + getStatus().getDescription());
+	}
+	
+	/**
+	 * @return the ProblemAndSubmissionReceipt
+	 */
+	public ProblemAndSubmissionReceipt getProblemAndSubmissionReceipt() {
+		return problemAndSubmissionReceipt;
 	}
 	
 	/**
@@ -81,28 +91,28 @@ public class ExerciseSummaryItem extends Composite {
 	}
 	
 	/**
-	 * @return the index of this item
-	 */
-	public int getIndex() {
-		return index;
-	}
-	
-	/**
 	 * Get this item's {@link SubmissionStatus}.
 	 * 
 	 * @return this item's {@link SubmissionStatus}
 	 */
 	public SubmissionStatus getStatus() {
-		return status;
+		if (problemAndSubmissionReceipt == null) {
+			// No ProblemAndSubmissionReceipt has been set yet.
+			return SubmissionStatus.NOT_STARTED;
+		}
+		SubmissionReceipt receipt = problemAndSubmissionReceipt.getReceipt();
+		if (receipt == null) {
+			// No SubmissionReceipt for this item, so the user hasn't
+			// started this problem.
+			return SubmissionStatus.NOT_STARTED;
+		} else {
+			return receipt.getStatus();
+		}
 	}
 
-	/**
-	 * Set the {@link SubmissionStatus} of the item.
-	 * 
-	 * @param status the {@link SubmissionStatus} to set
-	 */
-	public void setStatus(SubmissionStatus status) {
-		this.status = status;
+	private void configureStyle() {
+		SubmissionStatus status = getStatus();
+		
 		this.html.setStyleName("cc-exerciseSummaryItem"); // reset to just the base style
 		
 		// Set status-specific style
@@ -124,14 +134,7 @@ public class ExerciseSummaryItem extends Composite {
 		}
 	}
 	
-	/**
-	 * Set a tooltip for this item.
-	 * The {@link ExerciseSummaryView} sets tool tips indicating the
-	 * name of the exercise and the status.
-	 * 
-	 * @param tooltip the tooltip to set
-	 */
-	public void setTooltip(String tooltip) {
+	private void setTooltip(String tooltip) {
 		html.getElement().setAttribute("title", tooltip);
 	}
 }
