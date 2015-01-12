@@ -194,13 +194,17 @@
   
   <!-- General filters. -->
   <filter>
-    <!-- Prevent .nocache.js files from being cached. -->
+    <!-- Prevent .nocache.js files, and CloudCoder.html, from being cached. -->
     <filter-name>NocacheJsFilter</filter-name>
     <filter-class>org.cloudcoder.app.server.filter.NocacheJsFilter</filter-class>
   </filter>
   <filter-mapping>
     <filter-name>NocacheJsFilter</filter-name>
     <url-pattern>*.nocache.js</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>NocacheJsFilter</filter-name>
+    <url-pattern>CloudCoder.html</url-pattern>
   </filter-mapping>
   
   <!-- Admin filters. -->
