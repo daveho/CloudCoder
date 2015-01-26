@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -86,6 +86,9 @@ public class CreateCCompilerBuildStep implements IBuildStep {
 		if (problem.getProblemType().getLanguage() == Language.C) {
 			compiler.addFlag("-std=gnu99");
 		}
+		
+		// For both C and C++ submissions, link with -lm
+		compiler.addEndFlag("-lm");
 		
 		submission.addArtifact(compiler);
 	}
