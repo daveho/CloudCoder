@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,6 +19,8 @@ package org.cloudcoder.app.server.admin;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -114,7 +116,7 @@ public class Problems extends HttpServlet {
 	}
 	
 	private static final String[] BEST_SUBMISSION_HEADER = new String[]{
-		"Username","Passed/Total", "Passed", "Total", "Percent",
+		"Lastname", "Firstname", "Username","Passed/Total", "Passed", "Total", "Percent",
 	};
 
 	/**
@@ -145,8 +147,28 @@ public class Problems extends HttpServlet {
 		writer.writeNext(new String[]{});
 		writer.writeNext(BEST_SUBMISSION_HEADER);
 		
+		// Sort by lastname and firstname, using username as a tie-breaker.
+		// This matches the typical order of a class roster (according to me, anyway.)
+		Collections.sort(bestSubmissions, new Comparator<UserAndSubmissionReceipt>() {
+			@Override
+			public int compare(UserAndSubmissionReceipt o1, UserAndSubmissionReceipt o2) {
+				User leftUser = o1.getUser();
+				User rightUser = o2.getUser();
+				int cmp;
+				cmp = leftUser.getLastname().compareTo(rightUser.getLastname());
+				if (cmp != 0) { return cmp; }
+				cmp = leftUser.getFirstname().compareTo(rightUser.getFirstname());
+				if (cmp != 0) { return cmp; }
+				return leftUser.getUsername().compareTo(rightUser.getUsername());
+			}
+		});
+		
 		for (UserAndSubmissionReceipt pair : bestSubmissions) {
 			List<String> entry = new ArrayList<String>();
+			
+			entry.add(pair.getUser().getLastname());
+			entry.add(pair.getUser().getFirstname());
+			
 			entry.add(pair.getUser().getUsername());
 			
 			int numPassed = (pair.getReceipt() != null) ? pair.getReceipt().getNumTestsPassed() : 0;
