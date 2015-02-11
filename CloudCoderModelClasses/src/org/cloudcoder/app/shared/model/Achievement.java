@@ -70,7 +70,7 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	 * @param value the achievement's courseId
 	 */
 	public void setCourseId(int value){
-		this.id = value;
+		this.courseId = value;
 	}
 	
 	/**
@@ -78,7 +78,7 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	 * @return the achievement's courseId
 	 */
 	public int getCourseId(){
-		return id;
+		return courseId;
 	}
 	
 	/**

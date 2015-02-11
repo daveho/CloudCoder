@@ -30,6 +30,9 @@ import java.util.Scanner;
 import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.SchemaUtil;
+import org.cloudcoder.app.shared.model.Achievement;
+import org.cloudcoder.app.shared.model.AchievementCriterion;
+import org.cloudcoder.app.shared.model.AchievementImage;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -47,6 +50,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAchievement;
 
 /**
  * Create the webapp database, using the metadata information
@@ -75,6 +79,10 @@ public class CreateWebappDatabase {
 		Quiz.SCHEMA,
 		Module.SCHEMA,
 		StartedQuiz.SCHEMA,
+		Achievement.SCHEMA,
+		AchievementCriterion.SCHEMA,
+		AchievementImage.SCHEMA,
+		UserAchievement.SCHEMA,
 	};
 	
 	private static class Props {

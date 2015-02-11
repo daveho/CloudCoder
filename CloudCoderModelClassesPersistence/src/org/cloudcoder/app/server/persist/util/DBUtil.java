@@ -344,6 +344,15 @@ public class DBUtil {
 			// Enumeration values are represented as integers (their ordinal values)
 			// in the database
 			return "int(11)";
+		} else if (field.getType() == byte[].class) {
+			// Binary data, use an appropriate BLOB type
+			if (field.getSize() < 256) {
+				return "TINYBLOB";
+			} else if (field.getSize() < 65536) {
+				return "BLOB";
+			} else  {
+				throw new IllegalArgumentException("BLOBs larger than 64K are not supported");
+			}
 		} else {
 			throw new IllegalArgumentException("Unknown field type: " + field.getType().getName());
 		}

@@ -3,7 +3,8 @@ package org.cloudcoder.app.shared.model;
 import java.io.Serializable;
 
 public class AchievementImage implements Serializable, IModelObject<AchievementImage> {
-
+	private static final long serialVersionUID = 1L;
+	
 	private int id;
 	private byte[] imageArr;
 	
@@ -17,17 +18,7 @@ public class AchievementImage implements Serializable, IModelObject<AchievementI
 		public byte[] get(AchievementImage obj) { return obj.getImageArr(); }
 	};
 
-	
-	
-	
-	/**
-	 * Constructor
-	 */
-	public AchievementImage(){
-		
-	}
-
-	public static final ModelObjectSchema<AchievementImage> SCHEMA_V0 = new ModelObjectSchema<AchievementImage>("achievementImage")
+	public static final ModelObjectSchema<AchievementImage> SCHEMA_V0 = new ModelObjectSchema<AchievementImage>("achievement_image")
 		.add(ID)
 		.add(IMAGEARR);
 		
@@ -41,6 +32,13 @@ public class AchievementImage implements Serializable, IModelObject<AchievementI
 		return SCHEMA;
 	}
 	
+	/**
+	 * Constructor
+	 */
+	public AchievementImage(){
+		
+	}
+	
 	public void setId(int value) {
 		this.id = value;
 		
@@ -51,12 +49,10 @@ public class AchievementImage implements Serializable, IModelObject<AchievementI
 	}
 	
 	public void setImageArr(byte[] value) {
-		// TODO Auto-generated method stub
-		
+		this.imageArr = value;
 	}
 	public byte[] getImageArr() {
-		// TODO Auto-generated method stub
-		return null;
+		return imageArr;
 	}
 	
 }

@@ -27,7 +27,7 @@ public class AchievementCriterion implements Serializable, IModelObject<Achievem
 		public AchievementCriterionType get(AchievementCriterion obj) { return obj.getType(); }
 	};
 	
-	public static final ModelObjectField<? super AchievementCriterion, Integer> VALUE = new ModelObjectField<AchievementCriterion, Integer>("value", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
+	public static final ModelObjectField<? super AchievementCriterion, Integer> VALUE = new ModelObjectField<AchievementCriterion, Integer>("value", Integer.class, 0, ModelObjectIndexType.NONE) {
 		public void set(AchievementCriterion obj, Integer value) {obj.setValue(value); }
 		public Integer get(AchievementCriterion obj) {return obj.getValue(); }
 	};
@@ -47,9 +47,10 @@ public class AchievementCriterion implements Serializable, IModelObject<Achievem
 	/**
 	 * Description of fields (schema version 0)
 	 */
-	public static final ModelObjectSchema<AchievementCriterion> SCHEMA_V0 = new ModelObjectSchema<AchievementCriterion>("achievementCriterion")
+	public static final ModelObjectSchema<AchievementCriterion> SCHEMA_V0 = new ModelObjectSchema<AchievementCriterion>("achievement_criterion")
 			.add(ID)
 			.add(ACHIEVEMENTID)
+			.add(TYPE)
 			.add(VALUE)
 			.add(TAG);
 	

@@ -280,6 +280,9 @@ public class ModelObjectSchema<ModelObjectType> {
 		if (name.endsWith("z")) {
 			// Create appropriate plural for "quiz" schema
 			return "cc_" + name + "zes";
+		} else if (name.endsWith("criterion")) {
+			// Create appropriate plural for "achievement_criterion" schema
+			return "cc_" + name.substring(0, name.length() - 2) + "a";
 		} else {
 			return "cc_" + name + "s";
 		}
