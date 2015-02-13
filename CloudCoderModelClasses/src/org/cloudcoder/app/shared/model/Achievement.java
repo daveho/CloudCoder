@@ -20,12 +20,12 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	};
 	
 	//TODO: what are the numbers next to the class?
-	public static final ModelObjectField<? super Achievement, Integer> COURSEID = new ModelObjectField<Achievement, Integer>("courseId", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE){
+	public static final ModelObjectField<? super Achievement, Integer> COURSEID = new ModelObjectField<Achievement, Integer>("course_id", Integer.class, 0, ModelObjectIndexType.NON_UNIQUE){
 		public void set(Achievement obj, Integer value) {obj.setCourseId(value); }
 		public Integer get(Achievement obj) {return obj.getCourseId(); }
 	};
 	
-	public static final ModelObjectField<? super Achievement, Integer> ACHIEVEMENTIMAGEID = new ModelObjectField<Achievement, Integer>("achievementImageId", Integer.class, 0, ModelObjectIndexType.NONE){
+	public static final ModelObjectField<? super Achievement, Integer> ACHIEVEMENTIMAGEID = new ModelObjectField<Achievement, Integer>("achievement_image_id", Integer.class, 0, ModelObjectIndexType.NONE){
 		public void set(Achievement obj, Integer value) {obj.setAchievementImageId(value); }
 		public Integer get(Achievement obj) {return obj.getAchievementImageId(); }
 	};
