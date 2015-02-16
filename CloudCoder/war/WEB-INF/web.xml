@@ -192,6 +192,16 @@
     <url-pattern>/health/*</url-pattern>
   </servlet-mapping>
   
+  <!-- AchievementImage servlet. -->
+  <servlet>
+    <servlet-name>DisplayAchievementImage</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.servlet.DisplayAchievementImage</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DisplayAchievementImage</servlet-name>
+    <url-pattern>/aimg/*</url-pattern>
+  </servlet-mapping>
+  
   <!-- General filters. -->
   <filter>
     <!-- Prevent .nocache.js files, and CloudCoder.html, from being cached. -->

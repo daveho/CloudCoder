@@ -36,6 +36,7 @@ import org.cloudcoder.app.server.persist.txn.DeleteProblem;
 import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
 import org.cloudcoder.app.server.persist.txn.EndQuiz;
+import org.cloudcoder.app.server.persist.txn.FindAchievementImage;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourse;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourseId;
 import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
@@ -93,6 +94,7 @@ import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
+import org.cloudcoder.app.shared.model.AchievementImage;
 import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -506,6 +508,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<Pair<Event, Change>> getEventsWithChanges(int userId, int problemId, int startEventId, int endEventId) {
 		return databaseRun(new GetEventsWithChanges(userId, problemId, startEventId, endEventId));
+	}
+	
+	@Override
+	public AchievementImage findAchievementImage(int achievementImageId) {
+		return databaseRun(new FindAchievementImage(achievementImageId));
 	}
 
 	/**

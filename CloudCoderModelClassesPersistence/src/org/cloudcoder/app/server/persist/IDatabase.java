@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
+import org.cloudcoder.app.shared.model.AchievementImage;
 import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -720,4 +721,12 @@ public interface IDatabase {
 	 */
 	public List<Pair<Event, Change>> getEventsWithChanges(int userId,
 			int problemId, int startEventId, int endEventId);
+
+	/**
+	 * Look up an {@link AchievementImage} by its id.
+	 * 
+	 * @param achievementImageId the {@link AchievementImage} id
+	 * @return the {@link AchievementImage}, or null if no image with that id exists
+	 */
+	public AchievementImage findAchievementImage(int achievementImageId);
 }
