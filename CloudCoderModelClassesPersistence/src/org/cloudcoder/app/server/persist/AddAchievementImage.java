@@ -1,13 +1,14 @@
 package org.cloudcoder.app.server.persist;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.AchievementImage;
@@ -23,7 +24,7 @@ public class AddAchievementImage {
 		System.out.print("Image file: ");
 		String fileName = keyboard.nextLine();
 		
-		byte[] data = Files.readAllBytes(new File(fileName).toPath());
+		byte[] data = readAllBytes(fileName);
 		
 		AchievementImage img = new AchievementImage();
 		img.setImageArr(data);
@@ -35,6 +36,18 @@ public class AddAchievementImage {
 			System.out.printf("Stored achievement image with id=%d\n", img.getId());
 		} finally {
 			DBUtil.closeQuietly(conn);
+		}
+	}
+
+	private static byte[] readAllBytes(String fileName) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(fileName);
+			IOUtils.copy(in, out);
+			return out.toByteArray();
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 	}
 }
