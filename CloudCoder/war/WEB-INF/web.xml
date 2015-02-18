@@ -123,18 +123,10 @@
     <servlet-name>Run</servlet-name>
     <servlet-class>org.cloudcoder.app.server.rpc.RunServiceImpl</servlet-class>
   </servlet>
-  
   <servlet>
-    <servlet-name>RegisterStudents</servlet-name>
-    <servlet-class>org.cloudcoder.app.server.servlet.RegisterStudents</servlet-class>
+    <servlet-name>Achievement</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.rpc.AchievementServiceImpl</servlet-class>
   </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>RegisterStudents</servlet-name>
-    <url-pattern>/cloudcoder/registerStudents</url-pattern>
-  </servlet-mapping>
-
-  
   <servlet-mapping>
     <servlet-name>ConfigurationSetting</servlet-name>
     <url-pattern>/cloudcoder/configurationSetting</url-pattern>
@@ -162,6 +154,10 @@
   <servlet-mapping>
     <servlet-name>Run</servlet-name>
     <url-pattern>/cloudcoder/run</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Achievement</servlet-name>
+    <url-pattern>/cloudcoder/achievement</url-pattern>
   </servlet-mapping>
   
   <!-- Admin servlets. -->
@@ -192,7 +188,7 @@
     <url-pattern>/health/*</url-pattern>
   </servlet-mapping>
   
-  <!-- AchievementImage servlet. -->
+  <!-- DisplayAchievementImage servlet. -->
   <servlet>
     <servlet-name>DisplayAchievementImage</servlet-name>
     <servlet-class>org.cloudcoder.app.server.servlet.DisplayAchievementImage</servlet-class>
@@ -201,7 +197,17 @@
     <servlet-name>DisplayAchievementImage</servlet-name>
     <url-pattern>/aimg/*</url-pattern>
   </servlet-mapping>
-  
+
+  <!-- Register students servlet. -->  
+  <servlet>
+    <servlet-name>RegisterStudents</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.servlet.RegisterStudents</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RegisterStudents</servlet-name>
+    <url-pattern>/cloudcoder/registerStudents</url-pattern>
+  </servlet-mapping>
+
   <!-- General filters. -->
   <filter>
     <!-- Prevent .nocache.js files, and CloudCoder.html, from being cached. -->

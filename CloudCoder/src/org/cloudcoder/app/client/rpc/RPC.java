@@ -10,4 +10,6 @@ public abstract class RPC {
 	public static final SubmitServiceAsync submitService = GWT.create(SubmitService.class);
 	public static final UserServiceAsync usersService= GWT.create(UserService.class);
 	public static final RunServiceAsync runService = GWT.create(RunService.class);
+	public static final AchievementServiceAsync achievementService =
+			GWT.create(AchievementService.class);
 }

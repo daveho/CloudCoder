@@ -62,6 +62,7 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.WorkSession;
@@ -729,4 +730,15 @@ public interface IDatabase {
 	 * @return the {@link AchievementImage}, or null if no image with that id exists
 	 */
 	public AchievementImage findAchievementImage(int achievementImageId);
+
+	/**
+	 * Get all of the {@link UserAchievementAndAchievement}s summarizing the
+	 * achievements that the given {@link User} has earned in the given
+	 * {@link Course}.
+	 * 
+	 * @param currentUser  the authenticated {@link User}
+	 * @param course       a {@link Course}
+	 * @return array of {@link UserAchievementAndAchievement}s
+	 */
+	public UserAchievementAndAchievement[] getUserAchievements(User currentUser, Course course);
 }

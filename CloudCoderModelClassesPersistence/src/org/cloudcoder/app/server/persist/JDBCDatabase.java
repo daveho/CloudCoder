@@ -69,6 +69,7 @@ import org.cloudcoder.app.server.persist.txn.GetSubmissionText;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblem;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblemCheckAuth;
 import org.cloudcoder.app.server.persist.txn.GetTestResultsForSubmission;
+import org.cloudcoder.app.server.persist.txn.GetUserAchievements;
 import org.cloudcoder.app.server.persist.txn.GetUserGivenId;
 import org.cloudcoder.app.server.persist.txn.GetUserWithoutAuthentication;
 import org.cloudcoder.app.server.persist.txn.GetUsersInCourse;
@@ -128,6 +129,7 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
 import org.cloudcoder.app.shared.model.WorkSession;
@@ -513,6 +515,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public AchievementImage findAchievementImage(int achievementImageId) {
 		return databaseRun(new FindAchievementImage(achievementImageId));
+	}
+	
+	@Override
+	public UserAchievementAndAchievement[] getUserAchievements(User currentUser, Course course) {
+		return databaseRun(new GetUserAchievements(currentUser, course));
 	}
 
 	/**
