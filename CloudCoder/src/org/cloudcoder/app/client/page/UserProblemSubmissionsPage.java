@@ -41,7 +41,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.google.gwt.core.shared.GWT;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -164,6 +164,19 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 		private void onLoadSubmissionReceipts(SubmissionReceipt[] result) {
 			GWT.log("Loaded submission receipts");
 			
+			//for (SubmissionReceipt receipt : result) {
+			boolean foundNull = false;
+			for (int i = 0; i < result.length; i++) {
+				SubmissionReceipt receipt = result[i];
+				if (receipt == null) {
+					GWT.log("Found a null submission receipt?");
+					foundNull = true;
+				}
+			}
+			if (!foundNull) {
+				GWT.log("Did not find any null submission receipts. How nice.");
+			}
+			
 			// Add to ProblemSubmissionHistory
 			getSession().get(ProblemSubmissionHistory.class).setSubmissionReceiptList(result);
 			
@@ -194,6 +207,9 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 				
 				// Determine which SubmissionReceipt was selected
 				SubmissionReceipt receipt = problemSubmissionHistory.getSubmissionReceipt(selected);
+				if (receipt == null) {
+					GWT.log("Receipt is null?");
+				}
 				
 				// Load the ProblemText, add to the session
 				GWT.log("Loading ProblemText for submission " + selected);

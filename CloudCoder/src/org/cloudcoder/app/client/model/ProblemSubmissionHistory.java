@@ -20,6 +20,8 @@ package org.cloudcoder.app.client.model;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 
+import com.google.gwt.core.client.GWT;
+
 /**
  * Model object containing a list of {@link SubmissionReceipt}s
  * representing a user's work on a problem.  One of the
@@ -60,7 +62,13 @@ public class ProblemSubmissionHistory extends Publisher {
 	 * @return the {@link SubmissionReceipt}
 	 */
 	public SubmissionReceipt getSubmissionReceipt(int index) {
-		return submissionReceiptList[index];
+		SubmissionReceipt result = submissionReceiptList[index];
+		
+		if (result == null) {
+			GWT.log("Getting submission receipt " + index + ", but it's null, WTF?");
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -69,18 +77,29 @@ public class ProblemSubmissionHistory extends Publisher {
 	 * @param submissionReceiptList the submissionReceiptList to set
 	 */
 	public void setSubmissionReceiptList(SubmissionReceipt[] submissionReceiptList) {
+		System.out.println("Setting submission receipt list");
+		boolean foundNull = false;
+		for (int i = 0; i < submissionReceiptList.length; i++) {
+			if (submissionReceiptList[i] == null) {
+				GWT.log("Found a null value!");
+				foundNull = true;
+			}
+		}
+		if (!foundNull) {
+			GWT.log("No null values in submission receipt list");
+		}
 		this.submissionReceiptList = submissionReceiptList;
 		notifySubscribers(Event.SET_SUBMISSION_RECEIPT_LIST, submissionReceiptList);
 	}
 	
-	/**
-	 * Get the list of {@link SubmissionReceipt}s
-	 * 
-	 * @return the submissionReceiptList
-	 */
-	public SubmissionReceipt[] getSubmissionReceiptList() {
-		return submissionReceiptList;
-	}
+//	/**
+//	 * Get the list of {@link SubmissionReceipt}s
+//	 * 
+//	 * @return the submissionReceiptList
+//	 */
+//	public SubmissionReceipt[] getSubmissionReceiptList() {
+//		return submissionReceiptList;
+//	}
 	
 	/**
 	 * Set the index of the selected {@link SubmissionReceipt}.
