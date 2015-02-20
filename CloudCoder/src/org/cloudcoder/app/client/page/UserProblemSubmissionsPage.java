@@ -167,6 +167,14 @@ public class UserProblemSubmissionsPage extends CloudCoderPage {
 			// Add to ProblemSubmissionHistory
 			getSession().get(ProblemSubmissionHistory.class).setSubmissionReceiptList(result);
 			
+			if (result.length == 0) {
+				// The user has no submissions for this problem
+				getSession().add(StatusMessage.information("There are no submissions to view"));
+				// Add empty test result list
+				getSession().add(new NamedTestResult[0]);
+				return;
+			}
+			
 			// Find the best submission
 			int best = 0;
 			for (int i = 1; i < result.length; i++) {
