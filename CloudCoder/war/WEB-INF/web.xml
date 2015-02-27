@@ -194,14 +194,16 @@
   
   <!-- General filters. -->
   <filter>
-    <!-- Prevent .nocache.js files and CloudCoder.html from being cached. -->
+    <!-- Prevent .nocache.js files, CloudCoder.html, and other important stuff from being cached. -->
     <filter-name>NocacheJsFilter</filter-name>
     <filter-class>org.cloudcoder.app.server.filter.NocacheJsFilter</filter-class>
   </filter>
+  <!-- Don't cache the .nocache.js file(s). -->
   <filter-mapping>
     <filter-name>NocacheJsFilter</filter-name>
     <url-pattern>*.nocache.js</url-pattern>
   </filter-mapping>
+  <!-- Don't cache the HTML page. -->
   <filter-mapping>
     <filter-name>NocacheJsFilter</filter-name>
     <url-pattern>/CloudCoder.html</url-pattern>
@@ -210,6 +212,16 @@
   <filter-mapping>
     <filter-name>NocacheJsFilter</filter-name>
     <url-pattern>/</url-pattern>
+  </filter-mapping>
+  <!-- Don't cache the CSS styles. -->
+  <filter-mapping>
+    <filter-name>NocacheJsFilter</filter-name>
+    <url-pattern>/CloudCoder.css</url-pattern>
+  </filter-mapping>
+  <!-- Don't cache Ace JavaScript files. -->
+  <filter-mapping>
+    <filter-name>NocacheJsFilter</filter-name>
+    <url-pattern>/cloudcoder/ace/*</url-pattern>
   </filter-mapping>
   
   <!-- Admin filters. -->
