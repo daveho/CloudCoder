@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Prevent caching of ".nocache.js" resources.
+ * Prevent caching of ".nocache.*" resources and other resources
+ * that shouldn't be cached.
  * 
  * @author David Hovemeyer
  */
@@ -44,7 +45,7 @@ public class NocacheJsFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletResponse resp = (HttpServletResponse) resp_;
 		logger.info("Adding Cache-Control header to {}", ((HttpServletRequest)req_).getRequestURI());
-		resp.addHeader("Cache-Control", "max-age=0");
+		resp.addHeader("Cache-Control", "no-cache");
 		chain.doFilter(req_, resp_);
 	}
 
