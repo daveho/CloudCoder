@@ -11,6 +11,21 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/daemon-0.7.jar" sourcepath="lib/daemon-0.7.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-annotations-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-core-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-core-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-databind-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueue"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
 	<classpathentry kind="output" path="bin"/>

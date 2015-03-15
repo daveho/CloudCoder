@@ -1,2 +1,5 @@
-opencsv-2.4.jar
-daemon-0.7.jar
+/opencsv-2.4.jar
+/daemon-0.7.jar
+/jackson-annotations-2.4.1.jar
+/jackson-core-2.4.1.jar
+/jackson-databind-2.4.1.jar

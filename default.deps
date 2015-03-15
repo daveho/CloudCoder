@@ -198,16 +198,19 @@ http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${j
   CloudCoder/war/WEB-INF/lib/jackson-annotations-${jackson_version}.jar
   CloudCoderRepository/war/WEB-INF/lib/jackson-annotations-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-annotations-${jackson_version}.jar
+  CloudCoderDataAnalysis/lib/jackson-annotations-${jackson_version}.jar
 http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${jackson_version}/jackson-core-${jackson_version}.jar
   CloudCoderModelClassesJSON/lib/jackson-core-${jackson_version}.jar
   CloudCoder/war/WEB-INF/lib/jackson-core-${jackson_version}.jar
   CloudCoderRepository/war/WEB-INF/lib/jackson-core-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-core-${jackson_version}.jar
+  CloudCoderDataAnalysis/lib/jackson-core-${jackson_version}.jar
 http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/${jackson_version}/jackson-databind-${jackson_version}.jar
   CloudCoderModelClassesJSON/lib/jackson-databind-${jackson_version}.jar
   CloudCoder/war/WEB-INF/lib/jackson-databind-${jackson_version}.jar
   CloudCoderRepository/war/WEB-INF/lib/jackson-databind-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-databind-${jackson_version}.jar
+  CloudCoderDataAnalysis/lib/jackson-databind-${jackson_version}.jar
 
 # Jackson javadoc jarfiles.  We only need one copy of these since all of
 # our Eclipse projects reference Jackson through the CloudCoderModelClassesJSON
