@@ -36,6 +36,8 @@ import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -109,6 +111,10 @@ public class ProgsnapExport {
 		for (Problem p : problems.getProblemList()) {
 			writeAssignmentFile(p);
 		}
+		
+		// Write students file
+		List<User> users = getUsers(course);
+		writeStudentsFile(users, course);
 	}
 
 	private void writeTaggedFile(Writer w, Map<String, Object> props) throws IOException {
@@ -244,6 +250,31 @@ public class ProgsnapExport {
 			}
 		} finally {
 			IOUtils.closeQuietly(w);
+		}
+	}
+
+	private List<User> getUsers(Course course) {
+		IDatabase db = Database.getInstance();
+		
+		return db.getUsersInCourse(course.getId(), 0);
+	}
+
+	private void writeStudentsFile(List<User> users, Course course) throws IOException {
+		IDatabase db = Database.getInstance();
+		
+		try (Writer w = writeToFile(new File(baseDir, "/students.txt"))) {
+			for (User user : users) {
+				CourseRegistrationList regList = db.findCourseRegistrations(user, course);
+				// number
+				// instructor
+				// FIXME: allow loading of demographic information
+				Map<String, Object> student = new LinkedHashMap<>();
+				student.put("number", user.getId());
+				student.put("instructor", regList.isInstructor());
+				String line = encodeLine("student", student);
+				w.write(line);
+				w.write("\n");
+			}
 		}
 	}
 	
