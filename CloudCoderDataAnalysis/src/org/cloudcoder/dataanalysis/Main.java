@@ -40,6 +40,8 @@ public class Main {
 			TimeToSolve.main(rest);
 		} else if (app.equals("pauseTimes")) {
 			PauseTimes.main(rest);
+		} else if (app.equals("export")) {
+			ProgsnapExport.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);
