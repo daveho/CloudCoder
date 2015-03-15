@@ -38,6 +38,7 @@ import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
+import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -54,7 +55,201 @@ public class ProgsnapExport {
 	// Version of progsnap spec the exported data will conform to
 	private static final String PSVERSION = "0.0-dev";
 	
+	private File baseDir;
+	private Properties config;
+	private Map<String, Object> datasetProps;
+	private int courseId;
+	private String username;
+	
+	public ProgsnapExport() {
+		
+	}
+	
+	public void setBaseDir(File baseDir) {
+		this.baseDir = baseDir;
+	}
+	
+	public void setConfig(Properties config) {
+		this.config = config;
+	}
+	
+	public void setDatasetProps(Map<String, Object> datasetProps) {
+		this.datasetProps = datasetProps;
+	}
+	
+	public void setCourseId(int courseId) {
+		this.courseId = courseId;
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	
+	public void execute() throws IOException {
+		Util.connectToDatabase(config);
+
+		User user = findUser(username);
+		Course course = findCourse(user, courseId);
+		
+		// Ensure that output directory exists
+		baseDir.mkdirs();
+		
+		// Write dataset file
+		try (Writer w = writeToFile(new File(baseDir, "/dataset.txt"))) {
+			writeTaggedFile(w, datasetProps);
+		}
+		
+		// Gather problems
+		ProblemList problems = getProblems(user, course); 
+		
+		// Write assignments file
+		writeAssignmentsFile(problems);
+		
+		// Write assignment files
+		for (Problem p : problems.getProblemList()) {
+			writeAssignmentFile(p);
+		}
+	}
+
+	private void writeTaggedFile(Writer w, Map<String, Object> props) throws IOException {
+		for (Map.Entry<String, Object> entry : props.entrySet()) {
+			String tagname = entry.getKey();
+			Object value = entry.getValue();
+			
+			String line = encodeLine(tagname, value);
+			w.write(line);
+			w.write("\n");
+		}
+	}
+
+	// Encode a line consisting of a tagname and a value
+	private String encodeLine(String tagname, Object value) throws IOException {
+		StringWriter sw = new StringWriter();
+		JsonFactory factory = new JsonFactory();
+		JsonGenerator jg = factory.createGenerator(sw);
+		jg.writeStartObject();
+		jg.writeStringField("tag", tagname);
+		jg.writeFieldName("value");
+		writeJsonFieldValue(jg, value);
+		jg.writeEndObject();
+		jg.close();
+		return sw.toString();
+	}
+
+	private Writer writeToFile(File out) throws FileNotFoundException {
+		return new BufferedWriter(new OutputStreamWriter(
+				new FileOutputStream(out), Charset.forName("UTF-8")));
+	}
+
+	private void writeJsonFieldValue(JsonGenerator jg, Object value) throws IOException {
+		if (value instanceof String) {
+			jg.writeString((String)value);
+		} else if (value instanceof Integer) {
+			jg.writeNumber(((Integer)value).intValue());
+		} else if (value instanceof Long) {
+			jg.writeNumber(((Long)value).longValue());
+		} else if (value instanceof Double) {
+			jg.writeNumber(((Double)value).doubleValue());
+		} else if (value instanceof Map) {
+			jg.writeStartObject();
+			for (Map.Entry<?,?> entry : ((Map<?, ?>)value).entrySet()) {
+				jg.writeFieldName(entry.getKey().toString());
+				writeJsonFieldValue(jg, entry.getValue());
+			}
+			jg.writeEndObject();
+		} else if (value instanceof Boolean) {
+			jg.writeBoolean(((Boolean)value).booleanValue());
+		} else {
+			throw new IllegalArgumentException("Don't know how to encode " + value.getClass().getSimpleName() + " as JSON value");
+		}
+	}
+
+	private User findUser(String username) {
+		IDatabase db = Database.getInstance();
+		return db.getUserWithoutAuthentication(username);
+	}
+	
+	private Course findCourse(User user, int courseId) {
+		IDatabase db = Database.getInstance();
+		List<? extends Object[]> courses = db.getCoursesForUser(user);
+		for (Object[] triple : courses) {
+			Course course = (Course) triple[0];
+			if (course.getId() == courseId) {
+				return course;
+			}
+		}
+		throw new IllegalArgumentException("Could not find course " + courseId + " for user " + user.getUsername());
+	}
+
+	private ProblemList getProblems(User user, Course course) {
+		IDatabase db = Database.getInstance();
+		
+		return db.getProblemsInCourse(user, course);
+	}
+
+	private void writeAssignmentsFile(ProblemList problems) throws IOException {
+		Writer w = writeToFile(new File(baseDir, "/assignments.txt"));
+		try {
+			for (Problem p : problems.getProblemList()) {
+				int problemId = p.getProblemId();
+				Map<String, Object> obj = new LinkedHashMap<>();
+				String path = String.format("/assignment_%04d.txt", problemId);
+				obj.put("number", problemId);
+				obj.put("path", path);
+				String line = encodeLine("assignment", obj);
+				w.write(line);
+				w.write("\n");
+			}
+		} finally {
+			IOUtils.closeQuietly(w);
+		}
+	}
+
+	private void writeAssignmentFile(Problem p) throws IOException {
+		IDatabase db = Database.getInstance();
+		
+		Writer w = writeToFile(new File(baseDir, String.format("/assignment_%04d.txt", p.getProblemId())));
+		
+		try {
+			Map<String, Object> assignmentProps = new LinkedHashMap<>();
+			// name
+			// language
+			// assigned
+			// due
+			assignmentProps.put("name", p.toNiceString());
+			assignmentProps.put("language", p.getProblemType().getLanguage().getName());
+			assignmentProps.put("assigned", p.getWhenAssigned());
+			assignmentProps.put("due", p.getWhenDue());
+			writeTaggedFile(w, assignmentProps);
+			
+			List<TestCase> tests = db.getTestCasesForProblem(p.getProblemId());
+			int count = 0;
+			for (TestCase t : tests) {
+				Map<String, Object> test = new LinkedHashMap<>();
+				// number
+				// name
+				// input
+				// output
+				// opaque
+				// invisible
+				test.put("number", count++);
+				test.put("name", t.getTestCaseName());
+				test.put("input", t.getInput());
+				test.put("output", t.getOutput());
+				test.put("opaque", t.isSecret());
+				test.put("invisible", false);
+				String line = encodeLine("test", test);
+				w.write(line);
+				w.write("\n");
+			}
+		} finally {
+			IOUtils.closeQuietly(w);
+		}
+	}
+	
 	public static void main(String[] args) throws IOException {
+		ProgsnapExport exporter = new ProgsnapExport();
+		
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 		
@@ -75,15 +270,16 @@ public class ProgsnapExport {
 		} else {
 			Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
 		}
-		Util.connectToDatabase(config);
+		exporter.setConfig(config);
 		
 		int courseId = Integer.parseInt(Util.ask(keyboard, "Course id: "));
+		exporter.setCourseId(courseId);
 		
 		String username = Util.ask(keyboard, "Instructor username: ");
-		User user = findUser(username);
-		Course course = findCourse(user, courseId);
+		exporter.setUsername(username);
 		
 		File baseDir = new File(Util.ask(keyboard, "Output directory: "));
+		exporter.setBaseDir(baseDir);
 		
 		System.out.println("Enter data set properties:");
 		Map<String, Object> datasetProps = new LinkedHashMap<>();
@@ -92,114 +288,8 @@ public class ProgsnapExport {
 		datasetProps.put("contact", Util.ask(keyboard, "Contact name: "));
 		datasetProps.put("email", Util.ask(keyboard, "Contact email: "));
 		datasetProps.put("courseurl", Util.ask(keyboard, "Course URL: "));
+		exporter.setDatasetProps(datasetProps);
 		
-		// Write dataset file
-		writeTaggedFile(baseDir, "/dataset.txt", datasetProps);
-		
-		// Gather problems
-		ProblemList problems = getProblems(user, course); 
-		
-		// Write assignments file
-		writeAssignmentsFile(baseDir, problems);
-		
-		// Write assignment files
-	}
-
-	private static void writeTaggedFile(File baseDir, String path, Map<String, Object> props) throws IOException {
-		baseDir.mkdirs();
-		File out = new File(baseDir.getPath() + path);
-		Writer w = writeToFile(out);
-		try {
-			for (Map.Entry<String, Object> entry : props.entrySet()) {
-				String tagname = entry.getKey();
-				Object value = entry.getValue();
-				
-				String line = encodeLine(tagname, value);
-				w.write(line);
-				w.write("\n");
-			}
-		} finally {
-			IOUtils.closeQuietly(w);
-		}
-	}
-
-	// Encode a line consisting of a tagname and a value
-	private static String encodeLine(String tagname, Object value) throws IOException {
-		StringWriter sw = new StringWriter();
-		JsonFactory factory = new JsonFactory();
-		JsonGenerator jg = factory.createGenerator(sw);
-		jg.writeStartObject();
-		jg.writeStringField("tag", tagname);
-		jg.writeFieldName("value");
-		writeJsonFieldValue(jg, value);
-		jg.writeEndObject();
-		jg.close();
-		return sw.toString();
-	}
-
-	private static Writer writeToFile(File out) throws FileNotFoundException {
-		return new BufferedWriter(new OutputStreamWriter(
-				new FileOutputStream(out), Charset.forName("UTF-8")));
-	}
-
-	private static void writeJsonFieldValue(JsonGenerator jg, Object value) throws IOException {
-		if (value instanceof String) {
-			jg.writeString((String)value);
-		} else if (value instanceof Integer) {
-			jg.writeNumber(((Integer)value).intValue());
-		} else if (value instanceof Long) {
-			jg.writeNumber(((Long)value).longValue());
-		} else if (value instanceof Double) {
-			jg.writeNumber(((Double)value).doubleValue());
-		} else if (value instanceof Map) {
-			jg.writeStartObject();
-			for (Map.Entry<?,?> entry : ((Map<?, ?>)value).entrySet()) {
-				jg.writeFieldName(entry.getKey().toString());
-				writeJsonFieldValue(jg, entry.getValue());
-			}
-			jg.writeEndObject();
-		}
-	}
-
-	private static User findUser(String username) {
-		IDatabase db = Database.getInstance();
-		return db.getUserWithoutAuthentication(username);
-	}
-	
-	private static Course findCourse(User user, int courseId) {
-		IDatabase db = Database.getInstance();
-		List<? extends Object[]> courses = db.getCoursesForUser(user);
-		for (Object[] triple : courses) {
-			Course course = (Course) triple[0];
-			if (course.getId() == courseId) {
-				return course;
-			}
-		}
-		throw new IllegalArgumentException("Could not find course " + courseId + " for user " + user.getUsername());
-	}
-
-	private static ProblemList getProblems(User user, Course course) {
-		IDatabase db = Database.getInstance();
-		
-		return db.getProblemsInCourse(user, course);
-	}
-
-	private static void writeAssignmentsFile(File baseDir, ProblemList problems) throws IOException {
-		baseDir.mkdirs();
-		Writer w = writeToFile(new File(baseDir, "/assignments.txt"));
-		try {
-			for (Problem p : problems.getProblemList()) {
-				int problemId = p.getProblemId();
-				Map<String, Object> obj = new LinkedHashMap<>();
-				String path = String.format("/assignment_%04d.txt", problemId);
-				obj.put("num", problemId);
-				obj.put("path", path);
-				String line = encodeLine("assignment", obj);
-				w.write(line);
-				w.write("\n");
-			}
-		} finally {
-			IOUtils.closeQuietly(w);
-		}
+		exporter.execute();
 	}
 }
