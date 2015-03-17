@@ -306,6 +306,7 @@
 	border: 3px solid black;
 }
 
+
 /* Styles for exercises summary items: these correspond to SubmissionStatus enumeration members. */
 .cc-exerciseNotStarted { background: gray; }
 .cc-exerciseStarted { background: silver; }
@@ -313,6 +314,29 @@
 .cc-exerciseCompileError { background: orange; }
 .cc-exerciseBuildError { background: black; }
 .cc-exerciseTestsFailed { background: #ff2222; }
+
+
+/**
+*AchievementSummaryItem styles
+*/
+.cc-achievementSummary{
+}
+
+/*Basic style for an achievement summary item that has been earned by the user. */
+.cc-achievementSummaryItem{
+	width: 40px;
+	height: 40px;
+	display: inline-block;
+	margin: 2px 2px;
+	border: 3px solid transparent;
+}
+
+.cc-achievementSummaryItem:hover{
+	border: 3px solid black;
+}
+
+.cc-achievementNotEarned{ opacity:0.5; }
+.cc-achievementEarned{ opacity: 1.0; }
 
 /**
  * Increase the z-index for date box popups so that they

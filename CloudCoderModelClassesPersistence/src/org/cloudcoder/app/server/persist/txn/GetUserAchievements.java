@@ -26,34 +26,11 @@ public class GetUserAchievements extends AbstractDatabaseRunnableNoAuthException
 
 	@Override
 	public UserAchievementAndAchievement[] run(Connection conn) throws SQLException {
-		ArrayList<UserAchievementAndAchievement> result = new ArrayList<UserAchievementAndAchievement>();
-
 		// TODO: implement this with an actual database query!
 		// Should be a select that joins on the cc_user_achievements and cc_achievements tables
 		
-		/*
-		PreparedStatement stmt = prepareStatement(" TODO - SQL stuff ");
-		
-		stmt.setInt(something, user.getId());
-		stmt.setInt(somethingElse, course.getId());
-		
-		ResultSet resultSet = executeQuery(stmt);
-		
-		while (resultSet.next()) {
-			UserAchievement u = new UserAchievement();
-			int index = 1;
-			index = DBUtil.loadModelObjectFields(u, u.getSchema(), resultSet, index);
-			Achievement a = new Achievement();
-			index = DBUtil.loadModelObjectFields(a, a.getSchema(), resultSet, index);
-			
-			UserAchievementAndAchievement uaa = new UserAchievementAndAchievement();
-			uaa.setUserAchievement(u);
-			uaa.setAchievement(a);
-			result.add(uaa);
-		}
-		 */
-		
-		return result.toArray(new UserAchievementAndAchievement[result.size()]);
+		//return result.toArray(new UserAchievementAndAchievement[result.size()]);
+		return Queries.doGetAchievementsForUser(user, course, conn, this);
 	}
 
 }

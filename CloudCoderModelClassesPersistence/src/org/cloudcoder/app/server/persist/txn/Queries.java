@@ -30,6 +30,7 @@ import java.util.Scanner;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.shared.model.Achievement;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.Course;
@@ -54,6 +55,8 @@ import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAchievement;
+import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 
 /**
@@ -187,7 +190,43 @@ public class Queries {
 		change.setEvent(event);
 		return change;
 	}
-
+	public static UserAchievementAndAchievement[] doGetAchievementsForUser(
+			User user,
+			Course course,
+			Connection conn,
+			AbstractDatabaseRunnable<?> databaseRunnable) throws SQLException {
+		ArrayList<UserAchievementAndAchievement> result = new ArrayList<UserAchievementAndAchievement>();
+		
+		
+		PreparedStatement stmt = databaseRunnable.prepareStatement(
+			conn,
+			" select u.*, a.* from cc_user_achievements as u, cc_achievements as a " +
+			" where a.id = u.achievement_id " +
+			"   and u.user_id = ? " +
+			"   and a.course_id = ?"
+			);
+		
+		stmt.setInt(1, user.getId());
+		stmt.setInt(2, course.getId());
+		
+		ResultSet resultSet = databaseRunnable.executeQuery(stmt);
+		
+		while (resultSet.next()) {
+			UserAchievement u = new UserAchievement();
+			int index = 1;
+			index = DBUtil.loadModelObjectFields(u, u.getSchema(), resultSet, index);
+			Achievement a = new Achievement();
+			index = DBUtil.loadModelObjectFields(a, a.getSchema(), resultSet, index);
+			
+			UserAchievementAndAchievement uaa = new UserAchievementAndAchievement();
+			uaa.setUserAchievement(u);
+			uaa.setAchievement(a);
+			result.add(uaa);
+		}
+		 
+		
+		return result.toArray(new UserAchievementAndAchievement[result.size()]);
+	}
 	public static List<? extends Object[]> doGetCoursesForUser(
 			final User user,
 			Connection conn,

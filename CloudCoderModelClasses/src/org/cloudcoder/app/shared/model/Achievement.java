@@ -13,6 +13,7 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	private int id;
 	private int courseId;
 	private int achievementImageId;
+	private String title;
 	
 	public static final ModelObjectField<? super Achievement, Integer> ID = new ModelObjectField<Achievement, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY){
 		public void set(Achievement obj, Integer value) {obj.setId(value); }
@@ -30,13 +31,19 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 		public Integer get(Achievement obj) {return obj.getAchievementImageId(); }
 	};
 	
+	public static final ModelObjectField<? super Achievement, String> TITLE = new ModelObjectField<Achievement, String>("title", String.class, 20, ModelObjectIndexType.NONE){
+		public void set(Achievement obj, String value) {obj.setAchievementTitle(value);}
+		public String get(Achievement obj, String value) {return obj.getAchievementTitle(); }
+	};
+	
 	/**
 	 * Description of fields (schema version 0).
 	 */
 	public static final ModelObjectSchema<Achievement> SCHEMA_V0 = new ModelObjectSchema<Achievement>("achievement")
 		.add(ID)
 		.add(COURSEID)
-		.add(ACHIEVEMENTIMAGEID);
+		.add(ACHIEVEMENTIMAGEID)
+		.add(TITLE);
 	
 	public static final ModelObjectSchema<Achievement> SCHEMA = SCHEMA_V0;
 	
@@ -44,6 +51,7 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 		
 	}
 	
+
 	@Override
 	public ModelObjectSchema<? super Achievement> getSchema() {
 		return SCHEMA;
@@ -96,6 +104,15 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	public int getAchievementImageId(){
 		return achievementImageId;
 	}
+	
+	protected void setAchievementTitle(String value) {
+		this.title = value;
+	}
+
+	protected String getAchievementTitle() {
+		return title;
+	}
+
 
 	
 }
