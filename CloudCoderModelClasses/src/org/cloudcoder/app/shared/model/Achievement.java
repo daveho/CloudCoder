@@ -33,7 +33,7 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 	
 	public static final ModelObjectField<? super Achievement, String> TITLE = new ModelObjectField<Achievement, String>("title", String.class, 20, ModelObjectIndexType.NONE){
 		public void set(Achievement obj, String value) {obj.setAchievementTitle(value);}
-		public String get(Achievement obj, String value) {return obj.getAchievementTitle(); }
+		public String get(Achievement obj) {return obj.getAchievementTitle(); }
 	};
 	
 	/**
