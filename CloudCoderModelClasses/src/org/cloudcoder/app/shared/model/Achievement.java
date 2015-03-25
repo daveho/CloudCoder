@@ -105,11 +105,11 @@ public class Achievement implements Serializable, IModelObject<Achievement> {
 		return achievementImageId;
 	}
 	
-	protected void setAchievementTitle(String value) {
+	public void setAchievementTitle(String value) {
 		this.title = value;
 	}
 
-	protected String getAchievementTitle() {
+	public String getAchievementTitle() {
 		return title;
 	}
 

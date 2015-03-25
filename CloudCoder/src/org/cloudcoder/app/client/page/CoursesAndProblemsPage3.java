@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.client.view.UserAccountView2;
+import org.cloudcoder.app.client.view.UserAchievementSummaryView;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
@@ -77,6 +78,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
+		private UserAchievementSummaryView userAchievementSummaryView;
 		private ProblemListView3 exerciseList;
 		private UserAccountView2 userAccountView;
 		private Button manageExercisesButton;
@@ -152,14 +154,22 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			SplitLayoutPanel center = new SplitLayoutPanel();
 			LayoutPanel south = new LayoutPanel();
 			double southTop = 10.0;
+			
+			this.userAchievementSummaryView = new UserAchievementSummaryView(CoursesAndProblemsPage3.this);
+			south.add(userAchievementSummaryView);
+			south.setWidgetLeftRight(userAchievementSummaryView, 0.0, Unit.PX, 0.0, Unit.PX);
+			south.setWidgetTopHeight(userAchievementSummaryView, southTop + 10, Unit.PX, UserAchievementSummaryView.HEIGHT_PX, Unit.PX);
+			//we need a different view for this page
+
 			SectionLabel progressSummaryLabel = new SectionLabel("Progress summary");
 			south.add(progressSummaryLabel);
 			south.setWidgetLeftRight(progressSummaryLabel, 0.0, Unit.PX, 0.0, Unit.PX);
-			south.setWidgetTopHeight(progressSummaryLabel, southTop+0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
+			south.setWidgetTopHeight(progressSummaryLabel, southTop+UserAchievementSummaryView.HEIGHT_PX, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
+			
 			this.progressSummaryView = new ExerciseSummaryView();
 			south.add(progressSummaryView);
 			south.setWidgetLeftRight(progressSummaryView, 0.0, Unit.PX, 0.0, Unit.PX);
-			south.setWidgetTopBottom(progressSummaryView, southTop+SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
+			south.setWidgetTopBottom(progressSummaryView, southTop+UserAchievementSummaryView.HEIGHT_PX+SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
 			center.addSouth(south, PROGRESS_SUMMARY_HEIGHT_PX);
 			LayoutPanel top = new LayoutPanel();
 			SectionLabel exercisesLabel = new SectionLabel("Exercises");
@@ -269,6 +279,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			statusMessageView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			progressSummaryView.activate(session, subscriptionRegistrar);
+			userAchievementSummaryView.activate(session, subscriptionRegistrar);
 			exerciseList.activate(session, subscriptionRegistrar);
 			userAccountView.activate(session, subscriptionRegistrar);
 

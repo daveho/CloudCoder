@@ -18,13 +18,19 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.client.page.SessionUtil;
+import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
+import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -36,6 +42,8 @@ import com.google.gwt.user.client.ui.ScrollPanel;
  *
  */
 public class UserAchievementSummaryView extends Composite implements Subscriber, SessionObserver{
+	public static final double HEIGHT_PX = 48.0;
+	private CloudCoderPage page;
 	private Session session;
 	private FlowPanel flowPanel;
 	private ICallback<UserAchievementSummaryItem> clickHandler;
@@ -43,11 +51,12 @@ public class UserAchievementSummaryView extends Composite implements Subscriber,
 	/**
 	 * Constructor.
 	 */
-	public UserAchievementSummaryView() {
+	public UserAchievementSummaryView(CloudCoderPage page) {
 		// This widget is basically a div containing AchievementSummaryItems
 		this.flowPanel = new FlowPanel();
-		//flowPanel.setStyleName("cc-exerciseSummary", true);
-
+		
+		flowPanel.setStyleName("cc-achievementSummary", true);
+		
 		// Allow it to scroll
 		ScrollPanel wrap = new ScrollPanel();
 		wrap.add(flowPanel);
@@ -66,7 +75,11 @@ public class UserAchievementSummaryView extends Composite implements Subscriber,
 	protected void handleItemClick(UserAchievementSummaryItem value) {
 		// Add the Problem to the session (to select the problem)
 		//ProblemAndSubmissionReceipt p = value.getProblemAndSubmissionReceipt();
-		//session.add(p.getProblem());
+		
+		//TODO: add the achievement item to the session
+		UserAchievementAndAchievement ua = value.getUserAchievementAndAchievement();
+		
+		session.add(ua.getAchievement());
 	}
 
 	@Override
@@ -75,41 +88,61 @@ public class UserAchievementSummaryView extends Composite implements Subscriber,
 		this.session = session;
 		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts = session.get(ProblemAndSubmissionReceipt[].class);
-		if (problemAndSubmissionReceipts != null) {
-			//loadData(problemAndSubmissionReceipts);
+		UserAchievementAndAchievement[] achievements = session.get(UserAchievementAndAchievement[].class);
+		if (achievements != null) {
+			// We already have some achievements - display them
+			loadData(achievements);
+		} else {
+			// Initiate loading of user achievements
+			GWT.log("Initial loading of user achievements...");
+			doLoadUserAchievementAndAchievementList();
 		}
 	}
 
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		//if (key == Session.Event.ADDED_OBJECT && hint instanceof ProblemAndSubmissionReceipt[]) {
-		//	loadData((ProblemAndSubmissionReceipt[]) hint);
-		//}
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof UserAchievementAndAchievement[]) {
+			GWT.log("User events added: " + ((UserAchievementAndAchievement[])hint).length);
+			loadData((UserAchievementAndAchievement[]) hint);
+		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+			// Course selection has changed - load user achievements for the course
+			GWT.log("Course selection changed, loading user achievements...");
+			doLoadUserAchievementAndAchievementList();
+		}
+	}
+
+	private void doLoadUserAchievementAndAchievementList() {
+		CourseSelection sel = session.get(CourseSelection.class);
+		if (sel != null) {
+			SessionUtil.loadUserAchievementAndAchievementList(page, sel);
+		}
 	}
 
 	/**
 	 * @param problemAndSubmissionReceipts
 	 */
-/*	private void loadData(ProblemAndSubmissionReceipt[] problemAndSubmissionReceipts) {
+	private void loadData(UserAchievementAndAchievement[] userAchievementAndAchievements) {
+		GWT.log("Adding " + userAchievementAndAchievements.length + " to achievement summary view");
+		
 		// clear current data, load new data
 		flowPanel.clear();
 		
 		// Sort by due date
-		ProblemAndSubmissionReceipt[] list = new ProblemAndSubmissionReceipt[problemAndSubmissionReceipts.length]; //problemAndSubmissionReceipts.clone();
-		System.arraycopy(problemAndSubmissionReceipts, 0, list, 0, problemAndSubmissionReceipts.length);
-		ViewUtil.sortProblemsByDueDate(list);
+		//ProblemAndSubmissionReceipt[] list = new ProblemAndSubmissionReceipt[problemAndSubmissionReceipts.length]; //problemAndSubmissionReceipts.clone();
+		//System.arraycopy(problemAndSubmissionReceipts, 0, list, 0, problemAndSubmissionReceipts.length);
+		//ViewUtil.sortProblemsByDueDate(list);
 		
 		//loop through the problem and submission receipts,
 		//create exerciseSummaryItem for each, and set each box's status (completed, failed, etc)
 		
-		for (ProblemAndSubmissionReceipt item : list){
+		
+		for (UserAchievementAndAchievement item : userAchievementAndAchievements){
 			// Create ExerciseSummaryItem
-			ExerciseSummaryItem summaryItem = new ExerciseSummaryItem();
-			summaryItem.setProblemAndSubmissionReceipt(item);
+			UserAchievementSummaryItem summaryItem = new UserAchievementSummaryItem();
+			summaryItem.setUserAchievementAndAchievement(item);
 			summaryItem.setClickHandler(clickHandler);
 			flowPanel.add(summaryItem);
 		}
 	}
-	*/
+
 }

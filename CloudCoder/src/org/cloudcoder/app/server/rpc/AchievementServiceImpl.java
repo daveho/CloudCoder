@@ -24,6 +24,8 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -31,6 +33,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  * @author David Hovemeyer
  */
 public class AchievementServiceImpl extends RemoteServiceServlet implements AchievementService {
+	private static final Logger logger = LoggerFactory.getLogger(AchievementServiceImpl.class);
+	
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -38,9 +42,13 @@ public class AchievementServiceImpl extends RemoteServiceServlet implements Achi
 		User currentUser =
 				ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), AchievementServiceImpl.class);
 		
+		logger.info("Getting user achivements for user={}, course={}", currentUser.getId(), course.getId());
+		
 		IDatabase db = Database.getInstance();
 
-		return db.getUserAchievements(currentUser, course);
+		UserAchievementAndAchievement[] result = db.getUserAchievements(currentUser, course);
+		logger.info("Retrieved {} user achievements", result.length);
+		return result;
 	}
 
 }

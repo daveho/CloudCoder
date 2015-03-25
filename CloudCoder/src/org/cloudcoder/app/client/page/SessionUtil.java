@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 
 import com.google.gwt.core.client.GWT;
@@ -225,6 +226,29 @@ public class SessionUtil {
 					GWT.log("Error loading courses", caught);
 					session.add(StatusMessage.error("Error loading courses", caught));
 				}
+			}
+		});
+	}
+	
+	public static void loadUserAchievementAndAchievementList(final CloudCoderPage page, final CourseSelection courseSel) {
+		RPC.achievementService.getUserAchievements(courseSel.getCourse(), new AsyncCallback<UserAchievementAndAchievement[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				if (caught instanceof CloudCoderAuthenticationException) {
+					page.recoverFromServerSessionTimeout(new Runnable() {
+						@Override
+						public void run() {
+							loadUserAchievementAndAchievementList(page, courseSel);
+						}
+					});
+				} else {
+					GWT.log("Error loading user achievements");
+					page.getSession().add(StatusMessage.error("Error loading user achievements", caught));
+				}
+			}
+			
+			public void onSuccess(UserAchievementAndAchievement[] result) {
+				page.getSession().add(result);
 			}
 		});
 	}

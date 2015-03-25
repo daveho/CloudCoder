@@ -22,6 +22,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
@@ -57,8 +58,6 @@ public class UserAchievementSummaryItem extends Composite {
 		final Image image = new Image();
 		// TODO: create and configure Image
 
-
-
 		ErrorHandler handler = new ErrorHandler(){
 			public void onError(ErrorEvent event){
 				label.setText("An error occurred while loading.");
@@ -66,7 +65,6 @@ public class UserAchievementSummaryItem extends Composite {
 		};
 		
 		image.addErrorHandler(handler);
-		image.setUrl("what's the URL?");
 		initWidget(image);
 	}
 
@@ -81,10 +79,10 @@ public class UserAchievementSummaryItem extends Composite {
 	 * set this item's UserAchievementAndAchievement
 	 * @param item
 	 */
-	public void setProblemAndSubmissionReceipt(UserAchievementAndAchievement item) {
+	public void setUserAchievementAndAchievement(UserAchievementAndAchievement item) {
 		this.userAchievementAndAchievement = item;
 		configureStyle();
-		//setTooltip(item.getAchievement().); FIXME: find the correct title for the achievement
+		setTooltip(item.getAchievement().getAchievementTitle()); 
 	}
 	
 	/**
@@ -121,7 +119,7 @@ public class UserAchievementSummaryItem extends Composite {
 	
 	private void configureStyle() {
 		
-		this.setStyleName("cc-achievementSummaryItem"); //WHY DON'T I NEED THE HTML FIELD?
+		this.setStyleName("cc-achievementSummaryItem"); 
 		
 		//find out if the user has earned the achievement
 		Boolean status = getStatus();
@@ -133,6 +131,7 @@ public class UserAchievementSummaryItem extends Composite {
 			this.setStyleName("cc-achievementEarned");
 		}
 		
+		image.setUrl(GWT.getModuleBaseURL() + "/aimg/" + userAchievementAndAchievement.getAchievement().getAchievementImageId());
 	}
 	
 	private void setTooltip(String tooltip) {
