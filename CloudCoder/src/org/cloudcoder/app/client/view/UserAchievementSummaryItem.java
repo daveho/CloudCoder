@@ -42,7 +42,7 @@ public class UserAchievementSummaryItem extends Composite {
 	private UserAchievementAndAchievement userAchievementAndAchievement;
 	private ICallback<UserAchievementSummaryItem> clickHandler;
 	private Image image;
-	private Label label;
+//	private Label label;
 	
 	public UserAchievementSummaryItem(){
 //		this.html = new HTML("<span></span>");
@@ -55,16 +55,24 @@ public class UserAchievementSummaryItem extends Composite {
 //		configureStyle(); // Just set a default style
 //		initWidget(html);
 		
-		final Image image = new Image();
+		image = new Image();
 		// TODO: create and configure Image
 
-		ErrorHandler handler = new ErrorHandler(){
-			public void onError(ErrorEvent event){
-				label.setText("An error occurred while loading.");
-			}
-		};
+//		ErrorHandler handler = new ErrorHandler(){
+//			public void onError(ErrorEvent event){
+//				label.setText("An error occurred while loading.");
+//			}
+//		};
+//		
+//		image.addErrorHandler(handler);
 		
-		image.addErrorHandler(handler);
+		image.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				onClickEvent();
+			}
+		});
+		
 		initWidget(image);
 	}
 
@@ -131,7 +139,8 @@ public class UserAchievementSummaryItem extends Composite {
 			this.setStyleName("cc-achievementEarned");
 		}
 		
-		image.setUrl(GWT.getModuleBaseURL() + "/aimg/" + userAchievementAndAchievement.getAchievement().getAchievementImageId());
+		// FIXME: why is the "../" necessary?
+		image.setUrl(GWT.getModuleBaseURL() + "../aimg/" + userAchievementAndAchievement.getAchievement().getAchievementImageId());
 	}
 	
 	private void setTooltip(String tooltip) {

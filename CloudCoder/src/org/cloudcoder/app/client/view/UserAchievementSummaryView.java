@@ -23,9 +23,7 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.page.SessionUtil;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
-import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserAchievementAndAchievement;
-import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -114,7 +112,7 @@ public class UserAchievementSummaryView extends Composite implements Subscriber,
 	private void doLoadUserAchievementAndAchievementList() {
 		CourseSelection sel = session.get(CourseSelection.class);
 		if (sel != null) {
-			SessionUtil.loadUserAchievementAndAchievementList(page, sel);
+			SessionUtil.loadUserAchievementAndAchievementList(page, session, sel);
 		}
 	}
 

@@ -230,7 +230,10 @@ public class SessionUtil {
 		});
 	}
 	
-	public static void loadUserAchievementAndAchievementList(final CloudCoderPage page, final CourseSelection courseSel) {
+	public static void loadUserAchievementAndAchievementList(
+			final CloudCoderPage page,
+			final Session session,
+			final CourseSelection courseSel) {
 		RPC.achievementService.getUserAchievements(courseSel.getCourse(), new AsyncCallback<UserAchievementAndAchievement[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -238,7 +241,7 @@ public class SessionUtil {
 					page.recoverFromServerSessionTimeout(new Runnable() {
 						@Override
 						public void run() {
-							loadUserAchievementAndAchievementList(page, courseSel);
+							loadUserAchievementAndAchievementList(page, session, courseSel);
 						}
 					});
 				} else {
@@ -248,7 +251,12 @@ public class SessionUtil {
 			}
 			
 			public void onSuccess(UserAchievementAndAchievement[] result) {
-				page.getSession().add(result);
+				GWT.log("Received " + result.length + " user achievements, adding to session");
+				
+				// Why doesn't this work?
+				//page.getSession().add(result);
+				
+				session.add(result);
 			}
 		});
 	}
