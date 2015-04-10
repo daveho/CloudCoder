@@ -1,0 +1,17 @@
+<Project projectName="CloudCoderBuilder">
+  <Jar>./bin</Jar>
+  <AuxClasspathEntry>./lib/commons-io-2.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./lib/daemon-0.7.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./lib/jruby-complete-1.7.0.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./lib/jython-standalone-2.5.3.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClasses/cloudcoderModelClasses.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/commons-io-2.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/log4j-1.2.16.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/slf4j-api-1.6.4.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesJSON/lib/jackson-annotations-2.4.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesJSON/lib/jackson-core-2.4.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesJSON/lib/jackson-databind-2.4.1.jar</AuxClasspathEntry>
+  <SrcDir>./src</SrcDir>
+</Project>

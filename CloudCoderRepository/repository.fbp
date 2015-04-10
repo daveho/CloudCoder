@@ -1,0 +1,21 @@
+<Project projectName="CloudCoderRepository">
+  <Jar>./war/WEB-INF/classes</Jar>
+  <AuxClasspathEntry>./war/WEB-INF/lib/c3p0-0.9.2.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/jackson-annotations-2.4.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/jackson-core-2.4.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/jackson-databind-2.4.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/json-simple-1.1.1.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/mail.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>./war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderJetty/lib/jetty/servlet-api-2.5.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClasses/cloudcoderModelClasses.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesJSON/cloudcoderModelClassesJSON.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderModelClassesPersistence/cloudcoderModelClassesPersist.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderJetty/lib/jetty/jsp/javax.servlet.jsp_2.1.0.v201004190952.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderJetty/lib/owasp/owasp-java-html-sanitizer.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderWebServiceUtil/cloudcoderWebServiceUtil.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/guava.jar</AuxClasspathEntry>
+  <AuxClasspathEntry>../CloudCoderLogging/lib/slf4j-api-1.6.4.jar</AuxClasspathEntry>
+  <SrcDir>./src</SrcDir>
+</Project>
