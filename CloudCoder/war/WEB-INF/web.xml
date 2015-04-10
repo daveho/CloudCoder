@@ -197,6 +197,16 @@
     <servlet-name>DisplayAchievementImage</servlet-name>
     <url-pattern>/aimg/*</url-pattern>
   </servlet-mapping>
+  
+  <!-- UploadAchievementImage servlet. -->
+  <servlet>
+    <servlet-name>UploadAchievementImage</servlet-name>
+    <servlet-class>org.cloudcoder.app.server.servlet.UploadAchievementImage</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UploadAchievementImage</servlet-name>
+    <url-pattern>/aimgUpload/*)</url-pattern>
+  </servlet-mapping>
 
   <!-- Register students servlet. -->  
   <servlet>

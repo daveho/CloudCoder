@@ -25,6 +25,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="srclib/gwt-traction-1.5.8.jar"/>
+	<classpathentry kind="lib" path="srclib/gwtupload-1.0.3.jar" sourcepath="srclib/gwtupload-1.0.3.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>

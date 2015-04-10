@@ -27,15 +27,13 @@
   <!-- Use UTCDateBox and UTCTimeBox from gwt-traction -->
   <inherits name='com.tractionsoftware.gwt.user.UTCDateTime'/>
   
+  <!-- Use GWTUpload -->
+  <inherits name="gwtupload.GWTUpload"/>
+  
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.cloudcoder.app.client.CloudCoder'/>
 
   <!-- Specify the paths for translatable code                    -->
   <source path='client'/>
   <source path='shared'/>
-  
-  <!-- Super dev mode -->
-  <!-- <add-linker name="xsiframe" /> -->
-  <!-- <set-configuration-property name="devModeRedirectEnabled" value="true"/> --><!-- FIXME: dangerous for production! -->
-  <!-- <set-property name="compiler.useSourceMaps" value="true" /> -->
 </module>

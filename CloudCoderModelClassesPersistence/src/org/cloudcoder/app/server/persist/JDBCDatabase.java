@@ -86,6 +86,7 @@ import org.cloudcoder.app.server.persist.txn.RetrieveSnapshots;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
 import org.cloudcoder.app.server.persist.txn.SetProblemDates;
+import org.cloudcoder.app.server.persist.txn.StoreAchievementImage;
 import org.cloudcoder.app.server.persist.txn.StoreChanges;
 import org.cloudcoder.app.server.persist.txn.StoreProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
@@ -522,6 +523,11 @@ public class JDBCDatabase implements IDatabase {
 		return databaseRun(new GetUserAchievements(currentUser, course));
 	}
 
+	@Override
+	public void storeAchievementImage(AchievementImage achievementImage) {
+		databaseRun(new StoreAchievementImage(achievementImage));
+	}
+	
 	/**
 	 * Run a database transaction and return the result.
 	 * This method is for transactions that extend {@link AbstractDatabaseRunnableNoAuthException}

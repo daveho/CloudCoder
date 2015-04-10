@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.AchievementImage;
 import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
@@ -730,6 +728,13 @@ public interface IDatabase {
 	 * @return the {@link AchievementImage}, or null if no image with that id exists
 	 */
 	public AchievementImage findAchievementImage(int achievementImageId);
+
+	/**
+	 * Store an {@link AchievementImage}.
+	 * 
+	 * @param achievementImage the {@link AchievementImage} to store
+	 */
+	public void storeAchievementImage(AchievementImage achievementImage);
 
 	/**
 	 * Get all of the {@link UserAchievementAndAchievement}s summarizing the
