@@ -137,6 +137,9 @@ http://repo1.maven.org/maven2/com/mchange/mchange-commons-java/0.2.3.4/mchange-c
 http://central.maven.org/maven2/com/tractionsoftware/gwt-traction/1.5.8/gwt-traction-1.5.8.jar
   CloudCoder/srclib/gwt-traction-1.5.8.jar
 
+http://repo1.maven.org/maven2/com/googlecode/gwtupload/gwtupload/1.0.3/gwtupload-1.0.3.jar
+  CloudCoder/srclib/gwtupload-1.0.3.jar
+
 #
 # Misc. libs for CloudCoderAnalysis
 #
