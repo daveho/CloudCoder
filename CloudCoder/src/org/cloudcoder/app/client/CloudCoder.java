@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -23,7 +23,6 @@ import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.client.page.CoursesAndProblemsPage2;
 import org.cloudcoder.app.client.page.CoursesAndProblemsPage3;
 import org.cloudcoder.app.client.page.DevelopmentPage;
 import org.cloudcoder.app.client.page.EditProblemPage;
@@ -174,7 +173,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 						changePage(page);
 					} else {
 						// Default behavior: navigate to the home page
-						changePage(new CoursesAndProblemsPage2());
+						changePage(new CoursesAndProblemsPage3());
 					}
 				}
 			}
@@ -271,7 +270,7 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			// This shouldn't happen (can't find page for Activity),
 			// but if it does, go to the courses and problems page.
 			GWT.log("Don't know what kind of page to create for " + pageId);
-			page = new CoursesAndProblemsPage2();
+			page = new CoursesAndProblemsPage3();
 			break;
 		}
 		return page;
