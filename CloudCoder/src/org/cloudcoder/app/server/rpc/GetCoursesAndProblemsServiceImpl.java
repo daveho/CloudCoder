@@ -581,9 +581,15 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 		// Make sure user is authenticated
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 		
-		// Make sure authenticated user is an instructor
+		// Make sure that either
+		//   (1) authenticated user is an instructor, or
+		//   (2) authenticated user is the user whose submission receipts
+		//       are being requested
 		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, problem.getCourseId());
-		if (!regList.isInstructor()) {
+		logger.info("User {} requesting submission receipts for user {}", authenticatedUser.getId(), user.getId());
+		if (!(regList.isInstructor() || authenticatedUser.getId() == user.getId())) {
+			// Authenticated user is not authorized to view submissions for
+			// requested user
 			return new SubmissionReceipt[0];
 		}
 		
