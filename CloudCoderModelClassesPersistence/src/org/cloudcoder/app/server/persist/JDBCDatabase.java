@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -75,6 +75,7 @@ import org.cloudcoder.app.server.persist.txn.ImportAllProblemsFromCourse;
 import org.cloudcoder.app.server.persist.txn.InsertProblem;
 import org.cloudcoder.app.server.persist.txn.InsertUsersFromInputStream;
 import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
+import org.cloudcoder.app.server.persist.txn.IsInstructorFor;
 import org.cloudcoder.app.server.persist.txn.LoadChanges;
 import org.cloudcoder.app.server.persist.txn.LoadChangesForAllUsersOnProblem;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
@@ -506,6 +507,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public List<Pair<Event, Change>> getEventsWithChanges(int userId, int problemId, int startEventId, int endEventId) {
 		return databaseRun(new GetEventsWithChanges(userId, problemId, startEventId, endEventId));
+	}
+	
+	@Override
+	public boolean isInstructorFor(User authenticatedUser, User editedUser) {
+		return databaseRun(new IsInstructorFor(authenticatedUser, editedUser));
 	}
 
 	/**

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
-import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.Anonymization;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
@@ -720,4 +718,15 @@ public interface IDatabase {
 	 */
 	public List<Pair<Event, Change>> getEventsWithChanges(int userId,
 			int problemId, int startEventId, int endEventId);
+
+	/**
+	 * Check whether the given authenticated (logged-in) user is an instructor
+	 * for a course in which the given (edited) user is registered.
+	 * 
+	 * @param authenticatedUser a logged-in user
+	 * @param editedUser        a user account being edited
+	 * @return true if the logged-in user is an instructor in a course in which
+	 *         the edited user is registered, false otherwise
+	 */
+	public boolean isInstructorFor(User authenticatedUser, User editedUser);
 }
