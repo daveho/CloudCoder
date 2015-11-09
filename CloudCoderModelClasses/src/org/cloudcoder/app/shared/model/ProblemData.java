@@ -159,7 +159,7 @@ public class ProblemData implements Serializable, IProblemData {
 	/**
 	 * Description of fields (version 0 schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V0 = new ModelObjectSchema<IProblemData>("problem_data", IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V0 = new ModelObjectSchema<IProblemData>("problem_data", ProblemData.class)
 		.add(PROBLEM_TYPE)
 		.add(TESTNAME)
 		.add(BRIEF_DESCRIPTION)
@@ -175,28 +175,28 @@ public class ProblemData implements Serializable, IProblemData {
 	/**
 	 * Description of fields (schema version 1).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0, ProblemData.class)
 		.addAfter(LICENSE, PARENT_HASH)
 		.finishDelta();
 	
 	/**
 	 * Description of fields (schema version 2).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V2 = ModelObjectSchema.basedOn(SCHEMA_V1, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V2 = ModelObjectSchema.basedOn(SCHEMA_V1, ProblemData.class)
 		.increaseFieldSize(SKELETON)
 		.finishDelta();
 	
 	/**
 	 * Description of fields (schema version 3).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V3 = ModelObjectSchema.basedOn(SCHEMA_V2, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V3 = ModelObjectSchema.basedOn(SCHEMA_V2, ProblemData.class)
 		.increaseFieldSize(DESCRIPTION_V3_V6)
 		.finishDelta();
 	
 	/**
 	 * Description of fields (schema version 4).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V4 = ModelObjectSchema.basedOn(SCHEMA_V3, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V4 = ModelObjectSchema.basedOn(SCHEMA_V3, ProblemData.class)
 		.addAfter(PARENT_HASH, EXTERNAL_LIBRARY_URL)
 		.addAfter(EXTERNAL_LIBRARY_URL, EXTERNAL_LIBRARY_MD5)
 		.finishDelta();
@@ -209,7 +209,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * (version 0 to version 1), and this needs to force a new
 	 * schema version for {@link Problem} and {@link RepoProblem}.
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V5 = ModelObjectSchema.basedOn(SCHEMA_V4, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V5 = ModelObjectSchema.basedOn(SCHEMA_V4, ProblemData.class)
 		.finishDelta();
 
 	/**
@@ -217,7 +217,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * The size of the description field is increasing from
 	 * 16K to 128K. 
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5, ProblemData.class)
 		.increaseFieldSize(DESCRIPTION)
 		.finishDelta();
 	
@@ -226,7 +226,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * No field changes, but new {@link ProblemType} members
 	 * have been added.
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6, IProblemData.class)
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6, ProblemData.class)
 		.finishDelta();
 
 	/**
