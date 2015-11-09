@@ -1,0 +1,6 @@
+root = true
+
+# Use 4 spaces per tab for Java files
+[*.java]
+indent_style = tab
+indent_size = 4
