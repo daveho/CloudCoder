@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -47,7 +47,7 @@ public class HealthData implements IModelObject<HealthData> {
 	/**
 	 * Model object fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<HealthData> SCHEMA_V0 = new ModelObjectSchema<HealthData>("healthdata")
+	public static final ModelObjectSchema<HealthData> SCHEMA_V0 = new ModelObjectSchema<HealthData>("healthdata", HealthData.class)
 			.add(SUBMISSION_QUEUE_SIZE_CURRENT)
 			.add(SUBMISSION_QUEUE_SIZE_MAX_LAST_FIVE_MINUTES)
 			.add(NUM_CONNECTED_BUILDER_THREADS);

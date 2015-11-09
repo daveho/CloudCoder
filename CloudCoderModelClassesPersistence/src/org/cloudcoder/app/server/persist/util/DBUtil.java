@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.cloudcoder.app.server.persist.NoSuchUniqueIdException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.IFactory;
@@ -468,7 +469,7 @@ public class DBUtil {
 	}
 
 	/**
-	 * Store an arbitrary model object in the database.
+	 * Store (insert) an arbitrary model object in the database.
 	 * 
 	 * @param conn      the Connection to the database
 	 * @param bean      the bean (model object) to store in the database
@@ -478,7 +479,7 @@ public class DBUtil {
 	}
 
 	/**
-	 * Store an arbitrary model object in the database.
+	 * Store (insert) an arbitrary model object in the database.
 	 * 
 	 * @param conn     the Connection to the database
 	 * @param bean     the bean (model) object to store in the database
@@ -572,6 +573,19 @@ public class DBUtil {
             closeQuietly(stmt);
         }
     }
+	
+	/**
+	 * Update a model object loaded from an database record,
+	 * based on the model object's unique id.
+	 * The model object schema <em>must</em> have a unique id field.
+	 * 
+	 * @param conn    the database connection
+	 * @param bean    the model object to update
+	 * @throws SQLException
+	 */
+	public static<E extends IModelObject<E>> void updateModelObject(Connection conn, E bean) throws SQLException {
+		updateModelObject(conn, bean, bean.getSchema());
+	}
 	
 	/**
 	 * Get the generated unique id(s) resulting from an insert statement,
@@ -941,7 +955,8 @@ public class DBUtil {
 	 * @param conn   connection to the database
 	 * @param obj    the object to load: the unique id must be set!
 	 * @param schema the object's schema
-	 * @throws SQLException if there is no such object in the database
+	 * @throws NoSuchUniqueIdException if there is no object with the specified unique id
+	 * @throws SQLException if the object can't be loaded
 	 */
 	public static<E> void loadModelObject(Connection conn, E obj, ModelObjectSchema<? super E> schema) throws SQLException {
 		PreparedStatement stmt = null;
@@ -957,7 +972,7 @@ public class DBUtil {
 			
 			resultSet = stmt.executeQuery();
 			if (!resultSet.next()) {
-				throw new SQLException("No object found with unique id " + uniqueId);
+				throw new NoSuchUniqueIdException("No object found with unique id " + uniqueId);
 			}
 			
 			loadModelObjectFields(obj, schema, resultSet);
@@ -972,10 +987,48 @@ public class DBUtil {
 	 * 
 	 * @param conn   connection to the database
 	 * @param obj    the object to load: the unique id must be set!
-	 * @throws SQLException if there is no such object in the database
+	 * @throws NoSuchUniqueIdException if there is no object with the specified unique id
+	 * @throws SQLException if the object can't be loaded
 	 */
 	public static<E extends IModelObject<E>> void loadModelObject(Connection conn, E obj) throws SQLException {
 		loadModelObject(conn, obj, obj.getSchema());
+	}
+	
+	/**
+	 * Load a model object given its schema, type, and (integer-valued) unique id.
+	 * 
+	 * @param conn    the database connection
+	 * @param schema  the {@link ModelObjectSchema} of the object to load
+	 * @param id      the unique id of the object to load
+	 * @return the loaded object
+	 * @throws NoSuchUniqueIdException if there is no object with the specified unique id
+	 * @throws SQLException if the object can't be loaded
+	 */
+	public static<E> E loadModelObjectForId(Connection conn, ModelObjectSchema<E> schema, int id) throws SQLException {
+		// Instantiate the object by reflection
+		E bean;
+		Class<? extends E> objType = schema.getType();
+		try {
+			bean = objType.newInstance();
+		} catch (Exception e) {
+			throw new SQLException("Could not instantiate " + objType.getSimpleName(), e);
+		}
+		
+		// Get the unique id field (which must be integer-valued)
+		ModelObjectField<? super E, ?> f_ = schema.getUniqueIdField();
+		if (f_.getType() != Integer.class) {
+			throw new SQLException("only integer ids are allowed");
+		}
+		@SuppressWarnings("unchecked")
+		ModelObjectField<? super E, Integer> f = (ModelObjectField<? super E, Integer>)f_; 
+		
+		// Set the object's unique id
+		f.set(bean, id);
+		
+		// Load the object's fields
+		loadModelObject(conn, bean, schema);
+		
+		return bean;
 	}
 	
 	/**

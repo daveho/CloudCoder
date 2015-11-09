@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -53,6 +53,12 @@ public class ModelObjectSchema<ModelObjectType> {
 		 * Add an index.
 		 */
 		ADD_INDEX,
+		
+		/**
+		 * Modify a model object with a specified unique id.
+		 */
+		MODIFY_MODEL_OBJECT,
+		
 	}
 	
 	/**
@@ -113,7 +119,7 @@ public class ModelObjectSchema<ModelObjectType> {
 		/**
 		 * Constructor.
 		 * 
-		 * @param type           the {@link DeltaType}
+		 * @param objType           the {@link DeltaType}
 		 * @param previousField  a field in a previous schema version
 		 * @param field          a new field to be added
 		 */
@@ -187,7 +193,31 @@ public class ModelObjectSchema<ModelObjectType> {
 		}
 	}
 	
+	/**
+	 * A {@link Delta} specifying a modification of a model object with a
+	 * specified unique id.
+	 */
+	public static class ModifyModelObjectDelta<ModelObjectType> extends Delta<ModelObjectType> {
+		private int id;
+		private ICallback<ModelObjectType> transformer;
+		
+		public ModifyModelObjectDelta(int id, ICallback<ModelObjectType> transformer) {
+			super(DeltaType.MODIFY_MODEL_OBJECT);
+			this.id = id;
+			this.transformer = transformer;
+		}
+		
+		public int getId() {
+			return id;
+		}
+		
+		public ICallback<ModelObjectType> getTransformer() {
+			return transformer;
+		}
+	}
+	
 	private final ModelObjectSchema<ModelObjectType> previous;
+	private final Class<? extends ModelObjectType> type;
 	private final int version;
 	private final String name;
 	private final List<ModelObjectField<? super ModelObjectType, ?>> fieldList;
@@ -201,20 +231,23 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * 
 	 * @param name the name of the schema: can be used to derive a database table name,
 	 *             XML element name, etc.
+	 * @param type  the Java class whose objects are associated with this schema 
 	 */
-	public ModelObjectSchema(String name) {
-		this(null, name);
+	public ModelObjectSchema(String name, Class<? extends ModelObjectType> type) {
+		this(null, type, name);
 	}
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param previous the previous schema version (null if this is not a derived schema)
+	 * @param type  the Java class whose objects are associated with this schema 
 	 * @param name the name of the schema: can be used to derive a database table name,
 	 *             XML element name, etc.
 	 */
-	private ModelObjectSchema(ModelObjectSchema<ModelObjectType> previous, String name) {
+	private ModelObjectSchema(ModelObjectSchema<ModelObjectType> previous, Class<? extends ModelObjectType> type, String name) {
 		this.previous = previous;
+		this.type = type;
 		this.version = (previous == null) ? 0 : previous.version + 1;
 		this.name = name;
 		this.fieldList = new ArrayList<ModelObjectField<? super ModelObjectType, ?>>();
@@ -222,6 +255,20 @@ public class ModelObjectSchema<ModelObjectType> {
 		this.indexList = new ArrayList<ModelObjectIndex<? super ModelObjectType>>();
 		this.deltaList = new ArrayList<Delta<? super ModelObjectType>>();
 		this.indexTypeOverrideMap = new HashMap<ModelObjectField<? super ModelObjectType,?>, ModelObjectIndexType>();
+	}
+	
+	/**
+	 * Get the Java class described by this schema.
+	 * Note that if this schema's type is an interface, this might
+	 * not return an instantiable type.
+	 * However, in most cases this <em>will</em> be
+	 * an instantiable type.
+	 * 
+	 * @return the Java class whose instances are associated
+	 *         with this schema
+	 */
+	public Class<? extends ModelObjectType> getType() {
+		return type;
 	}
 	
 	/**
@@ -457,10 +504,13 @@ public class ModelObjectSchema<ModelObjectType> {
 	 * Create a new derived schema based on a previous schema.
 	 * 
 	 * @param previous the previous schema
+	 * @param type     the Java class described by the new (derived) schema;
+	 *                 could be a subclass of the Java class associated
+	 *                 with the original schema
 	 * @return the new derived schema
 	 */
-	public static<E> ModelObjectSchema<E> basedOn(ModelObjectSchema<E> previous) {
-		return new ModelObjectSchema<E>(previous, previous.getName());
+	public static<E> ModelObjectSchema<E> basedOn(ModelObjectSchema<E> previous, Class<? extends E> type) {
+		return new ModelObjectSchema<E>(previous, type, previous.getName());
 	}
 
 	/**
@@ -535,6 +585,19 @@ public class ModelObjectSchema<ModelObjectType> {
 	}
 
 	/**
+	 * Modify a model object with a specified unique id
+	 * by applying a transformation callback.
+	 * 
+	 * @param id           the unique id of the model object to modify
+	 * @param transformer  the transformation callback
+	 * @return this object, for method chaining
+	 */
+	public ModelObjectSchema<ModelObjectType> modifyModelObject(int id, ICallback<ModelObjectType> transformer) {
+		deltaList.add(new ModifyModelObjectDelta<ModelObjectType>(id, transformer));
+		return this;
+	}
+
+	/**
 	 * This method must be called after all deltas (e.g., {@link #addAfter(ModelObjectField, ModelObjectField)})
 	 * are applied to a derived schema.
 	 * 
@@ -578,6 +641,10 @@ public class ModelObjectSchema<ModelObjectType> {
 //					indexList.add(delta.getIndex());
 					addIndex(delta.getIndex());
 				}
+				break;
+				
+			case MODIFY_MODEL_OBJECT:
+				// This kind of delta requires no changes to the ModelObjectSchema object
 				break;
 			}
 		}

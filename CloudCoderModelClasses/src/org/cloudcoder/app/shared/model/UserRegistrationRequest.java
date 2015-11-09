@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -48,7 +48,7 @@ public class UserRegistrationRequest extends User {
 		public void set(UserRegistrationRequest obj, String value) { obj.setSecret(value); }
 	};
 
-	public static final ModelObjectSchema<UserRegistrationRequest> SCHEMA_V0 = new ModelObjectSchema<UserRegistrationRequest>("user_registration_request")
+	public static final ModelObjectSchema<UserRegistrationRequest> SCHEMA_V0 = new ModelObjectSchema<UserRegistrationRequest>("user_registration_request", UserRegistrationRequest.class)
 			.addAll(User.SCHEMA_V1.getFieldList())
 			.setIndexOn(User.USERNAME, ModelObjectIndexType.NONE) // Allow duplicate reg requests for same username
 			.setIndexOn(User.EMAIL, ModelObjectIndexType.NONE)    // Allow duplicate reg requests for same email address

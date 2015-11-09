@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -33,7 +33,7 @@ public class Term implements Serializable, IModelObject<Term> {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Term> SCHEMA = new ModelObjectSchema<Term>("term")
+	public static final ModelObjectSchema<Term> SCHEMA = new ModelObjectSchema<Term>("term", Term.class)
 		.add(new ModelObjectField<Term, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(Term obj, Integer value) { obj.setId(value); }
 			public Integer get(Term obj) { return obj.getId(); }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -46,7 +46,7 @@ public class SubmissionReceipt implements Serializable, IContainsEvent, IModelOb
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<SubmissionReceipt> SCHEMA = new ModelObjectSchema<SubmissionReceipt>("submission_receipt")
+	public static final ModelObjectSchema<SubmissionReceipt> SCHEMA = new ModelObjectSchema<SubmissionReceipt>("submission_receipt", SubmissionReceipt.class)
 		.add(EVENT_ID)
 		.add(new ModelObjectField<SubmissionReceipt, Integer>("last_edit_event_id", Integer.class, 0) {
 			public void set(SubmissionReceipt obj, Integer value) { obj.setLastEditEventId(value); }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -31,7 +31,7 @@ public class ConfigurationSetting implements IModelObject<ConfigurationSetting> 
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<ConfigurationSetting> SCHEMA = new ModelObjectSchema<ConfigurationSetting>("configuration_setting")
+	public static final ModelObjectSchema<ConfigurationSetting> SCHEMA = new ModelObjectSchema<ConfigurationSetting>("configuration_setting", ConfigurationSetting.class)
 		.add(new ModelObjectField<ConfigurationSetting, String>("name", String.class, 60, ModelObjectIndexType.UNIQUE) {
 			public void set(ConfigurationSetting obj, String value) { obj.setName(value); }
 			public String get(ConfigurationSetting obj) { return obj.getName(); }

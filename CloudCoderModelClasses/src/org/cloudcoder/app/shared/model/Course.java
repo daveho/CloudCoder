@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -54,7 +54,7 @@ public class Course implements IModelObject<Course>, Serializable {
 	/**
 	 * Description of fields.
 	 */
-	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>("course")
+	public static final ModelObjectSchema<Course> SCHEMA = new ModelObjectSchema<Course>("course", Course.class)
 		.add(new ModelObjectField<Course, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 			public void set(Course obj, Integer value) { obj.setId(value); }
 			public Integer get(Course obj) { return obj.getId(); }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -35,6 +35,7 @@ public class User implements Serializable, IModelObject<User> {
 	private String passwordHash;
 	private String website;
 	private String consent;
+	private boolean superuser;
 
 	public static final ModelObjectField<? super User, Integer> ID = new ModelObjectField<User, Integer>("id", Integer.class, 0, ModelObjectIndexType.IDENTITY) {
 		public void set(User obj, Integer value) { obj.setId(value); }
@@ -75,11 +76,17 @@ public class User implements Serializable, IModelObject<User> {
         public void set(User obj, String value) { obj.setConsent(value); }
         public String get(User obj) { return obj.getConsent(); }
     };
+
+    // Superuser field: the default value is 0 (false).
+    public static final ModelObjectField<? super User, Boolean> SUPERUSER = new ModelObjectField<User, Boolean>("superuser", Boolean.class, 0, ModelObjectIndexType.NONE, 0, "0") {
+        public void set(User obj, Boolean value) { obj.setSuperuser(value); }
+        public Boolean get(User obj) { return obj.isSuperuser(); }
+    };
 	
 	/**
 	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<User> SCHEMA_V0 = new ModelObjectSchema<User>("user")
+	public static final ModelObjectSchema<User> SCHEMA_V0 = new ModelObjectSchema<User>("user", User.class)
 		.add(ID)
 		.add(USERNAME)
 		.add(FIRSTNAME)
@@ -90,21 +97,36 @@ public class User implements Serializable, IModelObject<User> {
 	/**
 	 * Description of fields (schema version 1).
 	 */
-	public static final ModelObjectSchema<User> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0)
+	public static final ModelObjectSchema<User> SCHEMA_V1 = ModelObjectSchema.basedOn(SCHEMA_V0, User.class)
 		.addAfter(EMAIL, WEBSITE)
 		.finishDelta();
 	
 	/**
      * Description of fields (schema version 2).
      */
-    public static final ModelObjectSchema<User> SCHEMA_V2 = ModelObjectSchema.basedOn(SCHEMA_V1)
+    public static final ModelObjectSchema<User> SCHEMA_V2 = ModelObjectSchema.basedOn(SCHEMA_V1, User.class)
         .addAfter(WEBSITE, CONSENT)
         .finishDelta();
+    
+    /**
+     * Description of fields (schema version 3).
+     */
+    public static final ModelObjectSchema<User> SCHEMA_V3 = ModelObjectSchema.basedOn(SCHEMA_V2, User.class)
+		.addAfter(CONSENT, SUPERUSER)
+		.modifyModelObject(1, new ICallback<User>() {
+			@Override
+			public void call(User value) {
+				// Upgrade the bootstrap user (user id=1)
+				// to a superuser.
+				value.setSuperuser(true);
+			}
+		})
+		.finishDelta();
 	
 	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<User> SCHEMA = SCHEMA_V2;
+	public static final ModelObjectSchema<User> SCHEMA = SCHEMA_V3;
 
 	public static final String GIVEN_CONSENT = "Y";
 	public static final String NO_CONSENT = "N";
@@ -220,4 +242,22 @@ public class User implements Serializable, IModelObject<User> {
     public void setConsent(String consent) {
         this.consent = consent;
     }
+    
+    /**
+     * Get whether this user is a superuser.
+     * 
+     * @return true if this user is a superuser, false otherwise
+     */
+    public boolean isSuperuser() {
+    	return this.superuser;
+    }
+    
+    /**
+     * Set whether this user is a superuser.
+     * 
+     * @param superuser true if this user is a superuser, false otherwise
+     */
+    public void setSuperuser(boolean superuser) {
+		this.superuser = superuser;
+	}
 }

@@ -162,6 +162,7 @@ public class CreateWebappDatabase {
 		
 		Props props = new Props();
 		
+		System.out.println("\n  >> Note: the user account you create will have superuser privileges <<\n");
 		props.ccUserName = ConfigurationUtil.ask(keyboard, "Enter a username for your CloudCoder account: ");
 		props.ccPassword = ConfigurationUtil.ask(keyboard, "Enter a password for your CloudCoder account");
 		props.ccFirstname = ConfigurationUtil.ask(keyboard, "What is your first name?");
@@ -262,6 +263,13 @@ public class CreateWebappDatabase {
 				props.ccEmail,
 				props.ccPassword,
 				props.ccWebsite);
+		
+		// Make the initial user a superuser
+		User initialUser = new User();
+		initialUser.setId(userId);
+		DBUtil.loadModelObject(conn, initialUser);
+		initialUser.setSuperuser(true);
+		DBUtil.updateModelObject(conn, initialUser);
 		
 		// Register the user as an instructor in the demo course
 		System.out.println("Registering initial user for demo course...");

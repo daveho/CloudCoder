@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -53,7 +53,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	/**
 	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA_V0 = new ModelObjectSchema<RepoProblem>("repo_problem")
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V0 = new ModelObjectSchema<RepoProblem>("repo_problem", RepoProblem.class)
 		.add(ID)
 		.add(USER_ID)
 		.add(HASH)
@@ -64,7 +64,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA_V1 =
 			// Based on Problem schema version 0...
-			ModelObjectSchema.basedOn(SCHEMA_V0)
+			ModelObjectSchema.basedOn(SCHEMA_V0, RepoProblem.class)
 			// With the v1 deltas from ProblemData
 			.addDeltasFrom(ProblemData.SCHEMA_V1)
 			.finishDelta();
@@ -75,7 +75,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * of {@link ProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA_V2 =
-			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V1)
+			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V1, RepoProblem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V2)
 			.finishDelta();
 
@@ -85,7 +85,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * of {@link ProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA_V3 =
-			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V2)
+			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V2, RepoProblem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V3)
 			.finishDelta();
 	
@@ -95,7 +95,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * of {@link ProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA_V4 =
-			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V3)
+			ModelObjectSchema.basedOn(RepoProblem.SCHEMA_V3, RepoProblem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V4)
 			.finishDelta();
 
@@ -107,7 +107,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * (version 0 to version 1), and this needs to force a new
 	 * schema version for {@link Problem} and {@link RepoProblem}.
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA_V5 = ModelObjectSchema.basedOn(SCHEMA_V4)
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V5 = ModelObjectSchema.basedOn(SCHEMA_V4, RepoProblem.class)
 		.addDeltasFrom(ProblemData.SCHEMA_V5)
 		.finishDelta();
 	
@@ -115,7 +115,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * Description of fields (schema version 6).
 	 * The size of the problem description field increased.
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5)
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V6 = ModelObjectSchema.basedOn(SCHEMA_V5, RepoProblem.class)
 		.addDeltasFrom(ProblemData.SCHEMA_V6)
 		.finishDelta();
 	
@@ -124,7 +124,7 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	 * No fields have chagned, but {@link ProblemData}'s schema has
 	 * changed (due to new {@link ProblemType} members being added.)
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6)
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6, RepoProblem.class)
 		.finishDelta();
 	
 	/**

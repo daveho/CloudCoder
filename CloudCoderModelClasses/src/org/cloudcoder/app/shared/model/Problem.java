@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -107,7 +107,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	/**
 	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA_V0 = new ModelObjectSchema<IProblem>("problem")
+	public static final ModelObjectSchema<IProblem> SCHEMA_V0 = new ModelObjectSchema<IProblem>("problem", Problem.class)
 			.add(PROBLEM_ID)
 			.add(COURSE_ID)
 			.add(WHEN_ASSIGNED)
@@ -120,7 +120,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V1 =
 			// Based on Problem schema version 0...
-			ModelObjectSchema.basedOn(SCHEMA_V0)
+			ModelObjectSchema.basedOn(SCHEMA_V0, Problem.class)
 			// With the v1 deltas from ProblemData
 			.addDeltasFrom(ProblemData.SCHEMA_V1)
 			.finishDelta();
@@ -129,7 +129,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * Description of fields (schema version 2).
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V2 =
-			ModelObjectSchema.basedOn(SCHEMA_V1)
+			ModelObjectSchema.basedOn(SCHEMA_V1, Problem.class)
 			.addAfter(VISIBLE, PROBLEM_AUTHORSHIP)
 			.finishDelta();
 	
@@ -137,7 +137,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * Description of fields (schema version 3).
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V3 =
-			ModelObjectSchema.basedOn(SCHEMA_V2)
+			ModelObjectSchema.basedOn(SCHEMA_V2, Problem.class)
 			.addAfter(PROBLEM_AUTHORSHIP, DELETED)
 			.finishDelta();
 	
@@ -145,7 +145,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * Description of fields (schema version 4).
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V4 =
-			ModelObjectSchema.basedOn(SCHEMA_V3)
+			ModelObjectSchema.basedOn(SCHEMA_V3, Problem.class)
 			// Note: the default value of the module_id field is 1, which
 			// is the default "Uncategorized" module.  This object is guaranteed
 			// to exist because it is persisted by version 0 of the
@@ -159,7 +159,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * of {@link ProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V5 =
-			ModelObjectSchema.basedOn(Problem.SCHEMA_V4)
+			ModelObjectSchema.basedOn(Problem.SCHEMA_V4, Problem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V2)
 			.finishDelta();
 
@@ -169,7 +169,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * of {@link ProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V6 =
-			ModelObjectSchema.basedOn(SCHEMA_V5)
+			ModelObjectSchema.basedOn(SCHEMA_V5, Problem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V3)
 			.finishDelta();
 	
@@ -177,7 +177,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * Description of fields (schema version 7).
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V7 =
-			ModelObjectSchema.basedOn(SCHEMA_V6)
+			ModelObjectSchema.basedOn(SCHEMA_V6, Problem.class)
 			.addAfter(MODULE_ID, SHARED)
 			.finishDelta();
 	
@@ -187,7 +187,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * of {@link IProblemData}'s schema.
 	 */
 	public static final ModelObjectSchema<IProblem> SCHEMA_V8 =
-			ModelObjectSchema.basedOn(SCHEMA_V7)
+			ModelObjectSchema.basedOn(SCHEMA_V7, Problem.class)
 			.addDeltasFrom(ProblemData.SCHEMA_V4)
 			.finishDelta();
 	
@@ -199,7 +199,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * (version 0 to version 1), and this needs to force a new
 	 * schema version for {@link Problem} and {@link RepoProblem}.
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA_V9 = ModelObjectSchema.basedOn(SCHEMA_V8)
+	public static final ModelObjectSchema<IProblem> SCHEMA_V9 = ModelObjectSchema.basedOn(SCHEMA_V8, Problem.class)
 		.addDeltasFrom(ProblemData.SCHEMA_V5)
 		.finishDelta();
 
@@ -207,7 +207,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * Description of fields (schema version 10).
 	 * The size of the problem description field increased.
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA_V10 = ModelObjectSchema.basedOn(SCHEMA_V9)
+	public static final ModelObjectSchema<IProblem> SCHEMA_V10 = ModelObjectSchema.basedOn(SCHEMA_V9, Problem.class)
 		.addDeltasFrom(ProblemData.SCHEMA_V6)
 		.finishDelta();
 	
@@ -216,7 +216,7 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 	 * No fields have chagned, but {@link ProblemData}'s schema has
 	 * changed (due to new {@link ProblemType} members being added.)
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA_V11 = ModelObjectSchema.basedOn(SCHEMA_V10)
+	public static final ModelObjectSchema<IProblem> SCHEMA_V11 = ModelObjectSchema.basedOn(SCHEMA_V10, Problem.class)
 		.finishDelta();
 	
 	/**

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -75,7 +75,7 @@ public class Quiz implements Serializable, IModelObject<Quiz> {
 	/**
 	 * Descriptor for model object fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<Quiz> SCHEMA_V0 = new ModelObjectSchema<Quiz>("quiz")
+	public static final ModelObjectSchema<Quiz> SCHEMA_V0 = new ModelObjectSchema<Quiz>("quiz", Quiz.class)
 			.add(ID)
 			.add(COURSE_ID)
 			.add(PROBLEM_ID)

@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.cloudcoder.app.server.persist.NoSuchUniqueIdException;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.ModelObjectIndexType;
@@ -33,6 +34,7 @@ import org.cloudcoder.app.shared.model.ModelObjectSchema.AddIndexToFieldDelta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.Delta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.DeltaType;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.IncreaseFieldSizeDelta;
+import org.cloudcoder.app.shared.model.ModelObjectSchema.ModifyModelObjectDelta;
 import org.cloudcoder.app.shared.model.ModelObjectSchema.PersistModelObjectDelta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,6 +196,8 @@ public class SchemaUtil {
 						applyDelta(conn, table, (IncreaseFieldSizeDelta<? super E>) delta_);
 					} else if (delta_ instanceof AddIndexToFieldDelta) {
 						applyDelta(conn, table, (AddIndexToFieldDelta<? super E>) delta_);
+					} else if (delta_ instanceof ModifyModelObjectDelta) {
+						applyDelta(conn, table, (ModifyModelObjectDelta<? super E>) delta_);
 					}
 				}
 			}
@@ -218,7 +222,7 @@ public class SchemaUtil {
 		}
 	}
 	
-	public static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, IncreaseFieldSizeDelta<? super E> delta) throws SQLException {
+	private static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, IncreaseFieldSizeDelta<? super E> delta) throws SQLException {
 		PreparedStatement stmt = null;
 		
 		try {
@@ -242,12 +246,12 @@ public class SchemaUtil {
 		}
 	}
 	
-	public static<E, M extends IModelObject<M>> void applyDelta(Connection conn, PersistModelObjectDelta<E, M> delta) throws SQLException {
+	static<E, M extends IModelObject<M>> void applyDelta(Connection conn, PersistModelObjectDelta<E, M> delta) throws SQLException {
 		M obj = delta.getObj();
 		DBUtil.insertModelObjectExact(conn, obj, obj.getSchema());
 	}
 
-	public static<E> void applyDelta(Connection conn, String dbTableName, ModelObjectSchema<E> schema, AddFieldDelta<? super E> delta, int version) throws SQLException {
+	private static<E> void applyDelta(Connection conn, String dbTableName, ModelObjectSchema<E> schema, AddFieldDelta<? super E> delta, int version) throws SQLException {
 		if (delta.getType() == DeltaType.ADD_FIELD_AFTER) {
 			Statement stmt = null;
 			StringBuilder buf;
@@ -302,11 +306,24 @@ public class SchemaUtil {
 		}
 	}
 	
-	public static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, AddIndexToFieldDelta<? super E> delta) throws SQLException {
+	private static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, AddIndexToFieldDelta<? super E> delta) throws SQLException {
 		DBUtil.createIndex(conn, schema, delta.getIndex());
 	}
 
-
+	private static<E> void applyDelta(Connection conn, ModelObjectSchema<E> schema, ModifyModelObjectDelta<? super E> delta) throws SQLException {
+		int id = delta.getId();
+		try {
+			E bean = DBUtil.loadModelObjectForId(conn, schema, id);
+			delta.getTransformer().call(bean);
+			DBUtil.updateModelObject(conn, bean, schema);
+			logger.info("Successfully applied transformation to object id={} in {}",
+					id, schema.getDbTableName());
+		} catch (NoSuchUniqueIdException e) {
+			logger.warn("Could not find object id={} in {} for transformation specified by a database migration",
+					id, schema.getDbTableName());
+		}
+	}
+	
 	/*
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);

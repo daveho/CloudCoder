@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ public class RepoProblemRating implements IModelObject<RepoProblemRating> {
 		public Integer get(RepoProblemRating obj) { return obj.value; }
 	};
 	
-	private static final ModelObjectSchema<RepoProblemRating> SCHEMA_V0 = new ModelObjectSchema<RepoProblemRating>("repo_problem_rating")
+	private static final ModelObjectSchema<RepoProblemRating> SCHEMA_V0 = new ModelObjectSchema<RepoProblemRating>("repo_problem_rating", RepoProblemRating.class)
 			.add(ID)
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)

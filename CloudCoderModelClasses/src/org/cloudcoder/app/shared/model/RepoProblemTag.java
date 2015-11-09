@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +47,7 @@ public class RepoProblemTag {
 	/**
 	 * Description of fields (schema version 0).
 	 */
-	public static final ModelObjectSchema<RepoProblemTag> SCHEMA_V0 = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag")
+	public static final ModelObjectSchema<RepoProblemTag> SCHEMA_V0 = new ModelObjectSchema<RepoProblemTag>("repo_problem_tag", RepoProblemTag.class)
 			.add(USER_ID)
 			.add(REPO_PROBLEM_ID)
 			.add(NAME)
