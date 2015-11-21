@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.view.AccordionPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
@@ -48,6 +49,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -268,7 +270,18 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private IsWidget createAdminTab() {
 			LayoutPanel panel = new LayoutPanel();
 			
-			// TODO: add stuff
+			AccordionPanel accordionPanel = new AccordionPanel();
+			
+			// For now, just add placeholder widgets
+			Image kitten = new Image("http://placekitten.com/480/360");
+			accordionPanel.add(kitten, "Kitten!");
+			
+			Image kitten2 = new Image("http://placekitten.com/600/450");
+			accordionPanel.add(kitten2, "Another kitten!");
+			
+			panel.add(accordionPanel);
+			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+			panel.setWidgetLeftRight(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
 			
 			return panel;
 		}
