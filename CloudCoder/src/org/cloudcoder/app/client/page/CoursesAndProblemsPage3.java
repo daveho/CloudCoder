@@ -36,6 +36,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -81,6 +82,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private UserAccountView2 userAccountView;
 		private Button manageExercisesButton;
 		private Button manageUsersButton;
+		private TabLayoutPanel tabLayoutPanel;
 
 		
 		public UI() {
@@ -98,23 +100,26 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			pageNavPanel.setShowBackButton(false);
 			
-			TabLayoutPanel panel = new TabLayoutPanel(32.0, Unit.PX);
+			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
 			
 			// Exercises tab
 			IsWidget exercises = createExercisesTab();
-			panel.add(exercises, "Exercises");
+			tabLayoutPanel.add(exercises, "Exercises");
 			
 			// Account tab
 			IsWidget account = createAccountTab();
-			panel.add(account, "Account");
+			tabLayoutPanel.add(account, "Account");
 			
 			// Playground tab
 			IsWidget playground = createPlaygroundTab();
-			panel.add(playground, "Playground");
+			tabLayoutPanel.add(playground, "Playground");
 			
-			full.add(panel);
-			full.setWidgetLeftRight(panel, 0.0, Unit.PX, 0.0, Unit.PX);
-			full.setWidgetTopBottom(panel, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			// The admin tab will be added later if the user
+			// has superuser privileges
+			
+			full.add(tabLayoutPanel);
+			full.setWidgetLeftRight(tabLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			full.setWidgetTopBottom(tabLayoutPanel, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 
 			this.statusMessageView = new StatusMessageView();
 			full.add(statusMessageView);
@@ -259,6 +264,14 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		protected void handlePlaygroundButtonPress() {
 			getSession().get(PageStack.class).push(PageId.PLAYGROUND_PAGE);
 		}
+		
+		private IsWidget createAdminTab() {
+			LayoutPanel panel = new LayoutPanel();
+			
+			// TODO: add stuff
+			
+			return panel;
+		}
 
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
@@ -271,6 +284,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			progressSummaryView.activate(session, subscriptionRegistrar);
 			exerciseList.activate(session, subscriptionRegistrar);
 			userAccountView.activate(session, subscriptionRegistrar);
+			
+			// Create the Admin tab if the user is a superuser
+			User user = session.get(User.class);
+			GWT.log("User " + (user.isSuperuser() ? "is" : "is not") + " superuser");
+			if (user.isSuperuser()) {
+				tabLayoutPanel.add(createAdminTab(), "Admin");
+			}
 
 			// Load courses
 			SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage3.this, session);
