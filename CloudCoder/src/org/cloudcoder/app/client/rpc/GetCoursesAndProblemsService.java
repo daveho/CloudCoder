@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -29,6 +29,7 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
@@ -310,4 +311,11 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 *         of the operation
 	 */
 	public OperationResult updateProblemDates(Problem[] problems) throws CloudCoderAuthenticationException;
+	
+	/**
+	 * Get the defined {@link Term}s.
+	 * 
+	 * @return the defined {@link Term}s.
+	 */
+	public Term[] getTerms();
 }

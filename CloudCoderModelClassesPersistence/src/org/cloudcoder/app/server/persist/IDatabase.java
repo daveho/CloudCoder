@@ -729,4 +729,21 @@ public interface IDatabase {
 	 *         the edited user is registered, false otherwise
 	 */
 	public boolean isInstructorFor(User authenticatedUser, User editedUser);
+
+	/**
+	 * Get the defined {@link Term}s.
+	 * Note that we don't bother checking the user's
+	 * permissions.
+	 * 
+	 * @return the defined {@link Term}s
+	 */
+	public Term[] getTerms();
+
+    /**
+     * Suggest usernames based on specified username prefix.
+     * 
+     * @param prefix the username prefix
+     * @return {@link User}s with usernames beginning with the username prefix
+     */
+	public User[] suggestUsernames(String prefix);
 }

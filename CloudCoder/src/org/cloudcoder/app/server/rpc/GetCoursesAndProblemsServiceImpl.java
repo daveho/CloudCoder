@@ -654,4 +654,9 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 
     	return Database.getInstance().updateProblemDates(authenticatedUser, problems);
     }
+    
+    @Override
+    public Term[] getTerms() {
+    	return Database.getInstance().getTerms();
+    }
 }

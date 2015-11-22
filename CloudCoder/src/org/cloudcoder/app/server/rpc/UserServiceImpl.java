@@ -147,6 +147,18 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 
 		return Database.getInstance().findCourseRegistrations(user, course);
 	}
+	
+	@Override
+	public User[] suggestUsernames(String prefix) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+
+		// Make sure the user is a superuser
+		if (!authenticatedUser.isSuperuser()) {
+			throw new CloudCoderAuthenticationException("Not a superuser");
+		}
+		
+		return Database.getInstance().suggestUsernames(prefix);
+	}
 
 	/**
 	 * Check whether the given user is an instructor in the

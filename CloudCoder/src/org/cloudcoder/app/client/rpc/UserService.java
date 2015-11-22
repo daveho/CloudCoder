@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -93,4 +93,13 @@ public interface UserService extends RemoteService
      *         is not an instructor in the course
      */
     CourseRegistrationList getUserCourseRegistrationList(Course course, User user) throws CloudCoderAuthenticationException;
+    
+    /**
+     * Suggest usernames based on specified username prefix.
+     * Authenticated user must be a superuser.
+     * 
+     * @param prefix the username prefix
+     * @return {@link User}s with usernames beginning with the username prefix
+     */
+    User[] suggestUsernames(String prefix) throws CloudCoderAuthenticationException;
 }

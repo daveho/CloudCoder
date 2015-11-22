@@ -65,6 +65,7 @@ import org.cloudcoder.app.server.persist.txn.GetSchemaVersions;
 import org.cloudcoder.app.server.persist.txn.GetSectionsForCourse;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.GetSubmissionText;
+import org.cloudcoder.app.server.persist.txn.GetTerms;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblem;
 import org.cloudcoder.app.server.persist.txn.GetTestCasesForProblemCheckAuth;
 import org.cloudcoder.app.server.persist.txn.GetTestResultsForSubmission;
@@ -91,6 +92,7 @@ import org.cloudcoder.app.server.persist.txn.StoreRepoProblemAndTestCaseList;
 import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.StudentStartOrContinueQuiz;
 import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
+import org.cloudcoder.app.server.persist.txn.SuggestUsernames;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
@@ -124,6 +126,7 @@ import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
@@ -512,6 +515,16 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public boolean isInstructorFor(User authenticatedUser, User editedUser) {
 		return databaseRun(new IsInstructorFor(authenticatedUser, editedUser));
+	}
+	
+	@Override
+	public Term[] getTerms() {
+		return databaseRun(new GetTerms());
+	}
+	
+	@Override
+	public User[] suggestUsernames(String prefix) {
+		return databaseRun(new SuggestUsernames(prefix));
 	}
 
 	/**

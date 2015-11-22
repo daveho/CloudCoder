@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +47,8 @@ public interface UserServiceAsync
 	void getUserCourseRegistrationList(Course course, User user,
 			AsyncCallback<CourseRegistrationList> callback);
 	void editUser(EditedUser editedUser, Course course,
-			AsyncCallback<Boolean> callback); 
+			AsyncCallback<Boolean> callback);
+	void suggestUsernames(String prefix, AsyncCallback<User[]> callback);
         
         
 }

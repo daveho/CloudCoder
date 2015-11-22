@@ -144,7 +144,6 @@ public class AccordionPanel extends Composite {
 	
 	private native void slideToggle(String id) /*-{
 		var elt = $doc.getElementById(id);
-		console.log("jQuery is " + window.jQuery);
 		$wnd.$(elt).slideToggle(); // Yes, we can haz jquery
 	}-*/;
 }

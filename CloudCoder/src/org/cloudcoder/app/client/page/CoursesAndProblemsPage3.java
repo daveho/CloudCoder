@@ -23,6 +23,7 @@ import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.view.AccordionPanel;
+import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
@@ -85,6 +86,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private Button manageExercisesButton;
 		private Button manageUsersButton;
 		private TabLayoutPanel tabLayoutPanel;
+		private CreateCoursePanel createCoursePanel;
 
 		
 		public UI() {
@@ -272,6 +274,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
+			this.createCoursePanel = new CreateCoursePanel();
+			accordionPanel.add(createCoursePanel, "Create course");
+			
 			// For now, just add placeholder widgets
 			Image kitten = new Image("http://placekitten.com/480/360");
 			accordionPanel.add(kitten, "Kitten!");
@@ -303,6 +308,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			GWT.log("User " + (user.isSuperuser() ? "is" : "is not") + " superuser");
 			if (user.isSuperuser()) {
 				tabLayoutPanel.add(createAdminTab(), "Admin");
+				createCoursePanel.activate(session, subscriptionRegistrar);
 			}
 
 			// Load courses
