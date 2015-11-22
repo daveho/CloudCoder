@@ -50,6 +50,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -273,8 +274,16 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			LayoutPanel panel = new LayoutPanel();
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
-			
+
 			this.createCoursePanel = new CreateCoursePanel();
+			createCoursePanel.setOnCreateCourse(new Runnable() {
+				@Override
+				public void run() {
+					if (createCoursePanel.validate()) {
+						getSession().add(StatusMessage.information("Should be creating a course now"));
+					}
+				}
+			});
 			accordionPanel.add(createCoursePanel, "Create course");
 			
 			// For now, just add placeholder widgets
