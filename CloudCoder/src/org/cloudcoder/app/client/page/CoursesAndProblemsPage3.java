@@ -22,6 +22,7 @@ import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.AccordionPanel;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
@@ -34,8 +35,10 @@ import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.client.view.UserAccountView2;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.User;
@@ -47,6 +50,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -280,7 +284,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				@Override
 				public void run() {
 					if (createCoursePanel.validate()) {
-						getSession().add(StatusMessage.information("Should be creating a course now"));
+						CourseCreationSpec spec = createCoursePanel.getCourseCreationSpec();
+						createCourse(spec);
 					}
 				}
 			});
@@ -298,6 +303,25 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			panel.setWidgetLeftRight(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
 			
 			return panel;
+		}
+
+		protected void createCourse(CourseCreationSpec spec) {
+			RPC.getCoursesAndProblemsService.createCourse(spec, new AsyncCallback<OperationResult>() {
+				@Override
+				public void onSuccess(OperationResult result) {
+					getSession().add(StatusMessage.fromOperationResult(result));
+					if (result.isSuccess()) {
+						// Success, reload the user's list of courses
+						// and course registrations
+						// TODO
+					}
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					getSession().add(StatusMessage.error("Error trying to create course", caught));
+				}
+			});
 		}
 
 		@Override

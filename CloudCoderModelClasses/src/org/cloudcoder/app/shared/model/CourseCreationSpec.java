@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * Information required to create a {@link Course}.
  * Specifically, it's the course info, the initial instructor username,
@@ -24,7 +26,9 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class CourseCreationSpec {
+public class CourseCreationSpec implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	private Course course;
 	private String username;
 	private int section;

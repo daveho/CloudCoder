@@ -31,6 +31,7 @@ import org.cloudcoder.app.server.persist.txn.AddUserToCourse;
 import org.cloudcoder.app.server.persist.txn.AnonymizeUserData;
 import org.cloudcoder.app.server.persist.txn.AuthenticateUser;
 import org.cloudcoder.app.server.persist.txn.CompleteRegistration;
+import org.cloudcoder.app.server.persist.txn.CreateCourseFromSpec;
 import org.cloudcoder.app.server.persist.txn.CreateProblemSummary;
 import org.cloudcoder.app.server.persist.txn.DeleteProblem;
 import org.cloudcoder.app.server.persist.txn.EditUser;
@@ -102,6 +103,7 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
@@ -525,6 +527,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public User[] suggestUsernames(String prefix) {
 		return databaseRun(new SuggestUsernames(prefix));
+	}
+	
+	@Override
+	public OperationResult createCourse(CourseCreationSpec spec) {
+		return databaseRun(new CreateCourseFromSpec(spec));
 	}
 
 	/**

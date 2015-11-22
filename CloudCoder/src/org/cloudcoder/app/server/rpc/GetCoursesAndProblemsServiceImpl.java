@@ -47,6 +47,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.Module;
@@ -657,6 +658,19 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
     
     @Override
     public Term[] getTerms() {
+    	// Note that we don't authenticate the user here
     	return Database.getInstance().getTerms();
+    }
+    
+    @Override
+    public OperationResult createCourse(CourseCreationSpec spec) throws CloudCoderAuthenticationException {
+    	User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+    	
+    	// User must be a superuser
+    	if (!authenticatedUser.isSuperuser()) {
+    		return new OperationResult(false, "Only superusers can create a course");
+    	}
+    	
+    	return Database.getInstance().createCourse(spec);
     }
 }

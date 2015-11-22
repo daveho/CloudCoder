@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,6 +18,7 @@
 package org.cloudcoder.app.server.persist;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -29,12 +30,13 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.IFactory;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.User;
 
 public class CreateCourse {
 	public static class Instructor {
-		Instructor(User user, int section) {
+		public Instructor(User user, int section) {
 			this.user = user;
 			this.section = section;
 		}
@@ -84,27 +86,42 @@ public class CreateCourse {
 			String more = ConfigurationUtil.askString(keyboard, "Add another instructor? (y/n)");
 			moreInstructors = more.trim().toLowerCase().startsWith("y");
 		} while (moreInstructors);
-		
-		// Create the course
+
 		Course course = new Course();
 		course.setName(name);
 		course.setTitle(title);
 		course.setUrl(url);
 		course.setTermId(term.getId());
 		course.setYear(year);
-		DBUtil.storeModelObject(conn, course);
 		
-		// Register the instructor(s)
-		for (Instructor instructor : instructors) {
-			CourseRegistration reg = new CourseRegistration();
-			reg.setCourseId(course.getId());
-			reg.setUserId(instructor.user.getId());
-			reg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
-			reg.setSection(instructor.section);
-			DBUtil.storeModelObject(conn, reg);
+		OperationResult result = createCourse(conn, course, instructors);
+		if (result.isSuccess()) {
+			System.out.printf("Success: %s\n", result.getMessage());
+		} else {
+			System.out.printf("Error: %s\n", result.getMessage());
+		}
+	}
+
+	public static OperationResult createCourse(Connection conn, Course course, List<Instructor> instructors) {
+		try {
+			// Create the course
+			DBUtil.storeModelObject(conn, course);
+			
+			// Register the instructor(s)
+			for (Instructor instructor : instructors) {
+				CourseRegistration reg = new CourseRegistration();
+				reg.setCourseId(course.getId());
+				reg.setUserId(instructor.user.getId());
+				reg.setRegistrationType(CourseRegistrationType.INSTRUCTOR);
+				reg.setSection(instructor.section);
+				DBUtil.storeModelObject(conn, reg);
+			}
+			
+			return new OperationResult(true, "Course created successfully");
+		} catch (SQLException e) {
+			return new OperationResult(false, "Error creating course: " + e.getMessage());
 		}
 		
-		System.out.println("Success!");
 	}
 
 }

@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.rpc;
 import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -104,5 +105,7 @@ public interface GetCoursesAndProblemsServiceAsync {
 			AsyncCallback<OperationResult> callback);
 
 	void getTerms(AsyncCallback<Term[]> callback);
+
+	void createCourse(CourseCreationSpec spec, AsyncCallback<OperationResult> callback);
 
 }

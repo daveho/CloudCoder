@@ -21,6 +21,7 @@ import org.cloudcoder.app.shared.dto.ShareExercisesResult;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.OperationResult;
@@ -318,4 +319,14 @@ public interface GetCoursesAndProblemsService extends RemoteService {
 	 * @return the defined {@link Term}s.
 	 */
 	public Term[] getTerms();
+	
+	/**
+	 * Create a course as specified by given {@link CourseCreationSpec}.
+	 * The authenticated user must be a superuser.
+	 * 
+	 * @param spec the {@link CourseCreationSpec}
+	 * @return an {@link OperationResult} describing the success or failure of the operation
+	 * @throws CloudCoderAuthenticationException
+	 */
+	public OperationResult createCourse(CourseCreationSpec spec) throws CloudCoderAuthenticationException;
 }
