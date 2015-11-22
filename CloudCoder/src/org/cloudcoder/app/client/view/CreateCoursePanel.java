@@ -298,4 +298,17 @@ public class CreateCoursePanel extends Composite implements SessionObserver, Sub
 			termListBox.addItem(term.getName());
 		}
 	}
+
+	/**
+	 * Clear field values.
+	 */
+	public void clear() {
+		termListBox.setSelectedIndex(0);
+		yearTextBox.setText("");
+		nameTextBox.setText("");
+		titleTextBox.setText("");
+		urlTextBox.setText("");
+		instructorSuggestBox.setText("");
+		sectionTextBox.setText("");
+	}
 }

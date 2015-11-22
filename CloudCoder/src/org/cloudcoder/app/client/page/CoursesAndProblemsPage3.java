@@ -279,6 +279,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
 
+			// Add create course UI widget
 			this.createCoursePanel = new CreateCoursePanel();
 			createCoursePanel.setOnCreateCourse(new Runnable() {
 				@Override
@@ -290,13 +291,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				}
 			});
 			accordionPanel.add(createCoursePanel, "Create course");
-			
-			// For now, just add placeholder widgets
-			Image kitten = new Image("http://placekitten.com/480/360");
-			accordionPanel.add(kitten, "Kitten!");
-			
-			Image kitten2 = new Image("http://placekitten.com/600/450");
-			accordionPanel.add(kitten2, "Another kitten!");
+
+			// Could put other widgets in the accordion panel here...
 			
 			panel.add(accordionPanel);
 			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
@@ -315,6 +311,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 						// and course registrations
 						GWT.log("Course created successfully, loading courses and course registrations...");
 						SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage3.this, getSession());
+						createCoursePanel.clear();
 					}
 				}
 				
