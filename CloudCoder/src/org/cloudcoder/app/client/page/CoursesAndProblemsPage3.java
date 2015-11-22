@@ -313,7 +313,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 					if (result.isSuccess()) {
 						// Success, reload the user's list of courses
 						// and course registrations
-						// TODO
+						GWT.log("Course created successfully, loading courses and course registrations...");
+						SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage3.this, getSession());
 					}
 				}
 				
