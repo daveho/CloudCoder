@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2014, Shane Bonner
 //
 // This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package org.cloudcoder.app.client.view;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -43,18 +50,86 @@ import com.google.gwt.user.client.ui.ListBox;
  * @author David Hovemeyer
  */
 public class CourseSelectionListBox extends Composite implements SessionObserver, Subscriber {
+	/**
+	 * Comparator used to order CourseAndCourseRegistrations used in the listbox.
+	 */
+	private static class CourseAndCourseRegistrationComparator implements Comparator<CourseAndCourseRegistration> {
+		@Override
+		public int compare(CourseAndCourseRegistration left, CourseAndCourseRegistration right) {
+			int cmp;
+			
+			// First, compare by TermAndYear in reverse chronological order
+			// (which is the natural sort order for TermAndYear)
+			cmp = left.getCourse().getTermAndYear().compareTo(right.getCourse().getTermAndYear());
+			if (cmp != 0) {
+				return cmp;
+			}
+			
+			// Next, sort by course name and title
+			cmp = left.getCourse().getNameAndTitle().compareTo(right.getCourse().getNameAndTitle());
+			if (cmp != 0) {
+				return 0;
+			}
+			
+			// Next, sort by course id (which handles the unlikely but conceivable case that
+			// there course be two distinct courses with the same name)
+			cmp = left.getCourse().getId() - right.getCourse().getId();
+			if (cmp != 0) {
+				return cmp;
+			}
+			
+			// At this point, we are looking at two course registrations
+			// for the same course.
+			
+			// Next, sort by instructor status (instructor status is "less than":
+			// this means that in the unlikely but conceivable case that a user is an instructor
+			// for one section but a normal student in another, the instructor
+			// registration appears first.)
+			if (left.getCourseRegistration().getRegistrationType().isInstructor() !=
+					right.getCourseRegistration().getRegistrationType().isInstructor()) {
+				return left.getCourseRegistration().getRegistrationType().isInstructor() ? -1 : 1;
+			}
+			
+			// Next, compare section numbers
+			cmp = left.getCourseRegistration().getSection() - right.getCourseRegistration().getSection();
+			if (cmp != 0) {
+				return cmp;
+			}
+			
+			// At this point, it's safe to say that these CourseAndCourseRegistrations
+			// are identical (which shouldn't happen)
+			return 0;
+		}
+	}
+	
+	/**
+	 * The display mode.
+	 */
+	public enum DisplayMode {
+		/** Just the course name and term/year. This is the default. */
+		PLAIN,
+		/** Course name and title, and term/year. */
+		FANCY,
+	}
+	
 	private CloudCoderPage page;
 	private ListBox listBox;
 	private Session session;
 	private int selectedIndex;
 	private CourseAndCourseRegistration[] courseAndCourseRegistrationList;
+	private DisplayMode displayMode;
 	
-	public CourseSelectionListBox(CloudCoderPage page) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param page the {@link CloudCoderPage}
+	 * @param visibleItemCount the visible item count: should be 1 if a drop-down list is desired
+	 */
+	public CourseSelectionListBox(CloudCoderPage page, int visibleItemCount) {
 		this.page = page;
 		listBox = new ListBox();
 
-		//setting the visible item count to 1 would turn the listBox into a drop-down list
-		listBox.setVisibleItemCount(5);
+		listBox.setVisibleItemCount(visibleItemCount);
 		
 		listBox.addChangeHandler(new ChangeHandler() {
 			@Override
@@ -63,7 +138,26 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 			}
 		});
 		
+		displayMode = DisplayMode.PLAIN;
+		
 		initWidget(listBox);
+	}
+	
+	/**
+	 * @param displayMode the displayMode to set
+	 */
+	public void setDisplayMode(DisplayMode displayMode) {
+		this.displayMode = displayMode;
+	}
+	
+	/**
+	 * Constructor.  The list will show 5 items (and scroll if there are more.)
+	 * 
+	 * @param page the {@link CloudCoderPage}
+	 */
+	public CourseSelectionListBox(CloudCoderPage page) {
+		//setting the visible item count to 1 would turn the listBox into a drop-down list
+		this(page, 5);
 	}
 
 	/**
@@ -92,11 +186,12 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 		// subscribe to add object session events
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 		
-		courseAndCourseRegistrationList = session.get(CourseAndCourseRegistration[].class);
-		if (courseAndCourseRegistrationList == null) {
+		CourseAndCourseRegistration[] regList = session.get(CourseAndCourseRegistration[].class);
+		if (regList == null) {
 			GWT.log("No course and course registration list?");
 			SessionUtil.getCourseAndCourseRegistrationsRPC(page, session);
 		} else {
+			courseAndCourseRegistrationList = filterCourseRegistrations(regList);
 			displayCourses();
 		}
 	}
@@ -116,19 +211,47 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	}
 	
 	private String format(CourseAndCourseRegistration ccr) {
-		return ccr.getCourse().getName() + ", " + ccr.getCourse().getTermAndYear().toString();
+		switch (displayMode) {
+		case FANCY:
+			return ccr.getCourse().getNameAndTitle() + ", " + ccr.getCourse().getTermAndYear().toString();
+			
+		case PLAIN:
+		default:
+			return ccr.getCourse().getName() + ", " + ccr.getCourse().getTermAndYear().toString();
+		}
 	}
 	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseAndCourseRegistration[]) {
 			// Courses loaded successfully
-			courseAndCourseRegistrationList = (CourseAndCourseRegistration[]) hint;
+			courseAndCourseRegistrationList = filterCourseRegistrations((CourseAndCourseRegistration[]) hint);
 			displayCourses();
 		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
 			// the course selection has changed, update which item is selected
 			updateSelection((CourseSelection) hint);
 		}
+	}
+
+	private CourseAndCourseRegistration[] filterCourseRegistrations(CourseAndCourseRegistration[] hint) {
+		// Sort CourseAndCourseRegistrations
+		ArrayList<CourseAndCourseRegistration> sortedRegList = new ArrayList<CourseAndCourseRegistration>(Arrays.asList(hint));
+		Collections.sort(sortedRegList, new CourseAndCourseRegistrationComparator());
+		
+		// Build a list with a single entry per registered course.
+		// Due to the sort order, this ensures that if the user
+		// is an instructor in a course, that registration is the
+		// one that is used.
+		ArrayList<CourseAndCourseRegistration> filteredRegList = new ArrayList<CourseAndCourseRegistration>();
+		Set<Integer> courseIds = new HashSet<Integer>();
+		for (CourseAndCourseRegistration reg : sortedRegList) {
+			if (!courseIds.contains(reg.getCourse().getId())) {
+				courseIds.add(reg.getCourse().getId());
+				filteredRegList.add(reg);
+			}
+		}
+		
+		return filteredRegList.toArray(new CourseAndCourseRegistration[filteredRegList.size()]);
 	}
 
 	/**

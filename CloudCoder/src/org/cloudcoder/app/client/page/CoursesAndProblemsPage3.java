@@ -17,6 +17,11 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.cloudcoder.app.client.model.LoginIndicator;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
@@ -24,6 +29,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.AccordionPanel;
+import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -85,7 +91,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
-		private ListBox courseListBox;
+		//private ListBox courseListBox;
+		private CourseSelectionListBox courseListBox;
+		private List<CourseAndCourseRegistration> courseListBoxItems;
 		private ScrollPanel termAndCourseTreeViewScrollPanel; // term and course tree view will go here
 		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
@@ -117,10 +125,14 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.add(courseListBoxLabel);
 			full.setWidgetLeftWidth(courseListBoxLabel, 0.0, Unit.PX, 100.0, Unit.PX);
 			full.setWidgetTopHeight(courseListBoxLabel, PageNavPanel.HEIGHT_PX - 4.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
-			this.courseListBox = new ListBox();
+			this.courseListBox = new CourseSelectionListBox(CoursesAndProblemsPage3.this, 1);
+			this.courseListBox.setDisplayMode(CourseSelectionListBox.DisplayMode.FANCY);
 			full.add(courseListBox);
 			full.setWidgetLeftWidth(courseListBox, 110.0, Unit.PX, 480.0, Unit.PX);
 			full.setWidgetTopHeight(courseListBox, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+			// This list keeps track of the CourseAndCourseRegistrations
+			// displayed in the listbox
+			this.courseListBoxItems = new ArrayList<CourseAndCourseRegistration>();
 			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
 			
@@ -346,6 +358,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			progressSummaryView.activate(session, subscriptionRegistrar);
 			exerciseList.activate(session, subscriptionRegistrar);
 			userAccountView.activate(session, subscriptionRegistrar);
+			courseListBox.activate(session, subscriptionRegistrar);
 			
 			// Create the Admin tab if the user is a superuser
 			User user = session.get(User.class);
