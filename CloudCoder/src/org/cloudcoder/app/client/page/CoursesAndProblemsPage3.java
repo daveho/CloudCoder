@@ -54,6 +54,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -89,6 +90,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private Button manageUsersButton;
 		private TabLayoutPanel tabLayoutPanel;
 		private CreateCoursePanel createCoursePanel;
+		private boolean manageCourseTabCreated;
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -323,6 +325,25 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				}
 			});
 		}
+		
+		private IsWidget createManageCourseTab() {
+			LayoutPanel panel = new LayoutPanel();
+			
+			AccordionPanel accordionPanel = new AccordionPanel();
+			
+			// For now, just add placeholder widgets
+			Image kitten = new Image("http://placekitten.com/480/360");
+			accordionPanel.add(kitten, "Kitten!");
+
+			Image kitten2 = new Image("http://placekitten.com/600/450");
+			accordionPanel.add(kitten2, "Another kitten!");
+
+			panel.add(accordionPanel);
+			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+			panel.setWidgetLeftRight(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+						
+			return panel;
+		}
 
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
@@ -346,6 +367,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			}
 
 			// Load courses
+			session.remove(CourseAndCourseRegistration[].class); // force a refresh
 			SessionUtil.getCourseAndCourseRegistrationsRPC(CoursesAndProblemsPage3.this, session);
 		}
 
@@ -401,6 +423,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				// administrator is selected
 				manageExercisesButton.setEnabled(false);
 				manageUsersButton.setEnabled(false);
+			}
+			
+			// Create "Manage course" tab is appropriate
+			if (isInstructor && !this.manageCourseTabCreated) {
+				IsWidget manageCoursePanel = createManageCourseTab();
+				tabLayoutPanel.add(manageCoursePanel, "Manage course");
+				this.manageCourseTabCreated = true;
 			}
 		}
 
