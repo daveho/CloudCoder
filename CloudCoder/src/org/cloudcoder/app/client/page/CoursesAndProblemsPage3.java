@@ -17,11 +17,6 @@
 
 package org.cloudcoder.app.client.page;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.cloudcoder.app.client.model.LoginIndicator;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
@@ -37,7 +32,6 @@ import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView3;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
-import org.cloudcoder.app.client.view.TermAndCourseTreeView;
 import org.cloudcoder.app.client.view.UserAccountView2;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
@@ -60,17 +54,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.view.client.SelectionChangeEvent;
 
 /**
  * Home page providing access to exercises, account information,
@@ -86,15 +75,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double LOAD_EXERCISE_BUTTON_WIDTH_PX = 120.0;
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
 		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
-		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = ADMIN_BUTTON_HEIGHT_PX*2 + 4.0;
 		private static final double COURSE_LISTBOX_HEIGHT_PX = 24.0;
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
-		//private ListBox courseListBox;
 		private CourseSelectionListBox courseListBox;
-		private List<CourseAndCourseRegistration> courseListBoxItems;
-		private ScrollPanel termAndCourseTreeViewScrollPanel; // term and course tree view will go here
 		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
@@ -104,7 +89,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private Button manageUsersButton;
 		private TabLayoutPanel tabLayoutPanel;
 		private CreateCoursePanel createCoursePanel;
-
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -130,9 +114,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.add(courseListBox);
 			full.setWidgetLeftWidth(courseListBox, 110.0, Unit.PX, 480.0, Unit.PX);
 			full.setWidgetTopHeight(courseListBox, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
-			// This list keeps track of the CourseAndCourseRegistrations
-			// displayed in the listbox
-			this.courseListBoxItems = new ArrayList<CourseAndCourseRegistration>();
 			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
 			
@@ -167,13 +148,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			LayoutPanel wrap = new LayoutPanel();
 			
 			DockLayoutPanel exercises = new DockLayoutPanel(Unit.PX);
-			
+
+			// FIXME: this will go away once the "Manage course" tab is completely working
 			this.west = new LayoutPanel();
-			SectionLabel coursesLabel = new SectionLabel("Courses");
-			west.add(coursesLabel);
-			west.setWidgetLeftRight(coursesLabel, 0.0, Unit.PX, SEP_PX, Unit.PX);
-			west.setWidgetTopHeight(coursesLabel, 0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
-			// term and course tree view will be added dynamically when page is activated
 			exercises.addWest(west, WEST_PANEL_WIDTH_PX);
 			
 			LayoutPanel east = new LayoutPanel();
@@ -386,14 +363,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				CourseAndCourseRegistration[] courseAndRegList) {
 			
 			GWT.log("Courses and course registrations loaded...");
-			if (termAndCourseTreeViewScrollPanel != null) {
-				// It is possible for the CourseAndCourseRegistrations to be loaded
-				// multiple times.  Make sure that there is only one
-				// TermAndCourseTreeView widget!
-				west.remove(termAndCourseTreeViewScrollPanel);
-				termAndCourseTreeViewScrollPanel = null;
-			}
-			
 			boolean isInstructor = false;
 
 			// Determine if the user is an instructor for any of the courses
@@ -404,22 +373,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				}
 			}
 			
-			// Courses are loaded - populate TermAndCourseTreeView.
-			// If the user is an instructor for at least one course, leave some room for
-			// the "Course admin" button.
-			// Wrap the TermAndCourseTreeView in a ScrollPanel
-			this.termAndCourseTreeViewScrollPanel = new ScrollPanel();
-			west.add(termAndCourseTreeViewScrollPanel);
-			west.setWidgetTopBottom(
-					termAndCourseTreeViewScrollPanel,
-					SectionLabel.HEIGHT_PX,
-					Unit.PX,
-					(isInstructor ? COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX + 8.0 : 0.0),
-					Unit.PX);
-			west.setWidgetLeftRight(termAndCourseTreeViewScrollPanel, 0.0, Unit.PX, SEP_PX, Unit.PX);
-			final TermAndCourseTreeView termAndCourseTreeView = new TermAndCourseTreeView(courseAndRegList);
-			termAndCourseTreeViewScrollPanel.add(termAndCourseTreeView);
-
 			// Create the "Problems" and "User" admin buttons if appropriate.
 			if (isInstructor && manageExercisesButton == null) {
 				this.manageExercisesButton = new Button("Manage exercises");
@@ -449,17 +402,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				manageExercisesButton.setEnabled(false);
 				manageUsersButton.setEnabled(false);
 			}
-
-			// add selection event handler
-			termAndCourseTreeView.addSelectionHandler(new SelectionChangeEvent.Handler() {
-				@Override
-				public void onSelectionChange(SelectionChangeEvent event) {
-					CourseSelection courseSelection = termAndCourseTreeView.getSelectedCourseAndModule();
-					if (courseSelection != null) {
-						getSession().add(courseSelection);
-					}
-				}
-			});
 		}
 
 		public void onCourseSelected(CourseSelection sel) {
