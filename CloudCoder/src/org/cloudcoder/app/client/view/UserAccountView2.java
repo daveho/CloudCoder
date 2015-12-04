@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2014, Shane Bonner
 //
 // This program is free software: you can redistribute it and/or modify
@@ -194,7 +194,7 @@ public class UserAccountView2 extends ResizeComposite implements Subscriber, Ses
 		user.setPasswordHash(passwordTextBox.getValue());
 		
 		GWT.log("Attempting to update password for " + user.getUsername());
-		SessionUtil.editUser(page, user, session, new Runnable() {
+		SessionUtil.editUser(page, user, new Runnable() {
 			@Override
 			public void run() {
 				// Password updated successfully: clear the password textboxes

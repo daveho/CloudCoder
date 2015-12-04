@@ -260,4 +260,25 @@ public class User implements Serializable, IModelObject<User> {
     public void setSuperuser(boolean superuser) {
 		this.superuser = superuser;
 	}
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj == null || !(obj instanceof User)) {
+    		return false;
+    	}
+    	User other = (User) obj;
+    	return this.id == other.id
+    			&& ModelObjectUtil.equals(this.userName, other.userName)
+    			&& ModelObjectUtil.equals(this.firstname, other.firstname)
+    			&& ModelObjectUtil.equals(this.email, other.email)
+    			&& ModelObjectUtil.equals(this.passwordHash, other.passwordHash)
+    			&& ModelObjectUtil.equals(this.website, other.website)
+    			&& ModelObjectUtil.equals(this.consent, other.consent)
+    			&& this.superuser == other.superuser;
+    }
+    
+    @Override
+    public int hashCode() {
+    	return (userName != null) ? userName.hashCode() : 0;
+    }
 }

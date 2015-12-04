@@ -1,5 +1,5 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
 // Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.ModelObjectUtil;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
@@ -42,28 +43,60 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author David Hovemeyer
  */
 public class SessionUtil {
+	/**
+	 *  Keeps track of a pending RPC call (and its parameters).
+	 */
 	static class RunOnce {
-		boolean pending;
+		//boolean pending;
+		int pending;
+		Object[] pendingParams;
 	}
 	
+	/**
+	 * Execute an RPC call with specified parameters, but only if
+	 * an identical call is not already running.
+	 */
 	static abstract class OneTimeRunnable {
 		private RunOnce runner;
+		private Object[] params;
 
-		public OneTimeRunnable(RunOnce runner) {
+		/**
+		 * Constructor.
+		 * 
+		 * @param runner the {@link RunOnce} keeping track of pending executions
+		 * @param params the parameters of this (attempted) RPC call
+		 */
+		public OneTimeRunnable(RunOnce runner, Object... params) {
 			this.runner = runner;
+			this.params = params;
 		}
 		
+		/**
+		 * Execute the RPC call, unless the currently-pending RPC call
+		 * used identical parameters.
+		 */
 		public void execute() {
-			if (!runner.pending) {
-				runner.pending = true;
+			if (runner.pending == 0 || !sameParams(this.params, runner.pendingParams)) {
+				runner.pending++;
+				runner.pendingParams = params;
 				run();
 			}
 		}
-		
+
+		/**
+		 * The actual execution of the RPC call.
+		 */
 		public abstract void run();
 		
+		/**
+		 * Called when the actual RPC call finishes or reports an error.
+		 */
 		protected void onDone() {
-			runner.pending = false;
+			runner.pending--;
+		}
+		
+		private static boolean sameParams(Object[] params, Object[] pendingParams) {
+			return ModelObjectUtil.arrayEquals(params, pendingParams);
 		}
 	}
 	
@@ -89,7 +122,7 @@ public class SessionUtil {
 	 * @param session          the {@link Session}
 	 */
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final CourseSelection courseSelection, final Session session) {
-		new OneTimeRunnable(loadProblemsAndSubmissionReceiptsRunner) {
+		new OneTimeRunnable(loadProblemsAndSubmissionReceiptsRunner, courseSelection) {
 			public void run() {
 				Course course = courseSelection.getCourse();
 				Module module = courseSelection.getModule();
@@ -140,7 +173,7 @@ public class SessionUtil {
 			final Problem problem,
 			final ICallback<ProblemAndTestCaseList> onSuccess,
 			final ICallback<Pair<String, Throwable>> onFailure) {
-		new OneTimeRunnable(loadProblemsAndTestCaseListRunner) {
+		new OneTimeRunnable(loadProblemsAndTestCaseListRunner, problem) {
 			public void run() {
 				RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
 					@Override
@@ -153,8 +186,8 @@ public class SessionUtil {
 								}
 							});
 						} else {
-							//page.getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
 							onFailure.call(new Pair<String, Throwable>("Could not load test cases for problem", caught));
+							onDone();
 						}
 					}
 		
@@ -165,11 +198,14 @@ public class SessionUtil {
 						problemAndTestCaseList.setProblem(problem);
 						problemAndTestCaseList.setTestCaseList(result);
 						onSuccess.call(problemAndTestCaseList);
+						onDone();
 					}
 				});
 			}
 		}.execute();
 	}
+	
+	private static final RunOnce loadCourseAndCourseRegistrationListRunner = new RunOnce();
 
 	/**
 	 * Load the list of CourseAndCourseRegistrations for the logged-in user.
@@ -182,27 +218,36 @@ public class SessionUtil {
 			final CloudCoderPage page,
 			final ICallback<CourseAndCourseRegistration[]> onSuccess,
 			final ICallback<Pair<String, Throwable>> onFailure) {
-		RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof CloudCoderAuthenticationException) {
-					page.recoverFromServerSessionTimeout(new Runnable(){
-						@Override
-						public void run() {
-							loadCourseAndCourseRegistrationList(page, onSuccess, onFailure);
+		new OneTimeRunnable(loadCourseAndCourseRegistrationListRunner) {
+			public void run() {
+				GWT.log("Requesting courses and course registrations...");
+				RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable(){
+								@Override
+								public void run() {
+									loadCourseAndCourseRegistrationList(page, onSuccess, onFailure);
+								}
+							});
+						} else {
+							onFailure.call(new Pair<String, Throwable>("Error loading courses and course registrations", caught));
+							onDone();
 						}
-					});
-				} else {
-					onFailure.call(new Pair<String, Throwable>("Error loading courses and course registrations", caught));
-				}
+					}
+					
+					@Override
+					public void onSuccess(CourseAndCourseRegistration[] result) {
+						onSuccess.call(result);
+						onDone();
+					}
+				});
 			}
-			
-			@Override
-			public void onSuccess(CourseAndCourseRegistration[] result) {
-				onSuccess.call(result);
-			}
-		});
+		}.execute();
 	}
+	
+	private static final RunOnce loadUsersInCourseRunner = new RunOnce();
 
 	/**
 	 * Load list of {@link User}s in course indicated by a {@link CourseSelection}.
@@ -217,55 +262,62 @@ public class SessionUtil {
 			final CourseSelection courseSelection,
 			final ICallback<User[]> onSuccess,
 			final ICallback<Pair<String, Throwable>> onFailure) {
-		RPC.usersService.getUsers(courseSelection.getCourse().getId(), 0, new AsyncCallback<User[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof CloudCoderAuthenticationException) {
-					page.recoverFromServerSessionTimeout(new Runnable() {
-						@Override
-						public void run() {
-							loadUsersInCourse(page, courseSelection, onSuccess, onFailure);
+		new OneTimeRunnable(loadUsersInCourseRunner, courseSelection) {
+			public void run() {
+				RPC.usersService.getUsers(courseSelection.getCourse().getId(), 0, new AsyncCallback<User[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									loadUsersInCourse(page, courseSelection, onSuccess, onFailure);
+								}
+							});
+						} else {
+							onFailure.call(new Pair<String, Throwable>("Error loading users in course", caught));
+							onDone();
 						}
-					});
-				} else {
-					onFailure.call(new Pair<String, Throwable>("Error loading users in course", caught));
-				}
+					}
+					
+					@Override
+					public void onSuccess(User[] result) {
+						onSuccess.call(result);
+						onDone();
+					}
+				});
 			}
-			
-			@Override
-			public void onSuccess(User[] result) {
-				onSuccess.call(result);
-			}
-		});
+		}.execute();
 	}
-	
+
+	/**
+	 * Get the list of {@link CourseAndCourseRegistration}s for the logged-in
+	 * user, and add them to the {@link Session}.
+	 * 
+	 * @param page     the {@link CloudCoderPage}
+	 * @param session  the {@link Session}
+	 */
 	public static void getCourseAndCourseRegistrationsRPC(
 			final CloudCoderPage page,
 			final Session session) {
-		RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
-			@Override
-			public void onSuccess(CourseAndCourseRegistration[] result) {
-				GWT.log(result.length + " course(s) loaded");
-				page.addSessionObject(result);
-			}
-
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof CloudCoderAuthenticationException) {
-					page.recoverFromServerSessionTimeout(new Runnable() {
-						@Override
-						public void run() {
-							// Try again!
-							getCourseAndCourseRegistrationsRPC(page, session);
-						}
-					});
-				} else {
-					GWT.log("Error loading courses", caught);
-					session.add(StatusMessage.error("Error loading courses", caught));
+		loadCourseAndCourseRegistrationList(
+				page,
+				new ICallback<CourseAndCourseRegistration[]>() {
+					@Override
+					public void call(CourseAndCourseRegistration[] value) {
+						session.add(value);
+					}
+				},
+				new ICallback<Pair<String,Throwable>>() {
+					@Override
+					public void call(Pair<String, Throwable> value) {
+						session.add(StatusMessage.error(value.getLeft(), value.getRight()));
+					}
 				}
-			}
-		});
+		);
 	}
+	
+	private static final RunOnce editUserRunner = new RunOnce();
 
 	/**
 	 * Update (edit) user information, handling a session timeout
@@ -275,30 +327,37 @@ public class SessionUtil {
 	 * @param user     the updated {@link User}
 	 * @param session  the {@link Session}
 	 */
-	public static void editUser(final CloudCoderPage page, final User user, final Session session, final Runnable onSuccess) {
-		RPC.usersService.editUser(
-				user,
-				new AsyncCallback<Boolean>() { 
-					@Override
-					public void onSuccess(Boolean result) {
-						session.add(StatusMessage.goodNews("Successfully updated user " + user.getUsername()));
-						onSuccess.run();
-					}
-		
-					@Override
-					public void onFailure(Throwable caught) {
-						if (caught instanceof CloudCoderAuthenticationException) {
-							page.recoverFromServerSessionTimeout(new Runnable() {
-								@Override
-								public void run() {
-									editUser(page, user, session, onSuccess);
+	public static void editUser(final CloudCoderPage page, final User user, final Runnable onSuccess) {
+		new OneTimeRunnable(editUserRunner, user) {
+			@Override
+			public void run() {
+				RPC.usersService.editUser(
+						user,
+						new AsyncCallback<Boolean>() { 
+							@Override
+							public void onSuccess(Boolean result) {
+								page.getSession().add(StatusMessage.goodNews("Successfully updated user " + user.getUsername()));
+								onSuccess.run();
+								onDone();
+							}
+				
+							@Override
+							public void onFailure(Throwable caught) {
+								if (caught instanceof CloudCoderAuthenticationException) {
+									page.recoverFromServerSessionTimeout(new Runnable() {
+										@Override
+										public void run() {
+											editUser(page, user, onSuccess);
+										}
+									});
+								} else {
+									GWT.log("Failed to edit user");
+									page.getSession().add(StatusMessage.error("Error updating user " + user.getUsername(), caught));
+									onDone();
 								}
-							});
-						} else {
-							GWT.log("Failed to edit user");
-							session.add(StatusMessage.error("Error updating user " + user.getUsername(), caught));
-						}
-					}
-				});
+							}
+						});
+			}
+		};
 	}
 }
