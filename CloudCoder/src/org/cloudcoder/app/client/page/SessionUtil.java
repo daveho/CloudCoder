@@ -32,7 +32,6 @@ import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
-import org.cloudcoder.app.client.page.CloudCoderPage;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -43,6 +42,31 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author David Hovemeyer
  */
 public class SessionUtil {
+	static class RunOnce {
+		boolean pending;
+	}
+	
+	static abstract class OneTimeRunnable {
+		private RunOnce runner;
+
+		public OneTimeRunnable(RunOnce runner) {
+			this.runner = runner;
+		}
+		
+		public void execute() {
+			if (!runner.pending) {
+				runner.pending = true;
+				run();
+			}
+		}
+		
+		public abstract void run();
+		
+		protected void onDone() {
+			runner.pending = false;
+		}
+	}
+	
 	/**
 	 * Retrieve list of {@link ProblemAndSubmissionReceipt}s for given {@link Course}.
 	 * This method retrieves problems in all {@link Module}s.
@@ -54,6 +78,8 @@ public class SessionUtil {
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final Course course, final Session session) {
 		loadProblemAndSubmissionReceiptsInCourse(page, new CourseSelection(course, null), session);
 	}
+	
+	private static final RunOnce loadProblemsAndSubmissionReceiptsRunner = new RunOnce();
 
 	/**
 	 * Retrieve list of {@link ProblemAndSubmissionReceipt}s for given {@link CourseSelection}.
@@ -63,33 +89,41 @@ public class SessionUtil {
 	 * @param session          the {@link Session}
 	 */
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final CourseSelection courseSelection, final Session session) {
-		Course course = courseSelection.getCourse();
-		Module module = courseSelection.getModule();
-		GWT.log("RPC to load problems and submission receipts for course " + course.getNameAndTitle());
-		RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), module, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
-            @Override
-            public void onFailure(Throwable caught) {
-            	if (caught instanceof CloudCoderAuthenticationException) {
-            		// See if we can log back in
-            		page.recoverFromServerSessionTimeout(new Runnable() {
-            			public void run() {
-            				// Try again!
-            				loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
-            			}
-            		});
-            	} else {
-	                GWT.log("Error loading problems", caught);
-	                session.add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
-            	}
-            }
-
-            @Override
-            public void onSuccess(ProblemAndSubmissionReceipt[] result) {
-            	GWT.log(result.length + " ProblemAndSubmissionReceipts loaded successfully, adding to client-side session...");
-                session.add(result);
-            }
-        });
+		new OneTimeRunnable(loadProblemsAndSubmissionReceiptsRunner) {
+			public void run() {
+				Course course = courseSelection.getCourse();
+				Module module = courseSelection.getModule();
+				GWT.log("RPC to load problems and submission receipts for course " + course.getNameAndTitle());
+				RPC.getCoursesAndProblemsService.getProblemAndSubscriptionReceipts(course, session.get(User.class), module, new AsyncCallback<ProblemAndSubmissionReceipt[]>() {
+		            @Override
+		            public void onFailure(Throwable caught) {
+		            	if (caught instanceof CloudCoderAuthenticationException) {
+		            		// See if we can log back in
+		            		page.recoverFromServerSessionTimeout(new Runnable() {
+		            			public void run() {
+		            				// Try again!
+		            				loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
+		            			}
+		            		});
+		            	} else {
+			                GWT.log("Error loading problems", caught);
+			                session.add(StatusMessage.error("Error loading problems: " + caught.getMessage()));
+			                onDone();
+		            	}
+		            }
+		
+		            @Override
+		            public void onSuccess(ProblemAndSubmissionReceipt[] result) {
+		            	GWT.log(result.length + " ProblemAndSubmissionReceipts loaded successfully, adding to client-side session...");
+		                session.add(result);
+		                onDone();
+		            }
+		        });
+			}
+		}.execute();
 	}
+	
+	private static final RunOnce loadProblemsAndTestCaseListRunner = new RunOnce();
 
 	/**
 	 * Load a complete {@link ProblemAndTestCaseList} for given {@link Problem}.
@@ -106,31 +140,35 @@ public class SessionUtil {
 			final Problem problem,
 			final ICallback<ProblemAndTestCaseList> onSuccess,
 			final ICallback<Pair<String, Throwable>> onFailure) {
-		RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof CloudCoderAuthenticationException) {
-					page.recoverFromServerSessionTimeout(new Runnable() {
-						public void run() {
-							// Try again!
-							loadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
+		new OneTimeRunnable(loadProblemsAndTestCaseListRunner) {
+			public void run() {
+				RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								public void run() {
+									// Try again!
+									loadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
+								}
+							});
+						} else {
+							//page.getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
+							onFailure.call(new Pair<String, Throwable>("Could not load test cases for problem", caught));
 						}
-					});
-				} else {
-					//page.getSession().add(StatusMessage.error("Could not load test cases for problem: " + caught.getMessage()));
-					onFailure.call(new Pair<String, Throwable>("Could not load test cases for problem", caught));
-				}
+					}
+		
+					@Override
+					public void onSuccess(TestCase[] result) {
+						// Success!
+						ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
+						problemAndTestCaseList.setProblem(problem);
+						problemAndTestCaseList.setTestCaseList(result);
+						onSuccess.call(problemAndTestCaseList);
+					}
+				});
 			}
-
-			@Override
-			public void onSuccess(TestCase[] result) {
-				// Success!
-				ProblemAndTestCaseList problemAndTestCaseList = new ProblemAndTestCaseList();
-				problemAndTestCaseList.setProblem(problem);
-				problemAndTestCaseList.setTestCaseList(result);
-				onSuccess.call(problemAndTestCaseList);
-			}
-		});
+		}.execute();
 	}
 
 	/**
