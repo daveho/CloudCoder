@@ -358,6 +358,6 @@ public class SessionUtil {
 							}
 						});
 			}
-		};
+		}.execute();
 	}
 }
