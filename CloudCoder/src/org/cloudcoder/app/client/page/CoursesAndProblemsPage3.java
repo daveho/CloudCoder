@@ -56,9 +56,11 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -79,9 +81,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
 		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
 		private static final double COURSE_AND_USER_ADMIN_BUTTON_HEIGHT_PX = ADMIN_BUTTON_HEIGHT_PX*2 + 4.0;
+		private static final double COURSE_LISTBOX_HEIGHT_PX = 24.0;
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
+		private ListBox courseListBox;
 		private ScrollPanel termAndCourseTreeViewScrollPanel; // term and course tree view will go here
 		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
@@ -109,6 +113,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			pageNavPanel.setShowBackButton(false);
 			
+			InlineLabel courseListBoxLabel = new InlineLabel("Select course:");
+			full.add(courseListBoxLabel);
+			full.setWidgetLeftWidth(courseListBoxLabel, 0.0, Unit.PX, 100.0, Unit.PX);
+			full.setWidgetTopHeight(courseListBoxLabel, PageNavPanel.HEIGHT_PX - 4.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+			this.courseListBox = new ListBox();
+			full.add(courseListBox);
+			full.setWidgetLeftWidth(courseListBox, 110.0, Unit.PX, 480.0, Unit.PX);
+			full.setWidgetTopHeight(courseListBox, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
 			
 			// Exercises tab
@@ -128,7 +141,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			full.add(tabLayoutPanel);
 			full.setWidgetLeftRight(tabLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-			full.setWidgetTopBottom(tabLayoutPanel, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			full.setWidgetTopBottom(tabLayoutPanel, PageNavPanel.HEIGHT_PX + COURSE_LISTBOX_HEIGHT_PX /*- 8.0*/, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 
 			this.statusMessageView = new StatusMessageView();
 			full.add(statusMessageView);
