@@ -227,6 +227,13 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 			// Courses loaded successfully
 			courseAndCourseRegistrationList = filterCourseRegistrations((CourseAndCourseRegistration[]) hint);
 			displayCourses();
+			
+			// If there is no CourseSelection in the Session yet,
+			// make the first course the selected one
+			CourseSelection sel = session.get(CourseSelection.class);
+			if (sel == null && courseAndCourseRegistrationList.length > 0) {
+				session.add(new CourseSelection(courseAndCourseRegistrationList[0].getCourse(), null));
+			}
 		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
 			// the course selection has changed, update which item is selected
 			updateSelection((CourseSelection) hint);
@@ -258,6 +265,11 @@ public class CourseSelectionListBox extends Composite implements SessionObserver
 	 * @param sel
 	 */
 	private void updateSelection(CourseSelection sel) {
+		if (courseAndCourseRegistrationList == null) {
+			// This can happen if two CourseSelectionListBoxes are active,
+			// and one becomes fully initialized before the other
+			return;
+		}
 		for (int index = 0; index < courseAndCourseRegistrationList.length; index++) {
 			if (sel.getCourse().getId() == courseAndCourseRegistrationList[index].getCourse().getId()) {
 				listBox.setSelectedIndex(index);
