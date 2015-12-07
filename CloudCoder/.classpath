@@ -24,7 +24,6 @@
 			<attribute name="javadoc_location" value="http://opencsv.sourceforge.net/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="srclib/gwt-traction-1.5.8.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesPersistence"/>
