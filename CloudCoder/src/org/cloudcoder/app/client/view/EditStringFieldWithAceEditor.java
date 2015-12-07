@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,6 @@ package org.cloudcoder.app.client.view;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -57,6 +56,9 @@ public class EditStringFieldWithAceEditor<ModelObjectType>
 			panel.add(editor);
 			editorStarted = false;
 			
+			editorMode = AceEditorMode.TEXT;
+			editorTheme = AceEditorTheme.VIBRANT_INK;
+			
 			initWidget(panel);
 		}
 
@@ -66,10 +68,8 @@ public class EditStringFieldWithAceEditor<ModelObjectType>
 
 		public void startEditor() {
 			editor.startEditor();
-			if (editorMode != null) {
-				editor.setMode(editorMode);
-				currentMode = editorMode;
-			}
+			editor.setMode(editorMode);
+			currentMode = editorMode;
 			editor.setTheme(editorTheme);
 			editor.setFontSize("14px");
 			editorStarted = true;

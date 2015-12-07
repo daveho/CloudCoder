@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,7 @@
 
 package org.cloudcoder.app.client.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -28,8 +29,6 @@ import com.google.gwt.user.client.ui.Label;
  * @author David Hovemeyer
  */
 public class SetDatesPanel extends Composite {
-	// Note: DateTimePicker picks UTC dates/times.
-	// You will see code in this class to convert to/from local time.
 	private DateTimePicker whenAssignedPicker;
 	private DateTimePicker whenDuePicker;
 	
@@ -52,7 +51,8 @@ public class SetDatesPanel extends Composite {
 	 * @param value the "when assigned" date/time to set
 	 */
 	public void setWhenAssigned(long value) {
-		whenAssignedPicker.setValue(DateTimePicker.localToUtc(value));
+		GWT.log("Setting when assigned=" + value);
+		whenAssignedPicker.setValue(value);
 	}
 	
 	/**
@@ -61,21 +61,26 @@ public class SetDatesPanel extends Composite {
 	 * @param value the "when due" date/time to set
 	 */
 	public void setWhenDue(long value) {
-		whenDuePicker.setValue(DateTimePicker.localToUtc(value));
+		GWT.log("Setting when due=" + value);
+		whenDuePicker.setValue(value);
 	}
 	
 	/**
 	 * @return the "when assigned" date/time
 	 */
 	public long getWhenAssigned() {
-		return DateTimePicker.utcToLocal(whenAssignedPicker.getValue());
+		Long value = whenAssignedPicker.getValue();
+		GWT.log("When assigned value: " + value);
+		return value;
 	}
 	
 	/**
 	 * @return the "when due" date/time
 	 */
 	public long getWhenDue() {
-		return DateTimePicker.utcToLocal(whenDuePicker.getValue());
+		Long value = whenDuePicker.getValue();
+		GWT.log("When due value: " + value);
+		return value;
 	}
 
 	public DateTimePicker createLabeledDateTimePicker(FlowPanel panel, String labelText) {

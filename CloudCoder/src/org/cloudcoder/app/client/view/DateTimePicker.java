@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -19,6 +19,9 @@ package org.cloudcoder.app.client.view;
 
 import java.util.Date;
 
+import org.cloudcoder.app.client.model.DateTimeUtil;
+
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -26,39 +29,35 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasValue;
-import com.tractionsoftware.gwt.user.client.ui.UTCDateBox;
-import com.tractionsoftware.gwt.user.client.ui.UTCTimeBox;
+import com.google.gwt.user.datepicker.client.DatePicker;
 
 /**
- * Attempt at a date/time picker widget using UTCDateBox and
- * UTCTimeBox from GWT-Traction.  <em>Important</em>: this
- * widget allows the user to pick a UTC time, and the result
- * will likely need to be adjusted for the local timezone
- * (which can be done with the {@link #utcToLocal(long)} method. 
+ * Attempt at a date/time picker widget using the GWT DatePicker
+ * class and our custom HourMinuteTextBox widget.
  * 
  * @author David Hovemeyer
  */
 public class DateTimePicker extends Composite implements HasValueChangeHandlers<Long>, HasValue<Long> {
-	private UTCDateBox dateBox;
-	private UTCTimeBox timeBox;
+	private DatePicker dateBox;
+	private HourMinuteTextBox timeBox;
 	
 	public DateTimePicker() {
 		FlowPanel panel = new FlowPanel();
 		
-		dateBox = new UTCDateBox();
+		dateBox = new DatePicker();
 		FlowPanel dateDiv = new FlowPanel();
 		dateDiv.add(dateBox);
 		panel.add(dateDiv);
-		timeBox = new UTCTimeBox();
+		timeBox = new HourMinuteTextBox();
 		FlowPanel timeDiv = new FlowPanel();
 		timeDiv.add(timeBox);
 		panel.add(timeDiv);
 		initWidget(panel);
 		
 		// Listen for change events from the date box and time box
-		dateBox.addValueChangeHandler(new ValueChangeHandler<Long>() {
+		dateBox.addValueChangeHandler(new ValueChangeHandler<Date>() {
 			@Override
-			public void onValueChange(ValueChangeEvent<Long> event) {
+			public void onValueChange(ValueChangeEvent<Date> event) {
 				ValueChangeEvent.fire(DateTimePicker.this, getValue());
 			}
 		});
@@ -77,15 +76,30 @@ public class DateTimePicker extends Composite implements HasValueChangeHandlers<
 
 	@Override
 	public Long getValue() {
-		return dateBox.getValue() + timeBox.getValue();
+		GWT.log("DateTimePicker: getting value...");
+		Date date = dateBox.getValue();
+		Long time = timeBox.getValue();
+		GWT.log("DateTimePicker: date=" + date + ", time=" + time);
+		return date.getTime() + time;
 	}
 
 	@Override
 	public void setValue(Long value) {
-		long midnight = UTCDateBox.trimTimeToMidnight(value);
-		long excess = value - midnight;
-		dateBox.setValue(value, false);
-		timeBox.setValue(excess, false);
+		// Convert to a (local) date/time
+		Date date = new Date(value);
+		GWT.log("Original time: " + date.getTime());
+		
+		// Convert date to midnight by formatting without
+		// hour/minute components
+		Date midnight = DateTimeUtil.toMidnight(date);
+		GWT.log("Midnight time: " + midnight.getTime());
+		dateBox.setValue(midnight);
+		
+		// Excess time is the time past midnight, which gives us the
+		// hour and minute
+		long excess = value - midnight.getTime();
+		GWT.log("Excess time: " + excess);
+		timeBox.setValue(excess);
 	}
 
 	@Override
@@ -94,33 +108,5 @@ public class DateTimePicker extends Composite implements HasValueChangeHandlers<
 		if (fireEvents) {
 			ValueChangeEvent.fire(this, value);
 		}
-	}
-	
-	/**
-	 * Convert a time in UTC to a local time.
-	 * E.g., convert 9:00 AM in UTC to 9:00 AM in the local
-	 * timezone.  Note that this is a <em>different time</em>
-	 * in the sense of not being the same instant as the UTC
-	 * time, which makes sense if the user thinks he/she
-	 * is editing a local time rather than a UTC time.
-	 * 
-	 * @param utcTime  a UTC time
-	 * @return a local time (adjusting for the current time zone offset)
-	 */
-	public static long utcToLocal(long utcTime) {
-		Date local = UTCDateBox.utc2date(utcTime);
-		return local.getTime();
-	}
-
-	/**
-	 * Convert a local time to a time in UTC.
-	 * This does a conversion that is the opposite of
-	 * {@link #utcToLocal(long)}.
-	 *
-	 * @param value a local time
-	 * @return UTC time
-	 */
-	public static Long localToUtc(long value) {
-		return UTCDateBox.date2utc(new Date(value));
 	}
 }
