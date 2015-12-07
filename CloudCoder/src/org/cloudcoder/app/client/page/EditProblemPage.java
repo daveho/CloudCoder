@@ -369,7 +369,13 @@ public class EditProblemPage extends CloudCoderPage {
 			// Add TestCaseEditors for test cases.
 			testCaseEditorList = new ArrayList<TestCaseEditor>();
 			for (TestCase testCase : problemAndTestCaseList.getTestCaseList()) {
+				GWT.log("Making TestCaseEditor for test case " + testCase.getTestCaseName());
 				final TestCaseEditor testCaseEditor = new TestCaseEditor();
+				// Add the TestCase editor to the DOM early,
+				// since associating it with a TestCase may result in
+				// access to UI elements
+				centerPanel.add(testCaseEditor.getUI());
+				GWT.log("TestCase editor added to panel");
 				testCaseEditor.setDeleteHandler(new Runnable() {
 					@Override
 					public void run() {
@@ -377,8 +383,9 @@ public class EditProblemPage extends CloudCoderPage {
 					}
 				});
 				testCaseEditorList.add(testCaseEditor);
+				GWT.log("About to set the TestCase...");
 				testCaseEditor.setTestCase(testCase);
-				centerPanel.add(testCaseEditor.getUI());
+				GWT.log("TestCase set");
 			}
 			
 			// Add a button to create a new TestCase and TestCaseEditor.
