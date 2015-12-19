@@ -17,7 +17,6 @@
 
 package org.cloudcoder.app.client.page;
 
-import org.cloudcoder.app.client.model.LoginIndicator;
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -26,10 +25,12 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.AccordionPanel;
 import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
+import org.cloudcoder.app.client.view.DebugPopupPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView3;
+import org.cloudcoder.app.client.view.RegisterSingleUserPanel;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAccountView2;
@@ -331,9 +332,24 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
-			// For now, just add placeholder widgets
-			Image kitten = new Image("http://placekitten.com/480/360");
-			accordionPanel.add(kitten, "Kitten!");
+
+			RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel();
+			registerSingleUserPanel.setOnRegisterSingleUser(new Runnable() {
+                @Override
+                public void run() {
+                    Course c=getSession().get(Course.class);
+                    String msg="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+                    if (c!=null) {
+                        msg=c.getNameAndTitle();
+                    }
+                    // TODO: Figure out how to make a goddam debugging window pop up
+                    // with things that I want to fucking print
+                    DebugPopupPanel p=new DebugPopupPanel(msg);
+                    p.show();
+                }
+            });
+			accordionPanel.add(registerSingleUserPanel, "Regsiter Single User");
+
 
 			Image kitten2 = new Image("http://placekitten.com/600/450");
 			accordionPanel.add(kitten2, "Another kitten!");

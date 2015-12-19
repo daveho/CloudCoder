@@ -121,6 +121,7 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 			}
 		});
 		
+		// Load the exercise when the user double-clicks
 		cellTable.addDomHandler(new DoubleClickHandler() {
 		    @Override
 		    public void onDoubleClick(DoubleClickEvent event) { 
