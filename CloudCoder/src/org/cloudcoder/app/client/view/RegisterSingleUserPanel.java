@@ -245,12 +245,6 @@ public class RegisterSingleUserPanel extends Composite implements SessionObserve
     public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
     {
         this.session = session;
-        
         session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-        
-        if (session.get(Course.class) == null) {
-            // TODO: What if we don't have the course?
-        }
-        
     }
 }
