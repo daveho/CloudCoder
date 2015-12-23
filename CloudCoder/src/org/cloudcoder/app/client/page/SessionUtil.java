@@ -39,6 +39,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * Utility methods for working with the {@link Session} object.
+ * There is some sort of crazy code here to
+ * <ul>
+ * <li>Allow only one RPC call with a particular set of parameter
+ *   values to be in-progress at one time</li>
+ * <li>Recover from session timeouts (by popping up a password dialog)</li>
+ * </ul>
  * 
  * @author David Hovemeyer
  */
@@ -46,8 +52,7 @@ public class SessionUtil {
 	/**
 	 *  Keeps track of a pending RPC call (and its parameters).
 	 */
-	static class RunOnce {
-		//boolean pending;
+	private static class RunOnce {
 		int pending;
 		Object[] pendingParams;
 	}
@@ -56,7 +61,7 @@ public class SessionUtil {
 	 * Execute an RPC call with specified parameters, but only if
 	 * an identical call is not already running.
 	 */
-	static abstract class OneTimeRunnable {
+	private static abstract class OneTimeRunnable {
 		private RunOnce runner;
 		private Object[] params;
 
@@ -124,6 +129,11 @@ public class SessionUtil {
 	public static void loadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page, final CourseSelection courseSelection, final Session session) {
 		new OneTimeRunnable(loadProblemsAndSubmissionReceiptsRunner, courseSelection) {
 			public void run() {
+				doLoadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
+			}
+
+			private void doLoadProblemAndSubmissionReceiptsInCourse(final CloudCoderPage page,
+					final CourseSelection courseSelection, final Session session) {
 				Course course = courseSelection.getCourse();
 				Module module = courseSelection.getModule();
 				GWT.log("RPC to load problems and submission receipts for course " + course.getNameAndTitle());
@@ -135,7 +145,7 @@ public class SessionUtil {
 		            		page.recoverFromServerSessionTimeout(new Runnable() {
 		            			public void run() {
 		            				// Try again!
-		            				loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
+		            				doLoadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
 		            			}
 		            		});
 		            	} else {
@@ -156,7 +166,7 @@ public class SessionUtil {
 		}.execute();
 	}
 	
-	private static final RunOnce loadProblemsAndTestCaseListRunner = new RunOnce();
+	private static final RunOnce loadProblemAndTestCaseListRunner = new RunOnce();
 
 	/**
 	 * Load a complete {@link ProblemAndTestCaseList} for given {@link Problem}.
@@ -173,8 +183,14 @@ public class SessionUtil {
 			final Problem problem,
 			final ICallback<ProblemAndTestCaseList> onSuccess,
 			final ICallback<Pair<String, Throwable>> onFailure) {
-		new OneTimeRunnable(loadProblemsAndTestCaseListRunner, problem) {
+		new OneTimeRunnable(loadProblemAndTestCaseListRunner, problem) {
 			public void run() {
+				doLoadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
+			}
+
+			private void doLoadProblemAndTestCaseList(final CloudCoderPage page, final Problem problem,
+					final ICallback<ProblemAndTestCaseList> onSuccess,
+					final ICallback<Pair<String, Throwable>> onFailure) {
 				RPC.getCoursesAndProblemsService.getTestCasesForProblem(problem.getProblemId(), new AsyncCallback<TestCase[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -182,7 +198,7 @@ public class SessionUtil {
 							page.recoverFromServerSessionTimeout(new Runnable() {
 								public void run() {
 									// Try again!
-									loadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
+									doLoadProblemAndTestCaseList(page, problem, onSuccess, onFailure);
 								}
 							});
 						} else {
@@ -220,6 +236,12 @@ public class SessionUtil {
 			final ICallback<Pair<String, Throwable>> onFailure) {
 		new OneTimeRunnable(loadCourseAndCourseRegistrationListRunner) {
 			public void run() {
+				doLoadCourseAndCourseRegistrationList(page, onSuccess, onFailure);
+			}
+
+			private void doLoadCourseAndCourseRegistrationList(final CloudCoderPage page,
+					final ICallback<CourseAndCourseRegistration[]> onSuccess,
+					final ICallback<Pair<String, Throwable>> onFailure) {
 				GWT.log("Requesting courses and course registrations...");
 				RPC.getCoursesAndProblemsService.getCourseAndCourseRegistrations(new AsyncCallback<CourseAndCourseRegistration[]>() {
 					@Override
@@ -228,7 +250,7 @@ public class SessionUtil {
 							page.recoverFromServerSessionTimeout(new Runnable(){
 								@Override
 								public void run() {
-									loadCourseAndCourseRegistrationList(page, onSuccess, onFailure);
+									doLoadCourseAndCourseRegistrationList(page, onSuccess, onFailure);
 								}
 							});
 						} else {
@@ -264,6 +286,11 @@ public class SessionUtil {
 			final ICallback<Pair<String, Throwable>> onFailure) {
 		new OneTimeRunnable(loadUsersInCourseRunner, courseSelection) {
 			public void run() {
+				doLoadUsersInCourse(page, courseSelection, onSuccess, onFailure);
+			}
+
+			private void doLoadUsersInCourse(final CloudCoderPage page, final CourseSelection courseSelection,
+					final ICallback<User[]> onSuccess, final ICallback<Pair<String, Throwable>> onFailure) {
 				RPC.usersService.getUsers(courseSelection.getCourse().getId(), 0, new AsyncCallback<User[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -271,7 +298,7 @@ public class SessionUtil {
 							page.recoverFromServerSessionTimeout(new Runnable() {
 								@Override
 								public void run() {
-									loadUsersInCourse(page, courseSelection, onSuccess, onFailure);
+									doLoadUsersInCourse(page, courseSelection, onSuccess, onFailure);
 								}
 							});
 						} else {
@@ -331,6 +358,10 @@ public class SessionUtil {
 		new OneTimeRunnable(editUserRunner, user) {
 			@Override
 			public void run() {
+				doEditUser(page, user, onSuccess);
+			}
+
+			private void doEditUser(final CloudCoderPage page, final User user, final Runnable onSuccess) {
 				RPC.usersService.editUser(
 						user,
 						new AsyncCallback<Boolean>() { 
@@ -347,7 +378,7 @@ public class SessionUtil {
 									page.recoverFromServerSessionTimeout(new Runnable() {
 										@Override
 										public void run() {
-											editUser(page, user, onSuccess);
+											doEditUser(page, user, onSuccess);
 										}
 									});
 								} else {
@@ -357,6 +388,53 @@ public class SessionUtil {
 								}
 							}
 						});
+			}
+		}.execute();
+	}
+	
+	private static final RunOnce loadModulesForCourseRunner = new RunOnce();
+
+	/**
+	 * Load {@link Module}s in specified {@link Course}.
+	 * 
+	 * @param page the current {@link CloudCoderPage}
+	 * @param course  the {@link Course}
+	 * @param onSuccess callback if modules are loaded successfully
+	 */
+	public static void loadModulesForCourse(final CloudCoderPage page, final Course course, final ICallback<Module[]> onSuccess) {
+		new OneTimeRunnable(loadModulesForCourseRunner, course) {
+			@Override
+			public void run() {
+				doLoadModulesForCourse(page, course, onSuccess);
+			}
+
+			private void doLoadModulesForCourse(final CloudCoderPage page, final Course course, final ICallback<Module[]> onSuccess) {
+				RPC.getCoursesAndProblemsService.getModulesForCourse(course, new AsyncCallback<Module[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							// attempt to recover from session timeout
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									// Try again
+									doLoadModulesForCourse(page, course, onSuccess);
+								}
+							});
+						} else {
+							// Some unrecoverable error occurred
+							page.getSession().add(StatusMessage.error("Could not load modules for course", caught));
+							onDone();
+						}
+					}
+
+					@Override
+					public void onSuccess(Module[] result) {
+						// Great success!
+						onSuccess.call(result);
+						onDone();
+					}
+				});
 			}
 		}.execute();
 	}
