@@ -25,9 +25,12 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.validator.IFieldValidator;
 import org.cloudcoder.app.client.validator.IValidationCallback;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
+import org.cloudcoder.app.client.validator.TextBoxIntegerValidator;
 import org.cloudcoder.app.client.validator.TextBoxNonemptyValidator;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -58,6 +61,7 @@ public class RegisterSingleUserPanel extends Composite implements SessionObserve
     private TextBox firstnameBox;
     private TextBox lastnameBox;
     private TextBox emailBox;
+    private TextBox sectionBox;
     private PasswordTextBox passwordBox;
     private PasswordTextBox passwordVerifyBox;
     private ListBox registrationTypeBox;
@@ -95,11 +99,18 @@ public class RegisterSingleUserPanel extends Composite implements SessionObserve
         y = addWidget(y, panel, lastnameBox, "Last name:", new TextBoxNonemptyValidator("A last name is required"));
         this.emailBox = new TextBox();
         y = addWidget(y, panel, emailBox, "email:", new TextBoxNonemptyValidator("An email is required"));
+        this.sectionBox=new TextBox();
+        sectionBox.setValue("1");
+        y = addWidget(y, panel, sectionBox, "section", new TextBoxIntegerValidator());
+        
+        
         // TODO: verify that the two passwords are the same BEFORE sending to the back-end
         this.passwordBox = new PasswordTextBox();
         y = addWidget(y, panel, passwordBox, "password:", new TextBoxNonemptyValidator("A password is required"));
         this.passwordVerifyBox = new PasswordTextBox();
         y = addWidget(y, panel, passwordVerifyBox, "password (verify):", new TextBoxNonemptyValidator("A password is required"));
+        
+        
 
         this.registrationTypeBox = new ListBox();
         for (CourseRegistrationType type : CourseRegistrationType.values()) {
@@ -110,7 +121,7 @@ public class RegisterSingleUserPanel extends Composite implements SessionObserve
         this.registerSingleUserButton=new Button("Register User");
         y = addWidget(y, panel, registerSingleUserButton, "", new NoopFieldValidator());
 
-        // TODO: trigger single account creation on the backend
+        // Trigger creation of a Single user using RPC call to backend
         this.registerSingleUserButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -189,6 +200,39 @@ public class RegisterSingleUserPanel extends Composite implements SessionObserve
             }
         }
         return numFailures == 0;
+    }
+    
+    /**
+     * Get a {@link EditedUser} populated from the
+     * form fields.  Assumes that {@link #validate()} has been called
+     * and returned true.
+     * 
+     * @return the populated {@link EditedUser}
+     */
+    public EditedUser getEditedUser() {
+        EditedUser editedUser=new EditedUser();
+        User user=new User();
+        user.setUsername(usernameBox.getText().trim());
+        user.setFirstname(firstnameBox.getText().trim());
+        user.setLastname(lastnameBox.getText().trim());
+        user.setEmail(emailBox.getText().trim());
+        // We send the password in the clear from the client side
+        // and the hash is created on the server side in the DB backend code
+        user.setPasswordHash(passwordBox.getText());
+
+        // TODO some way to set super-user permissions
+        // Also, what are we doing with the website information?
+        user.setSuperuser(false);
+        user.setWebsite("");
+        
+        editedUser.setUser(user);
+        CourseRegistrationType courseRegistrationType=
+                CourseRegistrationType.valueOf(
+                        registrationTypeBox.getItemText(registrationTypeBox.getSelectedIndex()));
+        editedUser.setRegistrationType(courseRegistrationType);
+        editedUser.setSection(Integer.parseInt(sectionBox.getText().trim()));
+        
+        return editedUser;
     }
     
     @Override

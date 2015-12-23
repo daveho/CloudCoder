@@ -17,13 +17,13 @@ package com.google.gwt.layout.client;
 
 import static com.google.gwt.dom.client.Style.Unit.PX;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Helper class for laying out a container element and its children.

@@ -39,6 +39,7 @@ import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -322,9 +323,41 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					getSession().add(StatusMessage.error("Error trying to create course", caught));
+				    getSession().add(StatusMessage.error("Error trying to create course", caught));
 				}
 			});
+		}
+		
+		private void registerSingleUser(final EditedUser editedUser) {
+		    final CourseSelection courseSelection=getSession().get(CourseSelection.class);
+		    if (courseSelection==null) {
+		        String msg="No course in the session when trying to Register Single User";
+                GWT.log(msg);
+                DebugPopupPanel p=new DebugPopupPanel(msg);
+                p.show();
+                return;
+		    }
+		    final Course course=courseSelection.getCourse();
+
+		    RPC.usersService.addUserToCourse(editedUser, course.getId(), new AsyncCallback<Boolean>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    //String msg=String.format("Unable to create user %s in course %s", editedUser.getUser().getUsername(), course.getName());
+                    String msg="Unable to create user "+editedUser.getUser().getUsername()+" in course "+course.getName();
+                    getSession().add(StatusMessage.error(msg, caught));
+                }
+                @Override
+                public void onSuccess(Boolean result) {
+                    if (result) {
+                        //String msg=String.format("Successfully added %s to course %s", editedUser.getUser().getUsername(), course.getName());
+                        String msg="Successfully added "+editedUser.getUser().getUsername()+" to course "+course.getName();
+                        GWT.log(msg);
+                        getSession().add(StatusMessage.goodNews(msg));
+                    } else {
+                        // TODO Is this even possible? What does a false return value mean?
+                    }
+                }
+            });
 		}
 		
 		private IsWidget createManageCourseTab() {
@@ -332,23 +365,31 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
-
-			RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel();
+			createCoursePanel.setOnCreateCourse(new Runnable() {
+                @Override
+                public void run() {
+                    if (createCoursePanel.validate()) {
+                        CourseCreationSpec spec = createCoursePanel.getCourseCreationSpec();
+                        createCourse(spec);
+                    }
+                }
+            });
+			
+			// panel to register a single user
+			final RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel();
 			registerSingleUserPanel.setOnRegisterSingleUser(new Runnable() {
                 @Override
                 public void run() {
-                    Course c=getSession().get(Course.class);
-                    String msg="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-                    if (c!=null) {
-                        msg=c.getNameAndTitle();
+                    if (registerSingleUserPanel.validate()) {
+                        EditedUser editedUser=registerSingleUserPanel.getEditedUser();
+                        registerSingleUser(editedUser);
+                    } else {
+                        DebugPopupPanel p=new DebugPopupPanel("Unable to validate");
+                        p.show();
                     }
-                    // TODO: Figure out how to make a goddam debugging window pop up
-                    // with things that I want to fucking print
-                    DebugPopupPanel p=new DebugPopupPanel(msg);
-                    p.show();
                 }
             });
-			accordionPanel.add(registerSingleUserPanel, "Regsiter Single User");
+			accordionPanel.add(registerSingleUserPanel, "Register Single User");
 
 
 			Image kitten2 = new Image("http://placekitten.com/600/450");

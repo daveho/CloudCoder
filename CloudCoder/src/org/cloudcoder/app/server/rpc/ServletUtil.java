@@ -1,8 +1,5 @@
 package org.cloudcoder.app.server.rpc;
 
-import java.util.Properties;
-
-import javax.mail.Store;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 

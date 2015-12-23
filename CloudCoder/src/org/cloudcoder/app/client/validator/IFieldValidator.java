@@ -17,8 +17,6 @@
 
 package org.cloudcoder.app.client.validator;
 
-import org.cloudcoder.app.shared.model.ICallback;
-
 import com.google.gwt.user.client.ui.Widget;
 
 /**
