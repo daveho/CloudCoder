@@ -23,6 +23,7 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.AccordionPanel;
+import org.cloudcoder.app.client.view.BulkRegistrationPanel;
 import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
@@ -94,6 +95,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private CreateCoursePanel createCoursePanel;
 		private boolean manageCourseTabCreated;
 		private ModuleListBox moduleListBox;
+		private BulkRegistrationPanel bulkRegistrationPanel;
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -339,6 +341,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			LayoutPanel panel = new LayoutPanel();
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
+			
+			// Bulk registration UI
+			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);
+			accordionPanel.add(bulkRegistrationPanel, "Bulk registration");
+			bulkRegistrationPanel.activate(getSession(), getSubscriptionRegistrar());
 			
 			// For now, just add placeholder widgets
 			Image kitten = new Image("http://placekitten.com/480/360");

@@ -27,6 +27,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -38,7 +39,7 @@ public abstract class ValidatedFormUI extends Composite {
 	private static final double FIELD_HEIGHT_PX = 28.0;
 	private static final double FIELD_PADDING_PX = 8.0;
 
-	private LayoutPanel panel;
+	private Panel panel;
 	private List<IFieldValidator<? extends Widget>> validatorList;
 	private List<IValidationCallback> validationCallbackList;
 
@@ -46,20 +47,39 @@ public abstract class ValidatedFormUI extends Composite {
 	 * Constructor.
 	 */
 	public ValidatedFormUI() {
+		this(new LayoutPanel());
+	}
+
+	public ValidatedFormUI(Panel panel) {
 		this.validatorList = new ArrayList<IFieldValidator<? extends Widget>>();
 		this.validationCallbackList = new ArrayList<IValidationCallback>();
-		
-		panel = new LayoutPanel();
+		this.panel = panel;
 		initWidget(panel);
 	}
 	
 	/**
+	 * Get the Panel that is the content area for
+	 * this UI.  It will be a LayoutPanel unless the superclass
+	 * provides its own content area Panel.
+	 * Subclasses cannot override this (but they can
+	 * override {@link #getLayoutPanel()}.
+	 * 
+	 * @return the panel
+	 */
+	public final Panel getPanel() {
+		return panel;
+	}
+	
+	/**
 	 * Get the LayoutPanel.
+	 * Subclasses that provide their own panel widget to the
+	 * constructor should override this to return the LayoutPanel
+	 * embedded in the actual panel widget.
 	 * 
 	 * @return the LayoutPanel
 	 */
-	public LayoutPanel getPanel() {
-		return panel;
+	public LayoutPanel getLayoutPanel() {
+		return (LayoutPanel)panel;
 	}
 
 	/**
@@ -74,19 +94,19 @@ public abstract class ValidatedFormUI extends Composite {
 	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E> validator) {
 		InlineLabel label = new InlineLabel(labelText);
 		label.setStyleName("cc-rightJustifiedLabel", true);
-		panel.add(label);
-		panel.setWidgetTopHeight(label, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
-		panel.setWidgetLeftWidth(label, 20.0, Unit.PX, 120.0, Unit.PX);
+		getLayoutPanel().add(label);
+		getLayoutPanel().setWidgetTopHeight(label, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetLeftWidth(label, 20.0, Unit.PX, 120.0, Unit.PX);
 
-		panel.add(widget);
-		panel.setWidgetTopHeight(widget, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
-		panel.setWidgetLeftWidth(widget, 160.0, Unit.PX, 320.0, Unit.PX);
+		getLayoutPanel().add(widget);
+		getLayoutPanel().setWidgetTopHeight(widget, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetLeftWidth(widget, 160.0, Unit.PX, 320.0, Unit.PX);
 		
 		final InlineLabel validationErrorLabel = new InlineLabel();
 		validationErrorLabel.setStyleName("cc-errorText", true);
-		panel.add(validationErrorLabel);
-		panel.setWidgetTopHeight(validationErrorLabel, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
-		panel.setWidgetLeftRight(validationErrorLabel, 500.0, Unit.PX, 0.0, Unit.PX);
+		getLayoutPanel().add(validationErrorLabel);
+		getLayoutPanel().setWidgetTopHeight(validationErrorLabel, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetLeftRight(validationErrorLabel, 500.0, Unit.PX, 0.0, Unit.PX);
 		
 		validatorList.add(validator);
 		validator.setWidget(widget);
