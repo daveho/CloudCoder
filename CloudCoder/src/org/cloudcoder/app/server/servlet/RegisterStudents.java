@@ -34,8 +34,13 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.util.ConfigurationUtil;
 import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.server.rpc.ServletUtil;
+import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +67,15 @@ public class RegisterStudents extends HttpServlet
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
+		// Make sure client is logged in
+		User authenticatedUser;
+		try {
+			authenticatedUser = ServletUtil.checkClientIsAuthenticated(request, RegisterStudents.class);
+		} catch (CloudCoderAuthenticationException e1) {
+			sendResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Not logged in (session timeout?)");
+			return;
+		}
+		
 		Connection conn=null;
 		try {
 			conn=DBUtil.getConnection();
@@ -97,6 +111,15 @@ public class RegisterStudents extends HttpServlet
 				sendResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Data received by server is invalid");
 				return;
 			}
+			
+			// Make sure authenticated user is an instructor in the course
+			CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, courseId);
+			if (!regList.isInstructor()) {
+				sendResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Instructor privilege required to register users in course");
+				return;
+			}
+
+			// Register the students!
 			num=ConfigurationUtil.registerStudentsForCourseId(in,
 					courseId, 
 					conn);
