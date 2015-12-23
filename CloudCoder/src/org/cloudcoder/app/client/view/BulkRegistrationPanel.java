@@ -104,6 +104,7 @@ public class BulkRegistrationPanel extends ValidatedFormUI implements SessionObs
 						page.getSession().add(StatusMessage.error(results));
 					} else {
 						page.getSession().add(StatusMessage.goodNews(results));
+						clear();
 					}
 				}
 			}

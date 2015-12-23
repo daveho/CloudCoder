@@ -112,7 +112,7 @@ public class RegisterStudents extends HttpServlet
 
 	private void sendResponse(HttpServletResponse response, int status, String message) throws IOException {
 		response.setStatus(status);
-		response.setContentType("text/plain");
+		response.setContentType("text/html"); // Necessary to get parseable response on client-side
 		PrintStream out = new PrintStream(response.getOutputStream());
 		if (status != HttpServletResponse.SC_OK) {
 			// If the client is doing an AJAX file upload, the message
