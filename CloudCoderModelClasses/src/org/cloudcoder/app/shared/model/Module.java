@@ -103,4 +103,19 @@ public class Module implements IModelObject<Module>, Serializable {
 	public String getName() {
 		return name;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Module)) {
+			return false;
+		}
+		Module other = (Module) obj;
+		return this.id == other.id
+				&& this.name.equals(other.name);
+	}
+	
+	@Override
+	public int hashCode() {
+		return id * 7919 + name.hashCode();
+	}
 }
