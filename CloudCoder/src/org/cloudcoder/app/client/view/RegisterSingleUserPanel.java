@@ -27,7 +27,6 @@ import org.cloudcoder.app.client.validator.IValidationCallback;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
 import org.cloudcoder.app.client.validator.TextBoxIntegerValidator;
 import org.cloudcoder.app.client.validator.TextBoxNonemptyValidator;
-import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.User;

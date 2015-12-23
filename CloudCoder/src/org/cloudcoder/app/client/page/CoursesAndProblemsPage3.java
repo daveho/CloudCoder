@@ -23,10 +23,12 @@ import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.client.view.AccordionPanel;
+import org.cloudcoder.app.client.view.BulkRegistrationPanel;
 import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
+import org.cloudcoder.app.client.view.ModuleListBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView3;
@@ -79,6 +81,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
 		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
 		private static final double COURSE_LISTBOX_HEIGHT_PX = 24.0;
+		private static final double MODULE_LISTBOX_HEIGHT_PX = 24.0;
+		private static final double EXERCISES_LABEL_WIDTH_PX = 100.0;
 		
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
@@ -93,6 +97,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private TabLayoutPanel tabLayoutPanel;
 		private CreateCoursePanel createCoursePanel;
 		private boolean manageCourseTabCreated;
+		private ModuleListBox moduleListBox;
+		private BulkRegistrationPanel bulkRegistrationPanel;
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -185,8 +191,14 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			SectionLabel exercisesLabel = new SectionLabel("Exercises");
 			top.add(exercisesLabel);
 			double r = REFRESH_BUTTON_WIDTH_PX + 4.0 + LOAD_EXERCISE_BUTTON_WIDTH_PX;
-			top.setWidgetLeftRight(exercisesLabel, 0.0, Unit.PX, r, Unit.PX);
+			top.setWidgetLeftRight(exercisesLabel, 0.0, Unit.PX, EXERCISES_LABEL_WIDTH_PX, Unit.PX);
 			top.setWidgetTopHeight(exercisesLabel, 0.0, Unit.PX, SectionLabel.HEIGHT_PX, Unit.PX);
+			
+			this.moduleListBox = new ModuleListBox(CoursesAndProblemsPage3.this);
+			top.add(moduleListBox);
+			top.setWidgetLeftRight(moduleListBox, EXERCISES_LABEL_WIDTH_PX + 80.0, Unit.PX, r+10.0, Unit.PX);
+			top.setWidgetTopHeight(moduleListBox, 0.0+6.0, Unit.PX, MODULE_LISTBOX_HEIGHT_PX, Unit.PX);
+			
 			Button refreshButton = new Button("Refresh");
 			top.add(refreshButton);
 			top.setWidgetRightWidth(refreshButton, LOAD_EXERCISE_BUTTON_WIDTH_PX + 4.0, Unit.PX, REFRESH_BUTTON_WIDTH_PX, Unit.PX);
@@ -391,9 +403,10 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
             });
 			accordionPanel.add(registerSingleUserPanel, "Register Single User");
 
-
-			Image kitten2 = new Image("http://placekitten.com/600/450");
-			accordionPanel.add(kitten2, "Another kitten!");
+			// Bulk registration UI
+			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);
+			accordionPanel.add(bulkRegistrationPanel, "Bulk registration");
+			bulkRegistrationPanel.activate(getSession(), getSubscriptionRegistrar());
 
 			panel.add(accordionPanel);
 			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
@@ -414,6 +427,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			exerciseList.activate(session, subscriptionRegistrar);
 			userAccountView.activate(session, subscriptionRegistrar);
 			courseListBox.activate(session, subscriptionRegistrar);
+			moduleListBox.activate(session, subscriptionRegistrar);
 			
 			// Create the Admin tab if the user is a superuser
 			User user = session.get(User.class);

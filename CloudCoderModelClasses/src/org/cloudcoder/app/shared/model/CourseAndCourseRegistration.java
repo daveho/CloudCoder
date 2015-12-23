@@ -54,4 +54,25 @@ public class CourseAndCourseRegistration implements Serializable {
 	public CourseRegistration getCourseRegistration() {
 		return courseRegistration;
 	}
+
+	/**
+	 * Check to see whether any of the {@link CourseAndCourseRegistration}
+	 * objects in the specified list confer instructor status for
+	 * the specified {@link Course}.
+	 * 
+	 * @param regList list of {@link CourseAndCourseRegistration}s
+	 * @param course a {@link Course}
+	 * @return true if at least one of the {@link CourseAndCourseRegistration}
+	 *   objects confers instructor status in the specified {@link Course},
+	 *   false otherwise
+	 */
+	public static boolean isInstructor(CourseAndCourseRegistration[] regList, Course course) {
+		for (CourseAndCourseRegistration ccr : regList) {
+			if (ccr.getCourse().getId() == course.getId()
+					&& ccr.getCourseRegistration().getRegistrationType().isInstructor()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
