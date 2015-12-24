@@ -23,10 +23,12 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ModelObjectUtil;
 import org.cloudcoder.app.shared.model.Module;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Pair;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -432,6 +434,51 @@ public class SessionUtil {
 					public void onSuccess(Module[] result) {
 						// Great success!
 						onSuccess.call(result);
+						onDone();
+					}
+				});
+			}
+		}.execute();
+	}
+	
+	private static final RunOnce registerExistingUserRunner = new RunOnce();
+
+	/**
+	 * RPC to register an existing user for a course.
+	 * 
+	 * @param page the {@link CloudCoderPage}
+	 * @param spec the {@link CourseRegistrationSpec}
+	 * @param callback the {@link ICallback} to receive the {@link OperationResult}
+	 *                 describing the success or failure of the operation
+	 */
+	public static void registerExistingUser(final CloudCoderPage page,
+			final CourseRegistrationSpec spec, final ICallback<OperationResult> callback) {
+		new OneTimeRunnable(registerExistingUserRunner, spec) {
+			@Override
+			public void run() {
+				doRegisterExistingUser(page, spec);
+			}
+
+			private void doRegisterExistingUser(final CloudCoderPage page, final CourseRegistrationSpec spec) {
+				RPC.usersService.registerExistingUser(spec, new AsyncCallback<OperationResult>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									doRegisterExistingUser(page, spec);
+								}
+							});
+						} else {
+							page.getSession().add(StatusMessage.error("Error registering user", caught));
+							onDone();
+						}
+					}
+
+					@Override
+					public void onSuccess(OperationResult result) {
+						callback.call(result);
 						onDone();
 					}
 				});

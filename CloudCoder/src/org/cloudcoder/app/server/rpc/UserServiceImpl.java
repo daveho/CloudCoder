@@ -24,8 +24,10 @@ import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,12 +153,29 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 	public User[] suggestUsernames(String prefix) throws CloudCoderAuthenticationException {
 		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
 
-		// Make sure the user is a superuser
+		// Make sure the user is a superuser or an instructor in at least one course
 		if (!authenticatedUser.isSuperuser()) {
-			throw new CloudCoderAuthenticationException("Not a superuser");
+			CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser);
+			if (!regList.isInstructor()) {
+				throw new CloudCoderAuthenticationException("Not a superuser or instructor");
+			}
 		}
 		
 		return Database.getInstance().suggestUsernames(prefix);
+	}
+	
+	@Override
+	public OperationResult registerExistingUser(CourseRegistrationSpec spec) throws CloudCoderAuthenticationException {
+		User authenticatedUser = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
+		
+		// Make sure user is an instructor in the specified course
+		CourseRegistrationList regList = Database.getInstance().findCourseRegistrations(authenticatedUser, spec.getCourseId());
+		if (!regList.isInstructor()) {
+			return new OperationResult(false, "Only an instructor can register a user");
+		}
+		
+		logger.info("Attempting to register user {} in course {}", spec.getUsername(), spec.getCourseId());
+		return Database.getInstance().registerExistingUser(spec);
 	}
 
 	/**

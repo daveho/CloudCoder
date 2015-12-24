@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
@@ -402,7 +403,21 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				@Override
 				public void run() {
 					if (registerExistingUserPanel.validate()) {
-						getSession().add(StatusMessage.information("Should be registering the user..."));
+						GWT.log("Existing user data validated!");
+						SessionUtil.registerExistingUser(
+								CoursesAndProblemsPage3.this,
+								registerExistingUserPanel.getCourseRegistrationSpec(),
+								new ICallback<OperationResult>() {
+									@Override
+									public void call(OperationResult value) {
+										if (value.isSuccess()) {
+											getSession().add(StatusMessage.goodNews(value.getMessage()));
+										} else {
+											getSession().add(StatusMessage.error(value.getMessage()));
+										}
+									}
+								}
+						);
 					}
 				}
 			});

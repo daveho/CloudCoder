@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
@@ -755,4 +756,20 @@ public interface IDatabase {
 	 * @return an {@link OperationResult} describing the success or failure of the operation
 	 */
 	public OperationResult createCourse(CourseCreationSpec spec);
+
+	/**
+	 * Find {@link CourseRegistrationList} for given {@link User}.
+	 * 
+	 * @param user the {@link User}
+	 * @return the user's {@link CourseRegistrationList}
+	 */
+	public CourseRegistrationList findCourseRegistrations(User user);
+
+	/**
+	 * Register an existing user in a course.
+	 * 
+	 * @param spec the {@link CourseRegistrationSpec}
+	 * @return an {@link OperationResult} describing the success or failure of the operation
+	 */
+	public OperationResult registerExistingUser(CourseRegistrationSpec spec);
 }

@@ -25,6 +25,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
@@ -76,6 +77,7 @@ public class RegisterExistingUserPanel extends CourseInstructorFormUI {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (onRegisterUser != null) {
+					GWT.log("Executing onRegisterUser callback...");
 					onRegisterUser.run();
 				}
 			}

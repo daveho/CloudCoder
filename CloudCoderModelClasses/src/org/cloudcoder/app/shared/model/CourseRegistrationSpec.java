@@ -103,4 +103,24 @@ public class CourseRegistrationSpec implements Serializable {
 	public CourseRegistrationType getRegistrationType() {
 		return registrationType;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof CourseRegistrationSpec)) {
+			return false;
+		}
+		CourseRegistrationSpec other = (CourseRegistrationSpec) obj;
+		return ModelObjectUtil.equals(this.username, other.username)
+				&& this.courseId == other.courseId
+				&& this.section == other.section
+				&& this.registrationType == other.registrationType;
+	}
+	
+	@Override
+	public int hashCode() {
+		return (username != null ? username.hashCode() : 0) +
+				1049 * courseId +
+				2663 * section +
+				5441 * (registrationType != null ? registrationType.hashCode() : 0);
+	}
 }

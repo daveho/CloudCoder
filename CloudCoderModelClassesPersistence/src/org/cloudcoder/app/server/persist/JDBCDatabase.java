@@ -37,6 +37,7 @@ import org.cloudcoder.app.server.persist.txn.DeleteProblem;
 import org.cloudcoder.app.server.persist.txn.EditUser;
 import org.cloudcoder.app.server.persist.txn.EditUserGivenUserData;
 import org.cloudcoder.app.server.persist.txn.EndQuiz;
+import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsForUser;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourse;
 import org.cloudcoder.app.server.persist.txn.FindCourseRegistrationsGivenUserAndCourseId;
 import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
@@ -80,6 +81,7 @@ import org.cloudcoder.app.server.persist.txn.InstructorStartQuiz;
 import org.cloudcoder.app.server.persist.txn.IsInstructorFor;
 import org.cloudcoder.app.server.persist.txn.LoadChanges;
 import org.cloudcoder.app.server.persist.txn.LoadChangesForAllUsersOnProblem;
+import org.cloudcoder.app.server.persist.txn.RegisterExistingUser;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
@@ -105,6 +107,7 @@ import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
@@ -532,6 +535,16 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public OperationResult createCourse(CourseCreationSpec spec) {
 		return databaseRun(new CreateCourseFromSpec(spec));
+	}
+	
+	@Override
+	public CourseRegistrationList findCourseRegistrations(User user) {
+		return databaseRun(new FindCourseRegistrationsForUser(user));
+	}
+	
+	@Override
+	public OperationResult registerExistingUser(CourseRegistrationSpec spec) {
+		return databaseRun(new RegisterExistingUser(spec));
 	}
 
 	/**

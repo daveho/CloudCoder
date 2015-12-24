@@ -21,8 +21,10 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -102,4 +104,13 @@ public interface UserService extends RemoteService
      * @return {@link User}s with usernames beginning with the username prefix
      */
     User[] suggestUsernames(String prefix) throws CloudCoderAuthenticationException;
+
+    /**
+     * Register a single existing user in a course.
+     * 
+     * @param spec the {@link CourseRegistrationSpec}
+     * @return an {@link OperationResult} describing the success or failure of the operation
+     * @throws CloudCoderAuthenticationException
+     */
+    OperationResult registerExistingUser(CourseRegistrationSpec spec) throws CloudCoderAuthenticationException;
 }

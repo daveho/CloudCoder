@@ -19,8 +19,10 @@ package org.cloudcoder.app.client.rpc;
 
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.User;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -31,13 +33,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface UserServiceAsync
 {
-	/**
-	 * Get all users in given section of given course.
-	 * 
-	 * @param courseId      the course id
-	 * @param sectionNumber the section number (0 to get all sections)
-	 * @param callback
-	 */
     void getUsers(int courseId, int sectionNumber, AsyncCallback<User[]> callback);
     void addUserToCourse(EditedUser editedUser, int courseId,
 			AsyncCallback<Boolean> callback);
@@ -49,6 +44,5 @@ public interface UserServiceAsync
 	void editUser(EditedUser editedUser, Course course,
 			AsyncCallback<Boolean> callback);
 	void suggestUsernames(String prefix, AsyncCallback<User[]> callback);
-        
-        
+	void registerExistingUser(CourseRegistrationSpec spec, AsyncCallback<OperationResult> callback);
 }
