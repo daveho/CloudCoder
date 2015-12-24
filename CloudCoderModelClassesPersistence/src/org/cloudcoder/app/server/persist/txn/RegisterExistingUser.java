@@ -20,15 +20,20 @@ package org.cloudcoder.app.server.persist.txn;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.cloudcoder.app.server.persist.NoSuchUniqueIdException;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DBUtil;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.OperationResult;
 import org.cloudcoder.app.shared.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegisterExistingUser extends AbstractDatabaseRunnableNoAuthException<OperationResult> {
-
+	private static final Logger logger = LoggerFactory.getLogger(RegisterExistingUser.class);
+	
 	private CourseRegistrationSpec spec;
 
 	public RegisterExistingUser(CourseRegistrationSpec spec) {
@@ -58,6 +63,14 @@ public class RegisterExistingUser extends AbstractDatabaseRunnableNoAuthExceptio
 		// Insert the CourseRegistration
 		DBUtil.storeModelObject(conn, reg);
 		
-		return new OperationResult(true, "Added user " + spec.getUsername() + " to course");
+		Course course = null;
+		try {
+			course = DBUtil.loadModelObjectForId(conn, Course.SCHEMA, spec.getCourseId());
+		} catch (NoSuchUniqueIdException e) {
+			logger.error("Could not find course for id={}", spec.getCourseId());
+		}
+		
+		return new OperationResult(true, "Added user " + spec.getUsername() + " to course" +
+				(course != null ? " " + course.getNameAndTitle() : ""));
 	}
 }
