@@ -88,10 +88,10 @@ public abstract class ValidatedFormUI extends Composite {
 	 * @param y           y coordinate of current row
 	 * @param widget      the form widget
 	 * @param labelText   the label text
-	 * @param validator   the validator for the widget
+	 * @param validators  the validators for the widget
 	 * @return y coordinate of next row
 	 */
-	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E> validator) {
+	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E>... validators) {
 		InlineLabel label = new InlineLabel(labelText);
 		label.setStyleName("cc-rightJustifiedLabel", true);
 		getLayoutPanel().add(label);
@@ -108,23 +108,25 @@ public abstract class ValidatedFormUI extends Composite {
 		getLayoutPanel().setWidgetTopHeight(validationErrorLabel, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
 		getLayoutPanel().setWidgetLeftRight(validationErrorLabel, 500.0, Unit.PX, 0.0, Unit.PX);
 		
-		validatorList.add(validator);
-		validator.setWidget(widget);
+		for (IFieldValidator<E> validator : validators) {
+		    validatorList.add(validator);
+		    validator.setWidget(widget);
 		
-		IValidationCallback callback = new IValidationCallback() {
-			@Override
-			public void onSuccess() {
-				validationErrorLabel.setText("");
-				widget.removeStyleName("cc-invalid");
-			}
+		    IValidationCallback callback = new IValidationCallback() {
+		        @Override
+		        public void onSuccess() {
+		            validationErrorLabel.setText("");
+		            widget.removeStyleName("cc-invalid");
+		        }
 			
-			@Override
-			public void onFailure(String msg) {
-				validationErrorLabel.setText(msg);
-				widget.setStyleName("cc-invalid", true);
-			}
-		};
-		validationCallbackList.add(callback);
+		        @Override
+		        public void onFailure(String msg) {
+		            validationErrorLabel.setText(msg);
+		            widget.setStyleName("cc-invalid", true);
+		        }
+		    };
+		    validationCallbackList.add(callback);
+		}
 		
 		return y + FIELD_HEIGHT_PX + FIELD_PADDING_PX;
 	}

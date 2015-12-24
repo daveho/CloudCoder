@@ -395,8 +395,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
                     if (registerSingleUserPanel.validate()) {
                         EditedUser editedUser=registerSingleUserPanel.getEditedUser();
                         registerSingleUser(editedUser);
+                        registerSingleUserPanel.clear();
                     } else {
-                        DebugPopupPanel p=new DebugPopupPanel("Unable to validate");
+                        DebugPopupPanel p=new DebugPopupPanel("Unable to validate inputs to create a new user");
                         p.show();
                     }
                 }
