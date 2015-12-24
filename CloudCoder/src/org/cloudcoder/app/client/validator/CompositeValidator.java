@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package org.cloudcoder.app.client.view;
+package org.cloudcoder.app.client.validator;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.cloudcoder.app.client.validator.IFieldValidator;
-import org.cloudcoder.app.client.validator.IValidationCallback;
 
 import com.google.gwt.user.client.ui.Widget;
 

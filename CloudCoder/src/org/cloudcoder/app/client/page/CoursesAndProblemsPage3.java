@@ -377,18 +377,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
-			createCoursePanel.setOnCreateCourse(new Runnable() {
-                @Override
-                public void run() {
-                    if (createCoursePanel.validate()) {
-                        CourseCreationSpec spec = createCoursePanel.getCourseCreationSpec();
-                        createCourse(spec);
-                    }
-                }
-            });
-			
 			// panel to register a single user
-			final RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel();
+			final RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel(CoursesAndProblemsPage3.this);
 			registerSingleUserPanel.setOnRegisterSingleUser(new Runnable() {
                 @Override
                 public void run() {
@@ -403,6 +393,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
                 }
             });
 			accordionPanel.add(registerSingleUserPanel, "Register Single User");
+			registerSingleUserPanel.activate(getSession(), getSubscriptionRegistrar());
 
 			// Bulk registration UI
 			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);

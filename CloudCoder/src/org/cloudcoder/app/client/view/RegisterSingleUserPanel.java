@@ -17,23 +17,21 @@
 
 package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.client.model.Session;
-import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.validator.CompositeValidator;
 import org.cloudcoder.app.client.validator.MatchingTextBoxValidator;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
 import org.cloudcoder.app.client.validator.TextBoxIntegerValidator;
 import org.cloudcoder.app.client.validator.TextBoxNonemptyValidator;
+import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.User;
-import org.cloudcoder.app.shared.util.Publisher;
-import org.cloudcoder.app.shared.util.Subscriber;
-import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
@@ -43,7 +41,7 @@ import com.google.gwt.user.client.ui.TextBox;
  * 
  * @author Jaime Spacco
  */
-public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionObserver, Subscriber
+public class RegisterSingleUserPanel extends CourseInstructorFormUI
 {
     private TextBox usernameBox;
     private TextBox firstnameBox;
@@ -54,20 +52,20 @@ public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionO
     private PasswordTextBox passwordVerifyBox;
     private ListBox registrationTypeBox;
     private Button registerSingleUserButton;
-    // currently we never use the session, but we activate it
-    private Session session;
     
     private Runnable onRegisterUser;
     
     /**
+     * Constructor.
      * 
+     * @param page the {@link CloudCoderPage}
      */
-    public RegisterSingleUserPanel() {
-        super(new LayoutPanel());
+    public RegisterSingleUserPanel(CloudCoderPage page) {
+        super(page);
         
         // Set a fixed height to allow this UI to be placed in an
         // AccordionPanel
-        getPanel().setHeight("320px");
+        getPanel().setHeight("340px");
         getPanel().setWidth("100%");
         
         double y = 10.0;
@@ -161,12 +159,6 @@ public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionO
     }
     
     @Override
-    public void eventOccurred(Object key, Publisher publisher, Object hint) {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    @Override
     public void clear() {
         usernameBox.setText("");
         firstnameBox.setText("");
@@ -177,11 +169,23 @@ public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionO
         passwordVerifyBox.setText("");
         registrationTypeBox.setSelectedIndex(0);
     }
-
+    
     @Override
-    public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
-    {
-        this.session = session;
-        session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+    protected void onCourseChange(Course course) {
+    	// Nothing special to do here
+    }
+    
+    @Override
+    protected void setEnabled(boolean b) {
+    	GWT.log("RegisterSingleUser: setting enabled to " + b);
+    	usernameBox.setEnabled(b);
+    	firstnameBox.setEnabled(b);
+    	lastnameBox.setEnabled(b);
+    	emailBox.setEnabled(b);
+    	sectionBox.setEnabled(b);
+    	passwordBox.setEnabled(b);
+    	passwordVerifyBox.setEnabled(b);
+    	registrationTypeBox.setEnabled(b);
+    	registerSingleUserButton.setEnabled(b);
     }
 }

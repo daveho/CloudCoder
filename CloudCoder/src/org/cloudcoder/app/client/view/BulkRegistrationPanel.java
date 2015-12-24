@@ -17,16 +17,10 @@
 
 package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
-import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
-import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
-import org.cloudcoder.app.shared.model.CourseSelection;
-import org.cloudcoder.app.shared.util.Publisher;
-import org.cloudcoder.app.shared.util.Subscriber;
-import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
+import org.cloudcoder.app.shared.model.Course;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.InputElement;
@@ -45,8 +39,7 @@ import com.google.gwt.user.client.ui.SubmitButton;
  * 
  * @author David Hovemeyer
  */
-public class BulkRegistrationPanel extends ValidatedFormUI implements SessionObserver, Subscriber {
-	private CloudCoderPage page;
+public class BulkRegistrationPanel extends CourseInstructorFormUI {
 	private LayoutPanel layoutPanel;
 	private FileUpload fileUpload;
 	private Hidden courseId;
@@ -56,8 +49,7 @@ public class BulkRegistrationPanel extends ValidatedFormUI implements SessionObs
 	 * Constructor.
 	 */
 	public BulkRegistrationPanel(final CloudCoderPage page) {
-		super(new FormPanel());
-		this.page = page;
+		super(page, new FormPanel());
 		
 		FormPanel formPanel = (FormPanel) getPanel();
 		formPanel.setWidth("100%");
@@ -120,42 +112,14 @@ public class BulkRegistrationPanel extends ValidatedFormUI implements SessionObs
 		inputElt.setValue("");
 	}
 
-	@Override
-	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
-		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		setEnabled(false);
-		onCourseOrCourseRegistrationsUpdate();
-	}
-
-	@Override
-	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (key == Session.Event.ADDED_OBJECT &&
-				(hint instanceof CourseSelection || hint instanceof CourseAndCourseRegistration[])) {
-			onCourseOrCourseRegistrationsUpdate();
-		}
-	}
-
-	private void onCourseOrCourseRegistrationsUpdate() {
-		// See what course is selected, and what the user's list
-		// of courses/course registrations contains
-		CourseSelection sel = page.getSession().get(CourseSelection.class);
-		CourseAndCourseRegistration[] regList = page.getSession().get(CourseAndCourseRegistration[].class);
-
-		// Keep the course id in sync with the CourseSelection
-		if (sel != null) {
-			GWT.log("BulkRegistrationPanel: selected courseId=" + sel.getCourse().getId());
-			courseId.setValue(String.valueOf(sel.getCourse().getId()));
-		}
-		
-		// Enable or disable this UI depending on whether the
-		// user is an instructor in the selected course
-		if (sel != null && regList != null) {
-			setEnabled(CourseAndCourseRegistration.isInstructor(regList, sel.getCourse()));
-		}
-	}
-
-	private void setEnabled(boolean b) {
+	protected void setEnabled(boolean b) {
 		fileUpload.setEnabled(b);
 		submitButton.setEnabled(b);
+	}
+	
+	@Override
+	protected void onCourseChange(Course course) {
+		GWT.log("BulkRegistrationPanel: selected courseId=" + course.getId());
+		courseId.setValue(String.valueOf(course.getId()));
 	}
 }
