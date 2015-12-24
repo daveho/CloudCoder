@@ -65,7 +65,7 @@ public class RegisterSingleUserPanel extends CourseInstructorFormUI
         
         // Set a fixed height to allow this UI to be placed in an
         // AccordionPanel
-        getPanel().setHeight("340px");
+        getPanel().setHeight("360px");
         getPanel().setWidth("100%");
         
         double y = 10.0;

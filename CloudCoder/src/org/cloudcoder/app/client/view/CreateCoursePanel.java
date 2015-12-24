@@ -17,9 +17,6 @@
 
 package org.cloudcoder.app.client.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.SessionObserver;
@@ -31,7 +28,6 @@ import org.cloudcoder.app.client.validator.TextBoxNonemptyValidator;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseCreationSpec;
 import org.cloudcoder.app.shared.model.Term;
-import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
@@ -43,7 +39,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
@@ -53,52 +48,6 @@ import com.google.gwt.user.client.ui.TextBox;
  * @author David Hovemeyer
  */
 public class CreateCoursePanel extends ValidatedFormUI implements SessionObserver, Subscriber {
-	private static class UsernameSuggestion implements SuggestOracle.Suggestion {
-		private User user;
-		
-		public UsernameSuggestion(User user) {
-			this.user = user;
-		}
-		
-		@Override
-		public String getDisplayString() {
-			return user.getUsername() + " (" + user.getFirstname() + " " + user.getLastname() + ")";
-		}
-		
-		@Override
-		public String getReplacementString() {
-			return user.getUsername();
-		}
-	}
-	
-	private static class UsernameSuggestOracle extends SuggestOracle {
-		@Override
-		public void requestSuggestions(final Request request, final Callback callback) {
-			String q = request.getQuery();
-			if (q.length() > 0) {
-				RPC.usersService.suggestUsernames(q, new AsyncCallback<User[]>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						// Don't report the error: we just won't have
-						// autocompletions
-					}
-					
-					@Override
-					public void onSuccess(User[] result) {
-						SuggestOracle.Response response = new SuggestOracle.Response();
-						List<Suggestion> suggestions = new ArrayList<Suggestion>();
-						for (User user: result) {
-							suggestions.add(new UsernameSuggestion(user));
-						}
-						response.setSuggestions(suggestions);
-						callback.onSuggestionsReady(request, response);
-					}
-				});
-			}
-			
-		}
-	}
-	
 	private Runnable onCreateCourse;
 	
 	private Session session;

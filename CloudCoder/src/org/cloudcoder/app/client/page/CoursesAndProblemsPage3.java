@@ -32,6 +32,7 @@ import org.cloudcoder.app.client.view.ModuleListBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
 import org.cloudcoder.app.client.view.ProblemListView3;
+import org.cloudcoder.app.client.view.RegisterExistingUserPanel;
 import org.cloudcoder.app.client.view.RegisterSingleUserPanel;
 import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.StatusMessageView;
@@ -394,6 +395,19 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
             });
 			accordionPanel.add(registerSingleUserPanel, "Register Single User");
 			registerSingleUserPanel.activate(getSession(), getSubscriptionRegistrar());
+			
+			// panel to register a single existing user
+			final RegisterExistingUserPanel registerExistingUserPanel = new RegisterExistingUserPanel(CoursesAndProblemsPage3.this);
+			registerExistingUserPanel.setOnRegisterUser(new Runnable() {
+				@Override
+				public void run() {
+					if (registerExistingUserPanel.validate()) {
+						getSession().add(StatusMessage.information("Should be registering the user..."));
+					}
+				}
+			});
+			accordionPanel.add(registerExistingUserPanel, "Register Existing User");
+			registerExistingUserPanel.activate(getSession(), getSubscriptionRegistrar());
 
 			// Bulk registration UI
 			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);
