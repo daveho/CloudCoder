@@ -56,7 +56,7 @@ public abstract class ValidatedFormUI extends Composite {
 		this.panel = panel;
 		initWidget(panel);
 	}
-	
+
 	/**
 	 * Get the Panel that is the content area for
 	 * this UI.  It will be a LayoutPanel unless the superclass
@@ -69,7 +69,7 @@ public abstract class ValidatedFormUI extends Composite {
 	public final Panel getPanel() {
 		return panel;
 	}
-	
+
 	/**
 	 * Get the LayoutPanel.
 	 * Subclasses that provide their own panel widget to the
@@ -88,10 +88,10 @@ public abstract class ValidatedFormUI extends Composite {
 	 * @param y           y coordinate of current row
 	 * @param widget      the form widget
 	 * @param labelText   the label text
-	 * @param validators  the validators for the widget
+	 * @param validator  the validator for the widget
 	 * @return y coordinate of next row
 	 */
-	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E>... validators) {
+	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E> validator) {
 		InlineLabel label = new InlineLabel(labelText);
 		label.setStyleName("cc-rightJustifiedLabel", true);
 		getLayoutPanel().add(label);
@@ -101,36 +101,34 @@ public abstract class ValidatedFormUI extends Composite {
 		getLayoutPanel().add(widget);
 		getLayoutPanel().setWidgetTopHeight(widget, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
 		getLayoutPanel().setWidgetLeftWidth(widget, 160.0, Unit.PX, 320.0, Unit.PX);
-		
+
 		final InlineLabel validationErrorLabel = new InlineLabel();
 		validationErrorLabel.setStyleName("cc-errorText", true);
 		getLayoutPanel().add(validationErrorLabel);
 		getLayoutPanel().setWidgetTopHeight(validationErrorLabel, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
 		getLayoutPanel().setWidgetLeftRight(validationErrorLabel, 500.0, Unit.PX, 0.0, Unit.PX);
-		
-		for (IFieldValidator<E> validator : validators) {
-		    validatorList.add(validator);
-		    validator.setWidget(widget);
-		
-		    IValidationCallback callback = new IValidationCallback() {
-		        @Override
-		        public void onSuccess() {
-		            validationErrorLabel.setText("");
-		            widget.removeStyleName("cc-invalid");
-		        }
-			
-		        @Override
-		        public void onFailure(String msg) {
-		            validationErrorLabel.setText(msg);
-		            widget.setStyleName("cc-invalid", true);
-		        }
-		    };
-		    validationCallbackList.add(callback);
-		}
-		
+
+		validatorList.add(validator);
+		validator.setWidget(widget);
+
+		IValidationCallback callback = new IValidationCallback() {
+			@Override
+			public void onSuccess() {
+				validationErrorLabel.setText("");
+				widget.removeStyleName("cc-invalid");
+			}
+
+			@Override
+			public void onFailure(String msg) {
+				validationErrorLabel.setText(msg);
+				widget.setStyleName("cc-invalid", true);
+			}
+		};
+		validationCallbackList.add(callback);
+
 		return y + FIELD_HEIGHT_PX + FIELD_PADDING_PX;
 	}
-	
+
 	/**
 	 * Validate the form fields.
 	 * 
@@ -147,7 +145,7 @@ public abstract class ValidatedFormUI extends Composite {
 		}
 		return numFailures == 0;
 	}
-	
+
 	/**
 	 * Clear field values.
 	 */

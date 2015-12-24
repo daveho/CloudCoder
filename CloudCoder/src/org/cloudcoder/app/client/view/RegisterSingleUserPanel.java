@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -30,7 +30,6 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
-import com.fasterxml.jackson.databind.deser.DataFormatReaders.Match;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
@@ -40,8 +39,9 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
- * @author jspacco
- *
+ * UI for registering a single user.
+ * 
+ * @author Jaime Spacco
  */
 public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionObserver, Subscriber
 {
@@ -89,10 +89,12 @@ public class RegisterSingleUserPanel extends ValidatedFormUI implements SessionO
         this.passwordBox = new PasswordTextBox();
         this.passwordVerifyBox = new PasswordTextBox();
 
-        y = addWidget(y, passwordBox, "password:", new TextBoxNonemptyValidator("A password is required"), 
-                new MatchingTextBoxValidator("passwords must match", passwordVerifyBox));
+        y = addWidget(y, passwordBox, "password:",
+        		new CompositeValidator<TextBox>()
+        				.add(new TextBoxNonemptyValidator("A password is required"))
+        				.add(new MatchingTextBoxValidator("passwords must match", passwordVerifyBox))
+        );
         y = addWidget(y, passwordVerifyBox, "password (verify):", new TextBoxNonemptyValidator("A password is required"));
-        
         
         this.registrationTypeBox = new ListBox();
         for (CourseRegistrationType type : CourseRegistrationType.values()) {
