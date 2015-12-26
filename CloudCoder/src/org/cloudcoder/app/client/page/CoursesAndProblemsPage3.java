@@ -56,11 +56,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -132,6 +133,16 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			// Exercises tab
 			IsWidget exercises = createExercisesTab();
 			tabLayoutPanel.add(exercises, "Exercises");
+			tabLayoutPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+				@Override
+				public void onSelection(SelectionEvent<Integer> event) {
+					if (event.getSelectedItem() == 0) {
+						// Exercises tab selected: work around bug where
+						// problem list doesn't get redisplayed properly
+						exerciseList.redisplay();
+					}
+				}
+			});
 			
 			// Account tab
 			IsWidget account = createAccountTab();

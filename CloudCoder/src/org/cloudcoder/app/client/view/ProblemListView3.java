@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -55,7 +55,6 @@ import com.google.gwt.view.client.SingleSelectionModel;
  */
 public class ProblemListView3 extends ResizeComposite implements SessionObserver, Subscriber {
 	private CloudCoderPage page;
-	private Session session;
 	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
 
 	/**
@@ -102,8 +101,6 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 	}
 
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
-		this.session = session;
-		
 		// Subscribe to session ADDED_OBJECT events (so we will see when a course is selected)
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
@@ -144,6 +141,25 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 		}
 	}
 	
+	/**
+	 * Force a redisplay from contents of the {@link Session}.
+	 * This is to help work around a bug where the view doesn't
+	 * get updated properly if the course selection changes
+	 * while the tab in which the view is displayed is
+	 * not the current tab.
+	 */
+	public void redisplay() {
+		ProblemAndSubmissionReceipt[] problemList =
+				page.getSession().get(ProblemAndSubmissionReceipt[].class);
+		if (problemList != null) {
+			displayLoadedProblems(problemList);
+			Problem selected = page.getSession().get(Problem.class);
+			if (selected != null) {
+				onProblemSelected(selected);
+			}
+		}
+	}
+	
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
@@ -163,7 +179,7 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 
 	public void loadProblemsForCourse(final CourseSelection courseSelection) {
 		GWT.log("Loading problems and submission receipts for course " + courseSelection.getCourse().getNameAndTitle());
-		SessionUtil.loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, session);
+		SessionUtil.loadProblemAndSubmissionReceiptsInCourse(page, courseSelection, page.getSession());
 	}
 
 	private void displayLoadedProblems(ProblemAndSubmissionReceipt[] problemList) {
@@ -178,7 +194,7 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 	}
 
 	private void onProblemSelected(Problem selectedProblem) {
-		ProblemAndSubmissionReceipt[] data = session.get(ProblemAndSubmissionReceipt[].class);
+		ProblemAndSubmissionReceipt[] data = page.getSession().get(ProblemAndSubmissionReceipt[].class);
 		SingleSelectionModel<? super ProblemAndSubmissionReceipt> sm =
 				(SingleSelectionModel<? super ProblemAndSubmissionReceipt>) cellTable.getSelectionModel();
 		for (ProblemAndSubmissionReceipt p : data) {
