@@ -72,7 +72,7 @@ public class BulkRegistrationPanel extends CourseInstructorFormUI {
 		
 		this.fileUpload = new FileUpload();
 		fileUpload.setName("fileupload");
-		y = addWidget(y, fileUpload, "Choose file:", new NoopFieldValidator());
+		y = addWidget(y, fileUpload, "Filename:", new NoopFieldValidator());
 		
 		this.submitButton = new SubmitButton("Register students");
 		y = addWidget(y, submitButton, "", new NoopFieldValidator());

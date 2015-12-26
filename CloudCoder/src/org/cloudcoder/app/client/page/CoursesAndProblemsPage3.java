@@ -437,7 +437,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 
 			// Bulk registration UI
 			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);
-			accordionPanel.add(bulkRegistrationPanel, "Bulk registration");
+			accordionPanel.add(bulkRegistrationPanel, "Bulk User Registration");
 			bulkRegistrationPanel.activate(getSession(), getSubscriptionRegistrar());
 
 			panel.add(accordionPanel);
