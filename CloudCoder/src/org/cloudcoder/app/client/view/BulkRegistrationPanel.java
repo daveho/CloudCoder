@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SubmitButton;
 
@@ -65,9 +66,13 @@ public class BulkRegistrationPanel extends CourseInstructorFormUI {
 		double y = 10.0;
 		
 		// Add widgets
+		InlineHTML fileFormatMsg = new InlineHTML("File should be tab-delimited in format:<br>" +
+				"<tt>username firstname lastname email password</tt>");
+		y = addWidget(y, fileFormatMsg, "", new NoopFieldValidator(), 36.0);
+		
 		this.fileUpload = new FileUpload();
 		fileUpload.setName("fileupload");
-		y = addWidget(y, fileUpload, "Student registrations:", new NoopFieldValidator());
+		y = addWidget(y, fileUpload, "Choose file:", new NoopFieldValidator());
 		
 		this.submitButton = new SubmitButton("Register students");
 		y = addWidget(y, submitButton, "", new NoopFieldValidator());
@@ -100,7 +105,7 @@ public class BulkRegistrationPanel extends CourseInstructorFormUI {
 			}
 		});
 	}
-	
+
 	@Override
 	public LayoutPanel getLayoutPanel() {
 		return this.layoutPanel;

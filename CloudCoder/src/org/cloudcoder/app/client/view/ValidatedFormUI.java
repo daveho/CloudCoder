@@ -22,9 +22,11 @@ import java.util.List;
 
 import org.cloudcoder.app.client.validator.IFieldValidator;
 import org.cloudcoder.app.client.validator.IValidationCallback;
+import org.cloudcoder.app.client.validator.NoopFieldValidator;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
@@ -92,20 +94,35 @@ public abstract class ValidatedFormUI extends Composite {
 	 * @return y coordinate of next row
 	 */
 	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E> validator) {
+		return addWidget(y, widget, labelText, validator, FIELD_HEIGHT_PX);
+	}
+	
+	/**
+	 * Add a form widget.
+	 * 
+	 * @param y           y coordinate of current row
+	 * @param widget      the form widget
+	 * @param labelText   the label text
+	 * @param validator  the validator for the widget
+	 * @param widgetHeightPx height in pixels to allocate to the widget
+	 * @return y coordinate of next row
+	 */
+	protected<E extends Widget> double addWidget(double y, final E widget, String labelText, IFieldValidator<E> validator,
+			double widgetHeightPx) {
 		InlineLabel label = new InlineLabel(labelText);
 		label.setStyleName("cc-rightJustifiedLabel", true);
 		getLayoutPanel().add(label);
-		getLayoutPanel().setWidgetTopHeight(label, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetTopHeight(label, y, Unit.PX, widgetHeightPx, Unit.PX);
 		getLayoutPanel().setWidgetLeftWidth(label, 20.0, Unit.PX, 120.0, Unit.PX);
 
 		getLayoutPanel().add(widget);
-		getLayoutPanel().setWidgetTopHeight(widget, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetTopHeight(widget, y, Unit.PX, widgetHeightPx, Unit.PX);
 		getLayoutPanel().setWidgetLeftWidth(widget, 160.0, Unit.PX, 320.0, Unit.PX);
 
 		final InlineLabel validationErrorLabel = new InlineLabel();
 		validationErrorLabel.setStyleName("cc-errorText", true);
 		getLayoutPanel().add(validationErrorLabel);
-		getLayoutPanel().setWidgetTopHeight(validationErrorLabel, y, Unit.PX, FIELD_HEIGHT_PX, Unit.PX);
+		getLayoutPanel().setWidgetTopHeight(validationErrorLabel, y, Unit.PX, widgetHeightPx, Unit.PX);
 		getLayoutPanel().setWidgetLeftRight(validationErrorLabel, 500.0, Unit.PX, 0.0, Unit.PX);
 
 		validatorList.add(validator);
@@ -126,7 +143,7 @@ public abstract class ValidatedFormUI extends Composite {
 		};
 		validationCallbackList.add(callback);
 
-		return y + FIELD_HEIGHT_PX + FIELD_PADDING_PX;
+		return y + widgetHeightPx + FIELD_PADDING_PX;
 	}
 
 	/**
