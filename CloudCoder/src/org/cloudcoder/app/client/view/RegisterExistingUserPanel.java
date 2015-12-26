@@ -17,13 +17,15 @@
 
 package org.cloudcoder.app.client.view;
 
-import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
 import org.cloudcoder.app.client.validator.SuggestBoxNonEmptyValidator;
 import org.cloudcoder.app.client.validator.TextBoxIntegerValidator;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,7 +40,8 @@ import com.google.gwt.user.client.ui.TextBox;
  * 
  * @author David Hovemeyer
  */
-public class RegisterExistingUserPanel extends CourseInstructorFormUI {
+public class RegisterExistingUserPanel extends ValidatedFormUI
+		implements CourseInstructorUI, SessionObserver {
 	private SuggestBox usernameBox;
 	private TextBox sectionBox;
 	private ListBox registrationTypeBox;
@@ -49,9 +52,7 @@ public class RegisterExistingUserPanel extends CourseInstructorFormUI {
 	/**
 	 * Constructor.
 	 */
-	public RegisterExistingUserPanel(CloudCoderPage page) {
-		super(page);
-		
+	public RegisterExistingUserPanel() {
 		getPanel().setWidth("100%");
 		getPanel().setHeight("180px");
 		
@@ -84,6 +85,12 @@ public class RegisterExistingUserPanel extends CourseInstructorFormUI {
 		});
 	}
 	
+	@Override
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// Keep track of changes to instructor status
+		new CourseInstructorStatusMonitor(this).activate(session, subscriptionRegistrar);
+	}
+	
 	/**
 	 * Set the callback to be run when the "Register user" button is clicked.
 	 * 
@@ -94,14 +101,14 @@ public class RegisterExistingUserPanel extends CourseInstructorFormUI {
 	}
 
 	@Override
-	protected void setEnabled(boolean b) {
+	public void setEnabled(boolean b) {
 		usernameBox.setEnabled(b);
 		sectionBox.setEnabled(b);
 		registerUserButton.setEnabled(b);
 	}
 
 	@Override
-	protected void onCourseChange(Course course) {
+	public void onCourseChange(Course course) {
 		this.courseId = course.getId();
 	}
 

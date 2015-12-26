@@ -18,9 +18,7 @@
 package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.model.Session;
-import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
-import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.util.Publisher;
@@ -28,45 +26,31 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Panel;
 
 /**
- * Superclass for form UIs that should only be enabled
- * if the user is an instructor in the currently-selected
- * course.
+ * Object that monitors the session to keep track of whether
+ * or not the user is an instructor in the currently-selected
+ * course, and updates a {@link CourseInstructorUI}
+ * object in response.
  * 
  * @author David Hovemeyer
  */
-public abstract class CourseInstructorFormUI
-		extends ValidatedFormUI
-		implements SessionObserver, Subscriber {
-
-	private CloudCoderPage page;
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param page the {@link CloudCoderPage}
-	 */
-	public CourseInstructorFormUI(CloudCoderPage page) {
-		this.page = page;
-	}
+public class CourseInstructorStatusMonitor implements SessionObserver, Subscriber {
+	private CourseInstructorUI ui;
+	private Session session;
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param page  the {@link CloudCoderPage}
-	 * @param panel the {@link Panel} to be used as the top-level widget
 	 */
-	public CourseInstructorFormUI(CloudCoderPage page, Panel panel) {
-		super(panel);
-		this.page = page;
+	public CourseInstructorStatusMonitor(CourseInstructorUI ui) {
+		this.ui = ui;
 	}
-	
+
 	@Override
 	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		this.session = session;
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-		setEnabled(false);
+		ui.setEnabled(false);
 		onCourseOrCourseRegistrationsUpdate();
 	}
 
@@ -81,12 +65,12 @@ public abstract class CourseInstructorFormUI
 	private void onCourseOrCourseRegistrationsUpdate() {
 		// See what course is selected, and what the user's list
 		// of courses/course registrations contains
-		CourseSelection sel = page.getSession().get(CourseSelection.class);
-		CourseAndCourseRegistration[] regList = page.getSession().get(CourseAndCourseRegistration[].class);
+		CourseSelection sel = session.get(CourseSelection.class);
+		CourseAndCourseRegistration[] regList = session.get(CourseAndCourseRegistration[].class);
 
 		// Allow subclasses to keep track of course selection changes
 		if (sel != null) {
-			onCourseChange(sel.getCourse());
+			ui.onCourseChange(sel.getCourse());
 		}
 		
 		// Enable or disable this UI depending on whether the
@@ -94,22 +78,7 @@ public abstract class CourseInstructorFormUI
 		if (sel != null && regList != null) {
 			boolean isInstructor = CourseAndCourseRegistration.isInstructor(regList, sel.getCourse());
 			GWT.log("CourseInstructorUI: isInstructor=" + isInstructor);
-			setEnabled(isInstructor);
+			ui.setEnabled(isInstructor);
 		}
 	}
-	
-	/**
-	 * Downcall method for enabling/disabling the form's UI widgets.
-	 * 
-	 * @param b true if the widgets should be enabled, false if
-	 *          they should be disabled
-	 */
-	protected abstract void setEnabled(boolean b);
-	
-	/**
-	 * Downcall method called when course changes.
-	 * 
-	 * @param course the newly-selected {@link Course}
-	 */
-	protected abstract void onCourseChange(Course course); 
 }

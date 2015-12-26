@@ -22,11 +22,9 @@ import java.util.List;
 
 import org.cloudcoder.app.client.validator.IFieldValidator;
 import org.cloudcoder.app.client.validator.IValidationCallback;
-import org.cloudcoder.app.client.validator.NoopFieldValidator;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;

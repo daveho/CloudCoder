@@ -17,7 +17,9 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.validator.CompositeValidator;
 import org.cloudcoder.app.client.validator.MatchingTextBoxValidator;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
@@ -27,6 +29,7 @@ import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -41,7 +44,8 @@ import com.google.gwt.user.client.ui.TextBox;
  * 
  * @author Jaime Spacco
  */
-public class RegisterSingleUserPanel extends CourseInstructorFormUI
+public class RegisterSingleUserPanel extends ValidatedFormUI
+		implements CourseInstructorUI, SessionObserver
 {
     private TextBox usernameBox;
     private TextBox firstnameBox;
@@ -60,9 +64,7 @@ public class RegisterSingleUserPanel extends CourseInstructorFormUI
      * 
      * @param page the {@link CloudCoderPage}
      */
-    public RegisterSingleUserPanel(CloudCoderPage page) {
-        super(page);
-        
+    public RegisterSingleUserPanel() {
         // Set a fixed height to allow this UI to be placed in an
         // AccordionPanel
         getPanel().setHeight("360px");
@@ -114,6 +116,12 @@ public class RegisterSingleUserPanel extends CourseInstructorFormUI
                 }
             }
         });
+    }
+    
+    @Override
+    public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// Keep track of changes to instructor status
+		new CourseInstructorStatusMonitor(this).activate(session, subscriptionRegistrar);
     }
     
     /**
@@ -171,12 +179,12 @@ public class RegisterSingleUserPanel extends CourseInstructorFormUI
     }
     
     @Override
-    protected void onCourseChange(Course course) {
+    public void onCourseChange(Course course) {
     	// Nothing special to do here
     }
     
     @Override
-    protected void setEnabled(boolean b) {
+    public void setEnabled(boolean b) {
     	GWT.log("RegisterSingleUser: setting enabled to " + b);
     	usernameBox.setEnabled(b);
     	firstnameBox.setEnabled(b);

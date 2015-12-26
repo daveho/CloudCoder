@@ -391,7 +391,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
 			// panel to register a single user
-			final RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel(CoursesAndProblemsPage3.this);
+			final RegisterSingleUserPanel registerSingleUserPanel=new RegisterSingleUserPanel();
 			registerSingleUserPanel.setOnRegisterSingleUser(new Runnable() {
                 @Override
                 public void run() {
@@ -409,7 +409,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			registerSingleUserPanel.activate(getSession(), getSubscriptionRegistrar());
 			
 			// panel to register a single existing user
-			final RegisterExistingUserPanel registerExistingUserPanel = new RegisterExistingUserPanel(CoursesAndProblemsPage3.this);
+			final RegisterExistingUserPanel registerExistingUserPanel = new RegisterExistingUserPanel();
 			registerExistingUserPanel.setOnRegisterUser(new Runnable() {
 				@Override
 				public void run() {

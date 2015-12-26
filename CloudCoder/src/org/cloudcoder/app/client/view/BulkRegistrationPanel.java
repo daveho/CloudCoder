@@ -17,10 +17,13 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
+import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.validator.NoopFieldValidator;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.InputElement;
@@ -40,7 +43,8 @@ import com.google.gwt.user.client.ui.SubmitButton;
  * 
  * @author David Hovemeyer
  */
-public class BulkRegistrationPanel extends CourseInstructorFormUI {
+public class BulkRegistrationPanel extends ValidatedFormUI
+		implements CourseInstructorUI, SessionObserver {
 	private LayoutPanel layoutPanel;
 	private FileUpload fileUpload;
 	private Hidden courseId;
@@ -50,7 +54,7 @@ public class BulkRegistrationPanel extends CourseInstructorFormUI {
 	 * Constructor.
 	 */
 	public BulkRegistrationPanel(final CloudCoderPage page) {
-		super(page, new FormPanel());
+		super(new FormPanel());
 		
 		FormPanel formPanel = (FormPanel) getPanel();
 		formPanel.setWidth("100%");
@@ -116,14 +120,21 @@ public class BulkRegistrationPanel extends CourseInstructorFormUI {
 		InputElement inputElt = fileUpload.getElement().cast();
 		inputElt.setValue("");
 	}
+	
+	@Override
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		// Keep track of changes to instructor status
+		new CourseInstructorStatusMonitor(this).activate(session, subscriptionRegistrar);
+	}
 
-	protected void setEnabled(boolean b) {
+	@Override
+	public void setEnabled(boolean b) {
 		fileUpload.setEnabled(b);
 		submitButton.setEnabled(b);
 	}
 	
 	@Override
-	protected void onCourseChange(Course course) {
+	public void onCourseChange(Course course) {
 		GWT.log("BulkRegistrationPanel: selected courseId=" + course.getId());
 		courseId.setValue(String.valueOf(course.getId()));
 	}
