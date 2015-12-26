@@ -78,27 +78,27 @@ public class RegisterSingleUserPanel extends CourseInstructorFormUI
         this.lastnameBox = new TextBox();
         y = addWidget(y, lastnameBox, "Last name:", new TextBoxNonemptyValidator("A last name is required"));
         this.emailBox = new TextBox();
-        y = addWidget(y, emailBox, "email:", new TextBoxNonemptyValidator("An email is required"));
+        y = addWidget(y, emailBox, "Email:", new TextBoxNonemptyValidator("An email is required"));
         this.sectionBox=new TextBox();
         sectionBox.setValue("1");
-        y = addWidget(y, sectionBox, "section", new TextBoxIntegerValidator());
+        y = addWidget(y, sectionBox, "Section", new TextBoxIntegerValidator());
         
         // make sure the passwords match
         this.passwordBox = new PasswordTextBox();
         this.passwordVerifyBox = new PasswordTextBox();
 
-        y = addWidget(y, passwordBox, "password:",
+        y = addWidget(y, passwordBox, "Password:",
         		new CompositeValidator<TextBox>()
         				.add(new TextBoxNonemptyValidator("A password is required"))
-        				.add(new MatchingTextBoxValidator("passwords must match", passwordVerifyBox))
+        				.add(new MatchingTextBoxValidator("Passwords must match", passwordVerifyBox))
         );
-        y = addWidget(y, passwordVerifyBox, "password (verify):", new TextBoxNonemptyValidator("A password is required"));
+        y = addWidget(y, passwordVerifyBox, "Password (verify):", new TextBoxNonemptyValidator("A password is required"));
         
         this.registrationTypeBox = new ListBox();
         for (CourseRegistrationType type : CourseRegistrationType.values()) {
             registrationTypeBox.addItem(type.name());
         }
-        y = addWidget(y, registrationTypeBox, "registration type:", new NoopFieldValidator());
+        y = addWidget(y, registrationTypeBox, "Registration type:", new NoopFieldValidator());
 
         this.registerSingleUserButton=new Button("Register User");
         y = addWidget(y, registerSingleUserButton, "", new NoopFieldValidator());
