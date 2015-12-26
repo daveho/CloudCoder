@@ -91,7 +91,7 @@ public class AccordionPanel extends Composite {
 		flowPanel.add(div);
 		
 		// Create label for this widget
-		Label label = new Label(labelText);
+		Label label = new Label("[-] " + labelText);
 		label.setStyleName("cc-accordionPanelWidgetLabel", true);
 		
 		// Add label and widget to wrapper div
@@ -119,10 +119,12 @@ public class AccordionPanel extends Composite {
 			// First widget added, make it the selected one
 			this.selected = wrapper;
 			wrapper.label.setStyleName("cc-accordionPanelWidgetLabelSelected", true);
+			decorateLabel(wrapper.label, "[+]");
 		} else {
 			// Hide this widget by default: it should become visible
 			// when its label is clicked (and the widget is slide toggled)
 			wrapper.widget.asWidget().getElement().getStyle().setDisplay(Display.NONE);
+			decorateLabel(wrapper.label, "[-]");
 		}
 		
 	}
@@ -133,15 +135,22 @@ public class AccordionPanel extends Composite {
 				// Unselect
 				slideToggle(selected.id);
 				selected.label.removeStyleName("cc-accordionPanelWidgetLabelSelected");
+				decorateLabel(selected.label, "[-]");
 			}
 			
 			// Select the clicked widget
 			selected = wrapper;
 			selected.label.setStyleName("cc-accordionPanelWidgetLabelSelected", true);
 			slideToggle(selected.id);
+			decorateLabel(selected.label, "[+]");
 		}
 	}
-	
+
+	private void decorateLabel(Label label, String decoration) {
+		String text = label.getText();
+		label.setText(decoration + " " + text.substring(4));
+	}
+
 	private native void slideToggle(String id) /*-{
 		var elt = $doc.getElementById(id);
 		$wnd.$(elt).slideToggle(); // Yes, we can haz jquery
