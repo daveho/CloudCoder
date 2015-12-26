@@ -36,6 +36,7 @@ import org.cloudcoder.app.client.view.ProblemListView3;
 import org.cloudcoder.app.client.view.RegisterExistingUserPanel;
 import org.cloudcoder.app.client.view.RegisterSingleUserPanel;
 import org.cloudcoder.app.client.view.SectionLabel;
+import org.cloudcoder.app.client.view.SectionSelectionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAccountView2;
 import org.cloudcoder.app.shared.model.Course;
@@ -87,7 +88,10 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double COURSE_LISTBOX_HEIGHT_PX = 24.0;
 		private static final double MODULE_LISTBOX_HEIGHT_PX = 24.0;
 		private static final double EXERCISES_LABEL_WIDTH_PX = 100.0;
+		private static final double COURSE_LISTBOX_LEFT_PX = 110.0;
+		private static final double COURSE_LISTBOX_WIDTH_PX = 480.0;
 		
+		private LayoutPanel full;
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
 		private CourseSelectionListBox courseListBox;
@@ -104,9 +108,10 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private ModuleListBox moduleListBox;
 		private BulkRegistrationPanel bulkRegistrationPanel;
 		private ManageUsersPanel manageUsersPanel;
+		private SectionSelectionView sectionSelectionView;
 		
 		public UI() {
-			LayoutPanel full = new LayoutPanel();
+			this.full = new LayoutPanel();
 			
 			Label pageTitle = new Label("Welcome to CloudCoder!");
 			pageTitle.setStyleName("cc-pageTitle", true);
@@ -127,7 +132,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			this.courseListBox = new CourseSelectionListBox(CoursesAndProblemsPage3.this, 1);
 			this.courseListBox.setDisplayMode(CourseSelectionListBox.DisplayMode.FANCY);
 			full.add(courseListBox);
-			full.setWidgetLeftWidth(courseListBox, 110.0, Unit.PX, 480.0, Unit.PX);
+			full.setWidgetLeftWidth(courseListBox, COURSE_LISTBOX_LEFT_PX, Unit.PX, COURSE_LISTBOX_WIDTH_PX, Unit.PX);
 			full.setWidgetTopHeight(courseListBox, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
 			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
@@ -540,6 +545,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				IsWidget manageCoursePanel = createManageCourseTab();
 				tabLayoutPanel.add(manageCoursePanel, "Manage course");
 				this.manageCourseTabCreated = true;
+			}
+			
+			// Create section selection widget if appropriate
+			if (isInstructor && this.sectionSelectionView == null) {
+				this.sectionSelectionView = new SectionSelectionView();
+				full.add(sectionSelectionView);
+				full.setWidgetLeftWidth(sectionSelectionView, COURSE_LISTBOX_LEFT_PX + COURSE_LISTBOX_WIDTH_PX + 10.0, Unit.PX, 240.0, Unit.PX);
+				full.setWidgetTopHeight(sectionSelectionView, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+				sectionSelectionView.activate(getSession(), getSubscriptionRegistrar());
 			}
 		}
 

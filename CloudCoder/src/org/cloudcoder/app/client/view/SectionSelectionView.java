@@ -31,6 +31,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -101,6 +102,11 @@ public class SectionSelectionView extends Composite implements Subscriber, Sessi
 
 	@Override
 	public void activate(final Session session, final SubscriptionRegistrar subscriptionRegistrar) {
+		this.session = session;
+		
+		// Subscribe to Session ADDED_OBJECT events
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+
 		// Use existing Section object if there is one.
 		// Otherwise, create a new default one that will show
 		// results for all sections.
@@ -110,9 +116,31 @@ public class SectionSelectionView extends Composite implements Subscriber, Sessi
 			session.add(selectedSection);
 		}
 
-		CourseSelection courseSelection = session.get(CourseSelection.class);
+		onCourseSelected();
+	}
+
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof Section) {
+			// Section changed somehow: update the selection in the listbox if
+			// the section is actually different than the current one
+			Section added = (Section) hint;
+			setSelected(added);
+		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+			onCourseSelected();
+		}
+	}
+
+	private void onCourseSelected() {
+		GWT.log("Loading sections...");
 		
-		this.session = session;
+		CourseSelection courseSelection = session.get(CourseSelection.class);
+		if (courseSelection == null) {
+			return;
+		}
+		
+		sectionList.clear();
+		chooseSectionBox.clear();
 		
 		// Set section numbers
 		sectionList.add("All");
@@ -136,16 +164,6 @@ public class SectionSelectionView extends Composite implements Subscriber, Sessi
 				session.add(StatusMessage.error("Couldn't get section numbers for course", caught));
 			}
 		});
-	}
-
-	@Override
-	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (key == Session.Event.ADDED_OBJECT && hint instanceof Section) {
-			// Section changed somehow: update the selection in the listbox if
-			// the section is actually different than the current one
-			Section added = (Section) hint;
-			setSelected(added);
-		}
 	}
 
 	private void setSelected(Section section) {

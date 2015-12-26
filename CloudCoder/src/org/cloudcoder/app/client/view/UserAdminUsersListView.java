@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -41,126 +41,130 @@ import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
- * @author jaimespacco
- *
+ * View to view the users in a {@link Course}.
+ * 
+ * @author Jaime Spacco
+ * @author David Hovemeyer
  */
 public class UserAdminUsersListView extends ResizeComposite implements Subscriber, SessionObserver
 {
-    private DataGrid<User> grid;
-    private Session session;
-    private User selected;
-    //private User loggedUser;
+	private DataGrid<User> grid;
+	private Session session;
+	private User selected;
 	private Section section;
-    
-    public User getSelectedUser() {
-        return selected;
-    }
-    
-    /**
-     * Constructor.
-     */
-    public UserAdminUsersListView() {
-        grid = new DataGrid<User>();
-        grid.addColumn(new TextColumn<User>() {
-            @Override
-            public String getValue(User user) {
-                return user.getUsername();
-            }
-        }, "Username");
-        grid.addColumn(new TextColumn<User>() {
-            @Override
-            public String getValue(User user) {
-                return user.getFirstname();
-            }
-        }, "Firstname");
-        grid.addColumn(new TextColumn<User>() {
-            @Override
-            public String getValue(User user) {
-                return user.getLastname();
-            }
-        }, "Lastname");
-        grid.addColumn(new TextColumn<User>() {
-            @Override
-            public String getValue(User user) {
-                return user.getEmail();
-            }
-        }, "Email");
-        
-        initWidget(grid);
-    }
 
-    /* (non-Javadoc)
-     * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
-     */
-    @Override
-    public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
-    {
-    	// Get selected section
-    	this.section = session.get(Section.class);
-    	
-        this.session = session;
-        this.session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
-        //this.loggedUser=this.session.get(User.class);
-        // Set selection model.
-        // When a User record is selected, it will be added to the Session.
-        final SingleSelectionModel<User> selectionModel = new SingleSelectionModel<User>();
-        selectionModel.addSelectionChangeHandler(new Handler() {
-            @Override
-            public void onSelectionChange(SelectionChangeEvent event) {
-                selected = selectionModel.getSelectedObject();
-                //session.add(loggedUser);
-                session.add(new UserSelection(selected));
-            }
-        });
-        grid.setSelectionModel(selectionModel);
+	public User getSelectedUser() {
+		return selected;
+	}
 
-        // Load users for course/section
-        loadUsers();
-        
-    }
+	/**
+	 * Constructor.
+	 */
+	public UserAdminUsersListView() {
+		grid = new DataGrid<User>();
+		grid.addColumn(new TextColumn<User>() {
+			@Override
+			public String getValue(User user) {
+				return user.getUsername();
+			}
+		}, "Username");
+		grid.addColumn(new TextColumn<User>() {
+			@Override
+			public String getValue(User user) {
+				return user.getFirstname();
+			}
+		}, "Firstname");
+		grid.addColumn(new TextColumn<User>() {
+			@Override
+			public String getValue(User user) {
+				return user.getLastname();
+			}
+		}, "Lastname");
+		grid.addColumn(new TextColumn<User>() {
+			@Override
+			public String getValue(User user) {
+				return user.getEmail();
+			}
+		}, "Email");
 
-    /* (non-Javadoc)
-     * @see org.cloudcoder.app.shared.util.Subscriber#eventOccurred(java.lang.Object, org.cloudcoder.app.shared.util.Publisher, java.lang.Object)
-     */
-    @Override
-    public void eventOccurred(Object key, Publisher publisher, Object hint) {
-        if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
-            // load all the useres for the current course
-            loadUsers();
-        } else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Section)) {
-        	if (section == null || section.getNumber() != ((Section)hint).getNumber()) {
-        		// section selection changed, reload users
-            	section = (Section) hint;
-        		loadUsers();
-        	}
-        }
-    }
-    
-    public void loadUsers() {
-    	if (section == null) {
-    		// Need a section selection
-    		return;
-    	}
-    	
-        CourseSelection courseSelection=session.get(CourseSelection.class);
-        Course course = courseSelection.getCourse();
-        int courseId=course.getId();
-        RPC.usersService.getUsers(courseId, section.getNumber(), new AsyncCallback<User[]>() {
-            @Override
-            public void onSuccess(User[] result) {
-                displayUsers(result);
-            }
-            
-            @Override
-            public void onFailure(Throwable caught) {
-            	session.add(StatusMessage.error("Could not load users for course"));
-            }
-        });
-    }
+		initWidget(grid);
+	}
 
-    protected void displayUsers(User[] result) {
-        grid.setRowCount(result.length);
-        grid.setRowData(Arrays.asList(result));
-        grid.setVisibleRange(0, result.length);
-    }
+	/* (non-Javadoc)
+	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
+	 */
+	@Override
+	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
+	{
+		// Get selected section
+		this.section = session.get(Section.class);
+		if (section == null) {
+			section = new Section(); // "All users" section
+		}
+
+		this.session = session;
+		this.session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+
+		// Set selection model.
+		// When a User record is selected, it will be added to the Session.
+		final SingleSelectionModel<User> selectionModel = new SingleSelectionModel<User>();
+		selectionModel.addSelectionChangeHandler(new Handler() {
+			@Override
+			public void onSelectionChange(SelectionChangeEvent event) {
+				selected = selectionModel.getSelectedObject();
+				session.add(new UserSelection(selected));
+			}
+		});
+		grid.setSelectionModel(selectionModel);
+
+		// Load users for course/section
+		onCourseOrSectionChange();
+	}
+
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && (hint instanceof CourseSelection)) {
+			// load all the users for the current course
+			onCourseOrSectionChange();
+		} else if (key == Session.Event.ADDED_OBJECT && (hint instanceof Section)) {
+			if (section == null || section.getNumber() != ((Section)hint).getNumber()) {
+				// section selection changed, reload users
+				section = (Section) hint;
+				onCourseOrSectionChange();
+			}
+		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
+			onCourseOrSectionChange();
+		}
+	}
+	
+	public void loadUsers() {
+		onCourseOrSectionChange();
+	}
+
+	private void onCourseOrSectionChange() {
+		CourseSelection courseSelection=session.get(CourseSelection.class);
+		if (courseSelection == null) {
+			// Course hasn't been selected yet
+			return;
+		}
+		Course course = courseSelection.getCourse();
+		int courseId=course.getId();
+		RPC.usersService.getUsers(courseId, section.getNumber(), new AsyncCallback<User[]>() {
+			@Override
+			public void onSuccess(User[] result) {
+				displayUsers(result);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				session.add(StatusMessage.error("Could not load users for course"));
+			}
+		});
+	}
+
+	protected void displayUsers(User[] result) {
+		grid.setRowCount(result.length);
+		grid.setRowData(Arrays.asList(result));
+		grid.setVisibleRange(0, result.length);
+	}
 }
