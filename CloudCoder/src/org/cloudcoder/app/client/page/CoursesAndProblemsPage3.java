@@ -28,6 +28,7 @@ import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
+import org.cloudcoder.app.client.view.ManageUsersPanel;
 import org.cloudcoder.app.client.view.ModuleListBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
 import org.cloudcoder.app.client.view.ProblemDescriptionView;
@@ -102,6 +103,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private boolean manageCourseTabCreated;
 		private ModuleListBox moduleListBox;
 		private BulkRegistrationPanel bulkRegistrationPanel;
+		private ManageUsersPanel manageUsersPanel;
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -439,6 +441,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			this.bulkRegistrationPanel = new BulkRegistrationPanel(CoursesAndProblemsPage3.this);
 			accordionPanel.add(bulkRegistrationPanel, "Bulk User Registration");
 			bulkRegistrationPanel.activate(getSession(), getSubscriptionRegistrar());
+			
+			// Manage users UI
+			this.manageUsersPanel = new ManageUsersPanel();
+			accordionPanel.add(manageUsersPanel, "Manage Users");
+			manageUsersPanel.activate(getSession(), getSubscriptionRegistrar());
 
 			panel.add(accordionPanel);
 			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);

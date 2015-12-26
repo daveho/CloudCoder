@@ -22,7 +22,9 @@ import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.LayoutPanel;
 
 
 /**
@@ -36,14 +38,30 @@ import com.google.gwt.user.client.ui.Composite;
  * @author David Hovemeyer
  */
 public class ManageUsersPanel extends Composite implements CourseInstructorUI, SessionObserver {
+	private UserAdminUsersListView userListView;
+	
 	public ManageUsersPanel() {
+		LayoutPanel panel = new LayoutPanel();
+
+		panel.setWidth("100%");
+		panel.setHeight("500px");
 		
+		// TODO: top stuff, buttons, etc.
+		
+		userListView = new UserAdminUsersListView();
+		panel.add(userListView);
+		panel.setWidgetTopBottom(userListView, 80.0, Unit.PX, 20.0, Unit.PX);
+		panel.setWidgetLeftRight(userListView, 10.0, Unit.PX, 10.0, Unit.PX);
+		
+		initWidget(panel);
 	}
 
 	@Override
 	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 		// Keep track of changes to instructor status
 		new CourseInstructorStatusMonitor(this).activate(session, subscriptionRegistrar);
+		
+		userListView.activate(session, subscriptionRegistrar);
 	}
 
 	@Override
