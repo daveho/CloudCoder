@@ -56,6 +56,7 @@ public class EditUserView extends Composite {
 	private Label errorLabel;
 	private boolean requirePasswords;
 	private int userId;
+	private boolean isSuperuser;
 
 	/**
 	 * Constructor.
@@ -137,6 +138,9 @@ public class EditUserView extends Composite {
 		section.setText(String.valueOf(sectionNum));
 		studentAccountButton.setValue(!isInstructor);
 		instructorAccountButton.setValue(isInstructor);
+		
+		// Note that there is no UI for editing this at the moment
+		isSuperuser = user.isSuperuser();
 	}
 	
 	/**
@@ -221,6 +225,7 @@ public class EditUserView extends Composite {
 		user.setLastname(lastname.getValue().trim());
 		user.setEmail(email.getValue().trim());
 		user.setWebsite(website.getValue().trim());
+		user.setSuperuser(isSuperuser);
 		
 		EditedUser editedUser = new EditedUser();
 		editedUser.setUser(user);
