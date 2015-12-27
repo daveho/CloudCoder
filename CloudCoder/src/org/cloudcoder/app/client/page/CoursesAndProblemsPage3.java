@@ -28,6 +28,7 @@ import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
+import org.cloudcoder.app.client.view.LabeledCourseSelectionListBox;
 import org.cloudcoder.app.client.view.ManageUsersPanel;
 import org.cloudcoder.app.client.view.ModuleListBox;
 import org.cloudcoder.app.client.view.PageNavPanel;
@@ -64,7 +65,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -85,16 +87,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double LOAD_EXERCISE_BUTTON_WIDTH_PX = 120.0;
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
 		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
-		private static final double COURSE_LISTBOX_HEIGHT_PX = 24.0;
 		private static final double MODULE_LISTBOX_HEIGHT_PX = 24.0;
 		private static final double EXERCISES_LABEL_WIDTH_PX = 100.0;
-		private static final double COURSE_LISTBOX_LEFT_PX = 110.0;
-		private static final double COURSE_LISTBOX_WIDTH_PX = 480.0;
 		
-		private LayoutPanel full;
 		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
-		private CourseSelectionListBox courseListBox;
+		private FlowPanel courseSelectionPanel;
+		private LabeledCourseSelectionListBox courseListBox;
 		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
@@ -111,7 +110,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private SectionSelectionView sectionSelectionView;
 		
 		public UI() {
-			this.full = new LayoutPanel();
+			LayoutPanel full = new LayoutPanel();
 			
 			Label pageTitle = new Label("Welcome to CloudCoder!");
 			pageTitle.setStyleName("cc-pageTitle", true);
@@ -125,15 +124,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			pageNavPanel.setShowBackButton(false);
 			
-			InlineLabel courseListBoxLabel = new InlineLabel("Select course:");
-			full.add(courseListBoxLabel);
-			full.setWidgetLeftWidth(courseListBoxLabel, 0.0, Unit.PX, 100.0, Unit.PX);
-			full.setWidgetTopHeight(courseListBoxLabel, PageNavPanel.HEIGHT_PX - 4.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
-			this.courseListBox = new CourseSelectionListBox(CoursesAndProblemsPage3.this, 1);
+			this.courseSelectionPanel = new FlowPanel();
+			full.add(courseSelectionPanel);
+			full.setWidgetLeftRight(courseSelectionPanel, 0.0, Unit.PX, 0.0, Unit.PX);
+			full.setWidgetTopHeight(courseSelectionPanel, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, LabeledCourseSelectionListBox.HEIGHT_PX, Unit.PX);
+			this.courseListBox = new LabeledCourseSelectionListBox(CoursesAndProblemsPage3.this, "Course:");
 			this.courseListBox.setDisplayMode(CourseSelectionListBox.DisplayMode.FANCY);
-			full.add(courseListBox);
-			full.setWidgetLeftWidth(courseListBox, COURSE_LISTBOX_LEFT_PX, Unit.PX, COURSE_LISTBOX_WIDTH_PX, Unit.PX);
-			full.setWidgetTopHeight(courseListBox, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+			courseSelectionPanel.add(courseListBox);
 			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
 			
@@ -164,7 +161,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			full.add(tabLayoutPanel);
 			full.setWidgetLeftRight(tabLayoutPanel, 0.0, Unit.PX, 0.0, Unit.PX);
-			full.setWidgetTopBottom(tabLayoutPanel, PageNavPanel.HEIGHT_PX + COURSE_LISTBOX_HEIGHT_PX /*- 8.0*/, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
+			full.setWidgetTopBottom(tabLayoutPanel, PageNavPanel.HEIGHT_PX + LabeledCourseSelectionListBox.HEIGHT_PX, Unit.PX, StatusMessageView.HEIGHT_PX, Unit.PX);
 
 			this.statusMessageView = new StatusMessageView();
 			full.add(statusMessageView);
@@ -549,10 +546,9 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			// Create section selection widget if appropriate
 			if (isInstructor && this.sectionSelectionView == null) {
+				courseSelectionPanel.add(new InlineHTML(" "));
 				this.sectionSelectionView = new SectionSelectionView();
-				full.add(sectionSelectionView);
-				full.setWidgetLeftWidth(sectionSelectionView, COURSE_LISTBOX_LEFT_PX + COURSE_LISTBOX_WIDTH_PX + 10.0, Unit.PX, 240.0, Unit.PX);
-				full.setWidgetTopHeight(sectionSelectionView, PageNavPanel.HEIGHT_PX - 8.0, Unit.PX, COURSE_LISTBOX_HEIGHT_PX, Unit.PX);
+				courseSelectionPanel.add(sectionSelectionView);
 				sectionSelectionView.activate(getSession(), getSubscriptionRegistrar());
 			}
 		}
