@@ -23,8 +23,11 @@ import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.ModelObjectUtil;
 import org.cloudcoder.app.shared.model.Module;
@@ -479,6 +482,99 @@ public class SessionUtil {
 					@Override
 					public void onSuccess(OperationResult result) {
 						callback.call(result);
+						onDone();
+					}
+				});
+			}
+		}.execute();
+	}
+	
+	private static final RunOnce getUserCourseRegistrationsRunner = new RunOnce();
+	
+	/**
+	 * Get {@link CourseRegistrationList} for a {@link User} in a {@link Course}.
+	 * 
+	 * @param page       the {@link CloudCoderPage}
+	 * @param user       the {@link User}
+	 * @param course     the {@link Course}
+	 * @param onSuccess  callback to be executed if successful
+	 */
+	public static void getUserCourseRegistrations(final CloudCoderPage page, final User user, final Course course, final ICallback<CourseRegistrationList> onSuccess) {
+		new OneTimeRunnable(getUserCourseRegistrationsRunner, user, course) {
+			@Override
+			public void run() {
+				doGetUserCourseRegistrations(user, course, onSuccess);
+			}
+
+			private void doGetUserCourseRegistrations(final User user, final Course course, final ICallback<CourseRegistrationList> onSuccess) {
+				RPC.usersService.getUserCourseRegistrationList(course, user, new AsyncCallback<CourseRegistrationList>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									doGetUserCourseRegistrations(user, course, onSuccess);
+								}
+							});
+						} else {
+							page.getSession().add(StatusMessage.error("Could not get course registrations for user", caught));
+							onDone();
+						}
+					}
+
+					@Override
+					public void onSuccess(CourseRegistrationList result) {
+						onSuccess.call(result);
+						onDone();
+					}
+				});
+			}
+		}.execute();
+	}
+	
+	private static final RunOnce editUserInCourseRunner = new RunOnce();
+
+	/**
+	 * Edit a {@link User} (and possibly the user's {@link CourseRegistration})
+	 * as specified by an {@link EditedUser} object.
+	 * 
+	 * @param page       the {@link CloudCoderPage}
+	 * @param editedUser the {@link EditedUser}
+	 * @param course     the {@link Course}
+	 * @param onSuccess  callback to be executed if successful
+	 */
+	public static void editUserInCourse(final CloudCoderPage page, final EditedUser editedUser, final Course course, final Runnable onSuccess) {
+		new OneTimeRunnable(editUserInCourseRunner, editedUser) {
+			@Override
+			public void run() {
+				doEditUser(editedUser, onSuccess);
+			}
+
+			private void doEditUser(final EditedUser editedUser, final Runnable onSuccess) {
+				RPC.usersService.editUser(editedUser, course, new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									doEditUser(editedUser, onSuccess);
+								}
+							});
+						} else {
+							page.getSession().add(StatusMessage.error("Could not update user", caught));
+							onDone();
+						}
+					}
+
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							onSuccess.run();
+						} else {
+							page.getSession().add(StatusMessage.error("Could not update user"));
+						}
 						onDone();
 					}
 				});

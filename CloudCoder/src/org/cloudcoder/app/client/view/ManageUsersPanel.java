@@ -19,8 +19,16 @@ package org.cloudcoder.app.client.view;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.client.page.SessionUtil;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.CourseRegistration;
+import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.CourseRegistrationType;
+import org.cloudcoder.app.shared.model.CourseSelection;
+import org.cloudcoder.app.shared.model.EditedUser;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
@@ -70,12 +78,14 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 		}
 	}
 
+	private CloudCoderPage page;
 	private UserAdminUsersListView userListView;
 	private int courseId;
 	private ButtonPanel<UserAction> userManagementButtonPanel;
-	private Session session;
 
-	public ManageUsersPanel() {
+	public ManageUsersPanel(CloudCoderPage page) {
+		this.page = page;
+
 		LayoutPanel panel = new LayoutPanel();
 
 		panel.setWidth("100%");
@@ -122,21 +132,75 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 	}
 
 	protected void handleDeleteUser() {
-		session.add(StatusMessage.information("Should be deleting user"));
+		page.getSession().add(StatusMessage.information("Should be deleting user"));
 	}
 
 	protected void handleEditUser() {
-		session.add(StatusMessage.information("Should be editing user"));
+		final User chosen = userListView.getSelectedUser();
+		CourseSelection courseSel = page.getSession().get(CourseSelection.class);
+		if (courseSel == null) {
+			return;
+		}
+		final Course course = courseSel.getCourse();
+
+		// Get course registrations (since we may need to modify
+		// the user's course registration)
+		SessionUtil.getUserCourseRegistrations(page, chosen, course, new ICallback<CourseRegistrationList>() {
+			public void call(final CourseRegistrationList regList) {
+				if (regList == null) {
+					// Really shouldn't happen
+					page.getSession().add(StatusMessage.error("You are not an instructor?"));
+					return;
+				}
+
+				if (regList.getList().isEmpty()) {
+					// This also shouldn't happen
+					page.getSession().add(StatusMessage.error("User is not registered in the course?"));
+					return;
+				}
+
+				// FIXME: right now we only support a single registration per user
+				CourseRegistration firstCourseRegistration = regList.getList().get(0);
+
+				final EditUserDialog editUserDialog = new EditUserDialog(
+						chosen,
+						firstCourseRegistration.getRegistrationType().compareTo(CourseRegistrationType.INSTRUCTOR) >= 0,
+						firstCourseRegistration.getSection(),
+						false);
+				editUserDialog.setEditUserCallback(new ICallback<EditedUser>() {
+					@Override
+					public void call(final EditedUser editedUser) {
+						editUserDialog.hide();
+
+						// If the password field was not left blank,
+						// then set the password hash in the User object
+						// to the (plaintext) password, so the hash can
+						// be updated.  Otherwise, leave it null as a signal
+						// to keep the current password.
+						if (!editedUser.getPassword().equals("")) {
+							editedUser.getUser().setPasswordHash(editedUser.getPassword());
+						}
+
+						// Actually do the RPC to edit the user and/or course registration
+						SessionUtil.editUserInCourse(page, editedUser, course, new Runnable() {
+							@Override
+							public void run() {
+								page.getSession().add(StatusMessage.goodNews("User " + editedUser.getUser().getUsername() + " updated successfully"));
+							}
+						});
+					}
+				});
+				editUserDialog.center();
+			}
+		});
 	}
 
 	protected void handleUserProgress() {
-		session.add(StatusMessage.information("Should be viewing user progress"));
+		page.getSession().add(StatusMessage.information("Should be viewing user progress"));
 	}
 
 	@Override
 	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
-		this.session = session;
-		
 		// Keep track of changes to instructor status
 		new CourseInstructorStatusMonitor(this).activate(session, subscriptionRegistrar);
 

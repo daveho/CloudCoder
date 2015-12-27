@@ -531,7 +531,7 @@ public class UserAdminPage extends CloudCoderPage
 				        			value.getUser().setPasswordHash(value.getPassword());
 				        		}
 				        		
-				        		UserAdminPage.UI.this.doEditUserRPC(value, course);
+//				        		UserAdminPage.UI.this.doEditUserRPC(value, course);
 				        	}
 						});
 				        editUserDialog.center();

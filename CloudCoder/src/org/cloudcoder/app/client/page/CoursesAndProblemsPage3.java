@@ -445,7 +445,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			bulkRegistrationPanel.activate(getSession(), getSubscriptionRegistrar());
 			
 			// Manage users UI
-			this.manageUsersPanel = new ManageUsersPanel();
+			this.manageUsersPanel = new ManageUsersPanel(CoursesAndProblemsPage3.this);
 			accordionPanel.add(manageUsersPanel, "Manage Users");
 			manageUsersPanel.activate(getSession(), getSubscriptionRegistrar());
 
