@@ -20,6 +20,13 @@ package org.cloudcoder.app.client.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cloudcoder.app.client.model.Session;
+import org.cloudcoder.app.client.page.SessionObserver;
+import org.cloudcoder.app.shared.model.UserSelection;
+import org.cloudcoder.app.shared.util.Publisher;
+import org.cloudcoder.app.shared.util.Subscriber;
+import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
@@ -32,7 +39,8 @@ import com.google.gwt.user.client.ui.InlineHTML;
  * 
  * @author David Hovemeyer
  */
-public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends Composite {
+public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends Composite
+		implements SessionObserver, Subscriber {
 	/**
 	 * Height in pixels.
 	 */
@@ -76,6 +84,18 @@ public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends
 		}
 		
 		initWidget(panel);
+	}
+	
+	@Override
+	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+	}
+	
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof UserSelection) {
+			updateButtonEnablement();
+		}
 	}
 	
 	/**
