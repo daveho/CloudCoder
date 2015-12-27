@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.client.view;
 
+import org.cloudcoder.app.client.model.PageId;
+import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
@@ -30,12 +32,12 @@ import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.User;
+import org.cloudcoder.app.shared.model.UserSelection;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
-
 
 /**
  * UI for managing users in a course, for the "Manage course" tab.
@@ -132,7 +134,8 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 	}
 
 	protected void handleDeleteUser() {
-		page.getSession().add(StatusMessage.information("Should be deleting user"));
+		// TODO: implement this
+		page.getSession().add(StatusMessage.information("Deleting users is not supported yet, sorry"));
 	}
 
 	protected void handleEditUser() {
@@ -196,7 +199,11 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 	}
 
 	protected void handleUserProgress() {
-		page.getSession().add(StatusMessage.information("Should be viewing user progress"));
+        UserSelection selectedUser = page.getSession().get(UserSelection.class);
+        if (selectedUser == null) {
+        	return;
+        }
+        page.getSession().get(PageStack.class).push(PageId.USER_PROGRESS);
 	}
 
 	@Override
@@ -210,13 +217,12 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 
 	@Override
 	public void setEnabled(boolean b) {
-		// TODO Auto-generated method stub
-
+		userManagementButtonPanel.setEnabled(b);
+		userListView.setEnabled(b);
 	}
 
 	@Override
 	public void onCourseChange(Course course) {
-		// TODO Auto-generated method stub
-
+		// Nothing specific to do
 	}
 }

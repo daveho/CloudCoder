@@ -125,4 +125,16 @@ public abstract class ButtonPanel<ActionType extends IButtonPanelAction> extends
 	 * @return true if the action's button should be enabled, false otherwise
 	 */
 	public abstract boolean isEnabled(ActionType action);
+
+	/**
+	 * Global enable/disable.
+	 * 
+	 * @param b true if ButtonPanel should be enabled, false if
+	 *           ButtonPanel should be disabled
+	 */
+	public void setEnabled(boolean b) {
+		for (Button btn : actionToButtonMap.values()) {
+			btn.setEnabled(b);
+		}
+	}
 }

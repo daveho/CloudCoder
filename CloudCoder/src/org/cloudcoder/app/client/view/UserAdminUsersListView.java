@@ -167,4 +167,13 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
 		grid.setRowData(Arrays.asList(result));
 		grid.setVisibleRange(0, result.length);
 	}
+
+	/**
+	 * Enable or disable.
+	 * 
+	 * @param b true if widget should be enabled, false if widget should be disabled
+	 */
+	public void setEnabled(boolean b) {
+		// FIXME: Is there anything sensible we can do here?
+	}
 }
