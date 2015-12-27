@@ -48,6 +48,8 @@ import com.google.gwt.user.client.ui.ListBox;
  * @author David Hovemeyer
  */
 public class SectionSelectionView extends Composite implements Subscriber, SessionObserver {
+	public static final double LISTBOX_HEIGHT_PX = 24.0;
+	
 	private List<String> sectionList;
 	private ListBox chooseSectionBox;
 	private Session session;
@@ -66,6 +68,7 @@ public class SectionSelectionView extends Composite implements Subscriber, Sessi
 		sectionList = new ArrayList<String>();
 		this.chooseSectionBox = new ListBox();
 		chooseSectionBox.setWidth("80px");
+		chooseSectionBox.setHeight(LISTBOX_HEIGHT_PX + "px");
 		chooseSectionBox.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
