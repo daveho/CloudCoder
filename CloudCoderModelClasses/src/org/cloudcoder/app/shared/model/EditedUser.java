@@ -60,4 +60,24 @@ public class EditedUser implements Serializable {
 	public CourseRegistrationType getRegistrationType() {
 		return registrationType;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof EditedUser)) {
+			return false;
+		}
+		EditedUser other = (EditedUser) obj;
+		return ModelObjectUtil.equals(this.user, other.user)
+				&& ModelObjectUtil.equals(this.currentPassword, other.currentPassword)
+				&& ModelObjectUtil.equals(this.password, other.password)
+				&& this.section == other.section
+				&& this.registrationType == other.registrationType;
+	}
+	
+	@Override
+	public int hashCode() {
+		// This object should really not be used as the key in
+		// a hash table.
+		return 0;
+	}
 }
