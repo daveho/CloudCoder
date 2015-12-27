@@ -58,7 +58,7 @@ public class BulkRegistrationPanel extends ValidatedFormUI
 		
 		FormPanel formPanel = (FormPanel) getPanel();
 		formPanel.setWidth("100%");
-		formPanel.setHeight("120px");
+		formPanel.setHeight("144px");
 		
 		formPanel.setEncoding(FormPanel.ENCODING_MULTIPART);
 		formPanel.setMethod(FormPanel.METHOD_POST);
