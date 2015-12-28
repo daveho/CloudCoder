@@ -20,6 +20,7 @@ package org.cloudcoder.app.client.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -141,7 +142,18 @@ public class AccordionPanel extends Composite {
 			// Select the clicked widget
 			selected = wrapper;
 			selected.label.setStyleName("cc-accordionPanelWidgetLabelSelected", true);
-			slideToggle(selected.id);
+			slideToggle(selected.id, new Runnable() {
+				@Override
+				public void run() {
+					if (selected.widget instanceof IRedisplayable) {
+						// Updates to some widgets, especially those based on DataGrids,
+						// don't take effect if they happen when the widget is not displayed.
+						// If this is one of those widgets, kick it.
+						GWT.log("Kicking redisplayable widget " + selected.widget.getClass().getSimpleName());
+						((IRedisplayable)selected.widget).redisplay();
+					}
+				}
+			});
 			decorateLabel(selected.label, "[+]");
 		}
 	}
@@ -150,9 +162,18 @@ public class AccordionPanel extends Composite {
 		String text = label.getText();
 		label.setText(decoration + " " + text.substring(4));
 	}
+	
+	private void slideToggle(String id) {
+		slideToggle(id, new Runnable() {
+			@Override
+			public void run() {
+				// Do nothing
+			}
+		});
+	}
 
-	private native void slideToggle(String id) /*-{
+	private native void slideToggle(String id, Runnable onComplete) /*-{
 		var elt = $doc.getElementById(id);
-		$wnd.$(elt).slideToggle(); // Yes, we can haz jquery
+		$wnd.$(elt).slideToggle(400, function() { onComplete.@java.lang.Runnable::run()(); }); // Yes, we can haz jquery
 	}-*/;
 }
