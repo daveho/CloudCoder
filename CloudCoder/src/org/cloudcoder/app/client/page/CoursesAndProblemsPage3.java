@@ -638,7 +638,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		}
 		
 		private void checkNavigationMemento() {
-			// For now, just attempt to restore the tab
 			NavigationMemento memento = getSession().get(NavigationMemento.class);
 			if (memento != null) {
 				for (int i = 0; i < tabIdList.size(); i++) {
