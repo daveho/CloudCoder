@@ -53,7 +53,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * 
  * @author David Hovemeyer
  */
-public class ProblemListView3 extends ResizeComposite implements SessionObserver, Subscriber {
+public class ProblemListView3 extends ResizeComposite implements SessionObserver, Subscriber, IRedisplayable {
 	private CloudCoderPage page;
 	private DataGrid<ProblemAndSubmissionReceipt> cellTable;
 
@@ -148,6 +148,7 @@ public class ProblemListView3 extends ResizeComposite implements SessionObserver
 	 * while the tab in which the view is displayed is
 	 * not the current tab.
 	 */
+	@Override
 	public void redisplay() {
 		ProblemAndSubmissionReceipt[] problemList =
 				page.getSession().get(ProblemAndSubmissionReceipt[].class);

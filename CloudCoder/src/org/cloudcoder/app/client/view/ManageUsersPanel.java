@@ -49,7 +49,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
  * 
  * @author David Hovemeyer
  */
-public class ManageUsersPanel extends Composite implements CourseInstructorUI, SessionObserver {
+public class ManageUsersPanel extends Composite implements CourseInstructorUI, SessionObserver, IRedisplayable {
 	private enum UserAction implements IButtonPanelAction {
 		EDIT("Edit", "Edit user information"),
 		DELETE("Delete", "Delete user from course"),
@@ -224,5 +224,10 @@ public class ManageUsersPanel extends Composite implements CourseInstructorUI, S
 	@Override
 	public void onCourseChange(Course course) {
 		// Nothing specific to do
+	}
+	
+	@Override
+	public void redisplay() {
+		userListView.redisplay();
 	}
 }

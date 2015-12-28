@@ -17,6 +17,9 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.PageId;
 import org.cloudcoder.app.client.model.PageStack;
 import org.cloudcoder.app.client.model.Session;
@@ -80,6 +83,14 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
  * @author David Hovemeyer
  */
 public class CoursesAndProblemsPage3 extends CloudCoderPage {
+	private enum TabId {
+		EXERCISES,
+		ACCOUNT,
+		PLAYGROUND,
+		ADMIN,
+		MANAGE_COURSE,
+	}
+	
 	private class UI extends Composite implements SessionObserver, Subscriber {
 		private static final double WEST_PANEL_WIDTH_PX = 240.0;
 		private static final double SEP_PX = 10.0; // sep between west and center panel
@@ -102,6 +113,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private Button manageExercisesButton;
 		private Button manageUsersButton;
 		private TabLayoutPanel tabLayoutPanel;
+		private List<TabId> tabIdList;
 		private CreateCoursePanel createCoursePanel;
 		private boolean manageCourseTabCreated;
 		private ModuleListBox moduleListBox;
@@ -133,28 +145,37 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			courseSelectionPanel.add(courseListBox);
 			
 			this.tabLayoutPanel = new TabLayoutPanel(32.0, Unit.PX);
+			this.tabIdList = new ArrayList<TabId>();
 			
 			// Exercises tab
 			IsWidget exercises = createExercisesTab();
-			tabLayoutPanel.add(exercises, "Exercises");
+			addTab(exercises, "Exercises", TabId.EXERCISES);
 			tabLayoutPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 				@Override
 				public void onSelection(SelectionEvent<Integer> event) {
-					if (event.getSelectedItem() == 0) {
-						// Exercises tab selected: work around bug where
-						// problem list doesn't get redisplayed properly
+					// Work around bugs where DataGrid-based widgets don't display
+					// their contents properly if updated while the tab in which
+					// they are located is not selected.
+					TabId tabId = tabIdList.get(event.getSelectedItem());
+					switch (tabId) {
+					case EXERCISES:
 						exerciseList.redisplay();
+						break;
+					case MANAGE_COURSE:
+						manageUsersPanel.redisplay();
+						break;
+					default:
 					}
 				}
 			});
 			
 			// Account tab
 			IsWidget account = createAccountTab();
-			tabLayoutPanel.add(account, "Account");
+			addTab(account, "Account", TabId.ACCOUNT);
 			
 			// Playground tab
 			IsWidget playground = createPlaygroundTab();
-			tabLayoutPanel.add(playground, "Playground");
+			addTab(playground, "Playground", TabId.PLAYGROUND);
 			
 			// The admin tab will be added later if the user
 			// has superuser privileges
@@ -170,6 +191,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			initWidget(full);
 		}
+		
+		private void addTab(IsWidget widget, String title, TabId tabId) {
+			tabLayoutPanel.add(widget, title);
+			tabIdList.add(tabId);
+		}
+
+
 
 		private IsWidget createExercisesTab() {
 			LayoutPanel wrap = new LayoutPanel();
@@ -474,7 +502,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			User user = session.get(User.class);
 			GWT.log("User " + (user.isSuperuser() ? "is" : "is not") + " superuser");
 			if (user.isSuperuser()) {
-				tabLayoutPanel.add(createAdminTab(), "Admin");
+				addTab(createAdminTab(), "Admin", TabId.ADMIN);
 				createCoursePanel.activate(session, subscriptionRegistrar);
 			}
 
@@ -540,7 +568,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			// Create "Manage course" tab is appropriate
 			if (isInstructor && !this.manageCourseTabCreated) {
 				IsWidget manageCoursePanel = createManageCourseTab();
-				tabLayoutPanel.add(manageCoursePanel, "Manage course");
+				addTab(manageCoursePanel, "Manage course", TabId.MANAGE_COURSE);
 				this.manageCourseTabCreated = true;
 			}
 			

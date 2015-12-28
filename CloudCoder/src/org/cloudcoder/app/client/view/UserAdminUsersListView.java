@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -32,6 +32,7 @@ import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -46,16 +47,12 @@ import com.google.gwt.view.client.SingleSelectionModel;
  * @author Jaime Spacco
  * @author David Hovemeyer
  */
-public class UserAdminUsersListView extends ResizeComposite implements Subscriber, SessionObserver
+public class UserAdminUsersListView extends ResizeComposite implements Subscriber, SessionObserver, IRedisplayable
 {
 	private DataGrid<User> grid;
 	private Session session;
 	private User selected;
 	private Section section;
-
-	public User getSelectedUser() {
-		return selected;
-	}
 
 	/**
 	 * Constructor.
@@ -90,9 +87,13 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
 		initWidget(grid);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cloudcoder.app.client.page.SessionObserver#activate(org.cloudcoder.app.client.model.Session, org.cloudcoder.app.shared.util.SubscriptionRegistrar)
+	/**
+	 * @return the selected {@link User}
 	 */
+	public User getSelectedUser() {
+		return selected;
+	}
+
 	@Override
 	public void activate(final Session session, SubscriptionRegistrar subscriptionRegistrar)
 	{
@@ -132,8 +133,6 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
 				section = (Section) hint;
 				onCourseOrSectionChange();
 			}
-		} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
-			onCourseOrSectionChange();
 		}
 	}
 	
@@ -152,6 +151,7 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
 		RPC.usersService.getUsers(courseId, section.getNumber(), new AsyncCallback<User[]>() {
 			@Override
 			public void onSuccess(User[] result) {
+				session.add(result);
 				displayUsers(result);
 			}
 
@@ -160,6 +160,16 @@ public class UserAdminUsersListView extends ResizeComposite implements Subscribe
 				session.add(StatusMessage.error("Could not load users for course"));
 			}
 		});
+	}
+	
+	@Override
+	public void redisplay() {
+		GWT.log("UserAdminUsersListView: redisplaying...");
+		User[] userList = session.get(User[].class);
+		if (userList != null) {
+			GWT.log("UserAdminUsersListView redisplaying " + userList.length + " users");
+			displayUsers(userList);
+		}
 	}
 
 	protected void displayUsers(User[] result) {
