@@ -328,13 +328,17 @@ public class CloudCoder implements EntryPoint, Subscriber {
 			PageId current = session.get(PageStack.class).getTop();
 			changePage(createPageForPageId(current));
 		} else if (key == Session.Event.LOGOUT) {
-			// On logout, clear the Session and PageStack,
-			// add the PageStack back to the Session,
-			// and go back to the LoginPage.
+			// On logout, go back to the LoginPage, then
+			// clear the Session and PageStack,
+			// add the PageStack back to the Session.
+			// We clear the Session after navigating away from the
+			// current page, because some pages
+			// (e.g., CoursesAndProblemsPage3) add a memento to the
+			// Session to save UI context information.
+			changePage(new LoginPage());
 			session.clear();
 			pageStack.clear();
 			session.add(pageStack);
-			changePage(new LoginPage());
 		}
 	}
 	
