@@ -91,6 +91,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		MANAGE_COURSE,
 	}
 	
+	private static class NavigationMemento {
+		TabId tabId;
+		// TODO: widget number
+		
+		public NavigationMemento(TabId tabId) {
+			this.tabId = tabId;
+		}
+	}
+	
 	private class UI extends Composite implements SessionObserver, Subscriber {
 		private static final double WEST_PANEL_WIDTH_PX = 240.0;
 		private static final double SEP_PX = 10.0; // sep between west and center panel
@@ -120,6 +129,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private BulkRegistrationPanel bulkRegistrationPanel;
 		private ManageUsersPanel manageUsersPanel;
 		private SectionSelectionView sectionSelectionView;
+		private boolean navigationMementoChecked;
 		
 		public UI() {
 			LayoutPanel full = new LayoutPanel();
@@ -196,8 +206,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			tabLayoutPanel.add(widget, title);
 			tabIdList.add(tabId);
 		}
-
-
 
 		private IsWidget createExercisesTab() {
 			LayoutPanel wrap = new LayoutPanel();
@@ -521,6 +529,12 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			}
 		}
 
+		/**
+		 * This method is called when the user's {@link CourseAndCourseRegistration}s
+		 * are known.  Additional UI tabs are created if the user is an instructor.
+		 * 
+		 * @param courseAndRegList the user's {@link CourseAndCourseRegistration}s
+		 */
 		private void onCourseAndCourseRegistrationsLoaded(
 				CourseAndCourseRegistration[] courseAndRegList) {
 			
@@ -579,6 +593,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				courseSelectionPanel.add(sectionSelectionView);
 				sectionSelectionView.activate(getSession(), getSubscriptionRegistrar());
 			}
+			
+			// At this point, all of the tabs that are going to exist should
+			// exist, so now is a good time to check the navigation memento.
+			if (!navigationMementoChecked) {
+				checkNavigationMemento();
+				navigationMementoChecked = true;
+			}
 		}
 
 		public void onCourseSelected(CourseSelection sel) {
@@ -611,6 +632,23 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				getSession().get(PageStack.class).push(PageId.USER_ADMIN);
 			}
 		}
+
+		protected void saveNavigationMemento() {
+			getSession().add(new NavigationMemento(tabIdList.get(tabLayoutPanel.getSelectedIndex())));
+		}
+		
+		private void checkNavigationMemento() {
+			// For now, just attempt to restore the tab
+			NavigationMemento memento = getSession().get(NavigationMemento.class);
+			if (memento != null) {
+				for (int i = 0; i < tabIdList.size(); i++) {
+					if (memento.tabId == tabIdList.get(i)) {
+						tabLayoutPanel.selectTab(i);
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -631,6 +669,15 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		
 		((UI)getWidget()).activate(getSession(), getSubscriptionRegistrar());
 	}
+	
+	@Override
+	public void deactivate() {
+		// Record a memento indicating which tab and widget was active,
+		// so that it can be restored if the user navigates back
+		UI ui = (UI) getWidget();
+		ui.saveNavigationMemento();
+		super.deactivate();
+	}
 
 	@Override
 	public PageId getPageId() {
@@ -641,5 +688,4 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 	public void initDefaultPageStack(PageStack pageStack) {
 		// Nothing to do: this is the home page
 	}
-
 }
