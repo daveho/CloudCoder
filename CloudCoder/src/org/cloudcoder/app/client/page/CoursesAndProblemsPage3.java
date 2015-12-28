@@ -31,6 +31,7 @@ import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
+import org.cloudcoder.app.client.view.ISelectableComposite;
 import org.cloudcoder.app.client.view.LabeledCourseSelectionListBox;
 import org.cloudcoder.app.client.view.ManageUsersPanel;
 import org.cloudcoder.app.client.view.ModuleListBox;
@@ -75,6 +76,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Home page providing access to exercises, account information,
@@ -93,10 +95,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 	
 	private static class NavigationMemento {
 		TabId tabId;
-		// TODO: widget number
+		int widgetIndex;
 		
-		public NavigationMemento(TabId tabId) {
+		public NavigationMemento(TabId tabId, int widgetIndex) {
 			this.tabId = tabId;
+			this.widgetIndex = widgetIndex;
 		}
 	}
 	
@@ -346,8 +349,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		}
 		
 		private IsWidget createAdminTab() {
-			LayoutPanel panel = new LayoutPanel();
-			
 			AccordionPanel accordionPanel = new AccordionPanel();
 
 			// Add create course UI widget
@@ -365,11 +366,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 
 			// Could put other widgets in the accordion panel here...
 			
-			panel.add(accordionPanel);
-			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
-			panel.setWidgetLeftRight(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
-			
-			return panel;
+			return accordionPanel;
 		}
 
 		protected void createCourse(CourseCreationSpec spec) {
@@ -426,8 +423,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		}
 		
 		private IsWidget createManageCourseTab() {
-			LayoutPanel panel = new LayoutPanel();
-			
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
 			// panel to register a single user
@@ -484,12 +479,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			this.manageUsersPanel = new ManageUsersPanel(CoursesAndProblemsPage3.this);
 			accordionPanel.add(manageUsersPanel, "Manage Users");
 			manageUsersPanel.activate(getSession(), getSubscriptionRegistrar());
-
-			panel.add(accordionPanel);
-			panel.setWidgetTopBottom(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
-			panel.setWidgetLeftRight(accordionPanel, 10.0, Unit.PX, 10.0, Unit.PX);
-						
-			return panel;
+			
+			return accordionPanel;
 		}
 
 		@Override
@@ -634,7 +625,16 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		}
 
 		protected void saveNavigationMemento() {
-			getSession().add(new NavigationMemento(tabIdList.get(tabLayoutPanel.getSelectedIndex())));
+			int tabIndex = tabLayoutPanel.getSelectedIndex();
+			int widgetIndex = -1;
+			Widget tabWidget = tabLayoutPanel.getWidget(tabIndex);
+			GWT.log("tabWidget is a " + tabWidget.getClass().getSimpleName());
+			if (tabWidget instanceof ISelectableComposite) {
+				widgetIndex = ((ISelectableComposite)tabWidget).getSelectedIndex();
+			}
+			TabId tabId = tabIdList.get(tabIndex);
+			GWT.log("Saving navigation memento tabId=" + tabId + ", widgetIndex=" + widgetIndex);
+			getSession().add(new NavigationMemento(tabId, widgetIndex));
 		}
 		
 		private void checkNavigationMemento() {
@@ -643,7 +643,16 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			if (memento != null) {
 				for (int i = 0; i < tabIdList.size(); i++) {
 					if (memento.tabId == tabIdList.get(i)) {
+						// Restore tab
+						GWT.log("Restoring tab " + memento.tabId);
 						tabLayoutPanel.selectTab(i);
+						Widget tabWidget = tabLayoutPanel.getWidget(i);
+						GWT.log("tabWidget is a " + tabWidget.getClass().getSimpleName());
+						if (tabWidget instanceof ISelectableComposite && memento.widgetIndex >= 0) {
+							// Restore widget within tab
+							GWT.log("Restoring widget " + memento.widgetIndex);
+							((ISelectableComposite)tabWidget).setSelectedIndex(memento.widgetIndex);
+						}
 						break;
 					}
 				}

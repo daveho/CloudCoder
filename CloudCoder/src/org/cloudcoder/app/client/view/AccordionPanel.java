@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.Label;
  * 
  * @author David Hovemeyer
  */
-public class AccordionPanel extends Composite {
+public class AccordionPanel extends Composite implements ISelectableComposite {
 	private static int nextId = 0;
 
 	private FlowPanel flowPanel;
@@ -129,8 +129,21 @@ public class AccordionPanel extends Composite {
 		}
 		
 	}
+	
+	@Override
+	public int getSelectedIndex() {
+		return indexOf(selected);
+	}
 
-	protected void onLabelClick(Wrapper wrapper) {
+	@Override
+	public void setSelectedIndex(int index) {
+		if (index < 0 || index >= wrapperList.size()) {
+			// Not a valid index
+			return;
+		}
+		
+		Wrapper wrapper = wrapperList.get(index);
+		
 		if (wrapper != selected) {
 			if (selected != null) {
 				// Unselect
@@ -156,6 +169,21 @@ public class AccordionPanel extends Composite {
 			});
 			decorateLabel(selected.label, "[+]");
 		}
+		
+	}
+	
+	private int indexOf(Wrapper w) {
+		for (int i = 0; i < wrapperList.size(); i++) {
+			Wrapper wrapper = wrapperList.get(i);
+			if (wrapper == w) {
+				return i;
+			}
+		}
+		return -1; // should not happen
+	}
+
+	protected void onLabelClick(Wrapper wrapper) {
+		setSelectedIndex(indexOf(wrapper));
 	}
 
 	private void decorateLabel(Label label, String decoration) {
