@@ -127,7 +127,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private TabLayoutPanel tabLayoutPanel;
 		private List<TabId> tabIdList;
 		private CreateCoursePanel createCoursePanel;
-		private boolean manageCourseTabCreated;
+		private boolean manageUsersTabCreated;
 		private ModuleListBox moduleListBox;
 		private BulkRegistrationPanel bulkRegistrationPanel;
 		private ManageUsersPanel manageUsersPanel;
@@ -422,7 +422,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
             });
 		}
 		
-		private IsWidget createManageCourseTab() {
+		private IsWidget createManageUsersTab() {
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
 			// panel to register a single user
@@ -570,11 +570,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				manageUsersButton.setEnabled(false);
 			}
 			
-			// Create "Manage course" tab is appropriate
-			if (isInstructor && !this.manageCourseTabCreated) {
-				IsWidget manageCoursePanel = createManageCourseTab();
-				addTab(manageCoursePanel, "Manage course", TabId.MANAGE_COURSE);
-				this.manageCourseTabCreated = true;
+			// Create "Manage users" tab if appropriate
+			if (isInstructor && !this.manageUsersTabCreated) {
+				IsWidget manageCoursePanel = createManageUsersTab();
+				addTab(manageCoursePanel, "Manage users", TabId.MANAGE_COURSE);
+				this.manageUsersTabCreated = true;
 			}
 			
 			// Create section selection widget if appropriate
