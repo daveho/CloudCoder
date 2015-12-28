@@ -90,7 +90,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		ACCOUNT,
 		PLAYGROUND,
 		ADMIN,
-		MANAGE_COURSE,
+		MANAGE_USERS,
 	}
 	
 	private static class NavigationMemento {
@@ -174,7 +174,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 					case EXERCISES:
 						exerciseList.redisplay();
 						break;
-					case MANAGE_COURSE:
+					case MANAGE_USERS:
 						manageUsersPanel.redisplay();
 						break;
 					default:
@@ -573,7 +573,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			// Create "Manage users" tab if appropriate
 			if (isInstructor && !this.manageUsersTabCreated) {
 				IsWidget manageCoursePanel = createManageUsersTab();
-				addTab(manageCoursePanel, "Manage users", TabId.MANAGE_COURSE);
+				addTab(manageCoursePanel, "Manage users", TabId.MANAGE_USERS);
 				this.manageUsersTabCreated = true;
 			}
 			
