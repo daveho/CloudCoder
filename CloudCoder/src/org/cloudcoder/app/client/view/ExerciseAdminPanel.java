@@ -54,7 +54,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
 /**
@@ -115,14 +114,10 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
     
     private CloudCoderPage page;
     private Session session;
-    //private PageNavPanel pageNavPanel;
-    private Label courseLabel;
     private ButtonPanel<ProblemAction> buttonPanel;
     private CourseAdminProblemListView courseAdminProblemListView;
-    private StatusMessageView statusMessageView;
     
     private Session getSession() {
-        //return page.getSession();
         return session;
     }
 
@@ -184,10 +179,6 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
         northPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
         
         dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + ButtonPanel.HEIGHT_PX + 10.0);
-        
-        // Create a south panel with a StatusMessageView
-        this.statusMessageView = new StatusMessageView();
-        dockLayoutPanel.addSouth(statusMessageView, StatusMessageView.HEIGHT_PX);
         
         // Create a center panel with problems list.
         this.courseAdminProblemListView = new CourseAdminProblemListView(page);
@@ -750,8 +741,6 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
     }
 
     public void activate(Session s, SubscriptionRegistrar subscriptionRegistrar) {
-        GWT.log("is the fucking session null? "+(s==null));
-
         session=s;
         session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
         
@@ -767,19 +756,6 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
             session.add(StatusMessage.information("You have unshared exercises! "+
                     "Please consider sharing them to the cloudcoder exercise repository!"));
         }
-        
-        statusMessageView.activate(session, subscriptionRegistrar);
-        
-        
-        // The session should contain a course
-        /*
-        Course course = getCurrentCourse();
-        String courseLabelText="Problems in ";
-        if (course!=null) {
-            courseLabelText += course.getNameAndTitle();
-        }
-        courseLabel.setText(courseLabelText);
-        */
     }
 
     /* (non-Javadoc)
