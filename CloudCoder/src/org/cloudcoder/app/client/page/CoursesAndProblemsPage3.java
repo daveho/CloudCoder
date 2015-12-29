@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.BulkRegistrationPanel;
 import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
+import org.cloudcoder.app.client.view.ExerciseAdminPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.ISelectableComposite;
 import org.cloudcoder.app.client.view.LabeledCourseSelectionListBox;
@@ -91,6 +92,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		PLAYGROUND,
 		ADMIN,
 		MANAGE_USERS,
+		MANAGE_EXERCISES,
 	}
 	
 	private static class NavigationMemento {
@@ -128,9 +130,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private List<TabId> tabIdList;
 		private CreateCoursePanel createCoursePanel;
 		private boolean manageUsersTabCreated;
+		private boolean manageExercisesTabCreated;
 		private ModuleListBox moduleListBox;
 		private BulkRegistrationPanel bulkRegistrationPanel;
 		private ManageUsersPanel manageUsersPanel;
+		private ExerciseAdminPanel exerciseAdminPanel;
 		private SectionSelectionView sectionSelectionView;
 		private boolean navigationMementoChecked;
 		
@@ -177,6 +181,10 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 					case MANAGE_USERS:
 						manageUsersPanel.redisplay();
 						break;
+					case MANAGE_EXERCISES:
+					    GWT.log("selection even triggering a redisplay for exercise admin");
+					    exerciseAdminPanel.redisplay();
+					    break;
 					default:
 					}
 				}
@@ -422,6 +430,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
             });
 		}
 		
+		private IsWidget createManageExercisesPanel() {
+		    exerciseAdminPanel=new ExerciseAdminPanel(CoursesAndProblemsPage3.this);
+		    exerciseAdminPanel.activate(CoursesAndProblemsPage3.this.getSession(), 
+		            CoursesAndProblemsPage3.this.getSubscriptionRegistrar());
+		    return exerciseAdminPanel;
+		}
+		
 		private IsWidget createManageUsersTab() {
 			AccordionPanel accordionPanel = new AccordionPanel();
 			
@@ -542,7 +557,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			// Create the "Problems" and "User" admin buttons if appropriate.
 			if (isInstructor && manageExercisesButton == null) {
-				this.manageExercisesButton = new Button("Manage exercises");
+				this.manageExercisesButton = new Button("legacy exercises");
 				west.add(manageExercisesButton);
 				west.setWidgetLeftRight(manageExercisesButton, 10.0, Unit.PX, 10.0, Unit.PX);
 				west.setWidgetBottomHeight(manageExercisesButton, ADMIN_BUTTON_HEIGHT_PX+4.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
@@ -552,7 +567,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 						handleManageExercisesButtonPress();
 					}
 				});
-				this.manageUsersButton = new Button("Manage users");
+				this.manageUsersButton = new Button("legacy users");
 				west.add(manageUsersButton);
 				west.setWidgetLeftRight(manageUsersButton, 10.0, Unit.PX, 10.0, Unit.PX);
 				west.setWidgetBottomHeight(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
@@ -575,6 +590,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				IsWidget manageCoursePanel = createManageUsersTab();
 				addTab(manageCoursePanel, "Manage users", TabId.MANAGE_USERS);
 				this.manageUsersTabCreated = true;
+			}
+			
+			// Create "Manage exercises" tab if appropriate
+			if (isInstructor && !this.manageExercisesTabCreated) {
+			    IsWidget manageExercisesPanel = createManageExercisesPanel();
+			    addTab(manageExercisesPanel, "Manage exercises", TabId.MANAGE_EXERCISES);
+                this.manageExercisesTabCreated = true;
 			}
 			
 			// Create section selection widget if appropriate

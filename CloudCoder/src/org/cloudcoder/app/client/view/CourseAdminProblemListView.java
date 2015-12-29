@@ -277,8 +277,12 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 		// in the courses/problems page, some of the problems may not be
 		// in the session (because they weren't in the selected module).
 		CourseSelection courseSelection = session.get(CourseSelection.class);
-		Course course = courseSelection.getCourse();
-		loadProblems(session, course);
+		if (courseSelection==null) {
+		    GWT.log("CourseAdminProblemListView has a null CourseSelection");
+		} else {
+		    Course course = courseSelection.getCourse();
+		    loadProblems(session, course);
+		}
 	}
 	
 	public static Problem[] getProblemsFromProblemAndModule(Collection<ProblemAndModule> collection) {
@@ -313,6 +317,7 @@ public class CourseAdminProblemListView extends ResizeComposite implements Subsc
 			 */
 			@Override
 			public void onSuccess(ProblemAndSubmissionReceipt[] result) {
+			    GWT.log("received "+result.length+" problems from database");
 				displayProblems(result);
 			}
 			/* (non-Javadoc)

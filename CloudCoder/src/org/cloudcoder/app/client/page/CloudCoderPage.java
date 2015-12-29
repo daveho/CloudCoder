@@ -151,7 +151,7 @@ public abstract class CloudCoderPage {
 	 * 
 	 * @param obj  object to add to the Session
 	 */
-	protected void addSessionObject(Object obj) {
+	public void addSessionObject(Object obj) {
 		session.add(obj);
 		sessionObjectClassList.add(obj.getClass());
 	}
