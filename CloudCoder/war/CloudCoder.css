@@ -336,7 +336,7 @@
 
 /* AccordionPanel styles. */
 .cc-accordionPanel {
-	overflow: auto; /* add scrollbars as necessary */
+	overflow: auto !important; /* add scrollbars as necessary */
 }
 .cc-accordionPanelWidget {
 	margin: 0px;
