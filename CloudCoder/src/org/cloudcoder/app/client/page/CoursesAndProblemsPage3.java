@@ -428,10 +428,17 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		}
 		
 		private IsWidget createManageExercisesPanel() {
+			LayoutPanel panel = new LayoutPanel();
+			
 		    exerciseAdminPanel=new ExerciseAdminPanel(CoursesAndProblemsPage3.this);
 		    exerciseAdminPanel.activate(CoursesAndProblemsPage3.this.getSession(), 
 		            CoursesAndProblemsPage3.this.getSubscriptionRegistrar());
-		    return exerciseAdminPanel;
+		    
+		    panel.add(exerciseAdminPanel);
+		    panel.setWidgetLeftRight(exerciseAdminPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+		    panel.setWidgetTopBottom(exerciseAdminPanel, 10.0, Unit.PX, 10.0, Unit.PX);
+		    
+		    return panel;
 		}
 		
 		private IsWidget createManageUsersTab() {

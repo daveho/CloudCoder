@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -175,10 +175,10 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
         };
         
         northPanel.add(buttonPanel);
-        northPanel.setWidgetTopHeight(buttonPanel, PageNavPanel.HEIGHT_PX, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
+        northPanel.setWidgetTopHeight(buttonPanel, 0.0, Unit.PX, ButtonPanel.HEIGHT_PX, Unit.PX);
         northPanel.setWidgetLeftRight(buttonPanel, 0.0, Unit.PX, 0.0, Unit.PX);
         
-        dockLayoutPanel.addNorth(northPanel, PageNavPanel.HEIGHT_PX + ButtonPanel.HEIGHT_PX + 10.0);
+        dockLayoutPanel.addNorth(northPanel, ButtonPanel.HEIGHT_PX + 10.0);
         
         // Create a center panel with problems list.
         this.courseAdminProblemListView = new CourseAdminProblemListView(page);
