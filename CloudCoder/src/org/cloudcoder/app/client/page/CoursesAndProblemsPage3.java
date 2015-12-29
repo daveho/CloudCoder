@@ -106,25 +106,23 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 	}
 	
 	private class UI extends Composite implements SessionObserver, Subscriber {
-		private static final double WEST_PANEL_WIDTH_PX = 240.0;
-		private static final double SEP_PX = 10.0; // sep between west and center panel
+		private static final double SEP_PX = 10.0;
 		private static final double REFRESH_BUTTON_WIDTH_PX = 60.0;
 		private static final double LOAD_EXERCISE_BUTTON_WIDTH_PX = 120.0;
 		private static final double PROGRESS_SUMMARY_HEIGHT_PX = 240.0;
-		private static final double ADMIN_BUTTON_HEIGHT_PX = 32.0;
 		private static final double MODULE_LISTBOX_HEIGHT_PX = 24.0;
+		private static final double MODULE_LISTBOX_WIDTH_PX = 160.0;
 		private static final double EXERCISES_LABEL_WIDTH_PX = 100.0;
+		private static final double EAST_PANEL_WIDTH_PX = 400.0;
 		
+		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
 		private FlowPanel courseSelectionPanel;
 		private LabeledCourseSelectionListBox courseListBox;
-		private LayoutPanel west;
 		private ProblemDescriptionView problemDescriptionView;
 		private ExerciseSummaryView progressSummaryView;
 		private ProblemListView3 exerciseList;
 		private UserAccountView2 userAccountView;
-		private Button manageExercisesButton;
-		private Button manageUsersButton;
 		private TabLayoutPanel tabLayoutPanel;
 		private List<TabId> tabIdList;
 		private CreateCoursePanel createCoursePanel;
@@ -146,13 +144,11 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.setWidgetLeftRight(pageTitle, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			full.setWidgetTopHeight(pageTitle, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			
-			/*
 			this.pageNavPanel = new PageNavPanel();
 			full.add(pageNavPanel);
 			full.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			full.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			pageNavPanel.setShowBackButton(false);
-			*/
 			
 			this.courseSelectionPanel = new FlowPanel();
 			full.add(courseSelectionPanel);
@@ -238,7 +234,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			east.add(problemDescriptionView);
 			east.setWidgetLeftRight(problemDescriptionView, SEP_PX, Unit.PX, 0.0, Unit.PX);
 			east.setWidgetTopBottom(problemDescriptionView, SectionLabel.HEIGHT_PX, Unit.PX, 0.0, Unit.PX);
-			exercises.addEast(east, WEST_PANEL_WIDTH_PX + 80.0);
+			exercises.addEast(east, EAST_PANEL_WIDTH_PX);
 			
 			SplitLayoutPanel center = new SplitLayoutPanel();
 			LayoutPanel south = new LayoutPanel();
@@ -261,7 +257,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			
 			this.moduleListBox = new ModuleListBox(CoursesAndProblemsPage3.this);
 			top.add(moduleListBox);
-			top.setWidgetLeftRight(moduleListBox, EXERCISES_LABEL_WIDTH_PX + 80.0, Unit.PX, r+10.0, Unit.PX);
+			top.setWidgetRightWidth(moduleListBox, r+10.0, Unit.PX, MODULE_LISTBOX_WIDTH_PX, Unit.PX);
 			top.setWidgetTopHeight(moduleListBox, 0.0+6.0, Unit.PX, MODULE_LISTBOX_HEIGHT_PX, Unit.PX);
 			
 			Button refreshButton = new Button("Refresh");
@@ -502,6 +498,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		@Override
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
+
+			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
 			
 			statusMessageView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
@@ -528,9 +526,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		public void eventOccurred(Object key, Publisher publisher, Object hint) {
 			if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseAndCourseRegistration[]) {
 				onCourseAndCourseRegistrationsLoaded((CourseAndCourseRegistration[]) hint);
-			} else if (key == Session.Event.ADDED_OBJECT && hint instanceof CourseSelection) {
-				CourseSelection sel = (CourseSelection) hint;
-				onCourseSelected(sel);
 			}
 		}
 
@@ -552,36 +547,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 					GWT.log("Instructor for course " +  courseAndReg.getCourse().getName());
 					isInstructor = true;
 				}
-			}
-			
-			// Create the "Problems" and "User" admin buttons if appropriate.
-			if (false && isInstructor && manageExercisesButton == null) {
-			    this.manageExercisesButton = new Button("legacy exercises");
-				west.add(manageExercisesButton);
-				west.setWidgetLeftRight(manageExercisesButton, 10.0, Unit.PX, 10.0, Unit.PX);
-				west.setWidgetBottomHeight(manageExercisesButton, ADMIN_BUTTON_HEIGHT_PX+4.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
-				manageExercisesButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						handleManageExercisesButtonPress();
-					}
-				});
-				this.manageUsersButton = new Button("legacy users");
-				west.add(manageUsersButton);
-				west.setWidgetLeftRight(manageUsersButton, 10.0, Unit.PX, 10.0, Unit.PX);
-				west.setWidgetBottomHeight(manageUsersButton, 0.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
-				manageUsersButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						handleManageUsersButtonPress();
-					}
-				});
-				
-				// Admin buttons are disabled initially, and will be enabled
-				// dynamically when a course for which the current user is an
-				// administrator is selected
-				manageExercisesButton.setEnabled(false);
-				manageUsersButton.setEnabled(false);
 			}
 			
 			// Create "Manage users" tab if appropriate
@@ -611,25 +576,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			if (!navigationMementoChecked) {
 				checkNavigationMemento();
 				navigationMementoChecked = true;
-			}
-		}
-
-		public void onCourseSelected(CourseSelection sel) {
-			Course course = sel.getCourse();
-
-			if (manageExercisesButton != null || manageUsersButton != null) {
-				// Find the CourseRegistration for this Course
-				CourseAndCourseRegistration[] courseAndRegList = getSession().get(CourseAndCourseRegistration[].class);
-				for (CourseAndCourseRegistration courseAndReg : courseAndRegList) {
-					if (courseAndReg.getCourse() == course) {
-						// Enable or disable the courseAdminButton (and userAdminButton) depending on whether or not
-						// user is an instructor.
-						boolean isInstructor = courseAndReg.getCourseRegistration().getRegistrationType() == CourseRegistrationType.INSTRUCTOR;
-						manageExercisesButton.setEnabled(isInstructor);
-						manageUsersButton.setEnabled(isInstructor);
-						GWT.log((isInstructor ? "enable" : "disable") + " courseAdminButton");
-					}
-				}
 			}
 		}
 
