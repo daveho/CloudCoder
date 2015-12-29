@@ -49,7 +49,6 @@ import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -116,7 +115,7 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
     
     private CloudCoderPage page;
     private Session session;
-    private PageNavPanel pageNavPanel;
+    //private PageNavPanel pageNavPanel;
     private Label courseLabel;
     private ButtonPanel<ProblemAction> buttonPanel;
     private CourseAdminProblemListView courseAdminProblemListView;
@@ -134,17 +133,6 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
         // Create a north panel with course info, PageNavPanel, and button panel
         LayoutPanel northPanel = new LayoutPanel();
         
-        this.courseLabel = new Label();
-        northPanel.add(courseLabel);
-        northPanel.setWidgetLeftRight(courseLabel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Style.Unit.PX);
-        northPanel.setWidgetTopHeight(courseLabel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
-        courseLabel.setStyleName("cc-courseLabel");
-        
-        this.pageNavPanel = new PageNavPanel();
-        northPanel.add(pageNavPanel);
-        northPanel.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Style.Unit.PX);
-        northPanel.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Style.Unit.PX);
-
         // Create a button panel with buttons for problem-related actions
         buttonPanel = new ButtonPanel<ProblemAction>(ProblemAction.values()) {
             @Override
@@ -784,12 +772,14 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
         
         
         // The session should contain a course
+        /*
         Course course = getCurrentCourse();
         String courseLabelText="Problems in ";
         if (course!=null) {
             courseLabelText += course.getNameAndTitle();
         }
         courseLabel.setText(courseLabelText);
+        */
     }
 
     /* (non-Javadoc)
@@ -870,7 +860,7 @@ public class ExerciseAdminPanel extends Composite implements SessionObserver, Su
     }
 
     /**
-     * 
+     * Redisplay the exercises
      */
     public void redisplay() {
         // TODO: redisplay the exercises

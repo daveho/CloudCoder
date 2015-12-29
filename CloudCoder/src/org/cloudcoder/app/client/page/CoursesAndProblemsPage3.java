@@ -115,7 +115,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private static final double MODULE_LISTBOX_HEIGHT_PX = 24.0;
 		private static final double EXERCISES_LABEL_WIDTH_PX = 100.0;
 		
-		private PageNavPanel pageNavPanel;
 		private StatusMessageView statusMessageView;
 		private FlowPanel courseSelectionPanel;
 		private LabeledCourseSelectionListBox courseListBox;
@@ -147,11 +146,13 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			full.setWidgetLeftRight(pageTitle, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			full.setWidgetTopHeight(pageTitle, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			
+			/*
 			this.pageNavPanel = new PageNavPanel();
 			full.add(pageNavPanel);
 			full.setWidgetRightWidth(pageNavPanel, 0.0, Unit.PX, PageNavPanel.WIDTH_PX, Unit.PX);
 			full.setWidgetTopHeight(pageNavPanel, 0.0, Unit.PX, PageNavPanel.HEIGHT_PX, Unit.PX);
 			pageNavPanel.setShowBackButton(false);
+			*/
 			
 			this.courseSelectionPanel = new FlowPanel();
 			full.add(courseSelectionPanel);
@@ -224,8 +225,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			DockLayoutPanel exercises = new DockLayoutPanel(Unit.PX);
 
 			// FIXME: this will go away once the "Manage course" tab is completely working
-			this.west = new LayoutPanel();
-			exercises.addWest(west, WEST_PANEL_WIDTH_PX);
+			//this.west = new LayoutPanel();
+			//exercises.addWest(west, WEST_PANEL_WIDTH_PX);
 			
 			LayoutPanel east = new LayoutPanel();
 			SectionLabel exerciseDescriptionLabel = new SectionLabel("Exercise description");
@@ -502,8 +503,6 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
 			session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 			
-			pageNavPanel.setLogoutHandler(new LogoutHandler(session));
-
 			statusMessageView.activate(session, subscriptionRegistrar);
 			problemDescriptionView.activate(session, subscriptionRegistrar);
 			progressSummaryView.activate(session, subscriptionRegistrar);
@@ -556,8 +555,8 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			}
 			
 			// Create the "Problems" and "User" admin buttons if appropriate.
-			if (isInstructor && manageExercisesButton == null) {
-				this.manageExercisesButton = new Button("legacy exercises");
+			if (false && isInstructor && manageExercisesButton == null) {
+			    this.manageExercisesButton = new Button("legacy exercises");
 				west.add(manageExercisesButton);
 				west.setWidgetLeftRight(manageExercisesButton, 10.0, Unit.PX, 10.0, Unit.PX);
 				west.setWidgetBottomHeight(manageExercisesButton, ADMIN_BUTTON_HEIGHT_PX+4.0, Unit.PX, ADMIN_BUTTON_HEIGHT_PX, Unit.PX);
