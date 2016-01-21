@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -26,9 +26,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
+import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
@@ -65,8 +67,9 @@ public class HealthMonitor implements Runnable {
 	// then report it.  TODO: make this configurable.
 	private static final int SUBMISSION_QUEUE_DANGER_THRESHOLD = 15;
 	
-	// If an instance has been offline for more than this many seconds,
-	// send an email report.  TODO: make this configurable.
+	// If an instance has been offline for more than this many seconds
+	// past the most recent report email, send another email report.
+	// Defaults to 2 hours.
 	private static final long OFFLINE_INSTANCE_RESEND_INTERVAL_SEC =
 			Integer.getInteger("cloudcoder.healthmonitor.offlineInstanceResendIntervalSec", 2*60*60);
 	
@@ -279,46 +282,59 @@ public class HealthMonitor implements Runnable {
 		if (goodNews || badNews) {
 			// Generate email report
 			try {
-				Session session = createMailSession(config);
+				String reportEmailAddress = config.getReportEmailAddress();
 				
-				MimeMessage message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(config.getReportEmailAddress()));
-				message.addRecipient(RecipientType.TO, new InternetAddress(config.getReportEmailAddress()));
-				message.setSubject("CloudCoder health monitor report");
-				
-				StringBuilder body = new StringBuilder();
-				body.append("<h1>CloudCoder health monitor report</h1>\n");
-				
-				if (badNews) {
-					body.append("<h2>Unhealthy instances</h2>\n");
-					body.append("<ul>\n");
-					for (ReportItem item : reportItems) {
-						if (item.badNews()) {
-							appendReportItem(body, item, infoMap);
-						}
-					}
-					body.append("</ul>\n");
+				// Treat the report email address as a comma-separated list
+				// of email addresses
+				String[] addrList = reportEmailAddress.split(",");
+				for (String addr : addrList) {
+					addr = addr.trim();
+					sendEmail(infoMap, reportItems, goodNews, badNews, addr);
 				}
-				
-				if (goodNews) {
-					body.append("<h2>Healthy instances (back on line)</h2>\n");
-					body.append("<ul>\n");
-					for (ReportItem item : reportItems) {
-						if (item.goodNews()) {
-							appendReportItem(body, item, infoMap);
-						}
-					}
-					body.append("</ul>\n");
-				}
-				
-				message.setContent(body.toString(), "text/html");
-				
-				Transport.send(message);
 			} catch (Exception e) {
 				// This is bad
 				logger.error("Could not send report email!", e);
 			}
 		}
+	}
+
+	private void sendEmail(Map<String, Info> infoMap, List<ReportItem> reportItems, boolean goodNews, boolean badNews,
+			String reportEmailAddress) throws MessagingException, AddressException {
+		Session session = createMailSession(config);
+		
+		MimeMessage message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(reportEmailAddress));
+		message.addRecipient(RecipientType.TO, new InternetAddress(reportEmailAddress));
+		message.setSubject("CloudCoder health monitor report");
+		
+		StringBuilder body = new StringBuilder();
+		body.append("<h1>CloudCoder health monitor report</h1>\n");
+		
+		if (badNews) {
+			body.append("<h2>Unhealthy instances</h2>\n");
+			body.append("<ul>\n");
+			for (ReportItem item : reportItems) {
+				if (item.badNews()) {
+					appendReportItem(body, item, infoMap);
+				}
+			}
+			body.append("</ul>\n");
+		}
+		
+		if (goodNews) {
+			body.append("<h2>Healthy instances (back on line)</h2>\n");
+			body.append("<ul>\n");
+			for (ReportItem item : reportItems) {
+				if (item.goodNews()) {
+					appendReportItem(body, item, infoMap);
+				}
+			}
+			body.append("</ul>\n");
+		}
+		
+		message.setContent(body.toString(), "text/html");
+		
+		Transport.send(message);
 	}
 
 	/**

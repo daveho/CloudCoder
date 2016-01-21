@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -77,16 +77,17 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
-	 * @return the email address to which to report unhealthy webapp instances
+	 * @return comma-separated list of email addresses
+	 *         to which to report unhealthy webapp instances
 	 */
 	public String getReportEmailAddress() {
 		return reportEmailAddress;
 	}
 	
 	/**
-	 * Set the report email address.
+	 * Set the comma-separated list of report email addresses.
 	 * 
-	 * @param reportEmailAddress the report email address to set
+	 * @param reportEmailAddress the comma-separated list of report email addresses to set
 	 */
 	public void setReportEmailAddress(String reportEmailAddress) {
 		this.reportEmailAddress = reportEmailAddress;
