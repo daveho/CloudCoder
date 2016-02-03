@@ -18,8 +18,13 @@
 
 package org.cloudcoder.jetty;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.cloudcoder.daemon.IDaemon;
+import org.cloudcoder.daemon.Util;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -41,6 +46,7 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 	private static final Logger logger = LoggerFactory.getLogger(JettyWebappDaemon.class);
 
 	private Server server;
+	private File tmpdir;
 
 	/**
 	 * Constructor.
@@ -68,6 +74,26 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 
 	@Override
 	public void start(String instanceName) {
+		// We take this opportunity to set the java.io.tmpdir
+		// system property to an instance-specific directory.
+		// /tmp (the default value) is not a good place
+		// for long-running apps to store files.
+		// CentOS 7, for example, appears to delete or change
+		// the permissions of files stored in /tmp periodically.
+		// If Jetty creates its temporary webapp directory in
+		// /tmp, bad stuff happens if static resources or code
+		// get modified.
+		try {
+			String path = "./" + instanceName + "-tmp-" + Util.getPid();
+			this.tmpdir = new File(path);
+			if (!tmpdir.mkdirs()) {
+				throw new IOException("Could not create instance-specific temp dir " + path);
+			}
+			System.setProperty("java.io.tmpdir", tmpdir.getAbsolutePath());
+		} catch (Exception e) {
+			logger.error("Error creating temp dir: {}", e.getMessage());
+		}
+		
 		ConfigType jettyConfig = getJettyConfig();
 		
 		// Configure logging
@@ -109,7 +135,11 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 			server.stop();
 			logger.info("Waiting for server to finish...");
 			server.join();
-			logger.info("Server is finished");
+			logger.info("Server is finished, deleting temporary directory...");
+			
+			// Recursively delete the temp dir
+			FileUtils.deleteDirectory(tmpdir);
+			logger.info("Shutdown complete");
 		} catch (Exception e) {
 			logger.error("Exception shutting down Jetty server", e);
 		}
