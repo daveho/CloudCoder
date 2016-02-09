@@ -85,13 +85,17 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 		// get modified.
 		try {
 			String path = "./" + instanceName + "-tmp-" + Util.getPid();
-			this.tmpdir = new File(path);
+			File tmpdir = new File(path);
 			if (!tmpdir.mkdirs()) {
-				throw new IOException("Could not create instance-specific temp dir " + path);
+				throw new IOException("Could not create directory " + path);
 			}
 			System.setProperty("java.io.tmpdir", tmpdir.getAbsolutePath());
+			this.tmpdir = tmpdir;
 		} catch (Exception e) {
-			logger.error("Error creating temp dir: {}", e.getMessage());
+			// This situation isn't ideal, but we'll keep running
+			// anyway (with the webapp files in the system temp dir)
+			logger.warn("Error creating instance-specific temp dir: {}", e.getMessage());
+			logger.warn("Webapp files will be placed in default temp dir {}", System.getProperty("java.io.tmpdir"));
 		}
 		
 		ConfigType jettyConfig = getJettyConfig();
@@ -137,8 +141,11 @@ public abstract class JettyDaemon<ConfigType extends JettyDaemonConfig> implemen
 			server.join();
 			logger.info("Server is finished, deleting temporary directory...");
 			
-			// Recursively delete the temp dir
-			FileUtils.deleteDirectory(tmpdir);
+			if (tmpdir != null) {
+				// Recursively delete the private temp dir
+				FileUtils.deleteDirectory(tmpdir);
+			}
+
 			logger.info("Shutdown complete");
 		} catch (Exception e) {
 			logger.error("Exception shutting down Jetty server", e);
