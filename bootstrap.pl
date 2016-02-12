@@ -2,6 +2,7 @@
 
 use strict;
 use FileHandle;
+use Getopt::Std;
 
 # Bootstrap CloudCoder on an Ubuntu server
 
@@ -12,8 +13,11 @@ my $program = $0;
 #print "program=$program\n";
 #exit 0;
 
+my %opts = ();
+getopts('n', \%opts);
+
 my $dryRun = 0;
-if (scalar(@ARGV) > 0 && $ARGV[0] eq '-n') {
+if (exists $opts{'n'}) {
 	print ">>> Dry run <<<\n";
 	shift @ARGV;
 	$dryRun = 1;
