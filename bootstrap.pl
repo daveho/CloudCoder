@@ -13,6 +13,10 @@ my $program = $0;
 #print "program=$program\n";
 #exit 0;
 
+# Configuration properties
+my %props = ();
+
+# Parse command line options
 my %opts = ();
 getopts('n', \%opts);
 
@@ -25,8 +29,17 @@ if (exists $opts{'n'}) {
 
 my $mode = 'start';
 
+# See if the mode was specified explicitly
 if (scalar(@ARGV) > 0) {
 	$mode = shift @ARGV;
+}
+
+# Assume that any remaining command line option is
+# stringified config properties (which is what should
+# happen if step2 is being executed, or if start is
+# being executed noninteractively)
+if (scalar(@ARGV) > 0) {
+	%props = UnstringifyProps(shift @ARGV);
 }
 
 if ($mode eq 'start') {
@@ -62,16 +75,16 @@ GREET
 	print "\nFirst, please enter some configuration information...\n\n";
 	
 	# Get minimal required configuration information
-	my $ccUser = ask("What username do you want for your CloudCoder account?");
-	my $ccPasswd = ask("What password do you want for your CloudCoder account?");
-	my $ccFirstName = ask("What is your first name?");
-	my $ccLastName = ask("What is your last name?");
-	my $ccEmail = ask("What is your email address?");
-	my $ccWebsite = ask("What is the URL of your personal website?");
-	my $ccInstitutionName = ask("What is the name of your institution?");
-	my $ccMysqlRootPasswd = ask("What password do you want for the MySQL root user?");
-	my $ccMysqlCCPasswd = ask("What password do you want for the MySQL cloudcoder user?");
-	my $ccHostname = ask("What is the hostname of this server?");
+	$props{'ccUser'} = ask("What username do you want for your CloudCoder account?");
+	$props{'ccPasswd'} = ask("What password do you want for your CloudCoder account?");
+	$props{'ccFirstName'} = ask("What is your first name?");
+	$props{'ccLastName'} = ask("What is your last name?");
+	$props{'ccEmail'} = ask("What is your email address?");
+	$props{'ccWebsite'} = ask("What is the URL of your personal website?");
+	$props{'ccInstitutionName'} = ask("What is the name of your institution?");
+	$props{'ccMysqlRootPasswd'} = ask("What password do you want for the MySQL root user?");
+	$props{'ccMysqlCCPasswd'} = ask("What password do you want for the MySQL cloudcoder user?");
+	$props{'ccHostname'} = ask("What is the hostname of this server?");
 
 	print "\n";
 	my $startInstall = ask("Are you ready to start the installation? (yes/no)");
@@ -94,8 +107,8 @@ GREET
 
 	# Configure mysql root password so that no user interaction
 	# will be required when installing packages.
-	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $ccMysqlRootPasswd");
-	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $ccMysqlRootPasswd");
+	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $props{'ccMysqlRootPasswd'}");
+	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $props{'ccMysqlRootPasswd'}");
 
 	# Install packages. Note that because cloudcoderApp.jar is self-configuring,
 	# we can install the JRE rather than the full JDK, as we won't need
@@ -111,10 +124,10 @@ GREET
 	# ----------------------------------------------------------------------
 	section("Configuring MySQL...");
 	print "Creating cloudcoder user...\n";
-	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
-		"--execute=create user 'cloudcoder'\@'localhost' identified by '$ccMysqlCCPasswd'");
+	Run("mysql", "--user=root", "--pass=$props{'ccMysqlRootPasswd'}",
+		"--execute=create user 'cloudcoder'\@'localhost' identified by '$props{'ccMysqlCCPasswd'}'");
 	print "Granting permissions on cloudcoderdb to cloudcoder...\n";
-	Run("mysql", "--user=root", "--pass=$ccMysqlRootPasswd",
+	Run("mysql", "--user=root", "--pass=$props{'ccMysqlRootPasswd'}",
 		"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
 	
 	# ----------------------------------------------------------------------
@@ -130,7 +143,7 @@ GREET
 	# ----------------------------------------------------------------------
 	section("Configuring apache2...");
 	print "Generating SSL configuration...\n";
-	EditApache2DefaultSsl($ccHostname);
+	EditApache2DefaultSsl($props{'ccHostname'});
 	print "Enabling modules...\n";
 	RunAdmin(cmd => ['a2enmod', 'proxy']);
 	RunAdmin(cmd => ['a2enmod', 'proxy_http']);
@@ -145,13 +158,7 @@ GREET
 	section("Continuing as cloud user...");
 	Run("cp", $program, "/tmp/bootstrap.pl");
 	Run("chmod", "a+x", "/tmp/bootstrap.pl");
-	RunAdmin(
-		asUser => 'cloud',
-		cmd => ["/tmp/bootstrap.pl", "step2",
-			"ccUser=$ccUser,ccPassword=$ccPasswd,ccFirstName=$ccFirstName," .
-			"ccLastName=$ccLastName,ccEmail=$ccEmail,ccWebsite=$ccWebsite," .
-			"ccInstitutionName=$ccInstitutionName," .
-			"ccMysqlCCPasswd=$ccMysqlCCPasswd,ccHostname=$ccHostname"]);
+	RunAdmin(asUser => 'cloud', cmd => ["/tmp/bootstrap.pl", "step2", StringifyProps("\a", "\a")]);
 
 	# ----------------------------------------------------------------------
 	# Copy the configured builder jarfile into the home directory of the current user.
@@ -174,7 +181,7 @@ It looks like CloudCoder was installed successfully.
 You should be able to test your new installation by opening the
 following web page:
 
-  https://$ccHostname/cloudcoder
+  https://$props{'ccHostname'}/cloudcoder
 
 Note that no builders are running, so you won't be able to
 test submissions yet.  The builder jar file ($builderJar)
@@ -190,12 +197,6 @@ sub Step2 {
 	chomp $whoami;
 	print "Step2: running as $whoami\n";
 	chdir "/home/cloud" || die "Couldn't change directory to /home/cloud: $!\n";
-
-	# Get configuration properties passed from start step
-	my %props = split(/,|=/, $ARGV[0]);
-	foreach my $name (keys %props) {
-		print "$name=$props{$name}\n";
-	}
 
 	# Create webapp directory and change to it
 	Run("mkdir", "-p", "webapp");
@@ -224,16 +225,14 @@ sub Step2 {
 	# Generate cloudcoder.properties
 	print "Creating cloudcoder.properties...\n";
 	my $pfh = new FileHandle(">cloudcoder.properties");
-	my $ccMysqlCCPasswd = $props{ccMysqlCCPasswd};
-	my $ccHostname = $props{ccHostname};
 	print $pfh <<"ENDPROPERTIES";
 cloudcoder.db.user=cloudcoder
-cloudcoder.db.passwd=$ccMysqlCCPasswd
+cloudcoder.db.passwd=$props{'ccMysqlCCPasswd'}
 cloudcoder.db.databaseName=cloudcoderdb
 cloudcoder.db.host=localhost
 cloudcoder.db.portStr=
 cloudcoder.login.service=database
-cloudcoder.submitsvc.oop.host=$ccHostname
+cloudcoder.submitsvc.oop.host=$props{'ccHostname'}
 cloudcoder.submitsvc.oop.numThreads=2
 cloudcoder.submitsvc.oop.port=47374
 cloudcoder.submitsvc.oop.easysandbox.enable=true
@@ -279,7 +278,7 @@ ENDPROPERTIES
 	# Create the cloudcoderdb database
 	# ----------------------------------------------------------------------
 	section("Creating cloudcoderdb database...");
-	Run("java", "-jar", $appJar, "createdb", "--props=$ARGV[0],ccRepoUrl=https://cloudcoder.org/repo");
+	Run("java", "-jar", $appJar, "createdb", "--props=" . StringifyProps(',', '=') . ",ccRepoUrl=https://cloudcoder.org/repo");
 
 	# ----------------------------------------------------------------------
 	# Start the webapp!
@@ -287,6 +286,28 @@ ENDPROPERTIES
 	section("Starting the CloudCoder web application");
 	Run("java", "-jar", $appJar, "start");
 	
+}
+
+# Encode %props as a string.
+sub StringifyProps {
+	my ($pairSep,$keyValSep) = @_;
+	my $s = '';
+
+	for my $key (sort keys %props) {
+		if ($s ne '') {
+			$s .= $pairSep;
+		}
+		$s .= "$key$keyValSep$props{$key}";
+	}
+
+	return $s;
+}
+
+# Decode a string containing %props: note that this is hard-coded
+# to assume that \a (ASCII/Unicode BEL) is used as the separator.
+sub UnstringifyProps {
+	my ($s) = @_;
+	return split(/\a/, $s);
 }
 
 sub ask {
