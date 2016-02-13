@@ -6,6 +6,15 @@ use Getopt::Long qw{:config bundling no_ignore_case no_auto_abbrev};
 
 # Bootstrap CloudCoder on an Ubuntu server
 
+####################################################################
+# Global data
+####################################################################
+
+# Selectable features (all are enabled by default)
+my %features = (
+	'apache' => 1,
+);
+
 # Download site
 my $DOWNLOAD_SITE = 'https://s3.amazonaws.com/cloudcoder-binaries';
 
@@ -18,9 +27,15 @@ my %props = ();
 
 # Parse command line options
 my %opts = ();
+
+####################################################################
+# Parse command line, execute
+####################################################################
+
 GetOptions(\%opts,
 	qw(dry-run|n!
-		help|h!)
+		help|h!
+		disable=s)
 ) or (Usage() && exit 0);
 
 if (exists $opts{'help'}) {
@@ -33,6 +48,13 @@ if (exists $opts{'dry-run'}) {
 	print ">>> Dry run <<<\n";
 	shift @ARGV;
 	$dryRun = 1;
+}
+
+# See if any features are being disabled
+if (exists $opts{'disable'}) {
+	for my $feature (split(',', $opts{'disable'})) {
+		$features{$feature} = 0;
+	}
 }
 
 my $mode = 'start';
@@ -58,6 +80,12 @@ if ($mode eq 'start') {
 	die "Unknown mode: $mode\n";
 }
 
+####################################################################
+# Subroutines
+####################################################################
+
+# Start does all of the sudo commands to install and configure
+# software, create the cloud user, etc.
 sub Start {
 	print <<"GREET";
 Welcome to the CloudCoder bootstrap script.
@@ -84,7 +112,7 @@ GREET
 	
 	# Get minimal required configuration information
 	$props{'ccUser'} = Ask("What username do you want for your CloudCoder account?");
-	$props{'ccPasswd'} = Ask("What password do you want for your CloudCoder account?");
+	$props{'ccPassword'} = Ask("What password do you want for your CloudCoder account?");
 	$props{'ccFirstName'} = Ask("What is your first name?");
 	$props{'ccLastName'} = Ask("What is your last name?");
 	$props{'ccEmail'} = Ask("What is your email address?");
@@ -118,13 +146,20 @@ GREET
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password", "password $props{'ccMysqlRootPasswd'}");
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $props{'ccMysqlRootPasswd'}");
 
-	# Install packages. Note that because cloudcoderApp.jar is self-configuring,
-	# we can install the JRE rather than the full JDK, as we won't need
-	# the jar tool.
+	# Install packages.
+	# We need a full JDK because we use keytool,
+	# but it can be headless.
+	my @packages = ("openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
+	if ($features{'apache'}) {
+		push @packages, 'apache2';
+	}
+
+	my @cmd = ("apt-get", "-y", "install");
+	push @cmd, @packages;
+
 	RunAdmin(
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "-y", "install", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion",
-			"mysql-server-$mysqlVersion", "apache2"]
+		cmd => \@cmd
 	);
 	
 	# ----------------------------------------------------------------------
@@ -149,15 +184,17 @@ GREET
 	# ----------------------------------------------------------------------
 	# Configure apache2
 	# ----------------------------------------------------------------------
-	Section("Configuring apache2...");
-	print "Generating SSL configuration...\n";
-	EditApache2DefaultSsl($props{'ccHostname'});
-	print "Enabling modules...\n";
-	RunAdmin(cmd => ['a2enmod', 'proxy']);
-	RunAdmin(cmd => ['a2enmod', 'proxy_http']);
-	RunAdmin(cmd => ['a2enmod', 'ssl']);
-	print "Restarting...\n";
-	RunAdmin(cmd => ['service', 'apache2', 'restart']);
+	if ($features{'apache'}) {
+		Section("Configuring apache2...");
+		print "Generating SSL configuration...\n";
+		EditApache2DefaultSsl($props{'ccHostname'});
+		print "Enabling modules...\n";
+		RunAdmin(cmd => ['a2enmod', 'proxy']);
+		RunAdmin(cmd => ['a2enmod', 'proxy_http']);
+		RunAdmin(cmd => ['a2enmod', 'ssl']);
+		print "Restarting...\n";
+		RunAdmin(cmd => ['service', 'apache2', 'restart']);
+	}
 
 	# ----------------------------------------------------------------------
 	# Continue as the cloud user to download and configure
@@ -183,22 +220,45 @@ GREET
 	# We're done!
 	# ----------------------------------------------------------------------
 	Section("CloudCoder installation successful!");
-	print <<"SUCCESS";
+	print <<"SUCCESS1";
 It looks like CloudCoder was installed successfully.
+SUCCESS1
+
+	# If apache was installed, the webapp should be reachable
+	# via https.  Otherwise, only unencrypted HTTP on port
+	# 8081 is available.
+	if ($features{'apache'}) {
+		print <<"SUCCESS2a";
 
 You should be able to test your new installation by opening the
 following web page:
 
   https://$props{'ccHostname'}/cloudcoder
+SUCCESS2a
+	} else {
+		print <<"SUCCESS2b";
+
+You did not install apache (for SSL support).
+CloudCoder is listening for unencrypted connections on
+port 8081, on localhost only (so connections from outside
+will not be accepted.)  You should use a proxy server
+supporting secure HTTP to make CloudCoder publicly
+reachable.
+SUCCESS2b
+	}
+
+	print <<"SUCCESS3";
 
 Note that no builders are running, so you won't be able to
 test submissions yet.  The builder jar file ($builderJar)
 is in the $home directory: you will need to copy
 it to the server(s) which will be responsible for building
 and testing submissions.
-SUCCESS
+SUCCESS3
 }
 
+# Step2 does all of the setup as the cloud user, specifically
+# downloading and configuring the CloudCoder webapp and builder.
 sub Step2 {
 	# Complete the installation running as the cloud user
 	my $whoami = `whoami`;
@@ -293,7 +353,6 @@ ENDPROPERTIES
 	# ----------------------------------------------------------------------
 	Section("Starting the CloudCoder web application");
 	Run("java", "-jar", $appJar, "start");
-	
 }
 
 sub Usage {
@@ -303,7 +362,13 @@ sub Usage {
 Options:
   -n|--dry-run          Do a dry run without executing any commands
   -h|--help             Print usage information
+  --disable=<features>  Disable specified features (comma-separated)
+
+Selectable features (all enabled by default) are:
 USAGE
+	for my $feature (sort keys %features) {
+		print "  $feature\n";
+	}
 }
 
 # Encode %props as a string.
