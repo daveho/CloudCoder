@@ -2,7 +2,7 @@
 
 use strict;
 use FileHandle;
-use Getopt::Std;
+use Getopt::Long qw{:config bundling no_ignore_case no_auto_abbrev};
 
 # Bootstrap CloudCoder on an Ubuntu server
 
@@ -18,10 +18,18 @@ my %props = ();
 
 # Parse command line options
 my %opts = ();
-getopts('n', \%opts);
+GetOptions(\%opts,
+	qw(dry-run|n!
+		help|h!)
+) or (Usage() && exit 0);
+
+if (exists $opts{'help'}) {
+	Usage();
+	exit 0;
+}
 
 my $dryRun = 0;
-if (exists $opts{'n'}) {
+if (exists $opts{'dry-run'}) {
 	print ">>> Dry run <<<\n";
 	shift @ARGV;
 	$dryRun = 1;
@@ -69,31 +77,31 @@ Amazon EC2, no password is required for sudo, so don't be
 concerned if you don't see the prompt.
 GREET
 	
-	my $readyToStart = ask("\nReady to start? (yes/no)");
+	my $readyToStart = Ask("\nReady to start? (yes/no)");
 	exit 0 if ((lc $readyToStart) ne 'yes');
 	
 	print "\nFirst, please enter some configuration information...\n\n";
 	
 	# Get minimal required configuration information
-	$props{'ccUser'} = ask("What username do you want for your CloudCoder account?");
-	$props{'ccPasswd'} = ask("What password do you want for your CloudCoder account?");
-	$props{'ccFirstName'} = ask("What is your first name?");
-	$props{'ccLastName'} = ask("What is your last name?");
-	$props{'ccEmail'} = ask("What is your email address?");
-	$props{'ccWebsite'} = ask("What is the URL of your personal website?");
-	$props{'ccInstitutionName'} = ask("What is the name of your institution?");
-	$props{'ccMysqlRootPasswd'} = ask("What password do you want for the MySQL root user?");
-	$props{'ccMysqlCCPasswd'} = ask("What password do you want for the MySQL cloudcoder user?");
-	$props{'ccHostname'} = ask("What is the hostname of this server?");
+	$props{'ccUser'} = Ask("What username do you want for your CloudCoder account?");
+	$props{'ccPasswd'} = Ask("What password do you want for your CloudCoder account?");
+	$props{'ccFirstName'} = Ask("What is your first name?");
+	$props{'ccLastName'} = Ask("What is your last name?");
+	$props{'ccEmail'} = Ask("What is your email address?");
+	$props{'ccWebsite'} = Ask("What is the URL of your personal website?");
+	$props{'ccInstitutionName'} = Ask("What is the name of your institution?");
+	$props{'ccMysqlRootPasswd'} = Ask("What password do you want for the MySQL root user?");
+	$props{'ccMysqlCCPasswd'} = Ask("What password do you want for the MySQL cloudcoder user?");
+	$props{'ccHostname'} = Ask("What is the hostname of this server?");
 
 	print "\n";
-	my $startInstall = ask("Are you ready to start the installation? (yes/no)");
+	my $startInstall = Ask("Are you ready to start the installation? (yes/no)");
 	exit 0 if ((lc $startInstall) ne 'yes');
 	
 	# ----------------------------------------------------------------------
 	# Install/configure required packages
 	# ----------------------------------------------------------------------
-	section("Installing required packages...");
+	Section("Installing required packages...");
 
 	# Run apt-get update so that repository metadata is current
 	RunAdmin(
@@ -122,7 +130,7 @@ GREET
 	# ----------------------------------------------------------------------
 	# Configure MySQL
 	# ----------------------------------------------------------------------
-	section("Configuring MySQL...");
+	Section("Configuring MySQL...");
 	print "Creating cloudcoder user...\n";
 	Run("mysql", "--user=root", "--pass=$props{'ccMysqlRootPasswd'}",
 		"--execute=create user 'cloudcoder'\@'localhost' identified by '$props{'ccMysqlCCPasswd'}'");
@@ -133,7 +141,7 @@ GREET
 	# ----------------------------------------------------------------------
 	# Create cloud user
 	# ----------------------------------------------------------------------
-	section("Creating cloud user account...");
+	Section("Creating cloud user account...");
 	RunAdmin(
 		cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
 	);
@@ -141,7 +149,7 @@ GREET
 	# ----------------------------------------------------------------------
 	# Configure apache2
 	# ----------------------------------------------------------------------
-	section("Configuring apache2...");
+	Section("Configuring apache2...");
 	print "Generating SSL configuration...\n";
 	EditApache2DefaultSsl($props{'ccHostname'});
 	print "Enabling modules...\n";
@@ -155,7 +163,7 @@ GREET
 	# Continue as the cloud user to download and configure
 	# webapp and builder jarfiles.
 	# ----------------------------------------------------------------------
-	section("Continuing as cloud user...");
+	Section("Continuing as cloud user...");
 	Run("cp", $program, "/tmp/bootstrap.pl");
 	Run("chmod", "a+x", "/tmp/bootstrap.pl");
 	RunAdmin(asUser => 'cloud', cmd => ["/tmp/bootstrap.pl", "step2", StringifyProps("\a", "\a")]);
@@ -174,7 +182,7 @@ GREET
 	# ----------------------------------------------------------------------
 	# We're done!
 	# ----------------------------------------------------------------------
-	section("CloudCoder installation successful!");
+	Section("CloudCoder installation successful!");
 	print <<"SUCCESS";
 It looks like CloudCoder was installed successfully.
 
@@ -212,7 +220,7 @@ sub Step2 {
 	my $builderJar = "cloudcoderBuilder-v$version.jar";
 
 	# Download webapp and builder release jarfiles
-	section("Downloading $appJar and $builderJar...");
+	Section("Downloading $appJar and $builderJar...");
 	Run("wget", "$DOWNLOAD_SITE/$appJar");
 	Run("wget", "$DOWNLOAD_SITE/$builderJar");
 
@@ -220,7 +228,7 @@ sub Step2 {
 	# Configure webapp distribution jarfile with
 	# generated cloudcoder.properties and keystore
 	# ----------------------------------------------------------------------
-	section("Configuring $appJar and $builderJar...");
+	Section("Configuring $appJar and $builderJar...");
 
 	# Generate cloudcoder.properties
 	print "Creating cloudcoder.properties...\n";
@@ -277,15 +285,25 @@ ENDPROPERTIES
 	# ----------------------------------------------------------------------
 	# Create the cloudcoderdb database
 	# ----------------------------------------------------------------------
-	section("Creating cloudcoderdb database...");
+	Section("Creating cloudcoderdb database...");
 	Run("java", "-jar", $appJar, "createdb", "--props=" . StringifyProps(',', '=') . ",ccRepoUrl=https://cloudcoder.org/repo");
 
 	# ----------------------------------------------------------------------
 	# Start the webapp!
 	# ----------------------------------------------------------------------
-	section("Starting the CloudCoder web application");
+	Section("Starting the CloudCoder web application");
 	Run("java", "-jar", $appJar, "start");
 	
+}
+
+sub Usage {
+	print << "USAGE";
+./bootstrap.pl [options] [mode [config props]]
+
+Options:
+  -n|--dry-run          Do a dry run without executing any commands
+  -h|--help             Print usage information
+USAGE
 }
 
 # Encode %props as a string.
@@ -310,7 +328,7 @@ sub UnstringifyProps {
 	return split(/\a/, $s);
 }
 
-sub ask {
+sub Ask {
 	my ($question, $defval) = @_;
 
 	print "$question\n";
@@ -329,7 +347,7 @@ sub ask {
 	return $value;
 }
 
-sub section {
+sub Section {
 	my ($name) = @_;
 	print "\n";
 	print "#" x 72, "\n";
