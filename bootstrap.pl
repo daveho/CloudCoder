@@ -35,8 +35,10 @@ my %opts = ();
 GetOptions(\%opts,
 	qw(dry-run|n!
 		help|h!
-		disable=s)
-) or (Usage() && exit 0);
+		disable=s
+		config=s
+	)
+) or (Usage() && exit 1);
 
 if (exists $opts{'help'}) {
 	Usage();
@@ -87,44 +89,11 @@ if ($mode eq 'start') {
 # Start does all of the sudo commands to install and configure
 # software, create the cloud user, etc.
 sub Start {
-	print <<"GREET";
-Welcome to the CloudCoder bootstrap script.
-
-By running this script, you will create a basic CloudCoder
-installation on a server running Ubuntu Linux.
-
-Make sure to run this script from a user account that has
-permission to run the "sudo" command.  If you see the
-following prompt:
-
-  sudo password>>
-
-then you will need to type the account password and press
-enter.  On some Ubuntu systems, such as Ubuntu server on
-Amazon EC2, no password is required for sudo, so don't be
-concerned if you don't see the prompt.
-GREET
-	
-	my $readyToStart = Ask("\nReady to start? (yes/no)");
-	exit 0 if ((lc $readyToStart) ne 'yes');
-	
-	print "\nFirst, please enter some configuration information...\n\n";
-	
-	# Get minimal required configuration information
-	$props{'ccUser'} = Ask("What username do you want for your CloudCoder account?");
-	$props{'ccPassword'} = Ask("What password do you want for your CloudCoder account?");
-	$props{'ccFirstName'} = Ask("What is your first name?");
-	$props{'ccLastName'} = Ask("What is your last name?");
-	$props{'ccEmail'} = Ask("What is your email address?");
-	$props{'ccWebsite'} = Ask("What is the URL of your personal website?");
-	$props{'ccInstitutionName'} = Ask("What is the name of your institution?");
-	$props{'ccMysqlRootPasswd'} = Ask("What password do you want for the MySQL root user?");
-	$props{'ccMysqlCCPasswd'} = Ask("What password do you want for the MySQL cloudcoder user?");
-	$props{'ccHostname'} = Ask("What is the hostname of this server?");
-
-	print "\n";
-	my $startInstall = Ask("Are you ready to start the installation? (yes/no)");
-	exit 0 if ((lc $startInstall) ne 'yes');
+	if (exists $opts{'config'}) {
+		LoadConfigProperties($opts{'config'});
+	} else {
+		ConfigureInteractively();
+	}
 	
 	# ----------------------------------------------------------------------
 	# Install/configure required packages
@@ -363,12 +332,15 @@ Options:
   -n|--dry-run          Do a dry run without executing any commands
   -h|--help             Print usage information
   --disable=<features>  Disable specified features (comma-separated)
+  --config=<prop file>  Load configuration from specified properties file
+                          (for noninteractive configuration)
 
 Selectable features (all enabled by default) are:
 USAGE
 	for my $feature (sort keys %features) {
 		print "  $feature\n";
 	}
+	return 1;
 }
 
 # Encode %props as a string.
@@ -391,6 +363,65 @@ sub StringifyProps {
 sub UnstringifyProps {
 	my ($s) = @_;
 	return split(/\a/, $s);
+}
+
+# Load %props from a properties file
+sub LoadConfigProperties {
+	my ($fname) = @_;
+	my $fh = new FileHandle("<$fname") || die "Couldn't open configuration properties file $fname: $!\n";
+	while (<$fh>) {
+		chomp;
+		next if (/^\s*$/ || /^\s*#/);
+		if (/^\s*([^=]+)\s*=\s*(.*)$/) {
+			my $key = $1;
+			my $val = $2;
+			$val =~ s/\s+$//g; # trim trailing whitespace, if any
+			$props{$key} = $val;
+		}
+	}
+	$fh->close();
+}
+
+# Read %props interactively
+sub ConfigureInteractively {
+	print <<"GREET";
+Welcome to the CloudCoder bootstrap script.
+
+By running this script, you will create a basic CloudCoder
+installation on a server running Ubuntu Linux.
+
+Make sure to run this script from a user account that has
+permission to run the "sudo" command.  If you see the
+following prompt:
+
+  sudo password>>
+
+then you will need to type the account password and press
+enter.  On some Ubuntu systems, such as Ubuntu server on
+Amazon EC2, no password is required for sudo, so don't be
+concerned if you don't see the prompt.
+GREET
+	
+	my $readyToStart = Ask("\nReady to start? (yes/no)");
+	exit 0 if ((lc $readyToStart) ne 'yes');
+	
+	print "\nFirst, please enter some configuration information...\n\n";
+	
+	# Get minimal required configuration information
+	$props{'ccUser'} = Ask("What username do you want for your CloudCoder account?");
+	$props{'ccPassword'} = Ask("What password do you want for your CloudCoder account?");
+	$props{'ccFirstName'} = Ask("What is your first name?");
+	$props{'ccLastName'} = Ask("What is your last name?");
+	$props{'ccEmail'} = Ask("What is your email address?");
+	$props{'ccWebsite'} = Ask("What is the URL of your personal website?");
+	$props{'ccInstitutionName'} = Ask("What is the name of your institution?");
+	$props{'ccMysqlRootPasswd'} = Ask("What password do you want for the MySQL root user?");
+	$props{'ccMysqlCCPasswd'} = Ask("What password do you want for the MySQL cloudcoder user?");
+	$props{'ccHostname'} = Ask("What is the hostname of this server?");
+
+	print "\n";
+	my $startInstall = Ask("Are you ready to start the installation? (yes/no)");
+	exit 0 if ((lc $startInstall) ne 'yes');
 }
 
 sub Ask {
