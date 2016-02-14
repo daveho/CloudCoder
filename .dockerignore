@@ -1,0 +1,8 @@
+# ignore all of the actual CloudCoder source code
+CloudCoder*/**
+
+# ignore downloaded dependencies
+deps/**
+
+# ignore .git repository
+.git/**
