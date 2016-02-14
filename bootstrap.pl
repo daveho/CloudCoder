@@ -117,8 +117,9 @@ sub Start {
 
 	# Install packages.
 	# We need a full JDK because we use keytool,
-	# but it can be headless.
-	my @packages = ("openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
+	# but it can be headless.  "wget" isn't installed by
+	# default in the ubuntu docker image.
+	my @packages = ("wget", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
 	if ($features{'apache'}) {
 		push @packages, 'apache2';
 	}
@@ -130,6 +131,12 @@ sub Start {
 		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
 		cmd => \@cmd
 	);
+
+	# For some reason, mysqld doesn't seem to start automatically
+	# when running in a docker container.  Kick it.
+	# This shouldn't cause any harm if it's already running.
+	RunAdmin(cmd => ['service', 'mysql', 'start']);
+	Run("sleep", "5");
 	
 	# ----------------------------------------------------------------------
 	# Configure MySQL
