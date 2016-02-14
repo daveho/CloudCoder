@@ -68,8 +68,7 @@ if (scalar(@ARGV) > 0) {
 
 # Assume that any remaining command line option is
 # stringified config properties (which is what should
-# happen if step2 is being executed, or if start is
-# being executed noninteractively)
+# happen if step2 is being executed).
 if (scalar(@ARGV) > 0) {
 	%props = UnstringifyProps(shift @ARGV);
 }
