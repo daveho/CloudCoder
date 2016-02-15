@@ -48,7 +48,6 @@ if (exists $opts{'help'}) {
 my $dryRun = 0;
 if (exists $opts{'dry-run'}) {
 	print ">>> Dry run <<<\n";
-	shift @ARGV;
 	$dryRun = 1;
 }
 
