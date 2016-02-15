@@ -28,15 +28,23 @@ my %props = ();
 # Parse command line options
 my %opts = ();
 
+# Original options
+my @origOpts;
+
 ####################################################################
 # Parse command line, execute
 ####################################################################
+
+# Save the original argument list.
+@origOpts = @ARGV;
 
 GetOptions(\%opts,
 	qw(dry-run|n!
 		help|h!
 		disable=s
 		config=s
+		no-start!
+		no-localhost-only!
 	)
 ) or (Usage() && exit 1);
 
@@ -57,6 +65,16 @@ if (exists $opts{'disable'}) {
 		$features{$feature} = 0;
 	}
 }
+
+# Preserve original options (so that they can be passed to step2.)
+# We assume that anything that was not consumed by GetOptions
+# is not an option.
+my $npop = scalar(@ARGV);
+while ($npop-- > 0) {
+	pop @origOpts;
+}
+#print "Original options: ", join(' ', @origOpts), "\n";
+#exit 0;
 
 my $mode = 'start';
 
@@ -130,7 +148,7 @@ sub Start {
 		cmd => \@cmd
 	);
 
-	# For some reason, mysqld doesn't seem to start automatically
+	# Mysqld doesn't start automatically
 	# when running in a docker container.  Kick it.
 	# This shouldn't cause any harm if it's already running.
 	RunAdmin(cmd => ['service', 'mysql', 'start']);
@@ -177,7 +195,7 @@ sub Start {
 	Section("Continuing as cloud user...");
 	Run("cp", $program, "/tmp/bootstrap.pl");
 	Run("chmod", "a+x", "/tmp/bootstrap.pl");
-	RunAdmin(asUser => 'cloud', cmd => ["/tmp/bootstrap.pl", "step2", StringifyProps("\a", "\a")]);
+	RunAdmin(asUser => 'cloud', cmd => ["/tmp/bootstrap.pl", @origOpts, "step2", StringifyProps("\a", "\a")]);
 
 	# ----------------------------------------------------------------------
 	# Copy the configured builder jarfile into the home directory of the current user.
@@ -185,10 +203,19 @@ sub Start {
 	my $version = GetLatestVersion();
 	my $builderJar = "cloudcoderBuilder-v$version.jar";
 	my $home = $ENV{'HOME'};
-	my $user = $ENV{'USER'};
+	my $user = `whoami`;
+	chomp $user;
 	print "Copying configured builder jarfile into $home...\n";
 	RunAdmin(cmd => ["cp", "/home/cloud/webapp/$builderJar", $home]);
 	RunAdmin(cmd => ["chown", $user, "$builderJar"]);
+
+	# ----------------------------------------------------------------------
+	# Shut down mysqld if --no-start was used.
+	# (Typically, this is because we're building a docker image.)
+	# ----------------------------------------------------------------------
+	if (exists $opts{'no-start'}) {
+		RunAdmin(cmd => ["service", "mysql", "stop"]);
+	}
 
 	# ----------------------------------------------------------------------
 	# We're done!
@@ -266,6 +293,7 @@ sub Step2 {
 
 	# Generate cloudcoder.properties
 	print "Creating cloudcoder.properties...\n";
+	my $localhostOnly = (exists $opts{'no-localhost-only'}) ? 'false' : 'true';
 	my $pfh = new FileHandle(">cloudcoder.properties");
 	print $pfh <<"ENDPROPERTIES";
 cloudcoder.db.user=cloudcoder
@@ -284,7 +312,7 @@ cloudcoder.submitsvc.ssl.keystore=keystore.jks
 cloudcoder.submitsvc.ssl.keystore.password=changeit
 cloudcoder.webserver.port=8081
 cloudcoder.webserver.contextpath=/cloudcoder
-cloudcoder.webserver.localhostonly=true
+cloudcoder.webserver.localhostonly=$localhostOnly
 ENDPROPERTIES
 	$pfh->close();
 
@@ -325,8 +353,10 @@ ENDPROPERTIES
 	# ----------------------------------------------------------------------
 	# Start the webapp!
 	# ----------------------------------------------------------------------
-	Section("Starting the CloudCoder web application");
-	Run("java", "-jar", $appJar, "start");
+	if (!exists $opts{'no-start'}) {
+		Section("Starting the CloudCoder web application");
+		Run("java", "-jar", $appJar, "start");
+	}
 }
 
 sub Usage {
@@ -339,6 +369,9 @@ Options:
   --disable=<features>  Disable specified features (comma-separated)
   --config=<prop file>  Load configuration from specified properties file
                           (for noninteractive configuration)
+  --no-start            Don't start the webapp
+  --no-localhost-only   Allow webapp to accept unencrypted HTTP connections
+                          from anywhere (not just localhost)
 
 Selectable features (all enabled by default) are:
 USAGE
@@ -484,6 +517,7 @@ sub RunAdmin {
 		print "cmd: ", join(' ', @cmd), "\n";
 		$result = 1;
 	} else {
+		print "Running admin command: ", join(' ', @cmd), "\n";
 		$result = system(@cmd)/256 == 0;
 	}
 
