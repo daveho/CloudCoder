@@ -12,4 +12,8 @@ WORKDIR /root
 ADD bootstrap.pl .
 ADD dockerconfig.properties .
 
-#RUN ./bootstrap.pl --disable=apache --config=dockerconfig.properties
+RUN ./bootstrap.pl \
+	--disable=apache \
+	--config=dockerconfig.properties \
+	--no-start \
+	--no-localhost-only
