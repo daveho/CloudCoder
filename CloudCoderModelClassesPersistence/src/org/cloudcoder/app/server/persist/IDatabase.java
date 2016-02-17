@@ -772,4 +772,12 @@ public interface IDatabase {
 	 * @return an {@link OperationResult} describing the success or failure of the operation
 	 */
 	public OperationResult registerExistingUser(CourseRegistrationSpec spec);
+
+	/**
+	 * Update specified {@link ConfigurationSetting}s.
+	 * 
+	 * @param settings the {@link ConfigurationSetting}s to update.
+	 * @return true if successful, false otherwise
+	 */
+	public boolean updateConfigurationSettings(ConfigurationSetting[] settings);
 }

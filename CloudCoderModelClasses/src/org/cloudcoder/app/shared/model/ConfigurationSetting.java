@@ -17,6 +17,8 @@
 
 package org.cloudcoder.app.shared.model;
 
+import java.io.Serializable;
+
 /**
  * A configuration setting.
  * Represents a value that is customized per-installation
@@ -24,7 +26,9 @@ package org.cloudcoder.app.shared.model;
  * 
  * @author David Hovemeyer
  */
-public class ConfigurationSetting implements IModelObject<ConfigurationSetting> {
+public class ConfigurationSetting implements IModelObject<ConfigurationSetting>, Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String name;
 	private String value;
 	

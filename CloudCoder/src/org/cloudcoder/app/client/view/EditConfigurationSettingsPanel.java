@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
-import org.cloudcoder.app.client.model.StatusMessage;
 import org.cloudcoder.app.client.page.CloudCoderPage;
 import org.cloudcoder.app.client.page.SessionObserver;
 import org.cloudcoder.app.client.page.SessionUtil;
@@ -29,11 +28,11 @@ import org.cloudcoder.app.client.validator.NoopFieldValidator;
 import org.cloudcoder.app.client.validator.TextBoxNonemptyValidator;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
-import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.util.Publisher;
 import org.cloudcoder.app.shared.util.Subscriber;
 import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
@@ -94,9 +93,39 @@ public class EditConfigurationSettingsPanel extends ValidatedFormUI implements S
 	public void setOnUpdateCallback(Runnable onUpdateCallback) {
 		this.onUpdateCallback = onUpdateCallback;
 	}
+	
+	/**
+	 * Get modified {@link ConfigurationSetting}s.
+	 * 
+	 * @return modified {@link ConfigurationSetting}s
+	 */
+	public List<ConfigurationSetting> getModifiedConfigurationSettings() {
+		List<ConfigurationSetting> result = new ArrayList<ConfigurationSetting>();
+		for (int i = 0; i < names.length; i++) {
+			TextBox textBox = textBoxes.get(i);
+			if (textBox.isEnabled() && !textBox.getText().equals(currentValues.get(i))) {
+				ConfigurationSetting modifiedSetting = new ConfigurationSetting();
+				modifiedSetting.setName(names[i]);
+				modifiedSetting.setValue(textBox.getText());
+				result.add(modifiedSetting);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Mark all modified {@link ConfigurationSetting}s as being up to date.
+	 */
+	public void markUpToDate() {
+		for (int i = 0; i < names.length; i++) {
+			currentValues.set(i, textBoxes.get(i).getText());
+		}
+	}
 
 	@Override
 	public void activate(Session session, SubscriptionRegistrar subscriptionRegistrar) {
+		GWT.log(">>> Activating EditConfigurationSettingsPanel... <<<");
+		
 		session.subscribe(Session.Event.ADDED_OBJECT, this, subscriptionRegistrar);
 
 		// Force configuration settings to be loaded

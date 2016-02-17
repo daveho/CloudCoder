@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -96,6 +96,7 @@ import org.cloudcoder.app.server.persist.txn.StoreSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.StudentStartOrContinueQuiz;
 import org.cloudcoder.app.server.persist.txn.SuggestTagNames;
 import org.cloudcoder.app.server.persist.txn.SuggestUsernames;
+import org.cloudcoder.app.server.persist.txn.UpdateConfigurationSettings;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnable;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.server.persist.util.DatabaseRunnable;
@@ -545,6 +546,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public OperationResult registerExistingUser(CourseRegistrationSpec spec) {
 		return databaseRun(new RegisterExistingUser(spec));
+	}
+	
+	@Override
+	public boolean updateConfigurationSettings(ConfigurationSetting[] settings) {
+		return databaseRun(new UpdateConfigurationSettings(settings));
 	}
 
 	/**

@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
-import org.cloudcoder.app.client.rpc.ConfigurationSettingService;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
@@ -609,7 +608,7 @@ public class SessionUtil {
 			this.session = session;
 		}
 		
-		public void execute() {
+		public void execute(final Runnable onDone) {
 			if (index >= names.length) {
 				// All configuration settings have been received,
 				// so we can add the results to the session.
@@ -620,6 +619,7 @@ public class SessionUtil {
 					result[i].setValue(values.get(i));
 				}
 				session.add(result);
+				onDone.run();
 			} else {
 				GWT.log("Loading configuration setting " + names[index]);
 				RPC.configurationSettingService.getConfigurationSettingValue(names[index], new AsyncCallback<String>() {
@@ -628,21 +628,21 @@ public class SessionUtil {
 						// Hmm...
 						session.add(StatusMessage.error("Could not load configuration property " + names[index], caught));
 						values.add(null);
-						loadNext();
+						loadNext(onDone);
 					}
 
 					@Override
 					public void onSuccess(String result) {
 						GWT.log("Configuration setting " + names[index] + "=" + result);
 						values.add(result);
-						loadNext();
+						loadNext(onDone);
 					}
 				});
 			}
 		}
 
-		protected void loadNext() {
-			new ConfigurationSettingsGetter(index + 1, values, session).execute();
+		protected void loadNext(Runnable onDone) {
+			new ConfigurationSettingsGetter(index + 1, values, session).execute(onDone);
 		}
 	}
 
@@ -657,7 +657,63 @@ public class SessionUtil {
 		new OneTimeRunnable(loadAllConfigurationSettingsRunner) {
 			@Override
 			public void run() {
-				new ConfigurationSettingsGetter(page.getSession()).execute();
+				GWT.log(">>> Loading configuration settings... <<<");
+				new ConfigurationSettingsGetter(page.getSession()).execute(new Runnable() {
+					public void run() {
+						onDone();
+					}
+				});
+			}
+		}.execute();
+	}
+	
+	private static final RunOnce updateConfigurationSettingsRunner = new RunOnce();
+
+	/**
+	 * Update {@link ConfigurationSetting}s.
+	 * 
+	 * @param page              the {@link CloudCoderPage}
+	 * @param modifiedSettings  the {@link ConfigurationSetting}s to update
+	 * @param onSuccess         callback to execute if the setings are updated successfully
+	 */
+	public static void updateConfigurationSettings(final CloudCoderPage page,
+			List<ConfigurationSetting> modifiedSettings, final Runnable onSuccess) {
+		final ConfigurationSetting[] settings = modifiedSettings.toArray(new ConfigurationSetting[modifiedSettings.size()]);
+		new OneTimeRunnable(updateConfigurationSettingsRunner) {
+			@Override
+			public void run() {
+				doUpdateConfigurationSettings();
+			}
+			
+			private void doUpdateConfigurationSettings() {
+				RPC.configurationSettingService.updateConfigurationSettings(settings, new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof CloudCoderAuthenticationException) {
+							page.recoverFromServerSessionTimeout(new Runnable() {
+								@Override
+								public void run() {
+									doUpdateConfigurationSettings();
+								}
+							});
+						} else {
+							page.getSession().add(StatusMessage.error("Error updating configuration settings", caught));
+							onDone();
+						}
+					}
+
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							onSuccess.run();
+						} else {
+							// In general, this shouldn't happen, but could if the
+							// current user isn't a superuser.
+							page.getSession().add(StatusMessage.error("Could not update configuration settings (not authorized?)"));
+						}
+						onDone();
+					}
+				});
 			}
 		}.execute();
 	}

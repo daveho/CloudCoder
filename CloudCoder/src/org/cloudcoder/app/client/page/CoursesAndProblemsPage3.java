@@ -46,6 +46,7 @@ import org.cloudcoder.app.client.view.SectionLabel;
 import org.cloudcoder.app.client.view.SectionSelectionView;
 import org.cloudcoder.app.client.view.StatusMessageView;
 import org.cloudcoder.app.client.view.UserAccountView2;
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseCreationSpec;
@@ -377,7 +378,14 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				@Override
 				public void run() {
 					if (editConfigurationSettingsPanel.validate()) {
-						getSession().add(StatusMessage.information("Should be updating configuration settings"));
+						List<ConfigurationSetting> modifiedSettings = editConfigurationSettingsPanel.getModifiedConfigurationSettings();
+						GWT.log("Attempting to update " + modifiedSettings.size() + " configuration settings");
+						updateConfigurationSettings(modifiedSettings, new Runnable() {
+							public void run() {
+								getSession().add(StatusMessage.goodNews("Configuration settings updated successfully"));
+								editConfigurationSettingsPanel.markUpToDate();
+							}
+						});
 					}
 				}
 			});
@@ -405,6 +413,10 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 				    getSession().add(StatusMessage.error("Error trying to create course", caught));
 				}
 			});
+		}
+
+		protected void updateConfigurationSettings(List<ConfigurationSetting> modifiedSettings, Runnable onSuccess) {
+			SessionUtil.updateConfigurationSettings(CoursesAndProblemsPage3.this, modifiedSettings, onSuccess);
 		}
 		
 		private void registerSingleUser(final EditedUser editedUser) {
