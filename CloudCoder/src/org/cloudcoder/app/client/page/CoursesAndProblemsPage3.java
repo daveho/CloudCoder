@@ -30,6 +30,7 @@ import org.cloudcoder.app.client.view.BulkRegistrationPanel;
 import org.cloudcoder.app.client.view.CourseSelectionListBox;
 import org.cloudcoder.app.client.view.CreateCoursePanel;
 import org.cloudcoder.app.client.view.DebugPopupPanel;
+import org.cloudcoder.app.client.view.EditConfigurationSettingsPanel;
 import org.cloudcoder.app.client.view.ExerciseAdminPanel;
 import org.cloudcoder.app.client.view.ExerciseSummaryView;
 import org.cloudcoder.app.client.view.ISelectableComposite;
@@ -126,6 +127,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 		private TabLayoutPanel tabLayoutPanel;
 		private List<TabId> tabIdList;
 		private CreateCoursePanel createCoursePanel;
+		private EditConfigurationSettingsPanel editConfigurationSettingsPanel;
 		private boolean manageUsersTabCreated;
 		private boolean manageExercisesTabCreated;
 		private ModuleListBox moduleListBox;
@@ -369,7 +371,17 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			});
 			accordionPanel.add(createCoursePanel, "Create course");
 
-			// Could put other widgets in the accordion panel here...
+			// Add edit configuration settings panel
+			this.editConfigurationSettingsPanel = new EditConfigurationSettingsPanel(CoursesAndProblemsPage3.this);
+			editConfigurationSettingsPanel.setOnUpdateCallback(new Runnable() {
+				@Override
+				public void run() {
+					if (editConfigurationSettingsPanel.validate()) {
+						getSession().add(StatusMessage.information("Should be updating configuration settings"));
+					}
+				}
+			});
+			accordionPanel.add(editConfigurationSettingsPanel, "Edit configuration settings");
 			
 			return accordionPanel;
 		}
@@ -522,6 +534,7 @@ public class CoursesAndProblemsPage3 extends CloudCoderPage {
 			if (user.isSuperuser()) {
 				addTab(createAdminTab(), "Admin", TabId.ADMIN);
 				createCoursePanel.activate(session, subscriptionRegistrar);
+				editConfigurationSettingsPanel.activate(session, subscriptionRegistrar);
 			}
 
 			// Load courses

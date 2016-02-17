@@ -17,10 +17,16 @@
 
 package org.cloudcoder.app.client.page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudcoder.app.client.model.Session;
 import org.cloudcoder.app.client.model.StatusMessage;
+import org.cloudcoder.app.client.rpc.ConfigurationSettingService;
 import org.cloudcoder.app.client.rpc.RPC;
 import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
+import org.cloudcoder.app.shared.model.ConfigurationSetting;
+import org.cloudcoder.app.shared.model.ConfigurationSettingName;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseAndCourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistration;
@@ -578,6 +584,80 @@ public class SessionUtil {
 						onDone();
 					}
 				});
+			}
+		}.execute();
+	}
+	
+	/**
+	 * Get all {@link ConfigurationSetting}s and add them to the {@link Session}.
+	 *
+	 * @author David Hovemeyer
+	 */
+	private static class ConfigurationSettingsGetter {
+		private int index;
+		private List<String> values;
+		private Session session;
+		private static final ConfigurationSettingName[] names = ConfigurationSettingName.values();
+		
+		public ConfigurationSettingsGetter(Session session) {
+			this(0, new ArrayList<String>(), session);
+		}
+		
+		public ConfigurationSettingsGetter(int index, List<String> values, Session session) {
+			this.index = index;
+			this.values = values;
+			this.session = session;
+		}
+		
+		public void execute() {
+			if (index >= names.length) {
+				// All configuration settings have been received,
+				// so we can add the results to the session.
+				ConfigurationSetting[] result = new ConfigurationSetting[names.length];
+				for (int i = 0; i < names.length; i++) {
+					result[i] = new ConfigurationSetting();
+					result[i].setName(names[i]);
+					result[i].setValue(values.get(i));
+				}
+				session.add(result);
+			} else {
+				GWT.log("Loading configuration setting " + names[index]);
+				RPC.configurationSettingService.getConfigurationSettingValue(names[index], new AsyncCallback<String>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						// Hmm...
+						session.add(StatusMessage.error("Could not load configuration property " + names[index], caught));
+						values.add(null);
+						loadNext();
+					}
+
+					@Override
+					public void onSuccess(String result) {
+						GWT.log("Configuration setting " + names[index] + "=" + result);
+						values.add(result);
+						loadNext();
+					}
+				});
+			}
+		}
+
+		protected void loadNext() {
+			new ConfigurationSettingsGetter(index + 1, values, session).execute();
+		}
+	}
+
+	private static final RunOnce loadAllConfigurationSettingsRunner = new RunOnce();
+	
+	/**
+	 * Load all {@link ConfigurationSetting}s from the server.
+	 * 
+	 * @param page the {@link CloudCoderPage} requesting the {@link ConfigurationSetting}s
+	 */
+	public static void loadAllConfigurationSettings(final CloudCoderPage page) {
+		new OneTimeRunnable(loadAllConfigurationSettingsRunner) {
+			@Override
+			public void run() {
+				new ConfigurationSettingsGetter(page.getSession()).execute();
 			}
 		}.execute();
 	}
