@@ -25,7 +25,8 @@ RUN ./bootstrap.pl \
   --disable=apache \
   --config=dockerconfig.properties \
   --no-start \
-  --no-localhost-only
+  --no-localhost-only \
+  --defer-keystore
 
 # The dockerrun.pl script starts mysql and the CloudCoder webapp,
 # and shuts them down cleanly when a SIGTERM is received.

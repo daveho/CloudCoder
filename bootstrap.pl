@@ -24,6 +24,7 @@ my $program = $0;
 
 # Configuration properties
 my %props = ();
+my $propsLoaded = 0;
 
 # Parse command line options
 my %opts = ();
@@ -39,12 +40,14 @@ my @origOpts;
 @origOpts = @ARGV;
 
 GetOptions(\%opts,
-	qw(dry-run|n!
+	qw(
+		dry-run|n!
 		help|h!
 		disable=s
 		config=s
 		no-start!
 		no-localhost-only!
+		defer-keystore!
 	)
 ) or (Usage() && exit 1);
 
@@ -88,12 +91,29 @@ if (scalar(@ARGV) > 0) {
 # happen if step2 is being executed).
 if (scalar(@ARGV) > 0) {
 	%props = UnstringifyProps(shift @ARGV);
+	$propsLoaded = 1;
+}
+
+# If configuration properties were specified by a command
+# line option, attempt to load them.  If the mode is
+# anything other than "start", failing to load them
+# is a non-fatal error.
+if (exists $opts{'config'}) {
+	eval {
+		LoadConfigProperties($opts{'config'});
+		$propsLoaded = 1;
+	};
+	if ($@ && $mode eq 'start') {
+		die $@;
+	}
 }
 
 if ($mode eq 'start') {
 	Start();
 } elsif ($mode eq 'step2') {
 	Step2();
+} elsif ($mode eq 'generate-keystore') {
+	GenerateAndConfigureKeystore();
 } else {
 	die "Unknown mode: $mode\n";
 }
@@ -105,9 +125,10 @@ if ($mode eq 'start') {
 # Start does all of the sudo commands to install and configure
 # software, create the cloud user, etc.
 sub Start {
-	if (exists $opts{'config'}) {
-		LoadConfigProperties($opts{'config'});
-	} else {
+	# If configuration properties haven't been specified
+	# via --config or by a stringified config properties argument,
+	# read them interactively.
+	if (!$propsLoaded) {
 		ConfigureInteractively();
 	}
 	
@@ -148,10 +169,16 @@ sub Start {
 		cmd => \@cmd
 	);
 
+	# Find out what the latest CloudCoder version is,
+	# creating the global CLOUDCODER_VERSION file.
+	# (This requires wget, so we do it after installing software.)
+	my $version = GetLatestVersion();
+
 	# Mysqld doesn't start automatically
 	# when running in a docker container.  Kick it.
-	# This shouldn't cause any harm if it's already running.
-	RunAdmin(cmd => ['service', 'mysql', 'start']);
+	# This shouldn't cause any harm if it's already running,
+	# although if it is running, the command will fail.
+	RunAdmin(cmd => ['service', 'mysql', 'start'], ignorefailure => 1);
 	Run("sleep", "5");
 	
 	# ----------------------------------------------------------------------
@@ -159,10 +186,10 @@ sub Start {
 	# ----------------------------------------------------------------------
 	Section("Configuring MySQL...");
 	print "Creating cloudcoder user...\n";
-	Run("mysql", "--user=root", "--pass=$props{'ccMysqlRootPasswd'}",
+	Run("mysql", "--user=root", "--password=$props{'ccMysqlRootPasswd'}",
 		"--execute=create user 'cloudcoder'\@'localhost' identified by '$props{'ccMysqlCCPasswd'}'");
 	print "Granting permissions on cloudcoderdb to cloudcoder...\n";
-	Run("mysql", "--user=root", "--pass=$props{'ccMysqlRootPasswd'}",
+	Run("mysql", "--user=root", "--password=$props{'ccMysqlRootPasswd'}",
 		"--execute=grant all on cloudcoderdb.* to 'cloudcoder'\@'localhost'");
 	
 	# ----------------------------------------------------------------------
@@ -200,11 +227,9 @@ sub Start {
 	# ----------------------------------------------------------------------
 	# Copy the configured builder jarfile into the home directory of the current user.
 	# ----------------------------------------------------------------------
-	my $version = GetLatestVersion();
 	my $builderJar = "cloudcoderBuilder-v$version.jar";
 	my $home = $ENV{'HOME'};
-	my $user = `whoami`;
-	chomp $user;
+	my $user = WhoAmI();
 	print "Copying configured builder jarfile into $home...\n";
 	RunAdmin(cmd => ["cp", "/home/cloud/webapp/$builderJar", $home]);
 	RunAdmin(cmd => ["chown", $user, "$builderJar"]);
@@ -262,10 +287,14 @@ SUCCESS3
 # downloading and configuring the CloudCoder webapp and builder.
 sub Step2 {
 	# Complete the installation running as the cloud user
-	my $whoami = `whoami`;
-	chomp $whoami;
+	my $whoami = WhoAmI();
 	print "Step2: running as $whoami\n";
 	chdir "/home/cloud" || die "Couldn't change directory to /home/cloud: $!\n";
+
+	# Find out what the most recent release version is
+	my $version = GetLatestVersion();
+	my $appJar = "cloudcoderApp-v$version.jar";
+	my $builderJar = "cloudcoderBuilder-v$version.jar";
 
 	# Create webapp directory and change to it
 	Run("mkdir", "-p", "webapp");
@@ -274,11 +303,6 @@ sub Step2 {
 	# ----------------------------------------------------------------------
 	# Download webapp and builder distribution jarfiles
 	# ----------------------------------------------------------------------
-
-	# Find out what the most recent release version is
-	my $version = GetLatestVersion();
-	my $appJar = "cloudcoderApp-v$version.jar";
-	my $builderJar = "cloudcoderBuilder-v$version.jar";
 
 	# Download webapp and builder release jarfiles
 	Section("Downloading $appJar and $builderJar...");
@@ -316,15 +340,15 @@ cloudcoder.webserver.localhostonly=$localhostOnly
 ENDPROPERTIES
 	$pfh->close();
 
-	# Create a keystore
-	print "Creating a keystore for communication between webapp and builder...\n";
-	Run('keytool', '-genkey', '-noprompt',
-		'-alias', 'cloudcoder',
-		'-storepass', 'changeit',
-		'-keystore', 'keystore.jks',
-		'-validity', '3600',
-		'-keypass', 'changeit',
-		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
+	if (!exists $opts{'defer-keystore'}) {
+		# Generate keystore for secure communication between webapp and builders
+		GenerateKeystore();
+	} else {
+		# Create an invalid keystore: before running the webapp for the
+		# first time, this script should be run again with 'generate-keystore'
+		# as the mode.
+		Run("touch keystore.jks");
+	}
 
 	# Configure webapp jarfile to use the generated cloudcoder.properties
 	# and keystore
@@ -359,6 +383,50 @@ ENDPROPERTIES
 	}
 }
 
+# Generate and configure the keystore as a post-installation step.
+# The docker entrypoint (dockerrun.pl) will do this as a
+# one-time installation step before the webapp is started
+# for the first time.  The script should be running as the
+# "cloud" user.
+sub GenerateAndConfigureKeystore {
+	print "Generating and configuring keystore for secure webapp/builder communication...\n";
+	die "generate-keystore should be run as the 'cloud' user\n" if (WhoAmI() ne 'cloud');
+
+	# Determine webapp/builder jarfile names based on version
+	my $version = GetLatestVersion();
+	my $appJar = "cloudcoderApp-v$version.jar";
+	my $builderJar = "cloudcoderBuilder-v$version.jar";
+
+	# Change directory to the webapp home directory
+	chdir "/home/cloud/webapp" || die "Couldn't chdir to /home/cloud/webapp: $!\n";
+
+	# Generate the keystore
+	GenerateKeystore();
+
+	# Install the keystore in the webapp and builder jarfiles
+	print "Adding keystore to $appJar...\n";
+	Run("java", "-jar", $appJar, "configure",
+		"--editJar=$appJar", "--replace=war/WEB-INF/classes/keystore.jks=keystore.jks");
+	print "Adding keystore to $builderJar...\n";
+	Run("java", "-jar", $builderJar, "configure",
+		"--editJar=$builderJar", "--replace=keystore.jks=keystore.jks");
+	Run('rm', '-f', 'keystore.jks');
+
+	print "Keystore configuration was successful\n";
+}
+
+sub GenerateKeystore {
+	# Create a keystore
+	print "Creating a keystore for communication between webapp and builder...\n";
+	Run('keytool', '-genkey', '-noprompt',
+		'-alias', 'cloudcoder',
+		'-storepass', 'changeit',
+		'-keystore', 'keystore.jks',
+		'-validity', '3600',
+		'-keypass', 'changeit',
+		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
+}
+
 sub Usage {
 	print << "USAGE";
 ./bootstrap.pl [options] [mode [config props]]
@@ -372,6 +440,12 @@ Options:
   --no-start            Don't start the webapp
   --no-localhost-only   Allow webapp to accept unencrypted HTTP connections
                           from anywhere (not just localhost)
+  --defer-keystore      Defer generation of keystore: webapp and builder
+                          jarfiles will not have a keystore (and will not
+                          be able to communicate): invoke later with
+                          "generate-keystore" as the mode to generate
+                          the keystore and add it to the webapp/builder
+                          jarfiles
 
 Selectable features (all enabled by default) are:
 USAGE
@@ -526,7 +600,7 @@ sub RunAdmin {
 		$ENV{$var} = $origEnv{$var};
 	}
 
-	if (!$result) {
+	if (!$result && !$params{'ignorefailure'}) {
 		my $prog = $cmd[$asUser ? 5 : 3];
 		die "Admin command $prog failed\n";
 	}
@@ -638,7 +712,28 @@ ENDPROXY
 }
 
 sub GetLatestVersion {
-	my $fh = new FileHandle("wget --quiet --output-document=- $DOWNLOAD_SITE/LATEST|");
+	my $versionFileDir = "/usr/local/share/cloudcoder";
+	my $versionFile = "$versionFileDir/CLOUDCODER_VERSION";
+
+	if (! -r $versionFile) {
+		# Save the CloudCoder version number in a file called
+		# /usr/local/share/cloudcoder/CLOUDCODER_VERSION.
+		# It's not a good idea to fetch the version dynamically every time,
+		# since it could change if a CloudCoder release happens while an installation
+		# is underway.  We assume that the first time the version file
+		# is written, this script will be running as a sudo-capable user,
+		# and that subsequent times the file will exist and be world-readable.
+		system("mkdir -p $versionFileDir")/256 == 0
+			|| die "Couldn't make $versionFileDir directory\n";
+		system("chmod 0755 $versionFileDir")/256 == 0
+			|| die "Couldn't make $versionFileDir world-readable\n";
+		system("sudo -p 'sudo password>> ' wget --quiet --output-document=$versionFile $DOWNLOAD_SITE/LATEST")/256 == 0
+			|| die "Couldn't determine latest CloudCoder version\n";
+		system("sudo -p 'sudo password>> ' chmod 644 $versionFile")/256 == 0
+			|| die "Couldn't make $versionFile world-readable\n";
+	}
+
+	my $fh = new FileHandle("<$versionFile");
 	my $version;
 	while (<$fh>) {
 		if (/^\s*(\d+(\.\d+)*)\s*$/ || /^\s*v(\d+(\.\d+)*)\s*$/) {
@@ -649,6 +744,12 @@ sub GetLatestVersion {
 	$fh->close();
 	die "Could not determine latest CloudCoder release version\n" if (!defined $version);
 	return $version;
+}
+
+sub WhoAmI {
+	my $whoami = `whoami`;
+	chomp $whoami;
+	return $whoami;
 }
 
 # vim:ts=2:
