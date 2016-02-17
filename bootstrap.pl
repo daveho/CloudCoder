@@ -153,10 +153,12 @@ sub Start {
 	DebconfSetSelections("mysql-server-$mysqlVersion", "mysql-server/root_password_again", "password $props{'ccMysqlRootPasswd'}");
 
 	# Install packages.
-	# We need a full JDK because we use keytool,
-	# but it can be headless.  "wget" isn't installed by
-	# default in the ubuntu docker image.
-	my @packages = ("wget", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
+	# A headless JRE is sufficient for the webapp.
+	# "wget" isn't installed by default in the ubuntu docker image.
+	# "fastjar" is needed because the JRE doesn't include the jar
+	# utility, which the docker image entrypoint needs to check
+	# whether a keystore has been generated/configured.
+	my @packages = ("wget", "fastjar", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
 	if ($features{'apache'}) {
 		push @packages, 'apache2';
 	}

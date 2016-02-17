@@ -55,13 +55,15 @@ sub Run {
 # has been configured.  If not, generate one and add it
 # to the webapp and builder jarfiles.
 sub CheckKeystore {
-	my $keystoreSize = `jar tvf /home/cloud/webapp/cloudcoderApp-$version.jar | tr -s ' ' | sed -e 's/^ *//' |  cut -d ' ' -f 1`;
+	my $keystoreSize = `fastjar tvf /home/cloud/webapp/cloudcoderApp-$version.jar | grep '/keystore\.jks' | tr -s ' ' | sed -e 's/^ *//' |  cut -d ' ' -f 1`;
 	chomp $keystoreSize;
 	if ($keystoreSize == 0) {
 		print "No keystore found in webapp/builder jarfiles, generating them.\n";
 		print "This is expected when CloudCoder is run (in a Docker container)\n";
 		print "for the first time.\n";
-		Run("./bootstrap.pl", "generate-keystore");
+		Run("cp", "bootstrap.pl", "/tmp");
+		Run("chmod", "755", "/tmp/bootstrap.pl");
+		Run("sudo", "-u", "cloud", "/tmp/bootstrap.pl", "generate-keystore");
 	}
 }
 
