@@ -131,6 +131,9 @@ sub Start {
 	if (!$propsLoaded) {
 		ConfigureInteractively();
 	}
+
+	# We will run apt noninteractively
+	$ENV{'DEBIAN_FRONTEND'} = 'noninteractive';
 	
 	# ----------------------------------------------------------------------
 	# Install/configure required packages
@@ -138,10 +141,7 @@ sub Start {
 	Section("Installing required packages...");
 
 	# Run apt-get update so that repository metadata is current
-	RunAdmin(
-		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => ["apt-get", "update"]
-	);
+	RunAdmin(cmd => ["apt-get", "update"]);
 
 	# Determine which mysql-server version we will use
 	my $mysqlVersion = FindMysqlVersion();
@@ -166,22 +166,22 @@ sub Start {
 	my @cmd = ("apt-get", "-y", "install");
 	push @cmd, @packages;
 
-	RunAdmin(
-		env => { 'DEBIAN_FRONTEND' => 'noninteractive' },
-		cmd => \@cmd
-	);
+	RunAdmin(cmd => \@cmd);
 
 	# Find out what the latest CloudCoder version is,
 	# creating the global CLOUDCODER_VERSION file.
 	# (This requires wget, so we do it after installing software.)
 	my $version = GetLatestVersion();
 
-	# Mysqld doesn't start automatically
-	# when running in a docker container.  Kick it.
-	# This shouldn't cause any harm if it's already running,
-	# although if it is running, the command will fail.
-	RunAdmin(cmd => ['service', 'mysql', 'start'], ignorefailure => 1);
-	Run("sleep", "5");
+	# Start mysql if it is not already running.
+	# This is useful for docker, where daemons don't
+	# start automatically when installed.
+	my $mysqlStatus = `service mysql status`;
+	chomp $mysqlStatus;
+	if ($mysqlStatus =~ /stop/) {
+		RunAdmin(cmd => ['service', 'mysql', 'start']);
+		Run("sleep", "5");
+	}
 	
 	# ----------------------------------------------------------------------
 	# Configure MySQL
@@ -602,7 +602,7 @@ sub RunAdmin {
 		$ENV{$var} = $origEnv{$var};
 	}
 
-	if (!$result && !$params{'ignorefailure'}) {
+	if (!$result) {
 		my $prog = $cmd[$asUser ? 5 : 3];
 		die "Admin command $prog failed\n";
 	}
