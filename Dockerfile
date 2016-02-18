@@ -1,16 +1,20 @@
-# Docker image for running CloudCoder and MySQL.
-# The webapp will listen for unencrypted HTTP connections
-# on port 8081.  So, you should run it something
-# like the following:
+# Docker image for running CloudCoder, MySQL, and Apache.
+# Run like this:
 #
-#   docker run -d -p 8081:8081 -p 47374:47374 cloudcoder
+#   docker run -p 443:443 -p 47374:47374 cloudcoder-mysql-apache
+#
+# Note that this image will use a self-signed "snakeoil"
+# certificate (regenerated automatically when the image
+# starts for the first time.)  You should configure a
+# "real" SSL certificate before running the image in
+# production.
 
 FROM ubuntu:trusty
 MAINTAINER David Hovemeyer <david.hovemeyer@gmail.com>
 
-# Webapp will listen for HTTP connections on port 8081,
+# Webapp will listen for HTTPS connections on port 443,
 # and builder connections on port 47374.
-EXPOSE 8081 47374
+EXPOSE 443 47374
 
 # Run from the root user's home directory
 WORKDIR /root
@@ -22,10 +26,8 @@ ADD bootstrap.pl .
 ADD dockerconfig.properties .
 ADD dockerrun.pl .
 RUN ./bootstrap.pl \
-  --disable=apache \
   --config=dockerconfig.properties \
   --no-start \
-  --no-localhost-only \
   --defer-keystore
 
 # The dockerrun.pl script starts mysql and the CloudCoder webapp,

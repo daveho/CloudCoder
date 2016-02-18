@@ -1,32 +1,46 @@
 #! /usr/bin/perl -w
 
+# Run CloudCoder, and mysql, and apache2 in Docker, attempting to
+# shut each down gracefully when a SIGTERM is received.
+
 use strict;
 use POSIX qw(pause);
 use IO::Handle;
 
+my $DATA_DIR = "/usr/local/share/cloudcoder";
+
 STDOUT->autoflush(1);
 STDERR->autoflush(1);
 
-print "Starting CloudCoder docker container...\n";
+# ----------------------------------------------------------------------
+# Main script
+# ----------------------------------------------------------------------
 
-# Run CloudCoder (and mysql) in Docker, attempting to shut
-# both down gracefully when a SIGTERM is received.
+print "Starting CloudCoder docker container...\n";
 
 my $done = 0;
 
 $SIG{TERM} = \&SigtermHandler;
 
-my $version = `cat /usr/local/share/cloudcoder/CLOUDCODER_VERSION`;
+my $version = `cat $DATA_DIR/CLOUDCODER_VERSION`;
 chomp $version;
 
+# Check to see whether a keystore has been generated for
+# webapp/builder communiction.
 CheckKeystore();
 
-# Start mysqld and CloudCoder.
+# Check to see whether we are still using the default
+# initial snakeoil SSL cert, and if so, generate a
+# new one.
+CheckSnakeoilSSL();
+
+# Start mysqld, CloudCoder, and apache2.
 Run("service", "mysql", "start");
 Run("sudo", "-u", "cloud", "/bin/bash", "-c",
 	"cd /home/cloud/webapp && java -jar cloudcoderApp-$version.jar start");
+Run("service", "apache2", "start");
 
-print "mysqld and CloudCoder webapp are running...\n";
+print "mysqld, CloudCoder webapp, and apache2 are running...\n";
 
 # Wait for SIGTERM.
 # Note that there is a race here if SIGTERM arrives
@@ -36,12 +50,17 @@ if (!$done) {
 }
 print "SIGTERM received, shutting down...\n";
 
-# Shut down CloudCoder and mysqld.
+# Shut down apache2, CloudCoder webapp, and mysqld.
+Run("service", "apache2", "stop");
 Run("sudo", "-u", "cloud", "/bin/bash", "-c",
 	"cd /home/cloud/webapp && java -jar cloudcoderApp-$version.jar shutdown");
 Run("service", "mysql", "stop");
 
 print "Done\n";
+
+# ----------------------------------------------------------------------
+# Subroutines
+# ----------------------------------------------------------------------
 
 sub SigtermHandler {
 	$done = 1;
@@ -66,6 +85,19 @@ sub CheckKeystore {
 		Run("cp", "bootstrap.pl", "/tmp");
 		Run("chmod", "755", "/tmp/bootstrap.pl");
 		Run("sudo", "-u", "cloud", "/tmp/bootstrap.pl", "generate-keystore");
+	}
+}
+
+# Check to see whether the initial "snakeoil" SSL certificate
+# needs to be regenerated.  It would be really bad for anyone
+# to use the one that comes with the image, since the
+# private key used for the initial one would then be known.
+sub CheckSnakeoilSSL {
+	print "Checking snakeoil SSL cert...\n";
+	if (! -e "$DATA_DIR/SNAKEOIL_CERT_GENERATED") {
+		print "Regenerating snakeoil cert...\n";
+		Run("make-ssl-cert", "generate-default-snakeoil", "--force-overwrite");
+		Run("touch", "$DATA_DIR/SNAKEOIL_CERT_GENERATED");
 	}
 }
 
