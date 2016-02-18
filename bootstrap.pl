@@ -10,9 +10,10 @@ use Getopt::Long qw{:config bundling no_ignore_case no_auto_abbrev};
 # Global data
 ####################################################################
 
-# Selectable features (all are enabled by default)
+# Selectable features
 my %features = (
 	'apache' => 1,
+	'integrated-builder' => 0,
 );
 
 # Download site
@@ -43,6 +44,7 @@ GetOptions(\%opts,
 	qw(
 		dry-run|n!
 		help|h!
+		enable=s
 		disable=s
 		config=s
 		no-start!
@@ -62,7 +64,12 @@ if (exists $opts{'dry-run'}) {
 	$dryRun = 1;
 }
 
-# See if any features are being disabled
+# See if any features are being enabled or disabled
+if (exists $opts{'enable'}) {
+	for my $feature (split(',', $opts{'enable'})) {
+		$features{$feature} = 1;
+	}
+}
 if (exists $opts{'disable'}) {
 	for my $feature (split(',', $opts{'disable'})) {
 		$features{$feature} = 0;
@@ -114,6 +121,8 @@ if ($mode eq 'start') {
 	Step2();
 } elsif ($mode eq 'generate-keystore') {
 	GenerateAndConfigureKeystore();
+} elsif ($mode eq 'configure-builder') {
+	ConfigureIntegratedBuilder();
 } else {
 	die "Unknown mode: $mode\n";
 }
@@ -161,6 +170,10 @@ sub Start {
 	my @packages = ("wget", "fastjar", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
 	if ($features{'apache'}) {
 		push @packages, 'apache2';
+	}
+	if ($features{'integrated-builder'}) {
+		push @packages, 'gcc';
+		push @packages, 'g++';
 	}
 
 	my @cmd = ("apt-get", "-y", "install");
@@ -245,6 +258,31 @@ sub Start {
 	}
 
 	# ----------------------------------------------------------------------
+	# Add support for integrated builder
+	# ----------------------------------------------------------------------
+	if ($features{'integrated-builder'}) {
+		# Create builder user
+		Section("Configuring integrated builder...");
+		RunAdmin(
+			cmd => [ 'adduser', '--disabled-password', '--home', '/home/builder', '--gecos', '', 'builder' ]
+		);
+
+		# Create builder directory,
+		# copy builder jarfile to builder directory,
+		# change ownership to builder user.
+		RunAdmin(cmd => ["mkdir", "/home/builder/builder"]);
+		RunAdmin(cmd => ["cp", $builderJar, "/home/builder/builder"]);
+		RunAdmin(cmd => ["chown", "-R", "builder:builder", "/home/builder/builder"]);
+
+		# Continue as builder user to configure builder jarfile.
+		# This script should already be available as /tmp/bootstrap.pl.
+		RunAdmin(
+			asUser => 'builder',
+			cmd => ['/tmp/bootstrap.pl', @origOpts, 'configure-builder', StringifyProps("\a", "\a")]
+		);
+	}
+
+	# ----------------------------------------------------------------------
 	# We're done!
 	# ----------------------------------------------------------------------
 	Section("CloudCoder installation successful!");
@@ -275,14 +313,28 @@ reachable.
 SUCCESS2b
 	}
 
-	print <<"SUCCESS3";
+	if ($features{'integrated-builder'} && (!exists $opts{'no-start'})) {
+		print <<"SUCCESS3a";
+
+An integrated builder was installed and started.  Your
+installation should be ready to compile and test submissions!
+Go try it out!
+
+You can copy the $builderJar file from the
+$home directory if you want to run additional builders:
+this is highly recommended if you will have a significant
+number of concurrent users.
+SUCCESS3a
+	} else {
+		print <<"SUCCESS3b";
 
 Note that no builders are running, so you won't be able to
 test submissions yet.  The builder jar file ($builderJar)
 is in the $home directory: you will need to copy
 it to the server(s) which will be responsible for building
 and testing submissions.
-SUCCESS3
+SUCCESS3b
+	}
 }
 
 # Step2 does all of the setup as the cloud user, specifically
@@ -318,29 +370,7 @@ sub Step2 {
 	Section("Configuring $appJar and $builderJar...");
 
 	# Generate cloudcoder.properties
-	print "Creating cloudcoder.properties...\n";
-	my $localhostOnly = (exists $opts{'no-localhost-only'}) ? 'false' : 'true';
-	my $pfh = new FileHandle(">cloudcoder.properties");
-	print $pfh <<"ENDPROPERTIES";
-cloudcoder.db.user=cloudcoder
-cloudcoder.db.passwd=$props{'ccMysqlCCPasswd'}
-cloudcoder.db.databaseName=cloudcoderdb
-cloudcoder.db.host=localhost
-cloudcoder.db.portStr=
-cloudcoder.login.service=database
-cloudcoder.submitsvc.oop.host=$props{'ccHostname'}
-cloudcoder.submitsvc.oop.numThreads=2
-cloudcoder.submitsvc.oop.port=47374
-cloudcoder.submitsvc.oop.easysandbox.enable=true
-cloudcoder.submitsvc.oop.easysandbox.heapsize=8388608
-cloudcoder.submitsvc.ssl.cn=None
-cloudcoder.submitsvc.ssl.keystore=keystore.jks
-cloudcoder.submitsvc.ssl.keystore.password=changeit
-cloudcoder.webserver.port=8081
-cloudcoder.webserver.contextpath=/cloudcoder
-cloudcoder.webserver.localhostonly=$localhostOnly
-ENDPROPERTIES
-	$pfh->close();
+	GenerateCloudCoderProperties();
 
 	if (!exists $opts{'defer-keystore'}) {
 		# Generate keystore for secure communication between webapp and builders
@@ -417,6 +447,33 @@ sub GenerateAndConfigureKeystore {
 	print "Keystore configuration was successful\n";
 }
 
+sub ConfigureIntegratedBuilder {
+	my $user = WhoAmI();
+	die "Should be run as builder user" if ($user ne 'builder');
+
+	my $version = GetLatestVersion();
+	my $builderJar = "cloudcoderBuilder-v$version.jar";
+
+	chdir "/home/builder/builder" || die "Couldn't chdir to /home/builder/builder: $!\n";
+
+	# Update cloudcoder.properties so that the builder uses just 1 thread,
+	# and it connects to the webapp on localhost rather than the
+	# external hostname.  Also, don't reveal the MySQL password
+	# (although the root password is probably vulnerable, hmm.)
+	GenerateCloudCoderProperties('ccNumBuilderThreads' => '1', 'ccHostname' => 'localhost',
+		'ccMysqlCCPasswd' => 'ImSureYoudLikeToKnow');
+	Run("java", "-jar", $builderJar, "configure", "--editJar=$builderJar",
+		"--replace=cloudcoder.properties=cloudcoder.properties");
+
+	# If --no-start was not specified, then we'll go ahead
+	# and start the builder, since the webapp is already
+	# running.
+	if (!exists $opts{'no-start'}) {
+		print "Starting integrated builder...\n";
+		Run("java", "-jar", $builderJar, "start");
+	}
+}
+
 sub GenerateKeystore {
 	# Create a keystore
 	print "Creating a keystore for communication between webapp and builder...\n";
@@ -436,10 +493,12 @@ sub Usage {
 Options:
   -n|--dry-run          Do a dry run without executing any commands
   -h|--help             Print usage information
+  --enable=<features>   Enable specified features (comma-separated)
   --disable=<features>  Disable specified features (comma-separated)
   --config=<prop file>  Load configuration from specified properties file
                           (for noninteractive configuration)
-  --no-start            Don't start the webapp
+  --no-start            Don't start the webapp (and if configured,
+                          the integrated builder)
   --no-localhost-only   Allow webapp to accept unencrypted HTTP connections
                           from anywhere (not just localhost)
   --defer-keystore      Defer generation of keystore: webapp and builder
@@ -449,10 +508,12 @@ Options:
                           the keystore and add it to the webapp/builder
                           jarfiles
 
-Selectable features (all enabled by default) are:
+Selectable features are:
 USAGE
+	printf("%18s Default\n", "Feature");
+	print "-" x 18, " ", "-" x 8, "\n";
 	for my $feature (sort keys %features) {
-		print "  $feature\n";
+		printf("%18s %s\n", $feature, $features{$feature} ? 'enabled' : 'disabled');
 	}
 	return 1;
 }
@@ -536,6 +597,45 @@ GREET
 	print "\n";
 	my $startInstall = Ask("Are you ready to start the installation? (yes/no)");
 	exit 0 if ((lc $startInstall) ne 'yes');
+}
+
+# Write a cloudcoder.properties file in the current directory
+# using information from %props as appropriate.
+# Properties in the argument hash override the entries
+# in %props.
+sub GenerateCloudCoderProperties {
+	my %overrides = @_;
+	my %cprops = %props;
+	foreach my $key (keys %overrides) {
+		$cprops{$key} = $overrides{$key};
+	}
+	if (!exists $cprops{'ccNumBuilderThreads'}) {
+		# Default to 2 builder threads, unless otherwise specified.
+		$cprops{'ccNumBuilderThreads'} = 2;
+	}
+	print "Creating cloudcoder.properties...\n";
+	my $localhostOnly = (exists $opts{'no-localhost-only'}) ? 'false' : 'true';
+	my $pfh = new FileHandle(">cloudcoder.properties");
+	print $pfh <<"ENDPROPERTIES";
+cloudcoder.db.user=cloudcoder
+cloudcoder.db.passwd=$cprops{'ccMysqlCCPasswd'}
+cloudcoder.db.databaseName=cloudcoderdb
+cloudcoder.db.host=localhost
+cloudcoder.db.portStr=
+cloudcoder.login.service=database
+cloudcoder.submitsvc.oop.host=$cprops{'ccHostname'}
+cloudcoder.submitsvc.oop.numThreads=$cprops{'ccNumBuilderThreads'}
+cloudcoder.submitsvc.oop.port=47374
+cloudcoder.submitsvc.oop.easysandbox.enable=true
+cloudcoder.submitsvc.oop.easysandbox.heapsize=8388608
+cloudcoder.submitsvc.ssl.cn=None
+cloudcoder.submitsvc.ssl.keystore=keystore.jks
+cloudcoder.submitsvc.ssl.keystore.password=changeit
+cloudcoder.webserver.port=8081
+cloudcoder.webserver.contextpath=/cloudcoder
+cloudcoder.webserver.localhostonly=$localhostOnly
+ENDPROPERTIES
+	$pfh->close();
 }
 
 sub Ask {
@@ -725,9 +825,9 @@ sub GetLatestVersion {
 		# is underway.  We assume that the first time the version file
 		# is written, this script will be running as a sudo-capable user,
 		# and that subsequent times the file will exist and be world-readable.
-		system("mkdir -p $versionFileDir")/256 == 0
+		system("sudo -p 'sudo password>> ' mkdir -p $versionFileDir")/256 == 0
 			|| die "Couldn't make $versionFileDir directory\n";
-		system("chmod 0755 $versionFileDir")/256 == 0
+		system("sudo -p 'sudo password>> ' chmod 0755 $versionFileDir")/256 == 0
 			|| die "Couldn't make $versionFileDir world-readable\n";
 		system("sudo -p 'sudo password>> ' wget --quiet --output-document=$versionFile $DOWNLOAD_SITE/LATEST")/256 == 0
 			|| die "Couldn't determine latest CloudCoder version\n";
