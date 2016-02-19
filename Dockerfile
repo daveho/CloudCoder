@@ -8,6 +8,12 @@
 # starts for the first time.)  You should configure a
 # "real" SSL certificate before running the image in
 # production.
+#
+# NOTE: At the current time I'm not sure Docker is the best
+# approach for deploying CloudCoder, so even though the
+# Docker image kind of works (and it was fun playing around
+# with Docker), I'm not going to work on it any more for
+# the time being.
 
 FROM ubuntu:trusty
 MAINTAINER David Hovemeyer <david.hovemeyer@gmail.com>
