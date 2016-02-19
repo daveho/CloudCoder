@@ -1,7 +1,7 @@
 # Docker image for running CloudCoder, MySQL, and Apache.
 # Run like this:
 #
-#   docker run -p 443:443 -p 47374:47374 cloudcoder-mysql-apache
+#   docker run -p 443:443 -p 47374:47374 cloudcoder-mysql-apache2
 #
 # Note that this image will use a self-signed "snakeoil"
 # certificate (regenerated automatically when the image
@@ -26,6 +26,7 @@ ADD bootstrap.pl .
 ADD dockerconfig.properties .
 ADD dockerrun.pl .
 RUN ./bootstrap.pl \
+  --enable=integrated-builder \
   --config=dockerconfig.properties \
   --no-start \
   --defer-keystore

@@ -40,7 +40,11 @@ Run("sudo", "-u", "cloud", "/bin/bash", "-c",
 	"cd /home/cloud/webapp && java -jar cloudcoderApp-$version.jar start");
 Run("service", "apache2", "start");
 
-print "mysqld, CloudCoder webapp, and apache2 are running...\n";
+# Start integrated CloudCoder builder
+Run("sudo", "-u", "builder", "/bin/bash", "-c",
+	"cd /home/builder/builder && java -jar cloudcoderBuilder-$version.jar start");
+
+print "mysqld, CloudCoder webapp, apache2, and integrated CloudCoder builder are running...\n";
 
 # Wait for SIGTERM.
 # Note that there is a race here if SIGTERM arrives
@@ -49,6 +53,10 @@ if (!$done) {
 	pause();
 }
 print "SIGTERM received, shutting down...\n";
+
+# Shut down integrated CloudCoder builder
+Run("sudo", "-u", "builder", "/bin/bash", "-c",
+	"cd /home/builder/builder && java -jar cloudcoderBuilder-$version.jar shutdown");
 
 # Shut down apache2, CloudCoder webapp, and mysqld.
 Run("service", "apache2", "stop");
@@ -96,6 +104,7 @@ sub CheckSnakeoilSSL {
 	print "Checking snakeoil SSL cert...\n";
 	if (! -e "$DATA_DIR/SNAKEOIL_CERT_GENERATED") {
 		print "Regenerating snakeoil cert...\n";
+		$ENV{'DEBIAN_FRONTEND'} = 'noninteractive';
 		Run("make-ssl-cert", "generate-default-snakeoil", "--force-overwrite");
 		Run("touch", "$DATA_DIR/SNAKEOIL_CERT_GENERATED");
 	}

@@ -286,55 +286,57 @@ sub Start {
 	# We're done!
 	# ----------------------------------------------------------------------
 	Section("CloudCoder installation successful!");
+
+	my $webappRunning = YN(!exists $opts{'no-start'});
+	my $apacheInstalled = YN($features{'apache'});
+	my $apacheRunning = YN($apacheInstalled && (!exists $opts{'no-start'}));
+	my $integratedBuilder = YN($features{'integrated-builder'});
+	my $integratedBuilderRunning = YN($integratedBuilder && (!exists $opts{'no-start'}));
+	my $localhostOnly = YN(!exists $opts{'no-localhost-only'});
+
 	print <<"SUCCESS1";
-It looks like CloudCoder was installed successfully.
-SUCCESS1
+It looks like CloudCoder was installed successfully!
 
-	# If apache was installed, the webapp should be reachable
-	# via https.  Otherwise, only unencrypted HTTP on port
-	# 8081 is available.
-	if ($features{'apache'}) {
-		print <<"SUCCESS2a";
+Webapp running:             $webappRunning
+Webapp localhost-only:      $localhostOnly
+Apache installed:           $apacheInstalled
+Apache running:             $apacheRunning
+Integrated builder:         $integratedBuilder
+Integrated builder running: $integratedBuilderRunning
 
-You should be able to test your new installation by opening the
-following web page:
+If Apache is running, you should be able to connect to the
+webapp at the following URL:
 
   https://$props{'ccHostname'}/cloudcoder
-SUCCESS2a
-	} else {
-		print <<"SUCCESS2b";
 
-You did not install apache (for SSL support).
-CloudCoder is listening for unencrypted connections on
-port 8081, on localhost only (so connections from outside
-will not be accepted.)  You should use a proxy server
-supporting secure HTTP to make CloudCoder publicly
-reachable.
-SUCCESS2b
-	}
+Note that Apache is configured to use a self-signed SSL certificate,
+so you will see a scary SSL warning.  You should get a "real"
+SSL certificate and install it using the instructions found
+here:
 
-	if ($features{'integrated-builder'} && (!exists $opts{'no-start'})) {
-		print <<"SUCCESS3a";
+  https://github.com/cloudcoderdotorg/CloudCoder/wiki/Postinstall
 
-An integrated builder was installed and started.  Your
-installation should be ready to compile and test submissions!
-Go try it out!
+If you did not install Apache, then the webapp is listening
+for unencrypted connections on port 8081.  However, if configured
+as localhost-only (default, recommended) then external
+connections are not allowed.  We recommend that you use a
+proxy server supporting secure HTTP to connect to the webapp.
 
-You can copy the $builderJar file from the
-$home directory if you want to run additional builders:
-this is highly recommended if you will have a significant
-number of concurrent users.
-SUCCESS3a
-	} else {
-		print <<"SUCCESS3b";
+If an integrated builder was enabled, and Apache is enabled
+and running, you should be able to try working on the demo
+exercises.  Try it out!
 
-Note that no builders are running, so you won't be able to
-test submissions yet.  The builder jar file ($builderJar)
-is in the $home directory: you will need to copy
-it to the server(s) which will be responsible for building
-and testing submissions.
-SUCCESS3b
-	}
+If you didn't enable an integrated builder, then you can find
+a configured builder app as the file $builderJar
+in the $home directory.  Execute this on any Linux PC
+with the command
+
+  java -jar $builderJar start
+
+to start an external builder.  You can run as many of these
+as you need, depending on how many concurrent users you will
+have.
+SUCCESS1
 }
 
 # Step2 does all of the setup as the cloud user, specifically
@@ -472,6 +474,10 @@ sub ConfigureIntegratedBuilder {
 		print "Starting integrated builder...\n";
 		Run("java", "-jar", $builderJar, "start");
 	}
+}
+
+sub YN {
+	return $_[0] ? 'yes' : 'no';
 }
 
 sub GenerateKeystore {
