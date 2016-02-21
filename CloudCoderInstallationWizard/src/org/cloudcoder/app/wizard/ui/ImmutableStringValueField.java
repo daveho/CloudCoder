@@ -1,7 +1,6 @@
 package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Component;
-import java.awt.Dimension;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.html.HTMLEditorKit;
@@ -26,5 +25,11 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	@Override
 	public Component asComponent() {
 		return this;
+	}
+	
+	@Override
+	public int getFieldHeight() {
+		// Should this be configurable somehow?
+		return 240;
 	}
 }

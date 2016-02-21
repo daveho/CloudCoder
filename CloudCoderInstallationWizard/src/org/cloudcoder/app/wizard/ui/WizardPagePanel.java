@@ -1,10 +1,12 @@
 package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import org.cloudcoder.app.wizard.model.IValue;
@@ -14,12 +16,13 @@ public class WizardPagePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private Page page;
-	private List<IPageField> fields; 
+	private List<IPageField> fields;
 	
 	public WizardPagePanel() {
 		fields = new ArrayList<IPageField>();
 		setBackground(Color.LIGHT_GRAY);
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setLayout(new FlowLayout());
+		
 	}
 	
 	public void setPage(Page page) {
@@ -27,7 +30,10 @@ public class WizardPagePanel extends JPanel {
 		for (IValue v : page) {
 			IPageField field = PageFieldFactory.createForValue(v);
 			fields.add(field);
-			add(field.asComponent());
+			//add(field.asComponent());
+			Component component = field.asComponent();
+			component.setPreferredSize(new Dimension(720, field.getFieldHeight()));
+			add(component);
 		}
 	}
 }

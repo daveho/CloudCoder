@@ -18,6 +18,7 @@ public class Main {
 				WizardPanel panel = new WizardPanel();
 				panel.setDocument(document);
 				
+				frame.setResizable(false);
 				frame.setContentPane(panel);
 				frame.pack();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // should have a close dialog

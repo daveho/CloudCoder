@@ -4,4 +4,5 @@ import java.awt.Component;
 
 public interface IPageField {
 	public Component asComponent();
+	public int getFieldHeight();
 }
