@@ -3,8 +3,8 @@ package org.cloudcoder.app.wizard.model;
 public class BooleanValue extends AbstractValue implements IValue {
 	private boolean value;
 	
-	public BooleanValue(String name) {
-		super(name);
+	public BooleanValue(String name, String label) {
+		super(name, label);
 	}
 
 	@Override

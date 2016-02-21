@@ -2,6 +2,7 @@ package org.cloudcoder.app.wizard.model;
 
 public interface IValue extends Cloneable {
 	public String getName();
+	public String getLabel();
 	
 	public ValueType getValueType();
 	

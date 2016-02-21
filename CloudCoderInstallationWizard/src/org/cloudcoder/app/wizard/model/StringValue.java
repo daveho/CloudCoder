@@ -3,8 +3,8 @@ package org.cloudcoder.app.wizard.model;
 public class StringValue extends AbstractValue implements IValue {
 	private String value;
 	
-	public StringValue(String name) {
-		super(name);
+	public StringValue(String name, String label) {
+		super(name, label);
 	}
 
 	@Override

@@ -8,8 +8,8 @@ import java.nio.charset.Charset;
 
 public class ImmutableStringValue extends StringValue {
 
-	public ImmutableStringValue(String name, String value) {
-		super(name);
+	public ImmutableStringValue(String name, String label, String value) {
+		super(name, label);
 		super.setString(value);
 	}
 	
@@ -23,7 +23,7 @@ public class ImmutableStringValue extends StringValue {
 		throw new IllegalArgumentException();
 	}
 	
-	public static ImmutableStringValue createHelpText(String pageName, String name) {
+	public static ImmutableStringValue createHelpText(String pageName, String name, String label) {
 		String resName = "org/cloudcoder/app/wizard/res/" + pageName + "/" + name + ".html";
 		try {
 			ClassLoader cl = ImmutableStringValue.class.getClassLoader();
@@ -42,7 +42,7 @@ public class ImmutableStringValue extends StringValue {
 					buf.append(line);
 					buf.append('\n');
 				}
-				return new ImmutableStringValue(name, buf.toString());
+				return new ImmutableStringValue(name, label, buf.toString());
 			} finally {
 				in.close();
 			}

@@ -25,7 +25,7 @@ public class WizardPanel extends JPanel {
 		this.document = document;
 		// FIXME: for now, just add a single WizardPagePanel for the first Page
 		WizardPagePanel panel = new WizardPagePanel();
-		panel.setPage(document.get(0));
+		panel.setPage(document.get(1));
 		add(panel, BorderLayout.CENTER);
 	}
 }

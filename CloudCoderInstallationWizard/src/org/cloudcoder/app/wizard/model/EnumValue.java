@@ -4,8 +4,8 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	private Class<E> enumCls;
 	private int value;
 	
-	public EnumValue(String name) {
-		super(name);
+	public EnumValue(String name, String label) {
+		super(name, label);
 	}
 
 	@Override

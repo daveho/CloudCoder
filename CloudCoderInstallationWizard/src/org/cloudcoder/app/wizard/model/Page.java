@@ -18,8 +18,8 @@ public class Page implements Cloneable, Iterable<IValue> {
 		values.add(value);
 	}
 
-	public void addHelpText(String name) {
-		values.add(ImmutableStringValue.createHelpText(pageName, name));
+	public void addHelpText(String name, String label) {
+		values.add(ImmutableStringValue.createHelpText(pageName, name, label));
 	}
 	
 	public IValue getValue(String name) {
