@@ -5,17 +5,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class PageValues implements Cloneable, Iterable<IValue> {
+public class Page implements Cloneable, Iterable<IValue> {
 	private final String pageName;
 	private List<IValue> values;
 	
-	public PageValues(String pageName) {
+	public Page(String pageName) {
 		this.pageName = pageName;
 		this.values = new ArrayList<IValue>();
 	}
 	
 	public void add(IValue value) {
 		values.add(value);
+	}
+
+	public void addHelpText(String name) {
+		values.add(ImmutableStringValue.createHelpText(pageName, name));
 	}
 	
 	public IValue getValue(String name) {
@@ -36,9 +40,9 @@ public class PageValues implements Cloneable, Iterable<IValue> {
 		return pageName;
 	}
 
-	public PageValues clone() {
+	public Page clone() {
 		try {
-			PageValues dup = (PageValues) super.clone();
+			Page dup = (Page) super.clone();
 			// Deep copy values
 			dup.values = new ArrayList<IValue>();
 			for (IValue v : values) {
