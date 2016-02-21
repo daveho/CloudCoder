@@ -1,10 +1,14 @@
 package org.cloudcoder.app.wizard.model;
 
-public class BooleanValue implements IValue {
+public class BooleanValue extends AbstractValue implements IValue {
 	private boolean value;
+	
+	public BooleanValue(String name) {
+		super(name);
+	}
 
 	@Override
-	public ValueType getModelValueType() {
+	public ValueType getValueType() {
 		return ValueType.BOOLEAN;
 	}
 
@@ -36,5 +40,14 @@ public class BooleanValue implements IValue {
 	@Override
 	public boolean getBoolean() {
 		return this.value;
+	}
+	
+	@Override
+	public BooleanValue clone() {
+		try {
+			return (BooleanValue) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Should not happen");
+		}
 	}
 }

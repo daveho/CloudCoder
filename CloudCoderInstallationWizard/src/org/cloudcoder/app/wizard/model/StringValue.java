@@ -1,10 +1,14 @@
 package org.cloudcoder.app.wizard.model;
 
-public class StringValue implements IValue {
+public class StringValue extends AbstractValue implements IValue {
 	private String value;
+	
+	public StringValue(String name) {
+		super(name);
+	}
 
 	@Override
-	public ValueType getModelValueType() {
+	public ValueType getValueType() {
 		return ValueType.STRING;
 	}
 
@@ -36,5 +40,14 @@ public class StringValue implements IValue {
 	@Override
 	public <T extends Enum<T>> T getEnum(Class<T> cls) {
 		throw new IllegalArgumentException();
+	}
+	
+	@Override
+	public StringValue clone() {
+		try {
+			return (StringValue) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Should not happen");
+		}
 	}
 }

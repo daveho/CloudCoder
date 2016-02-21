@@ -1,11 +1,15 @@
 package org.cloudcoder.app.wizard.model;
 
-public class EnumValue<E extends Enum<E>> implements IValue {
+public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValue {
 	private Class<E> enumCls;
 	private int value;
+	
+	public EnumValue(String name) {
+		super(name);
+	}
 
 	@Override
-	public ValueType getModelValueType() {
+	public ValueType getValueType() {
 		throw new IllegalArgumentException();
 	}
 
@@ -38,8 +42,16 @@ public class EnumValue<E extends Enum<E>> implements IValue {
 
 	@Override
 	public boolean getBoolean() {
-		// TODO Auto-generated method stub
-		return false;
+		throw new IllegalArgumentException();
+	}
+	
+	@Override
+	public EnumValue<?> clone() {
+		try {
+			return (EnumValue<?>) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Should not happen");
+		}
 	}
 
 	private void checkTypes(Class<?> actual, Class<?> expected) {
