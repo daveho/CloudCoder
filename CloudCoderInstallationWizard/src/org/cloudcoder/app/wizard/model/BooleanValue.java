@@ -29,7 +29,7 @@ public class BooleanValue implements IValue {
 	}
 
 	@Override
-	public <T extends Enum<T>> T getEnum(Class<T> enumCls) {
+	public <T extends Enum<T>> T getEnum(Class<T> cls) {
 		throw new IllegalArgumentException();
 	}
 

@@ -8,6 +8,6 @@ public interface IValue {
 	public void setBoolean(boolean value);
 	
 	public String getString();
-	public<T extends Enum<T>> T getEnum(Class<T> enumCls);
+	public<T extends Enum<T>> T getEnum(Class<T> cls);
 	public boolean getBoolean();
 }
