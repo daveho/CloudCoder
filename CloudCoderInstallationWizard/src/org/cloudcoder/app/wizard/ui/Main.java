@@ -20,7 +20,8 @@ public class Main {
 				
 				frame.setContentPane(panel);
 				frame.pack();
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // should have a close dialog 
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // should have a close dialog
+				frame.setLocationRelativeTo(null);
 				frame.setVisible(true);
 			}
 		});

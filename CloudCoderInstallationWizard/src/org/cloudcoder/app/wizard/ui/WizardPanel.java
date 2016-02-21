@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
@@ -11,15 +12,13 @@ import org.cloudcoder.app.wizard.model.Document;
 public class WizardPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	private JLabel bannerLabel;
-	
 	private Document document;
 
 	public WizardPanel() {
 		setPreferredSize(new Dimension(800, 600));
 		setBackground(Color.LIGHT_GRAY);
 
-		// FIXME: use BorderLayout, center is CardLayout with panels for pages
+		setLayout(new BorderLayout());
 	}
 
 	public void setDocument(Document document) {
@@ -27,6 +26,6 @@ public class WizardPanel extends JPanel {
 		// FIXME: for now, just add a single WizardPagePanel for the first Page
 		WizardPagePanel panel = new WizardPagePanel();
 		panel.setPage(document.get(0));
-		add(panel);
+		add(panel, BorderLayout.CENTER);
 	}
 }
