@@ -31,11 +31,6 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 	}
 
 	@Override
-	public Component asComponent() {
-		return this;
-	}
-
-	@Override
 	public int getFieldHeight() {
 		return FIELD_HEIGHT;
 	}

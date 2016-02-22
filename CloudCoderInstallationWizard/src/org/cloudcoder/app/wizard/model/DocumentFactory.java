@@ -23,6 +23,12 @@ public class DocumentFactory {
 		awsRegionPage.add(new EnumValue<AWSRegion>(AWSRegion.class, "region", "AWS EC2 Region"), new NoopValidator());
 		document.addPage(awsRegionPage);
 		
+		Page keypairPage = new Page("awsKeypair", "Choose or create a keypair");
+		keypairPage.addHelpText("msg", "Message");
+		keypairPage.add(new BooleanValue("useExisting", "Use existing keypair"), new NoopValidator());
+		keypairPage.add(new StringValue("name", "Existing keypair name"), new StringValueNonemptyValidator());
+		document.addPage(keypairPage);
+		
 		return document;
 	}
 }

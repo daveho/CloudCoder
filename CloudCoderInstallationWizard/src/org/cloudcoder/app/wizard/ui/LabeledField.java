@@ -1,7 +1,7 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,17 +29,9 @@ public abstract class LabeledField<E extends IValue> extends JPanel implements U
 	public E getValue() {
 		return value;
 	}
-
-	public LabeledField(LayoutManager layout) {
-		super(layout);
-	}
-
-	public LabeledField(boolean isDoubleBuffered) {
-		super(isDoubleBuffered);
-	}
-
-	public LabeledField(LayoutManager layout, boolean isDoubleBuffered) {
-		super(layout, isDoubleBuffered);
+	
+	public Component asComponent() {
+		return this;
 	}
 
 	public int getFieldHeight() {

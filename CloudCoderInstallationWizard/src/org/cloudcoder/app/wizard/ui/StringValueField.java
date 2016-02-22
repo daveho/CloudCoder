@@ -28,11 +28,6 @@ public class StringValueField extends LabeledField<StringValue> implements IPage
 	}
 
 	@Override
-	public Component asComponent() {
-		return this;
-	}
-
-	@Override
 	public void markValid() {
 		textField.setBackground(Color.WHITE);
 	}

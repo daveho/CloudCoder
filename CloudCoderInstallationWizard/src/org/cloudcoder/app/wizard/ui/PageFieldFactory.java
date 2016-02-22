@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.ui;
 
+import org.cloudcoder.app.wizard.model.BooleanValue;
 import org.cloudcoder.app.wizard.model.EnumValue;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
@@ -20,6 +21,11 @@ public class PageFieldFactory {
 			
 		case ENUM_CHOICE:
 			return createEnumValueField(v);
+			
+		case BOOLEAN:
+			BooleanValueField bvf = new BooleanValueField();
+			bvf.setValue((BooleanValue) v);
+			return bvf;
 			
 		default:
 			throw new IllegalArgumentException("Value type " + v.getValueType() + " not supported yet");
