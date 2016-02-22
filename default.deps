@@ -109,6 +109,7 @@ http://repo1.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/common
 http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar
   CloudCoder/war/WEB-INF/lib/commons-logging-1.1.1.jar
   CloudCoderHealthMonitor/lib/commons-logging-1.1.1.jar
+  CloudCoderInstallationWizard/lib/commons-logging-1.1.1.jar
 http://repo1.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar
   CloudCoderTools/lib/dom4j-1.6.1.jar
   CloudCoder/war/WEB-INF/lib/dom4j-1.6.1.jar
@@ -197,18 +198,21 @@ http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/${j
   CloudCoderRepository/war/WEB-INF/lib/jackson-annotations-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-annotations-${jackson_version}.jar
   CloudCoderDataAnalysis/lib/jackson-annotations-${jackson_version}.jar
+  CloudCoderInstallationWizard/lib/jackson-annotations-${jackson_version}.jar
 http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/${jackson_version}/jackson-core-${jackson_version}.jar
   CloudCoderModelClassesJSON/lib/jackson-core-${jackson_version}.jar
   CloudCoder/war/WEB-INF/lib/jackson-core-${jackson_version}.jar
   CloudCoderRepository/war/WEB-INF/lib/jackson-core-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-core-${jackson_version}.jar
   CloudCoderDataAnalysis/lib/jackson-core-${jackson_version}.jar
+  CloudCoderInstallationWizard/lib/jackson-core-${jackson_version}.jar
 http://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/${jackson_version}/jackson-databind-${jackson_version}.jar
   CloudCoderModelClassesJSON/lib/jackson-databind-${jackson_version}.jar
   CloudCoder/war/WEB-INF/lib/jackson-databind-${jackson_version}.jar
   CloudCoderRepository/war/WEB-INF/lib/jackson-databind-${jackson_version}.jar
   CloudCoderHealthMonitor/lib/jackson-databind-${jackson_version}.jar
   CloudCoderDataAnalysis/lib/jackson-databind-${jackson_version}.jar
+  CloudCoderInstallationWizard/lib/jackson-databind-${jackson_version}.jar
 
 # Jackson javadoc jarfiles.  We only need one copy of these since all of
 # our Eclipse projects reference Jackson through the CloudCoderModelClassesJSON
@@ -226,3 +230,16 @@ http://central.maven.org/maven2/com/amazonaws/aws-java-sdk-core/${aws_sdk_versio
   CloudCoderInstallationWizard/lib/aws-java-sdk-core-${aws_sdk_version}.jar
 http://central.maven.org/maven2/com/amazonaws/aws-java-sdk-ec2/${aws_sdk_version}/aws-java-sdk-ec2-${aws_sdk_version}.jar
   CloudCoderInstallationWizard/lib/aws-java-sdk-ec2-${aws_sdk_version}.jar
+
+# Apache commons HTTP core/client
+apache_commons_httpclient_version=4.3.6
+apache_commons_httpcore_version=4.3.3
+http://central.maven.org/maven2/org/apache/httpcomponents/httpclient/${apache_commons_httpclient_version}/httpclient-${apache_commons_httpclient_version}.jar
+  CloudCoderInstallationWizard/lib/httpclient-${apache_commons_httpclient_version}.jar
+http://central.maven.org/maven2/org/apache/httpcomponents/httpcore/${apache_commons_httpcore_version}/httpcore-${apache_commons_httpcore_version}.jar
+  CloudCoderInstallationWizard/lib/httpcore-${apache_commons_httpcore_version}.jar
+
+# JODA time
+joda_time_version=2.8.1
+http://central.maven.org/maven2/joda-time/joda-time/${joda_time_version}/joda-time-${joda_time_version}.jar
+  CloudCoderInstallationWizard/lib/joda-time-${joda_time_version}.jar

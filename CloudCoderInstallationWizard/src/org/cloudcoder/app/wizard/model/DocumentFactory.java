@@ -14,7 +14,7 @@ public class DocumentFactory {
 		
 		Page awsCredentialsPage = new Page("aws", "Enter your AWS credentials");
 		awsCredentialsPage.addHelpText("msg", "Message");
-		awsCredentialsPage.add(new StringValue("accessKeyID", "Access key ID"), StringValueNonemptyValidator.INSTANCE);
+		awsCredentialsPage.add(new StringValue("accessKeyId", "Access key ID"), StringValueNonemptyValidator.INSTANCE);
 		awsCredentialsPage.add(new StringValue("secretAccessKey", "Secret access key"), StringValueNonemptyValidator.INSTANCE);
 		document.addPage(awsCredentialsPage);
 		

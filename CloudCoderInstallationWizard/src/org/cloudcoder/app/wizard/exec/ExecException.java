@@ -6,4 +6,8 @@ public class ExecException extends Exception {
 	public ExecException(String msg) {
 		super(msg);
 	}
+
+	public ExecException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
 }

@@ -12,5 +12,36 @@
 			<attribute name="javadoc_location" value="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-annotations-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-core-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-core-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.4.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/CloudCoderModelClassesJSON/lib/jackson-databind-2.4.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/httpclient-4.3.6.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/httpcore-4.3.3.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/joda-time-2.8.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.joda.org/joda-time/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
