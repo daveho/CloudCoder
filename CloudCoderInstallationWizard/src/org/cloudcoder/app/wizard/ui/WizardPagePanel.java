@@ -20,7 +20,6 @@ public class WizardPagePanel extends JPanel {
 	public WizardPagePanel() {
 		fields = new ArrayList<IPageField>();
 		setLayout(new FlowLayout());
-		
 	}
 	
 	public void setPage(Page page) {
@@ -28,7 +27,6 @@ public class WizardPagePanel extends JPanel {
 		for (IValue v : page) {
 			IPageField field = PageFieldFactory.createForValue(v);
 			fields.add(field);
-			//add(field.asComponent());
 			Component component = field.asComponent();
 			component.setPreferredSize(new Dimension(720, field.getFieldHeight()));
 			add(component);
