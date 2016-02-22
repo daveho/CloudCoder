@@ -52,7 +52,9 @@ public class WizardPanel extends JPanel {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		this.prevButton = new JButton("<< Previous");
+		prevButton.setPreferredSize(new Dimension(140, 26));
 		this.nextButton = new JButton("Next >>");
+		nextButton.setPreferredSize(new Dimension(140, 26));
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.setPreferredSize(new Dimension(780, 32));

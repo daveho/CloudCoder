@@ -3,6 +3,7 @@ package org.cloudcoder.app.wizard.ui;
 import java.awt.Component;
 import java.awt.Desktop;
 
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -18,6 +19,7 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	
 	public ImmutableStringValueField() {
 		setEditable(false);
+		setBorder(BorderFactory.createLoweredSoftBevelBorder());
 		this.kit = new HTMLEditorKit();
 		setDocument(kit.createDefaultDocument());
 		setEditorKit(kit);

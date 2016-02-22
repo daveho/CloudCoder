@@ -4,13 +4,19 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	private Class<E> enumCls;
 	private int value;
 	
-	public EnumValue(String name, String label) {
+	public EnumValue(Class<E> enumCls, String name, String label) {
 		super(name, label);
+		this.enumCls = enumCls;
+		value = 0; // the first enum member is the default
+	}
+	
+	public Class<E> getEnumCls() {
+		return enumCls;
 	}
 
 	@Override
 	public ValueType getValueType() {
-		throw new IllegalArgumentException();
+		return ValueType.ENUM_CHOICE;
 	}
 
 	@Override
@@ -45,10 +51,11 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 		throw new IllegalArgumentException();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public EnumValue<?> clone() {
+	public EnumValue<E> clone() {
 		try {
-			return (EnumValue<?>) super.clone();
+			return (EnumValue<E>) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Should not happen");
 		}
