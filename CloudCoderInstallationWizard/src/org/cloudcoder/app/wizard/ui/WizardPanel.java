@@ -2,15 +2,16 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.Page;
@@ -20,6 +21,7 @@ public class WizardPanel extends JPanel {
 	
 	private Document document;
 	private int currentPage;
+	private JLabel pageLabel;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JPanel pagePanel;
@@ -37,6 +39,12 @@ public class WizardPanel extends JPanel {
 		buttonPanel.add(nextButton);
 		buttonPanel.setPreferredSize(new Dimension(800, 40));
 		add(buttonPanel, BorderLayout.PAGE_END);
+		
+		this.pageLabel = new JLabel();
+		pageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		pageLabel.setPreferredSize(new Dimension(720, 64));
+		pageLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
+		add(pageLabel, BorderLayout.PAGE_START);
 		
 		nextButton.addActionListener(new ActionListener() {
 			@Override
@@ -83,6 +91,7 @@ public class WizardPanel extends JPanel {
 	}
 
 	private void changePage() {
+		pageLabel.setText(document.get(currentPage).getLabel());
 		CardLayout cl = (CardLayout) pagePanel.getLayout();
 		cl.show(pagePanel, String.valueOf(currentPage));
 		prevButton.setEnabled(currentPage > 0);

@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class Page implements Cloneable, Iterable<IValue> {
-	private final String pageName;
+	private final String pageName, label;
 	private List<IValue> values;
 	
-	public Page(String pageName) {
+	public Page(String pageName, String label) {
 		this.pageName = pageName;
+		this.label = label;
 		this.values = new ArrayList<IValue>();
 	}
 	
@@ -38,6 +39,10 @@ public class Page implements Cloneable, Iterable<IValue> {
 	
 	public String getPageName() {
 		return pageName;
+	}
+	
+	public String getLabel() {
+		return label;
 	}
 
 	public Page clone() {
