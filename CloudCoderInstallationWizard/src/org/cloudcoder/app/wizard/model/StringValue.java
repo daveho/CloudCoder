@@ -5,6 +5,7 @@ public class StringValue extends AbstractValue implements IValue {
 	
 	public StringValue(String name, String label) {
 		super(name, label);
+		value = "";
 	}
 
 	@Override

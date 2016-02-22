@@ -8,11 +8,13 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
 public class ImmutableStringValueField extends JEditorPane implements IPageField {
 	private static final long serialVersionUID = 1L;
 	private HTMLEditorKit kit;
+	private ImmutableStringValue value;
 	
 	public ImmutableStringValueField() {
 		setEditable(false);
@@ -36,6 +38,7 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	}
 	
 	public void setValue(ImmutableStringValue value) {
+		this.value = value;
 		setText("<html><body>" + value.getString() + "</body></html>");
 	}
 	
@@ -48,5 +51,20 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	public int getFieldHeight() {
 		// Should this be configurable somehow?
 		return 240;
+	}
+	
+	@Override
+	public void markValid() {
+		// Nothing to do
+	}
+	
+	@Override
+	public void markInvalid() {
+		// Nothing to do, this field cannot become invalid
+	}
+	
+	@Override
+	public IValue getCurrentValue() {
+		return value.clone();
 	}
 }

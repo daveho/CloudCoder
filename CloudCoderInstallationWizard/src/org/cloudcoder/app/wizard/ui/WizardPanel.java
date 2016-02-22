@@ -2,11 +2,14 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,22 +17,37 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.model.Document;
+import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
+import org.cloudcoder.app.wizard.model.validators.IValidator;
+import org.cloudcoder.app.wizard.model.validators.ValidationException;
 
 public class WizardPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private Document document;
+	private List<WizardPagePanel> wizardPagePanels;
 	private int currentPage;
 	private JLabel pageLabel;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JPanel pagePanel;
+	private JLabel errorLabel;
 
 	public WizardPanel() {
+		wizardPagePanels = new ArrayList<WizardPagePanel>();
+		
 		setPreferredSize(new Dimension(800, 600));
 
 		setLayout(new BorderLayout());
+		
+		JPanel errorMessageAndButtonPanel = new JPanel();
+		errorMessageAndButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		
+		this.errorLabel = new JLabel();
+		errorLabel.setPreferredSize(new Dimension(720, 32));
+		errorLabel.setForeground(Color.RED);
+		errorMessageAndButtonPanel.add(errorLabel);
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -37,8 +55,11 @@ public class WizardPanel extends JPanel {
 		this.nextButton = new JButton("Next >>");
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
-		buttonPanel.setPreferredSize(new Dimension(800, 40));
-		add(buttonPanel, BorderLayout.PAGE_END);
+		buttonPanel.setPreferredSize(new Dimension(780, 32));
+		errorMessageAndButtonPanel.add(buttonPanel);
+		
+		errorMessageAndButtonPanel.setPreferredSize(new Dimension(800, 96));
+		add(errorMessageAndButtonPanel, BorderLayout.PAGE_END);
 		
 		this.pageLabel = new JLabel();
 		pageLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -66,13 +87,55 @@ public class WizardPanel extends JPanel {
 	}
 
 	protected void onNext() {
-		currentPage++;
-		changePage();
+		if (doValidate()) {
+			commitCurrentValues();
+			currentPage++;
+			changePage();
+		}
 	}
 
 	protected void onPrevious() {
-		currentPage--;
-		changePage();
+		if (doValidate()) {
+			commitCurrentValues();
+			currentPage--;
+			changePage();
+		}
+	}
+
+	private boolean doValidate() {
+		Page page = document.get(currentPage);
+		WizardPagePanel pp = wizardPagePanels.get(currentPage);
+		pp.markAllValid();
+		errorLabel.setText("");
+		try {
+			for (int i = 0; i < page.getNumValues(); i++) {
+				IPageField field = pp.getField(i);
+				IValue origValue = page.get(i);
+				IValue updatedValue = field.getCurrentValue();
+				IValidator validator = page.getValidator(i);
+				validator.validate(origValue, updatedValue);
+			}
+			return true;
+		} catch (ValidationException e) {
+			// Highlight the field that failed to validate
+			for (int i = 0; i < page.getNumValues(); i++) {
+				if (e.getOrigValue() == page.get(i)) {
+					IPageField field = pp.getField(i);
+					field.markInvalid();
+					errorLabel.setText(e.getMessage());
+				}
+			}
+			return false;
+		}
+	}
+	
+	private void commitCurrentValues() {
+		Page page = document.get(currentPage);
+		WizardPagePanel pp = wizardPagePanels.get(currentPage);
+		for (int i = 0; i < page.getNumValues(); i++) {
+			IValue currentValue = pp.getField(i).getCurrentValue();
+			page.set(i, currentValue);
+		}
 	}
 
 	public void setDocument(Document document) {
@@ -83,6 +146,7 @@ public class WizardPanel extends JPanel {
 			Page p = document.get(i);
 			WizardPagePanel pp = new WizardPagePanel();
 			pp.setPage(p);
+			wizardPagePanels.add(pp);
 			pagePanel.add(pp, String.valueOf(i));
 		}
 		

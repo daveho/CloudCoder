@@ -5,22 +5,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.cloudcoder.app.wizard.model.validators.IValidator;
+import org.cloudcoder.app.wizard.model.validators.NoopValidator;
+
 public class Page implements Cloneable, Iterable<IValue> {
 	private final String pageName, label;
 	private List<IValue> values;
+	private List<IValidator> validators;
 	
 	public Page(String pageName, String label) {
 		this.pageName = pageName;
 		this.label = label;
 		this.values = new ArrayList<IValue>();
+		this.validators = new ArrayList<IValidator>();
 	}
 	
-	public void add(IValue value) {
+	public void add(IValue value, IValidator validator) {
 		values.add(value);
+		validators.add(validator);
 	}
 
 	public void addHelpText(String name, String label) {
-		values.add(ImmutableStringValue.createHelpText(pageName, name, label));
+		add(ImmutableStringValue.createHelpText(pageName, name, label), NoopValidator.INSTANCE);
 	}
 	
 	public IValue getValue(String name) {
@@ -30,6 +36,22 @@ public class Page implements Cloneable, Iterable<IValue> {
 			}
 		}
 		throw new NoSuchElementException("No such value: " + pageName + "." + name);
+	}
+	
+	public int getNumValues() {
+		return values.size();
+	}
+	
+	public IValue get(int index) {
+		return values.get(index);
+	}
+
+	public void set(int index, IValue value) {
+		values.set(index, value);
+	}
+	
+	public IValidator getValidator(int index) {
+		return validators.get(index);
 	}
 	
 	@Override

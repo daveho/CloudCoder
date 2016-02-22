@@ -32,4 +32,14 @@ public class WizardPagePanel extends JPanel {
 			add(component);
 		}
 	}
+
+	public IPageField getField(int index) {
+		return fields.get(index);
+	}
+
+	public void markAllValid() {
+		for (IPageField field : fields) {
+			field.markValid();
+		}
+	}
 }
