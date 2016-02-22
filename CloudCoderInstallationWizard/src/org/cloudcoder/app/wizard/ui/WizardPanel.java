@@ -1,6 +1,7 @@
 package org.cloudcoder.app.wizard.ui;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -12,12 +13,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cloudcoder.app.wizard.model.Document;
+import org.cloudcoder.app.wizard.model.Page;
 
 public class WizardPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private Document document;
 	private int currentPage;
+	private JButton prevButton;
+	private JButton nextButton;
+	private JPanel pagePanel;
 
 	public WizardPanel() {
 		setPreferredSize(new Dimension(800, 600));
@@ -26,8 +31,8 @@ public class WizardPanel extends JPanel {
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		JButton prevButton = new JButton("<< Previous");
-		JButton nextButton = new JButton("Next >>");
+		this.prevButton = new JButton("<< Previous");
+		this.nextButton = new JButton("Next >>");
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.setPreferredSize(new Dimension(800, 40));
@@ -45,25 +50,42 @@ public class WizardPanel extends JPanel {
 				onPrevious();
 			}
 		});
+		
+		// Panel with CardLayout for displaying the WizardPagePanels
+		this.pagePanel = new JPanel();
+		pagePanel.setLayout(new CardLayout());
+		add(pagePanel, BorderLayout.CENTER);
 	}
 
 	protected void onNext() {
-		// TODO Auto-generated method stub
-		
+		currentPage++;
+		changePage();
 	}
 
 	protected void onPrevious() {
-		// TODO Auto-generated method stub
-		
+		currentPage--;
+		changePage();
 	}
 
 	public void setDocument(Document document) {
 		this.document = document;
-		// FIXME: for now, just add a single WizardPagePanel for the first Page
-		WizardPagePanel panel = new WizardPagePanel();
-		panel.setPage(document.get(0));
-		add(panel, BorderLayout.CENTER);
+		
+		// Create WizardPagePanels
+		for (int i = 0; i < document.getNumPages(); i++) {
+			Page p = document.get(i);
+			WizardPagePanel pp = new WizardPagePanel();
+			pp.setPage(p);
+			pagePanel.add(pp, String.valueOf(i));
+		}
 		
 		currentPage = 0;
+		changePage();
+	}
+
+	private void changePage() {
+		CardLayout cl = (CardLayout) pagePanel.getLayout();
+		cl.show(pagePanel, String.valueOf(currentPage));
+		prevButton.setEnabled(currentPage > 0);
+		nextButton.setEnabled(currentPage < document.getNumPages() - 1);
 	}
 }
