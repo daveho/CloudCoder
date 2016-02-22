@@ -43,7 +43,7 @@ public class WizardPanel extends JPanel {
 		this.pageLabel = new JLabel();
 		pageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		pageLabel.setPreferredSize(new Dimension(720, 64));
-		pageLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
+		pageLabel.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 24));
 		add(pageLabel, BorderLayout.PAGE_START);
 		
 		nextButton.addActionListener(new ActionListener() {
