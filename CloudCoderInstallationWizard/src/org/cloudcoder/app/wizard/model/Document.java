@@ -11,6 +11,10 @@ public class Document implements Cloneable {
 		pages = new ArrayList<Page>();
 	}
 	
+	public int getNumPages() {
+		return pages.size();
+	}
+	
 	public Page get(int index) {
 		return pages.get(index);
 	}
