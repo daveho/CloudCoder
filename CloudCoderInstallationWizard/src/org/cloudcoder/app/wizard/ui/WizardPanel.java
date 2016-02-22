@@ -89,17 +89,17 @@ public class WizardPanel extends JPanel {
 	}
 
 	protected void onNext() {
-		if (doValidate()) {
-			commitCurrentValues();
-			currentPage++;
-			changePage();
-		}
+		goToPage(currentPage + 1);
 	}
 
 	protected void onPrevious() {
+		goToPage(currentPage - 1);
+	}
+
+	private void goToPage(int nextPage) {
 		if (doValidate()) {
 			commitCurrentValues();
-			currentPage--;
+			currentPage = nextPage;
 			changePage();
 		}
 	}
