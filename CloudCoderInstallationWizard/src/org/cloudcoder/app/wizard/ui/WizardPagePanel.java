@@ -20,7 +20,6 @@ public class WizardPagePanel extends JPanel {
 	
 	public WizardPagePanel() {
 		fields = new ArrayList<IPageField>();
-		setBackground(Color.LIGHT_GRAY);
 		setLayout(new FlowLayout());
 		
 	}
