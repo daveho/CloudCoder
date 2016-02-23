@@ -31,6 +31,13 @@ public class DocumentFactory {
 		keypairPage.selectivelyEnable("filename", new EnableIfBooleanFieldChecked("useExisting"));
 		document.addPage(keypairPage);
 		
+		Page instanceTypePage = new Page("awsInstanceType", "Choose EC2 instance type for webapp server");
+		instanceTypePage.addHelpText("msg", "Message");
+		instanceTypePage.add(
+				new EnumValue<AWSInstanceType>(AWSInstanceType.class, "instanceType", "Instance type"),
+				new NoopValidator());
+		document.addPage(instanceTypePage);
+		
 		return document;
 	}
 }
