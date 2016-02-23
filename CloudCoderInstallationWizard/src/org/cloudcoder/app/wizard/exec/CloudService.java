@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -25,13 +28,18 @@ import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVpcRequest;
 import com.amazonaws.services.ec2.model.CreateVpcResult;
+import com.amazonaws.services.ec2.model.DescribeImagesRequest;
+import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
+import com.amazonaws.services.ec2.model.Filter;
+import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Vpc;
@@ -42,6 +50,11 @@ public class CloudService {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	private static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
+	private static final String UBUNTU_SERVER_AMI_OWNER = "099720109477";
+	
+	// We look for an AMI with this specific name.
+	private static final String UBUNTU_AMI_NAME =
+			"ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20160114.5";
 	
 	private Document document;
 	
@@ -234,6 +247,51 @@ public class CloudService {
 			);
 		client.authorizeSecurityGroupIngress(iReq);
 	}
+	
+	public void findUbuntuServerImage() throws ExecException {
+		try {
+			// Find an appropriate Ubuntu server AMI.
+			// This is somewhat ad-hoc for now.
+			
+			DescribeImagesRequest iReq = new DescribeImagesRequest()
+				.withOwners(Arrays.asList(UBUNTU_SERVER_AMI_OWNER))
+				.withFilters(
+						new Filter().withName("owner-id").withValues(UBUNTU_SERVER_AMI_OWNER),
+						new Filter().withName("name").withValues(UBUNTU_AMI_NAME)
+						);
+			
+			DescribeImagesResult iRes = client.describeImages(iReq);
+			
+			System.out.println("Found candidates:");
+			List<Image> candidates = new ArrayList<Image>();
+			candidates.addAll(iRes.getImages());
+			
+			if (candidates.isEmpty()) {
+				throw new ExecException("Could not find any suitable Ubuntu server images!");
+			}
+			
+			for (Image img : candidates) {
+				String arch = img.getArchitecture();
+				String name = img.getName();
+				System.out.printf("arch=%s, name=%s, id=%s\n", arch, name, img.getImageId());
+				System.out.print("  ");
+				for (Tag tag : img.getTags()) {
+					System.out.printf("%s:%s ", tag.getKey(), tag.getValue());
+				}
+				System.out.println();
+			}
+			
+			/*
+			Image latest = candidates.get(candidates.size() - 1);
+			System.out.printf("Latest image: arch=%s, name=%s, id=%s\n",
+					latest.getArchitecture(), 
+					latest.getName(),
+					latest.getImageId());
+			*/
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Failed to create webapp instance", e);
+		}
+	}
 
 	// This is just for testing.
 	public static void main(String[] args) {
@@ -250,16 +308,19 @@ public class CloudService {
 		document.getValue("aws.accessKeyId").setString(accessKeyId);
 		document.getValue("aws.secretAccessKey").setString(secretAccessKey);
 		
-		document.getValue("awsKeypair.useExisting").setBoolean(false);
+		//document.getValue("awsKeypair.useExisting").setBoolean(false);
 		//document.getValue("awsKeypair.filename").setString(keyPairFilename);
 		
 		CloudService svc = new CloudService();
 		svc.setDocument(document);
 		try {
 			svc.login();
+			/*
 			svc.createOrFindVpc();
-			//svc.createOrChooseKeypair();
+			svc.createOrChooseKeypair();
 			svc.createOrFindSecurityGroup();
+			*/
+			svc.findUbuntuServerImage();
 		} catch (ExecException e) {
 			System.err.println("Error occurred");
 			e.printStackTrace();
