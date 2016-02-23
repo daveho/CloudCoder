@@ -11,8 +11,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
-import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.FilenameValue;
+import org.cloudcoder.app.wizard.model.IValue;
 
 public class FileChooserField extends LabeledField<FilenameValue> implements IPageField, UIConstants {
 	private static final int BUTTON_WIDTH = 100;

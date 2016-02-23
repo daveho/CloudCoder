@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import org.cloudcoder.app.wizard.model.ISelectiveEnablement;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
