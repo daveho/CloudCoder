@@ -34,7 +34,7 @@ public class DocumentFactory {
 		Page instanceTypePage = new Page("awsInstanceType", "Choose EC2 instance type for webapp server");
 		instanceTypePage.addHelpText("msg", "Message");
 		instanceTypePage.add(
-				new EnumValue<AWSInstanceType>(AWSInstanceType.class, "instanceType", "Instance type"),
+				new EnumValue<AWSInstanceType>(AWSInstanceType.class, "instanceType", "Instance type", AWSInstanceType.T2_MICRO),
 				new NoopValidator());
 		document.addPage(instanceTypePage);
 		

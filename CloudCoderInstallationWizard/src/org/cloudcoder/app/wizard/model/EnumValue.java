@@ -2,12 +2,16 @@ package org.cloudcoder.app.wizard.model;
 
 public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValue {
 	private Class<E> enumCls;
-	private int value;
+	private E value;
 	
 	public EnumValue(Class<E> enumCls, String name, String label) {
+		this(enumCls, name, label, enumCls.getEnumConstants()[0]);
+	}
+	
+	public EnumValue(Class<E> enumCls, String name, String label, E defaultValue) {
 		super(name, label);
 		this.enumCls = enumCls;
-		value = 0; // the first enum member is the default
+		value = defaultValue; // the first enum member is the default
 	}
 	
 	public Class<E> getEnumCls() {
@@ -27,7 +31,7 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	@Override
 	public <T extends Enum<T>> void setEnum(T value) {
 		checkTypes(value.getClass(), enumCls);
-		this.value = value.ordinal();
+		this.value = enumCls.getEnumConstants()[value.ordinal()];
 	}
 
 	@Override
@@ -43,7 +47,7 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	@Override
 	public <T extends Enum<T>> T getEnum(Class<T> cls) {
 		checkTypes(cls, enumCls);
-		return cls.getEnumConstants()[value];
+		return cls.getEnumConstants()[value.ordinal()];
 	}
 
 	@Override
