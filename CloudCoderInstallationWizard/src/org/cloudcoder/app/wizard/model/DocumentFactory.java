@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.model;
 
+import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 import org.cloudcoder.app.wizard.model.validators.StringValueNonemptyValidator;
 
@@ -26,7 +27,7 @@ public class DocumentFactory {
 		Page keypairPage = new Page("awsKeypair", "Choose or create a keypair");
 		keypairPage.addHelpText("msg", "Message");
 		keypairPage.add(new BooleanValue("useExisting", "Use existing keypair"), new NoopValidator());
-		keypairPage.add(new FilenameValue("name", "Existing keypair file"), new StringValueNonemptyValidator());
+		keypairPage.add(new FilenameValue("name", "Existing keypair file"), new FileReadableValidator());
 		document.addPage(keypairPage);
 		
 		return document;
