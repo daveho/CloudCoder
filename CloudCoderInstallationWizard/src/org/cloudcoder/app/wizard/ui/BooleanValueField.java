@@ -20,7 +20,6 @@ public class BooleanValueField extends LabeledField<BooleanValue> implements IPa
 		checkBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Checkbox changed!");
 				onChange();
 			}
 		});

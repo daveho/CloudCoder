@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -25,6 +23,8 @@ import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
+import com.amazonaws.services.ec2.model.CreateSubnetRequest;
+import com.amazonaws.services.ec2.model.CreateSubnetResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVpcRequest;
 import com.amazonaws.services.ec2.model.CreateVpcResult;
@@ -33,14 +33,20 @@ import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
+import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SecurityGroup;
+import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Vpc;
 
@@ -48,11 +54,14 @@ import com.amazonaws.services.ec2.model.Vpc;
 // Eventually, implement this for other cloud providers.
 public class CloudService {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
+	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
 	private static final String UBUNTU_SERVER_AMI_OWNER = "099720109477";
 	
 	// We look for an AMI with this specific name.
+	// I checked three regions and found it in all of them,
+	// so I'm guessing it's available in all regions.
 	private static final String UBUNTU_AMI_NAME =
 			"ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20160114.5";
 	
@@ -85,7 +94,7 @@ public class CloudService {
 		}
 	}
 	
-	public void createOrFindVpc() throws ExecException {
+	public void findOrCreateVpc() throws ExecException {
 		try {
 			// See if there is an existing VPC
 			Vpc cloudcoderVpc = null;
@@ -121,6 +130,43 @@ public class CloudService {
 			info.setVpc(cloudcoderVpc);
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to login to enumerate VPCs/create new VPC", e);
+		}
+	}
+	
+	public void findOrCreateSubnet() throws ExecException {
+		if (info.getVpc() == null) {
+			throw new IllegalArgumentException("A VPC is required");
+		}
+		try {
+			System.out.printf("Looking for subnet in VPC %s\n", info.getVpc().getVpcId());
+			DescribeSubnetsResult dsr = client.describeSubnets();
+			for (Subnet subnet : dsr.getSubnets()) {
+				if (subnet.getVpcId().equals(info.getVpc().getVpcId())) {
+					// Found a subnet for the VPC we're using
+					System.out.printf("Found subnet %s\n", subnet.getSubnetId());
+					info.setSubnet(subnet);
+					return;
+				}
+			}
+			
+			// Create a new subnet
+			System.out.println("No subnet found, creating a new one...");
+			CreateSubnetRequest req = new CreateSubnetRequest()
+				.withVpcId(info.getVpc().getVpcId())
+				.withCidrBlock("10.0.0.0/24"); // there is just a single subnet
+			CreateSubnetResult res = client.createSubnet(req);
+			Subnet subnet = res.getSubnet();
+			info.setSubnet(subnet);
+			System.out.printf("Created subnet %s\n", subnet.getSubnetId());
+			
+			// Tag it
+			CreateTagsRequest ctr = new CreateTagsRequest()
+				.withResources(subnet.getSubnetId())
+				.withTags(Arrays.asList(new Tag("Name", CLOUDCODER_VPC_SUBNET_NAME)));
+			client.createTags(ctr);
+			System.out.println("Tagged subnet as " + CLOUDCODER_VPC_SUBNET_NAME);
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Could not find or create VPC subnet", e);
 		}
 	}
 	
@@ -175,7 +221,7 @@ public class CloudService {
 		return keyPair;
 	}
 	
-	public void createOrFindSecurityGroup() throws ExecException {
+	public void findOrCreateSecurityGroup() throws ExecException {
 		if (info.getVpc() == null) {
 			throw new IllegalArgumentException("Don't call this method until a VPC is found or created");
 		}
@@ -270,26 +316,38 @@ public class CloudService {
 				throw new ExecException("Could not find any suitable Ubuntu server images!");
 			}
 			
-			for (Image img : candidates) {
-				String arch = img.getArchitecture();
-				String name = img.getName();
-				System.out.printf("arch=%s, name=%s, id=%s\n", arch, name, img.getImageId());
-				System.out.print("  ");
-				for (Tag tag : img.getTags()) {
-					System.out.printf("%s:%s ", tag.getKey(), tag.getValue());
-				}
-				System.out.println();
-			}
-			
-			/*
-			Image latest = candidates.get(candidates.size() - 1);
-			System.out.printf("Latest image: arch=%s, name=%s, id=%s\n",
-					latest.getArchitecture(), 
-					latest.getName(),
-					latest.getImageId());
-			*/
+			Image webappImage = candidates.get(0);
+			System.out.printf("Found image: arch=%s, name=%s, id=%s\n",
+					webappImage.getArchitecture(),
+					webappImage.getName(),
+					webappImage.getImageId());
+			info.setWebappImage(webappImage);
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to create webapp instance", e);
+		}
+	}
+	
+	public void createWebappInstance() throws ExecException {
+		try {
+			System.out.println("Starting webapp instance...");
+			RunInstancesRequest req = new RunInstancesRequest()
+				.withImageId(info.getWebappImage().getImageId())
+				.withInstanceType(document.getValue("awsInstanceType.instanceType").getEnum(InstanceType.class))
+				.withMinCount(1)
+				.withMaxCount(1)
+				.withSubnetId(info.getSubnet().getSubnetId())
+				.withSecurityGroupIds(info.getSecurityGroup().getGroupId())
+				.withKeyName(info.getKeyPair().getKeyName());
+			
+			RunInstancesResult res = client.runInstances(req);
+			
+			Reservation resv = res.getReservation();
+			List<Instance> instances = resv.getInstances();
+			
+			System.out.printf("Instance id=%s\n", instances.get(0).getInstanceId());
+			
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Could not start webapp instance", e);
 		}
 	}
 
@@ -308,19 +366,21 @@ public class CloudService {
 		document.getValue("aws.accessKeyId").setString(accessKeyId);
 		document.getValue("aws.secretAccessKey").setString(secretAccessKey);
 		
-		//document.getValue("awsKeypair.useExisting").setBoolean(false);
+		document.getValue("awsKeypair.useExisting").setBoolean(false);
 		//document.getValue("awsKeypair.filename").setString(keyPairFilename);
+		
+		//document.getValue("awsRegion.region").setEnum(AWSRegion.EU_CENTRAL_1);
 		
 		CloudService svc = new CloudService();
 		svc.setDocument(document);
 		try {
 			svc.login();
-			/*
-			svc.createOrFindVpc();
+			svc.findOrCreateVpc();
+			svc.findOrCreateSubnet();
 			svc.createOrChooseKeypair();
-			svc.createOrFindSecurityGroup();
-			*/
+			svc.findOrCreateSecurityGroup();
 			svc.findUbuntuServerImage();
+			svc.createWebappInstance();
 		} catch (ExecException e) {
 			System.err.println("Error occurred");
 			e.printStackTrace();

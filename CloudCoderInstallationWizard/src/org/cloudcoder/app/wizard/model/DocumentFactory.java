@@ -4,6 +4,8 @@ import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 import org.cloudcoder.app.wizard.model.validators.StringValueNonemptyValidator;
 
+import com.amazonaws.services.ec2.model.InstanceType;
+
 public class DocumentFactory {
 	public static Document create() {
 		Document document = new Document();
@@ -34,7 +36,7 @@ public class DocumentFactory {
 		Page instanceTypePage = new Page("awsInstanceType", "Choose EC2 instance type for webapp server");
 		instanceTypePage.addHelpText("msg", "Message");
 		instanceTypePage.add(
-				new EnumValue<AWSInstanceType>(AWSInstanceType.class, "instanceType", "Instance type", AWSInstanceType.T2_MICRO),
+				new EnumValue<InstanceType>(InstanceType.class, "instanceType", "Instance type", InstanceType.T2Micro),
 				new NoopValidator());
 		document.addPage(instanceTypePage);
 		
