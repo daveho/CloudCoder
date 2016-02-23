@@ -5,4 +5,5 @@ public enum ValueType {
 	IMMUTABLE_STRING, // for descriptive text
 	BOOLEAN,
 	ENUM_CHOICE,
+	FILENAME,
 }

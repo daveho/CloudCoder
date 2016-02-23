@@ -2,6 +2,7 @@ package org.cloudcoder.app.wizard.ui;
 
 import org.cloudcoder.app.wizard.model.BooleanValue;
 import org.cloudcoder.app.wizard.model.EnumValue;
+import org.cloudcoder.app.wizard.model.FilenameValue;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.StringValue;
@@ -26,6 +27,11 @@ public class PageFieldFactory {
 			BooleanValueField bvf = new BooleanValueField();
 			bvf.setValue((BooleanValue) v);
 			return bvf;
+			
+		case FILENAME:
+			FileChooserField fcf = new FileChooserField();
+			fcf.setValue((FilenameValue) v);
+			return fcf;
 			
 		default:
 			throw new IllegalArgumentException("Value type " + v.getValueType() + " not supported yet");

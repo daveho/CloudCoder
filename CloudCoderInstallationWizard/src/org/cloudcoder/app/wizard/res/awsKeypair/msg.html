@@ -1,11 +1,21 @@
 <p>
-A keypair (PEM) file is needed to control access to the server(s)
-used for the CloudCoder webapp and builders.
+You will need to choose a keypair to use to control access to
+the server(s) to be provisioned for CloudCoder.
+You can use an existing keypair associated with your AWS
+account, or the installation wizard can create a new
+keypair for you.  You can choose an existing keypair, or create a new one.
 </p>
 <p>
-You can choose an existing keypair, or create a new one.
-If you want to use an existing keypair, just enter its
-name (<i>without</i> the <code>.pem</code> file extension).
-If you choose to create a new keypair, it will be named
-<code>cloudcoder-keypair</code>.
+If you want to use an existing keypair, choose the <code>.pem</code>
+file containing the keypair.  <b>Important</b>:
+the filename must match the name of the keypair in your
+AWS account.
+</p>
+<p>
+If you do not use an existing keypair, the installation wizard
+will create a new one for you, which will be called
+<code>cloudcoder-keypair</code>.  Once the keypair is generated,
+you will have the opportunity to save it to a file.  You
+will need the keypair in order to connect to your servers
+via ssh, so be sure to save it.
 </p>
