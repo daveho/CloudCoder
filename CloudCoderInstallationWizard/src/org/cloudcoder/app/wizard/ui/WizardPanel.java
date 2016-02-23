@@ -110,12 +110,17 @@ public class WizardPanel extends JPanel {
 		pp.markAllValid();
 		errorLabel.setText("");
 		try {
+			// Get Page with current UI values
+			Page current = pp.getCurrentValues();
+			
+			// Validate all fields that haven't been selectively disabled
 			for (int i = 0; i < page.getNumValues(); i++) {
-				IPageField field = pp.getField(i);
 				IValue origValue = page.get(i);
-				IValue updatedValue = field.getCurrentValue();
-				IValidator validator = page.getValidator(i);
-				validator.validate(origValue, updatedValue);
+				if (current.isEnabled(page.get(i).getName())) {
+					IValue updatedValue = current.get(i);
+					IValidator validator = page.getValidator(i);
+					validator.validate(origValue, updatedValue);
+				}
 			}
 			return true;
 		} catch (ValidationException e) {

@@ -37,6 +37,14 @@ public class Page implements Cloneable, Iterable<IValue> {
 		selectiveEnablementMap.put(name, selectiveEnablement);
 	}
 	
+	/**
+	 * Check whether named {@link IValue} is selectively enabled
+	 * or disabled.  (Validation is skipped for selectively-disabled
+	 * page fields.)
+	 * 
+	 * @param name the name of an {@link IValue}
+	 * @return true if the {@link IValue} is enabled, false if disabled
+	 */
 	public boolean isEnabled(String name) {
 		if (!selectiveEnablementMap.containsKey(name)) {
 			return true;
