@@ -24,7 +24,7 @@ public class ImmutableStringValue extends StringValue {
 	}
 	
 	public static ImmutableStringValue createHelpText(String pageName, String name, String label) {
-		String resName = "org/cloudcoder/app/wizard/res/" + pageName + "/" + name + ".html";
+		String resName = "org/cloudcoder/app/wizard/res/" + pageName + "." + name + ".html";
 		try {
 			ClassLoader cl = ImmutableStringValue.class.getClassLoader();
 			InputStream in = cl.getResourceAsStream(resName);
