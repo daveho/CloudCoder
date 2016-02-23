@@ -6,14 +6,35 @@ import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cloudcoder.app.wizard.model.IValue;
 
 public abstract class LabeledField<E extends IValue> extends JPanel implements UIConstants {
+	// Subclasses which edit text can use this to report changes
+	protected final class ChangeReportingDocumentListener implements DocumentListener {
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			onChange();
+		}
+	
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			onChange();
+		}
+	
+		@Override
+		public void changedUpdate(DocumentEvent e) {
+			onChange();
+		}
+	}
+	
 	private static final long serialVersionUID = 1L;
 	
 	private JLabel label;
 	private E value;
+	private Runnable changeCallback;
 
 	public LabeledField() {
 		label = new JLabel("", SwingConstants.RIGHT);
@@ -36,5 +57,15 @@ public abstract class LabeledField<E extends IValue> extends JPanel implements U
 
 	public int getFieldHeight() {
 		return UIConstants.FIELD_HEIGHT;
+	}
+	
+	public void setChangeCallback(Runnable callback) {
+		this.changeCallback = callback;
+	}
+	
+	protected void onChange() {
+		if (changeCallback != null) {
+			changeCallback.run();
+		}
 	}
 }

@@ -1,6 +1,8 @@
 package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 
@@ -15,6 +17,13 @@ public class BooleanValueField extends LabeledField<BooleanValue> implements IPa
 		this.checkBox = new JCheckBox();
 		checkBox.setPreferredSize(new Dimension(FIELD_COMPONENT_WIDTH, FIELD_COMPONENT_HEIGHT));
 		add(checkBox);
+		checkBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Checkbox changed!");
+				onChange();
+			}
+		});
 	}
 	
 	@Override
@@ -38,5 +47,10 @@ public class BooleanValueField extends LabeledField<BooleanValue> implements IPa
 		BooleanValue current = getValue().clone();
 		current.setBoolean(checkBox.isSelected());
 		return current;
+	}
+	
+	@Override
+	public void setSelectiveEnablement(boolean enabled) {
+		checkBox.setEnabled(enabled);
 	}
 }

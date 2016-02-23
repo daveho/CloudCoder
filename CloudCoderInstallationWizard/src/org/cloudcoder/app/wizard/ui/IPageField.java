@@ -10,4 +10,6 @@ public interface IPageField {
 	public void markValid();
 	public void markInvalid();
 	public IValue getCurrentValue();
+	public void setChangeCallback(Runnable callback);
+	public void setSelectiveEnablement(boolean enabled);
 }

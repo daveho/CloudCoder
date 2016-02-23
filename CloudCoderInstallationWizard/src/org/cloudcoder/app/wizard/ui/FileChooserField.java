@@ -20,13 +20,15 @@ public class FileChooserField extends LabeledField<FilenameValue> implements IPa
 	private static final long serialVersionUID = 1L;
 	
 	private JTextField textField;
+	private JButton browseButton;
 
 	public FileChooserField() {
 		textField = new JTextField();
 		textField.setPreferredSize(new Dimension(FIELD_COMPONENT_WIDTH - (BUTTON_WIDTH-10), FIELD_COMPONENT_HEIGHT));
 		add(textField);
+		textField.getDocument().addDocumentListener(new ChangeReportingDocumentListener());
 		
-		JButton browseButton = new JButton("Browse...");
+		this.browseButton = new JButton("Browse...");
 		add(browseButton);
 		browseButton.addActionListener(new ActionListener() {
 			@Override
@@ -59,6 +61,12 @@ public class FileChooserField extends LabeledField<FilenameValue> implements IPa
 		FilenameValue current = getValue().clone();
 		current.setString(textField.getText());
 		return current;
+	}
+	
+	@Override
+	public void setSelectiveEnablement(boolean enabled) {
+		textField.setEnabled(enabled);
+		browseButton.setEnabled(enabled);
 	}
 
 	private void browse() {

@@ -18,6 +18,7 @@ public class StringValueField extends LabeledField<StringValue> implements IPage
 		textField = new JTextField();
 		textField.setPreferredSize(new Dimension(FIELD_COMPONENT_WIDTH, FIELD_COMPONENT_HEIGHT));
 		add(textField);
+		textField.getDocument().addDocumentListener(new ChangeReportingDocumentListener());
 		markValid();
 	}
 	
@@ -42,5 +43,10 @@ public class StringValueField extends LabeledField<StringValue> implements IPage
 		IValue cur = getValue().clone();
 		cur.setString(textField.getText());
 		return cur;
+	}
+	
+	@Override
+	public void setSelectiveEnablement(boolean enabled) {
+		textField.setEnabled(enabled);
 	}
 }

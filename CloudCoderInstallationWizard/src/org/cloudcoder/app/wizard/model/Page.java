@@ -1,8 +1,10 @@
 package org.cloudcoder.app.wizard.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.cloudcoder.app.wizard.model.validators.IValidator;
@@ -12,12 +14,14 @@ public class Page implements Cloneable, Iterable<IValue> {
 	private final String pageName, label;
 	private List<IValue> values;
 	private List<IValidator> validators;
+	private Map<String, ISelectiveEnablement> selectiveEnablementMap;
 	
 	public Page(String pageName, String label) {
 		this.pageName = pageName;
 		this.label = label;
 		this.values = new ArrayList<IValue>();
 		this.validators = new ArrayList<IValidator>();
+		this.selectiveEnablementMap = new HashMap<String, ISelectiveEnablement>();
 	}
 	
 	public void add(IValue value, IValidator validator) {
@@ -27,6 +31,18 @@ public class Page implements Cloneable, Iterable<IValue> {
 
 	public void addHelpText(String name, String label) {
 		add(ImmutableStringValue.createHelpText(pageName, name, label), NoopValidator.INSTANCE);
+	}
+	
+	public void selectivelyEnable(String name, ISelectiveEnablement selectiveEnablement) {
+		selectiveEnablementMap.put(name, selectiveEnablement);
+	}
+	
+	public boolean isEnabled(String name) {
+		if (!selectiveEnablementMap.containsKey(name)) {
+			return true;
+		}
+		ISelectiveEnablement selectiveEnablement = selectiveEnablementMap.get(name);
+		return selectiveEnablement.isEnabled(this);
 	}
 	
 	public IValue getValue(String name) {
@@ -75,6 +91,8 @@ public class Page implements Cloneable, Iterable<IValue> {
 			for (IValue v : values) {
 				dup.values.add(v.clone());
 			}
+			// Validators and selective enablement map
+			// do not need to be cloned (they are never modified)
 			return dup;
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Should not happen");

@@ -27,7 +27,8 @@ public class DocumentFactory {
 		Page keypairPage = new Page("awsKeypair", "Choose or create a keypair");
 		keypairPage.addHelpText("msg", "Message");
 		keypairPage.add(new BooleanValue("useExisting", "Use existing keypair"), new NoopValidator());
-		keypairPage.add(new FilenameValue("name", "Existing keypair file"), new FileReadableValidator());
+		keypairPage.add(new FilenameValue("filename", "Existing keypair file"), new FileReadableValidator());
+		keypairPage.selectivelyEnable("filename", new EnableIfBooleanFieldChecked("useExisting"));
 		document.addPage(keypairPage);
 		
 		return document;

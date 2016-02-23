@@ -69,4 +69,14 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	public IValue getCurrentValue() {
 		return value.clone();
 	}
+	
+	@Override
+	public void setChangeCallback(Runnable callback) {
+		// Ignore, since this value never changes
+	}
+	
+	@Override
+	public void setSelectiveEnablement(boolean enabled) {
+		// Ignore, this kind of field is never selectively enabled/disabled
+	}
 }

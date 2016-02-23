@@ -2,6 +2,8 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 
@@ -17,6 +19,12 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 		comboBox = new JComboBox<E>();
 		comboBox.setPreferredSize(new Dimension(FIELD_COMPONENT_WIDTH, FIELD_COMPONENT_HEIGHT));
 		add(comboBox);
+		comboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onChange();
+			}
+		});
 	}
 	
 	@Override
@@ -52,6 +60,11 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 		E selectedItem = (E)comboBox.getSelectedItem();
 		current.setEnum(selectedItem);
 		return current;
+	}
+	
+	@Override
+	public void setSelectiveEnablement(boolean enabled) {
+		comboBox.setEnabled(enabled);
 	}
 	
 	public static<T extends Enum<T>> EnumValueField<T> createForEnumClass(Class<T> enumCls) {
