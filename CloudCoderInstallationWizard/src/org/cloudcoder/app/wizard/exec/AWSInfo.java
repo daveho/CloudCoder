@@ -1,6 +1,7 @@
 package org.cloudcoder.app.wizard.exec;
 
 import com.amazonaws.services.ec2.model.KeyPair;
+import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Vpc;
 
 // Collects information needed to do cloud service admin actions.
@@ -8,6 +9,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 public class AWSInfo {
 	private Vpc vpc;
 	private KeyPair keyPair;
+	private SecurityGroup securityGroup;
 	
 	public Vpc getVpc() {
 		return vpc;
@@ -23,5 +25,13 @@ public class AWSInfo {
 	
 	public void setKeyPair(KeyPair keyPair) {
 		this.keyPair = keyPair;
+	}
+	
+	public SecurityGroup getSecurityGroup() {
+		return securityGroup;
+	}
+
+	public void setSecurityGroup(SecurityGroup group) {
+		this.securityGroup = group;
 	}
 }

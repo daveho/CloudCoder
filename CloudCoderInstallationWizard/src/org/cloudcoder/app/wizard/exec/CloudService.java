@@ -17,16 +17,22 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVpcRequest;
 import com.amazonaws.services.ec2.model.CreateVpcResult;
-import com.amazonaws.services.ec2.model.DescribeKeyPairsRequest;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
+import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Vpc;
 
@@ -34,6 +40,8 @@ import com.amazonaws.services.ec2.model.Vpc;
 // Eventually, implement this for other cloud providers.
 public class CloudService {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
+	private static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
+	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
 	
 	private Document document;
 	
@@ -132,7 +140,7 @@ public class CloudService {
 				throw new ExecException("Could not find keypair " + keyPairName);
 			} else {
 				// Create a new keypair.
-				CreateKeyPairRequest req = new CreateKeyPairRequest("cloudcoder-keypair");
+				CreateKeyPairRequest req = new CreateKeyPairRequest(CLOUDCODER_KEYPAIR_NAME);
 				CreateKeyPairResult result = client.createKeyPair(req);
 				this.info.setKeyPair(result.getKeyPair());
 				System.out.println("Created keypair " + this.info.getKeyPair().getKeyName());
@@ -153,7 +161,81 @@ public class CloudService {
 		// FIXME: is the signature important? Not sure we'll need it.
 		return keyPair;
 	}
+	
+	public void createOrFindSecurityGroup() throws ExecException {
+		if (info.getVpc() == null) {
+			throw new IllegalArgumentException("Don't call this method until a VPC is found or created");
+		}
+		try {
+			DescribeSecurityGroupsResult result = client.describeSecurityGroups();
+			List<SecurityGroup> groups = result.getSecurityGroups();
+			for (SecurityGroup group : groups) {
+				// Ignore non-VPC security groups
+				if (group.getVpcId() == null) {
+					continue;
+				}
+				
+				// Check whether the group is in the cloudcoder-vpc VPC.
+				String vpcId = group.getVpcId();
+				String ccVpcId = info.getVpc().getVpcId();
+				System.out.printf("Group vpc id=%s, cc vpc id=%s\n", vpcId, ccVpcId);
+				if (!vpcId.equals(ccVpcId)) {
+					continue;
+				}
+				// Check the group name.
+				if (group.getGroupName().equals(CLOUDCODER_SECURITY_GROUP_NAME)) {
+					info.setSecurityGroup(group);
+					return;
+				}
+			}
+			
+			// No matching security group, so create a new one.
+			CreateSecurityGroupRequest gReq = new CreateSecurityGroupRequest();
+			gReq.setGroupName(CLOUDCODER_SECURITY_GROUP_NAME);
+			gReq.setVpcId(info.getVpc().getVpcId());
+			gReq.setDescription("CloudCoder security group");
+			CreateSecurityGroupResult gRes = client.createSecurityGroup(gReq);
+			System.out.println("Created " + CLOUDCODER_SECURITY_GROUP_NAME);
+			
+			// Configure rules
+			String groupId = gRes.getGroupId();
+			allowIngress(22, groupId);
+			allowIngress(443, groupId);
+			allowIngress(47374, groupId);
+			System.out.println("Added ingress rules to " + CLOUDCODER_SECURITY_GROUP_NAME);
+			
+			// Annoyingness: the CreateSecurityGroupResult doesn't give us a
+			// SecurityGroup object.  We'll query it as an extra second step.
+			DescribeSecurityGroupsRequest gReq2 = new DescribeSecurityGroupsRequest();
+			gReq2.setGroupIds(Arrays.asList(groupId));
+			DescribeSecurityGroupsResult gRes2 = client.describeSecurityGroups(gReq2);
+			List<SecurityGroup> groups2 = gRes2.getSecurityGroups();
+			for (SecurityGroup g : groups2) {
+				if (g.getGroupId().equals(groupId)) {
+					System.out.println("Reloaded " + CLOUDCODER_SECURITY_GROUP_NAME + " via API");
+					info.setSecurityGroup(g);
+					return;
+				}
+			}
+			throw new ExecException("Failed to reload " + CLOUDCODER_SECURITY_GROUP_NAME + " via API");
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Failed to find or create security group", e);
+		}
+	}
 
+	private void allowIngress(int port, String groupId) {
+		AuthorizeSecurityGroupIngressRequest iReq = new AuthorizeSecurityGroupIngressRequest()
+			.withGroupId(groupId)
+			.withIpPermissions(new IpPermission()
+				.withIpRanges("0.0.0.0/32")
+				.withIpProtocol("tcp")
+				.withFromPort(port)
+				.withToPort(port)
+			);
+		client.authorizeSecurityGroupIngress(iReq);
+	}
+
+	// This is just for testing.
 	public static void main(String[] args) {
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
@@ -175,8 +257,9 @@ public class CloudService {
 		svc.setDocument(document);
 		try {
 			svc.login();
-			//svc.createOrFindVpc();
-			svc.createOrChooseKeypair();
+			svc.createOrFindVpc();
+			//svc.createOrChooseKeypair();
+			svc.createOrFindSecurityGroup();
 		} catch (ExecException e) {
 			System.err.println("Error occurred");
 			e.printStackTrace();
