@@ -1,11 +1,8 @@
 package org.cloudcoder.app.wizard.exec;
 
-import java.util.List;
-
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.KeyPair;
-import com.amazonaws.services.ec2.model.NetworkInterface;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Vpc;
@@ -19,7 +16,9 @@ public class AWSInfo {
 	private SecurityGroup securityGroup;
 	private Image webappImage;
 	private Instance webappInstance;
-	private NetworkInterface webappNetworkInterface;
+	private String elasticIpAllocationId;
+	private String elasticIp;
+	private String webappIpAssociationId;
 	
 	public Vpc getVpc() {
 		return vpc;
@@ -69,11 +68,27 @@ public class AWSInfo {
 		this.webappInstance = instance;
 	}
 	
-	public NetworkInterface getWebappNetworkInterface() {
-		return webappNetworkInterface;
+	public String getElasticIpAllocationId() {
+		return elasticIpAllocationId;
 	}
 
-	public void setWebappNetworkInterface(NetworkInterface ni) {
-		this.webappNetworkInterface = ni;
+	public void setElasticIpAllocationId(String allocationId) {
+		this.elasticIpAllocationId = allocationId;
+	}
+	
+	public String getElasticIp() {
+		return elasticIp;
+	}
+
+	public void setElasticIp(String publicIp) {
+		this.elasticIp = publicIp;
+	}
+	
+	public String getWebappIpAssociationId() {
+		return webappIpAssociationId;
+	}
+
+	public void setWebappIpAssociationId(String associationId) {
+		this.webappIpAssociationId = associationId;
 	}
 }

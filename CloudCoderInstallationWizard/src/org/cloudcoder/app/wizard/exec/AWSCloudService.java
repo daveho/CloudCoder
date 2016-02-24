@@ -19,12 +19,15 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AllocateAddressRequest;
+import com.amazonaws.services.ec2.model.AllocateAddressResult;
+import com.amazonaws.services.ec2.model.AssociateAddressRequest;
+import com.amazonaws.services.ec2.model.AssociateAddressResult;
 import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 import com.amazonaws.services.ec2.model.AssociateRouteTableResult;
 import com.amazonaws.services.ec2.model.AttachInternetGatewayRequest;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
-import com.amazonaws.services.ec2.model.CreateInternetGatewayRequest;
 import com.amazonaws.services.ec2.model.CreateInternetGatewayResult;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
@@ -43,19 +46,29 @@ import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesRequest;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
+import com.amazonaws.services.ec2.model.DomainType;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceNetworkInterface;
+import com.amazonaws.services.ec2.model.InstanceState;
+import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.InternetGateway;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RouteTable;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Tag;
@@ -240,50 +253,29 @@ public class AWSCloudService {
 
 	// Add a Name tag to a resource
 	private void tagResource(String resourceId, String key, String value) {
-		CreateTagsRequest tagReq = new CreateTagsRequest();
-		tagReq.setTags(Arrays.asList(new Tag(key, value)));
-		tagReq.setResources(Arrays.asList(resourceId));
-		client.createTags(tagReq);
-	}
-	
-	/*
-	public void findOrCreateSubnet() throws ExecException {
-		if (info.getVpc() == null) {
-			throw new IllegalArgumentException("A VPC is required");
-		}
-		try {
-			System.out.printf("Looking for subnet in VPC %s\n", info.getVpc().getVpcId());
-			DescribeSubnetsResult dsr = client.describeSubnets();
-			for (Subnet subnet : dsr.getSubnets()) {
-				if (subnet.getVpcId().equals(info.getVpc().getVpcId())) {
-					// Found a subnet for the VPC we're using
-					System.out.printf("Found subnet %s\n", subnet.getSubnetId());
-					info.setSubnet(subnet);
-					return;
+		// Some number of retries may be necessary (it's not always possible
+		// to tag a resource immediately after it has been created)
+		int retries = 0;
+		RuntimeException ex = null;
+		while (retries < 10) {
+			try {
+				CreateTagsRequest tagReq = new CreateTagsRequest();
+				tagReq.setTags(Arrays.asList(new Tag(key, value)));
+				tagReq.setResources(Arrays.asList(resourceId));
+				client.createTags(tagReq);
+				return;
+			} catch (RuntimeException e) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException ee) {
+					System.out.println("Interrupted while retrying tag operation");
 				}
+				ex = e;
+				retries++;
 			}
-			
-			// Create a new subnet
-			System.out.println("No subnet found, creating a new one...");
-			CreateSubnetRequest req = new CreateSubnetRequest()
-				.withVpcId(info.getVpc().getVpcId())
-				.withCidrBlock("10.0.0.0/24"); // there is just a single subnet
-			CreateSubnetResult res = client.createSubnet(req);
-			Subnet subnet = res.getSubnet();
-			info.setSubnet(subnet);
-			System.out.printf("Created subnet %s\n", subnet.getSubnetId());
-			
-			// Tag it
-			CreateTagsRequest ctr = new CreateTagsRequest()
-				.withResources(subnet.getSubnetId())
-				.withTags(Arrays.asList(new Tag("Name", CLOUDCODER_VPC_SUBNET_NAME)));
-			client.createTags(ctr);
-			System.out.println("Tagged subnet as " + CLOUDCODER_VPC_SUBNET_NAME);
-		} catch (AmazonServiceException e) {
-			throw new ExecException("Could not find or create VPC subnet", e);
 		}
+		throw ex;
 	}
-	*/
 	
 	public void createOrChooseKeypair() throws ExecException {
 		try {
@@ -442,7 +434,23 @@ public class AWSCloudService {
 		}
 	}
 	
-	/*
+	public void createWebappElasticIp() throws ExecException {
+		try {
+			// Sadly, elastic IP addresses cannot be tagged, so
+			// we can't see if there is an existing one.
+			// So, create a new one.
+			
+			AllocateAddressRequest aaReq = new AllocateAddressRequest()
+				.withDomain(DomainType.Vpc);
+			AllocateAddressResult aaRes = client.allocateAddress(aaReq);
+			
+			info.setElasticIpAllocationId(aaRes.getAllocationId());
+			info.setElasticIp(aaRes.getPublicIp());
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Could not find or create an elastic IP address for webapp instance");
+		}
+	}
+	
 	public void createWebappInstance() throws ExecException {
 		try {
 			System.out.println("Starting webapp instance...");
@@ -464,27 +472,59 @@ public class AWSCloudService {
 			System.out.printf("Instance id=%s\n", webappInstance.getInstanceId());
 			
 			info.setWebappInstance(webappInstance);
-			
-			CreateNetworkInterfaceRequest ifReq = new CreateNetworkInterfaceRequest()
-				.withSubnetId(info.getSubnet().getSubnetId())
-				.withGroups(info.getSecurityGroup().getGroupId());
-			CreateNetworkInterfaceResult ifRes = client.createNetworkInterface(ifReq);
-			NetworkInterface ni = ifRes.getNetworkInterface();
-			info.setWebappNetworkInterface(ni);
-			
-			// TODO: wait for instance to reach "running" state?
-			
-			AttachNetworkInterfaceRequest nReq = new AttachNetworkInterfaceRequest()
-				.withDeviceIndex(0)
-				.withInstanceId(webappInstance.getInstanceId())
-				.withNetworkInterfaceId(ni.getNetworkInterfaceId());
-			client.attachNetworkInterface(nReq);
-			
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Could not start webapp instance", e);
 		}
 	}
-	*/
+	
+	public void waitForInstanceToStart() throws ExecException {
+		try {
+			System.out.printf(
+					"Waiting for instance %s to reach running state (this could take several minutes)\n",
+					info.getWebappInstance().getInstanceId());
+			
+			// Poll every 20 seconds, for up to 10 minutes
+			int retries = 0;
+			while (retries < 30) {
+				DescribeInstancesRequest diReq = new DescribeInstancesRequest()
+					.withInstanceIds(info.getWebappInstance().getInstanceId());
+				DescribeInstancesResult diRes = client.describeInstances(diReq);
+				Reservation res = diRes.getReservations().get(0);
+				InstanceState state = res.getInstances().get(0).getState();
+				System.out.printf("Instance state is %s\n", state.getName());
+				if (state.getName().equals("running")) {
+					break;
+				}
+				System.out.println("Sleeping for 20 seconds...");
+				try {
+					Thread.sleep(20000);
+				} catch (InterruptedException e) {
+					System.out.println("Interrupted while waiting for instance to reach running state");
+				}
+				retries++;
+			}
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Failure waiting for webapp instance to start");
+		}
+	}
+	
+	public void assignPublicIpToWebapp() throws ExecException {
+		try {
+			InstanceNetworkInterface iface = info.getWebappInstance().getNetworkInterfaces().get(0);
+			
+			AssociateAddressRequest aaReq = new AssociateAddressRequest()
+				.withAllocationId(info.getElasticIpAllocationId())
+				.withInstanceId(info.getWebappInstance().getInstanceId())
+				.withNetworkInterfaceId(iface.getNetworkInterfaceId());
+			AssociateAddressResult aaRes = client.associateAddress(aaReq);
+			info.setWebappIpAssociationId(aaRes.getAssociationId());
+			
+			System.out.printf("Successfully associated public ip address %s with instance %s\n",
+					info.getElasticIp(), info.getWebappInstance().getInstanceId());
+		} catch (AmazonServiceException e) {
+			throw new ExecException("Failed to associate public ip with webapp instance", e);
+		}
+	}
 
 	// This is just for testing.
 	public static void main(String[] args) {
@@ -509,11 +549,13 @@ public class AWSCloudService {
 		try {
 			svc.login();
 			svc.findOrCreateVpc();
-			//svc.findOrCreateSubnet();
-			//svc.createOrChooseKeypair();
+			svc.createOrChooseKeypair();
 			svc.findOrCreateSecurityGroup();
 			svc.findUbuntuServerImage();
-			//svc.createWebappInstance();
+			svc.createWebappElasticIp();
+			svc.createWebappInstance();
+			svc.waitForInstanceToStart();
+			svc.assignPublicIpToWebapp();
 		} catch (ExecException e) {
 			System.err.println("Error occurred");
 			e.printStackTrace();
