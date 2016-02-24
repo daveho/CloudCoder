@@ -1,5 +1,9 @@
 package org.cloudcoder.app.wizard.exec;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.KeyPair;
@@ -7,12 +11,14 @@ import com.amazonaws.services.ec2.model.NetworkAcl;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Vpc;
+import com.amazonaws.util.IOUtils;
 
 // Collects information needed to do cloud service admin actions.
 // This is the implementation for AWS.
-public class AWSInfo {
+public class AWSInfo implements ICloudInfo {
 	private Vpc vpc;
 	private Subnet subnet;
+	private String keyPairFilename;
 	private KeyPair keyPair;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
@@ -21,6 +27,34 @@ public class AWSInfo {
 	private String elasticIp;
 	private String webappIpAssociationId;
 	private NetworkAcl networkAcl;
+	
+	@Override
+	public String getWebappPublicIp() {
+		return getElasticIp();
+	}
+	
+	@Override
+	public String getPrivateKeyFilename() {
+		if (keyPairFilename != null) {
+			return keyPairFilename;
+		}
+		// Save to a delete-on-exit file
+		File tmpdir = new File(System.getProperty("user.home") + "/cloudcoderKeyfile");
+		tmpdir.mkdirs();
+		try {
+			File temp = File.createTempFile("cctmpkey", ".pem", tmpdir);
+			temp.deleteOnExit();
+			FileWriter fw = new FileWriter(temp);
+			try {
+				fw.write(keyPair.getKeyMaterial());
+			} finally {
+				fw.close();
+			}
+			return temp.getAbsolutePath();
+		} catch (IOException e) {
+			throw new RuntimeException("Could not save keypair to tempfile");
+		}
+	}
 	
 	public Vpc getVpc() {
 		return vpc;
@@ -36,6 +70,14 @@ public class AWSInfo {
 	
 	public void setSubnet(Subnet subnet) {
 		this.subnet = subnet;
+	}
+	
+	public String getKeyPairFilename() {
+		return keyPairFilename;
+	}
+	
+	public void setKeyPairFilename(String keyPairFilename) {
+		this.keyPairFilename = keyPairFilename;
 	}
 	
 	public KeyPair getKeyPair() {
