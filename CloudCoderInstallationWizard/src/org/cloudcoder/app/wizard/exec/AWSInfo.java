@@ -14,7 +14,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 // This is the implementation for AWS.
 public class AWSInfo {
 	private Vpc vpc;
-	private List<Subnet> subnets;
+	private Subnet subnet;
 	private KeyPair keyPair;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
@@ -29,12 +29,12 @@ public class AWSInfo {
 		this.vpc = vpc;
 	}
 	
-	public List<Subnet> getSubnets() {
-		return subnets;
+	public Subnet getSubnet() {
+		return subnet;
 	}
-
-	public void setSubnets(List<Subnet> subnet) {
-		this.subnets = subnet;
+	
+	public void setSubnet(Subnet subnet) {
+		this.subnet = subnet;
 	}
 	
 	public KeyPair getKeyPair() {

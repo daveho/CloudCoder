@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,10 +19,19 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
+import com.amazonaws.services.ec2.model.AssociateRouteTableResult;
+import com.amazonaws.services.ec2.model.AttachInternetGatewayRequest;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
+import com.amazonaws.services.ec2.model.CreateInternetGatewayRequest;
+import com.amazonaws.services.ec2.model.CreateInternetGatewayResult;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
+import com.amazonaws.services.ec2.model.CreateRouteRequest;
+import com.amazonaws.services.ec2.model.CreateRouteResult;
+import com.amazonaws.services.ec2.model.CreateRouteTableRequest;
+import com.amazonaws.services.ec2.model.CreateRouteTableResult;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateSubnetRequest;
@@ -41,9 +51,11 @@ import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.InternetGateway;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.RouteTable;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Tag;
@@ -114,16 +126,16 @@ public class AWSCloudService {
 				System.out.println("Found " + CLOUDCODER_VPC_NAME + ", id=" + cloudcoderVpc.getVpcId());
 				info.setVpc(cloudcoderVpc);
 				
-				// Find its subnets
+				// Find its subnet (there should just be one)
 				DescribeSubnetsRequest dsReq = new DescribeSubnetsRequest()
 					.withFilters(new Filter("vpc-id", Arrays.asList(cloudcoderVpc.getVpcId())));
 				DescribeSubnetsResult dsRes = client.describeSubnets(dsReq);
-				info.setSubnets(dsRes.getSubnets());
+				info.setSubnet(dsRes.getSubnets().get(0));
 				return;
 			}
 			
 			// Create a VPC
-			CreateVpcRequest req = new CreateVpcRequest("10.0.0.0/16");
+			CreateVpcRequest req = new CreateVpcRequest("10.121.0.0/24");
 			CreateVpcResult result = client.createVpc(req);
 			cloudcoderVpc = result.getVpc();
 			
@@ -133,50 +145,94 @@ public class AWSCloudService {
 			
 			info.setVpc(cloudcoderVpc);
 			
-			// Create a subnet in each availability zone with state "available"
-			List<Subnet> cloudcoderVpcSubnets = new ArrayList<Subnet>();
+			// Get availability zones
 			DescribeAvailabilityZonesRequest azReq = new DescribeAvailabilityZonesRequest()
 				.withFilters(new Filter("state", Arrays.asList("available")));
 			DescribeAvailabilityZonesResult azRes = client.describeAvailabilityZones(azReq);
-			int subnetCount = 1;
-			for (AvailabilityZone az : azRes.getAvailabilityZones()) {
+			
+			// Shuffle availability zones
+			List<AvailabilityZone> zones = new ArrayList<AvailabilityZone>();
+			zones.addAll(azRes.getAvailabilityZones());
+			Collections.shuffle(zones);
+
+			// Create a single subnet in a single availability zone,
+			// trying each one in order.
+			
+			Subnet cloudcoderSubnet = null;
+			for (AvailabilityZone az : zones) {
 				System.out.printf("AZ %s has state %s\n", az.getZoneName(), az.getState());
 
 				// For some insane reason, it is not possible to know
 				// in advance which AZs support the creation of subnets:
 				// even if the AZ state is "available", trying to create
 				// a subnet may throw an error.
-				// All we can do is try and see which ones fail.
+				// All we can do is try and see if it fails.
 				try {
 					// Each subnet can support 251 instances (AWS reserves 4 IPs per subnet)
-					String cidrBlock = String.format("10.0.%d.0/24", subnetCount);
 					CreateSubnetRequest csReq = new CreateSubnetRequest()
 						.withAvailabilityZone(az.getZoneName())
-						.withCidrBlock(cidrBlock)
+						.withCidrBlock("10.121.0.0/24")
 						.withVpcId(cloudcoderVpc.getVpcId());
 	
 					CreateSubnetResult csRes = client.createSubnet(csReq);
 					Subnet subnet = csRes.getSubnet();
-					cloudcoderVpcSubnets.add(subnet);
 					
 					// Tag the subnet with a meaningful name
-					tagResource(subnet.getSubnetId(), "Name", "cloudcoder-vpc-subnet-" + az.getZoneName());
-	
-					// Presumably each subnet becomes the default in the AZ?
+					tagResource(subnet.getSubnetId(), "Name", "cloudcoder-vpc-subnet");
+					
+					cloudcoderSubnet = subnet;
+					System.out.printf("Created subnet %s in availability zone %s\n", subnet.getSubnetId(), az.getZoneName());
+					
+					break;
 				} catch (AmazonServiceException e) {
 					System.out.printf("Warning: subnet creation in zone %s failed: %s\n", az.getZoneName(), e.getMessage());
 				}
-					
-				subnetCount++;
 			}
 			
-			if (cloudcoderVpcSubnets.isEmpty()) {
-				// I'm guessing this will not happen
+			if (cloudcoderSubnet == null) {
 				AWSRegion region = document.getValue("awsRegion.region").getEnum(AWSRegion.class);
-				throw new ExecException("Failed to create any subnets in region " + region);
+				throw new ExecException("Could not create subnet in any availability zone in " + region);
+			}
+			info.setSubnet(cloudcoderSubnet);
+			
+			// Create a VPC gateway
+			CreateInternetGatewayResult igRes = client.createInternetGateway();
+			InternetGateway ig = igRes.getInternetGateway();
+			tagResource(ig.getInternetGatewayId(), "Name", "cloudcoder-gw");
+			System.out.printf("Created gateway %s\n", ig.getInternetGatewayId());
+			
+			// Attach to VPC
+			AttachInternetGatewayRequest aigReq = new AttachInternetGatewayRequest()
+				.withInternetGatewayId(ig.getInternetGatewayId())
+				.withVpcId(cloudcoderVpc.getVpcId());
+			client.attachInternetGateway(aigReq);
+			
+			// Create a route table
+			CreateRouteTableRequest rtReq = new CreateRouteTableRequest()
+				.withVpcId(cloudcoderVpc.getVpcId());
+			CreateRouteTableResult rtRes = client.createRouteTable(rtReq);
+			RouteTable rt = rtRes.getRouteTable();
+			System.out.printf("Created route table %s\n", rt.getRouteTableId());
+			
+			// Associate route table with subnet
+			AssociateRouteTableRequest artReq = new AssociateRouteTableRequest()
+				.withRouteTableId(rt.getRouteTableId())
+				.withSubnetId(cloudcoderSubnet.getSubnetId());
+			@SuppressWarnings("unused")
+			AssociateRouteTableResult artRes = client.associateRouteTable(artReq);
+			// Need to keep track of association id?
+			
+			// Create a route from the subnet to the internet via the gateway
+			CreateRouteRequest crReq = new CreateRouteRequest()
+				.withDestinationCidrBlock("0.0.0.0/32")
+				.withGatewayId(ig.getInternetGatewayId())
+				.withRouteTableId(rt.getRouteTableId());
+			CreateRouteResult crRes = client.createRoute(crReq);
+			
+			if (!crRes.getReturn()) {
+				throw new ExecException("Could not create default route via gateway");
 			}
 			
-			info.setSubnets(cloudcoderVpcSubnets);
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to login to enumerate VPCs/create new VPC", e);
 		}
