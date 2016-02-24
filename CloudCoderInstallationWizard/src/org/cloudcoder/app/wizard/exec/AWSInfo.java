@@ -3,6 +3,7 @@ package org.cloudcoder.app.wizard.exec;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.KeyPair;
+import com.amazonaws.services.ec2.model.NetworkAcl;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Vpc;
@@ -19,6 +20,7 @@ public class AWSInfo {
 	private String elasticIpAllocationId;
 	private String elasticIp;
 	private String webappIpAssociationId;
+	private NetworkAcl networkAcl;
 	
 	public Vpc getVpc() {
 		return vpc;
@@ -90,5 +92,13 @@ public class AWSInfo {
 
 	public void setWebappIpAssociationId(String associationId) {
 		this.webappIpAssociationId = associationId;
+	}
+	
+	public NetworkAcl getNetworkAcl() {
+		return networkAcl;
+	}
+
+	public void setNetworkAcl(NetworkAcl acl) {
+		this.networkAcl = acl;
 	}
 }

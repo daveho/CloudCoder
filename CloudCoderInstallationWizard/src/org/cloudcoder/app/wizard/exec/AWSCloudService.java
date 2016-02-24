@@ -31,6 +31,9 @@ import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.CreateInternetGatewayResult;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
+import com.amazonaws.services.ec2.model.CreateNetworkAclEntryRequest;
+import com.amazonaws.services.ec2.model.CreateNetworkAclRequest;
+import com.amazonaws.services.ec2.model.CreateNetworkAclResult;
 import com.amazonaws.services.ec2.model.CreateRouteRequest;
 import com.amazonaws.services.ec2.model.CreateRouteResult;
 import com.amazonaws.services.ec2.model.CreateRouteTableRequest;
@@ -65,8 +68,11 @@ import com.amazonaws.services.ec2.model.InternetGateway;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.NetworkAcl;
+import com.amazonaws.services.ec2.model.PortRange;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RouteTable;
+import com.amazonaws.services.ec2.model.RuleAction;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SecurityGroup;
@@ -157,6 +163,17 @@ public class AWSCloudService {
 			System.out.printf("Tagged VPC %s with Name=%s\n", cloudcoderVpc.getVpcId(), CLOUDCODER_VPC_NAME);
 			
 			info.setVpc(cloudcoderVpc);
+			
+			// Create network ACL
+			CreateNetworkAclRequest cnaReq = new CreateNetworkAclRequest()
+				.withVpcId(cloudcoderVpc.getVpcId());
+			CreateNetworkAclResult cnaRes = client.createNetworkAcl(cnaReq);
+			NetworkAcl acl = cnaRes.getNetworkAcl();
+			info.setNetworkAcl(acl);
+			
+			// Create inbound and outbound rules
+			createNetworkAclEntry(acl, false); // inbound
+			createNetworkAclEntry(acl, true); // outbound
 			
 			// Get availability zones
 			DescribeAvailabilityZonesRequest azReq = new DescribeAvailabilityZonesRequest()
@@ -249,6 +266,18 @@ public class AWSCloudService {
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to login to enumerate VPCs/create new VPC", e);
 		}
+	}
+
+	private void createNetworkAclEntry(NetworkAcl acl, boolean egress) {
+		CreateNetworkAclEntryRequest ibeReq = new CreateNetworkAclEntryRequest()
+			.withNetworkAclId(acl.getNetworkAclId())
+			.withCidrBlock("0.0.0.0/32")
+			.withRuleAction(RuleAction.Allow)
+			.withRuleNumber(100)
+			.withEgress(egress)
+			.withProtocol("-1") // all protocols
+			;
+		client.createNetworkAclEntry(ibeReq);
 	}
 
 	// Add a Name tag to a resource
