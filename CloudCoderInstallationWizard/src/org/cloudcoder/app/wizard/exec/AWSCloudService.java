@@ -18,12 +18,10 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.AttachNetworkInterfaceRequest;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
+import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
-import com.amazonaws.services.ec2.model.CreateNetworkInterfaceRequest;
-import com.amazonaws.services.ec2.model.CreateNetworkInterfaceResult;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateSubnetRequest;
@@ -31,25 +29,21 @@ import com.amazonaws.services.ec2.model.CreateSubnetResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVpcRequest;
 import com.amazonaws.services.ec2.model.CreateVpcResult;
+import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesRequest;
+import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
+import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult;
 import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceNetworkInterfaceSpecification;
-import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
-import com.amazonaws.services.ec2.model.NetworkInterface;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.RunInstancesRequest;
-import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Tag;
@@ -118,26 +112,85 @@ public class AWSCloudService {
 			
 			if (cloudcoderVpc != null) {
 				System.out.println("Found " + CLOUDCODER_VPC_NAME + ", id=" + cloudcoderVpc.getVpcId());
-			} else {
-				// Create a VPC
-				CreateVpcRequest req = new CreateVpcRequest("10.0.0.0/24");
-				CreateVpcResult result = client.createVpc(req);
-				cloudcoderVpc = result.getVpc();
+				info.setVpc(cloudcoderVpc);
 				
-				// Tag it with the correct name
-				CreateTagsRequest tagReq = new CreateTagsRequest();
-				tagReq.setTags(Arrays.asList(new Tag("Name", CLOUDCODER_VPC_NAME)));
-				tagReq.setResources(Arrays.asList(cloudcoderVpc.getVpcId()));
-				client.createTags(tagReq);
-				System.out.printf("Tagged VPC %s with Name=%s\n", cloudcoderVpc.getVpcId(), CLOUDCODER_VPC_NAME);
+				// Find its subnets
+				DescribeSubnetsRequest dsReq = new DescribeSubnetsRequest()
+					.withFilters(new Filter("vpc-id", Arrays.asList(cloudcoderVpc.getVpcId())));
+				DescribeSubnetsResult dsRes = client.describeSubnets(dsReq);
+				info.setSubnets(dsRes.getSubnets());
+				return;
 			}
 			
+			// Create a VPC
+			CreateVpcRequest req = new CreateVpcRequest("10.0.0.0/16");
+			CreateVpcResult result = client.createVpc(req);
+			cloudcoderVpc = result.getVpc();
+			
+			// Tag it with the correct name
+			tagResource(cloudcoderVpc.getVpcId(), "Name", CLOUDCODER_VPC_NAME);
+			System.out.printf("Tagged VPC %s with Name=%s\n", cloudcoderVpc.getVpcId(), CLOUDCODER_VPC_NAME);
+			
 			info.setVpc(cloudcoderVpc);
+			
+			// Create a subnet in each availability zone with state "available"
+			List<Subnet> cloudcoderVpcSubnets = new ArrayList<Subnet>();
+			DescribeAvailabilityZonesRequest azReq = new DescribeAvailabilityZonesRequest()
+				.withFilters(new Filter("state", Arrays.asList("available")));
+			DescribeAvailabilityZonesResult azRes = client.describeAvailabilityZones(azReq);
+			int subnetCount = 1;
+			for (AvailabilityZone az : azRes.getAvailabilityZones()) {
+				System.out.printf("AZ %s has state %s\n", az.getZoneName(), az.getState());
+
+				// For some insane reason, it is not possible to know
+				// in advance which AZs support the creation of subnets:
+				// even if the AZ state is "available", trying to create
+				// a subnet may throw an error.
+				// All we can do is try and see which ones fail.
+				try {
+					// Each subnet can support 251 instances (AWS reserves 4 IPs per subnet)
+					String cidrBlock = String.format("10.0.%d.0/24", subnetCount);
+					CreateSubnetRequest csReq = new CreateSubnetRequest()
+						.withAvailabilityZone(az.getZoneName())
+						.withCidrBlock(cidrBlock)
+						.withVpcId(cloudcoderVpc.getVpcId());
+	
+					CreateSubnetResult csRes = client.createSubnet(csReq);
+					Subnet subnet = csRes.getSubnet();
+					cloudcoderVpcSubnets.add(subnet);
+					
+					// Tag the subnet with a meaningful name
+					tagResource(subnet.getSubnetId(), "Name", "cloudcoder-vpc-subnet-" + az.getZoneName());
+	
+					// Presumably each subnet becomes the default in the AZ?
+				} catch (AmazonServiceException e) {
+					System.out.printf("Warning: subnet creation in zone %s failed: %s\n", az.getZoneName(), e.getMessage());
+				}
+					
+				subnetCount++;
+			}
+			
+			if (cloudcoderVpcSubnets.isEmpty()) {
+				// I'm guessing this will not happen
+				AWSRegion region = document.getValue("awsRegion.region").getEnum(AWSRegion.class);
+				throw new ExecException("Failed to create any subnets in region " + region);
+			}
+			
+			info.setSubnets(cloudcoderVpcSubnets);
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to login to enumerate VPCs/create new VPC", e);
 		}
 	}
+
+	// Add a Name tag to a resource
+	private void tagResource(String resourceId, String key, String value) {
+		CreateTagsRequest tagReq = new CreateTagsRequest();
+		tagReq.setTags(Arrays.asList(new Tag(key, value)));
+		tagReq.setResources(Arrays.asList(resourceId));
+		client.createTags(tagReq);
+	}
 	
+	/*
 	public void findOrCreateSubnet() throws ExecException {
 		if (info.getVpc() == null) {
 			throw new IllegalArgumentException("A VPC is required");
@@ -174,6 +227,7 @@ public class AWSCloudService {
 			throw new ExecException("Could not find or create VPC subnet", e);
 		}
 	}
+	*/
 	
 	public void createOrChooseKeypair() throws ExecException {
 		try {
@@ -332,6 +386,7 @@ public class AWSCloudService {
 		}
 	}
 	
+	/*
 	public void createWebappInstance() throws ExecException {
 		try {
 			System.out.println("Starting webapp instance...");
@@ -373,6 +428,7 @@ public class AWSCloudService {
 			throw new ExecException("Could not start webapp instance", e);
 		}
 	}
+	*/
 
 	// This is just for testing.
 	public static void main(String[] args) {
@@ -392,18 +448,16 @@ public class AWSCloudService {
 		document.getValue("awsKeypair.useExisting").setBoolean(true);
 		document.getValue("awsKeypair.filename").setString(keyPairFilename);
 		
-		//document.getValue("awsRegion.region").setEnum(AWSRegion.EU_CENTRAL_1);
-		
 		AWSCloudService svc = new AWSCloudService();
 		svc.setDocument(document);
 		try {
 			svc.login();
 			svc.findOrCreateVpc();
-			svc.findOrCreateSubnet();
-			svc.createOrChooseKeypair();
+			//svc.findOrCreateSubnet();
+			//svc.createOrChooseKeypair();
 			svc.findOrCreateSecurityGroup();
 			svc.findUbuntuServerImage();
-			svc.createWebappInstance();
+			//svc.createWebappInstance();
 		} catch (ExecException e) {
 			System.err.println("Error occurred");
 			e.printStackTrace();

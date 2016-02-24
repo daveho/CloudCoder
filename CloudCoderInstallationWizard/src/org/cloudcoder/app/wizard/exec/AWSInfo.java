@@ -1,5 +1,7 @@
 package org.cloudcoder.app.wizard.exec;
 
+import java.util.List;
+
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.KeyPair;
@@ -12,7 +14,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 // This is the implementation for AWS.
 public class AWSInfo {
 	private Vpc vpc;
-	private Subnet subnet;
+	private List<Subnet> subnets;
 	private KeyPair keyPair;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
@@ -27,12 +29,12 @@ public class AWSInfo {
 		this.vpc = vpc;
 	}
 	
-	public Subnet getSubnet() {
-		return subnet;
+	public List<Subnet> getSubnets() {
+		return subnets;
 	}
 
-	public void setSubnet(Subnet subnet) {
-		this.subnet = subnet;
+	public void setSubnets(List<Subnet> subnet) {
+		this.subnets = subnet;
 	}
 	
 	public KeyPair getKeyPair() {
