@@ -50,9 +50,9 @@ import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Vpc;
 
-// Currently hard-coded for Amazon AWS.
-// Eventually, implement this for other cloud providers.
-public class CloudService {
+// Cloud service operations for AWS.
+// Eventually, implement similar classes for other cloud providers.
+public class AWSCloudService {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
@@ -371,7 +371,7 @@ public class CloudService {
 		
 		//document.getValue("awsRegion.region").setEnum(AWSRegion.EU_CENTRAL_1);
 		
-		CloudService svc = new CloudService();
+		AWSCloudService svc = new AWSCloudService();
 		svc.setDocument(document);
 		try {
 			svc.login();
