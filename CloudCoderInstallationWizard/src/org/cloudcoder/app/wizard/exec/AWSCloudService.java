@@ -154,7 +154,7 @@ public class AWSCloudService {
 			}
 			
 			// Create a VPC
-			CreateVpcRequest req = new CreateVpcRequest("10.121.0.0/24");
+			CreateVpcRequest req = new CreateVpcRequest("10.0.0.0/16");
 			CreateVpcResult result = client.createVpc(req);
 			cloudcoderVpc = result.getVpc();
 			
@@ -163,17 +163,6 @@ public class AWSCloudService {
 			System.out.printf("Tagged VPC %s with Name=%s\n", cloudcoderVpc.getVpcId(), CLOUDCODER_VPC_NAME);
 			
 			info.setVpc(cloudcoderVpc);
-			
-			// Create network ACL
-			CreateNetworkAclRequest cnaReq = new CreateNetworkAclRequest()
-				.withVpcId(cloudcoderVpc.getVpcId());
-			CreateNetworkAclResult cnaRes = client.createNetworkAcl(cnaReq);
-			NetworkAcl acl = cnaRes.getNetworkAcl();
-			info.setNetworkAcl(acl);
-			
-			// Create inbound and outbound rules
-			createNetworkAclEntry(acl, false); // inbound
-			createNetworkAclEntry(acl, true); // outbound
 			
 			// Get availability zones
 			DescribeAvailabilityZonesRequest azReq = new DescribeAvailabilityZonesRequest()
@@ -201,7 +190,7 @@ public class AWSCloudService {
 					// Each subnet can support 251 instances (AWS reserves 4 IPs per subnet)
 					CreateSubnetRequest csReq = new CreateSubnetRequest()
 						.withAvailabilityZone(az.getZoneName())
-						.withCidrBlock("10.121.0.0/24")
+						.withCidrBlock("10.0.0.0/24")
 						.withVpcId(cloudcoderVpc.getVpcId());
 	
 					CreateSubnetResult csRes = client.createSubnet(csReq);
@@ -254,7 +243,7 @@ public class AWSCloudService {
 			
 			// Create a route from the subnet to the internet via the gateway
 			CreateRouteRequest crReq = new CreateRouteRequest()
-				.withDestinationCidrBlock("0.0.0.0/32")
+				.withDestinationCidrBlock("0.0.0.0/0")
 				.withGatewayId(ig.getInternetGatewayId())
 				.withRouteTableId(rt.getRouteTableId());
 			CreateRouteResult crRes = client.createRoute(crReq);
@@ -266,18 +255,6 @@ public class AWSCloudService {
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to login to enumerate VPCs/create new VPC", e);
 		}
-	}
-
-	private void createNetworkAclEntry(NetworkAcl acl, boolean egress) {
-		CreateNetworkAclEntryRequest ibeReq = new CreateNetworkAclEntryRequest()
-			.withNetworkAclId(acl.getNetworkAclId())
-			.withCidrBlock("0.0.0.0/32")
-			.withRuleAction(RuleAction.Allow)
-			.withRuleNumber(100)
-			.withEgress(egress)
-			.withProtocol("-1") // all protocols
-			;
-		client.createNetworkAclEntry(ibeReq);
 	}
 
 	// Add a Name tag to a resource
@@ -422,7 +399,7 @@ public class AWSCloudService {
 		AuthorizeSecurityGroupIngressRequest iReq = new AuthorizeSecurityGroupIngressRequest()
 			.withGroupId(groupId)
 			.withIpPermissions(new IpPermission()
-				.withIpRanges("0.0.0.0/32")
+				.withIpRanges("0.0.0.0/0")
 				.withIpProtocol("tcp")
 				.withFromPort(port)
 				.withToPort(port)
