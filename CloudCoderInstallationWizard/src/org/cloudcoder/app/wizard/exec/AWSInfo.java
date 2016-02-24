@@ -1,7 +1,9 @@
 package org.cloudcoder.app.wizard.exec;
 
 import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.KeyPair;
+import com.amazonaws.services.ec2.model.NetworkInterface;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Vpc;
@@ -14,6 +16,8 @@ public class AWSInfo {
 	private KeyPair keyPair;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
+	private Instance webappInstance;
+	private NetworkInterface webappNetworkInterface;
 	
 	public Vpc getVpc() {
 		return vpc;
@@ -53,5 +57,21 @@ public class AWSInfo {
 
 	public void setWebappImage(Image image) {
 		this.webappImage = image;
+	}
+	
+	public Instance getWebappInstance() {
+		return webappInstance;
+	}
+
+	public void setWebappInstance(Instance instance) {
+		this.webappInstance = instance;
+	}
+	
+	public NetworkInterface getWebappNetworkInterface() {
+		return webappNetworkInterface;
+	}
+
+	public void setWebappNetworkInterface(NetworkInterface ni) {
+		this.webappNetworkInterface = ni;
 	}
 }

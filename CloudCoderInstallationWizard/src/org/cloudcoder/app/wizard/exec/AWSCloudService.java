@@ -18,9 +18,12 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AttachNetworkInterfaceRequest;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
+import com.amazonaws.services.ec2.model.CreateNetworkInterfaceRequest;
+import com.amazonaws.services.ec2.model.CreateNetworkInterfaceResult;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateSubnetRequest;
@@ -38,10 +41,12 @@ import com.amazonaws.services.ec2.model.DescribeVpcsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceNetworkInterfaceSpecification;
 import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.NetworkInterface;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
@@ -344,7 +349,25 @@ public class AWSCloudService {
 			Reservation resv = res.getReservation();
 			List<Instance> instances = resv.getInstances();
 			
-			System.out.printf("Instance id=%s\n", instances.get(0).getInstanceId());
+			Instance webappInstance = instances.get(0);
+			System.out.printf("Instance id=%s\n", webappInstance.getInstanceId());
+			
+			info.setWebappInstance(webappInstance);
+			
+			CreateNetworkInterfaceRequest ifReq = new CreateNetworkInterfaceRequest()
+				.withSubnetId(info.getSubnet().getSubnetId())
+				.withGroups(info.getSecurityGroup().getGroupId());
+			CreateNetworkInterfaceResult ifRes = client.createNetworkInterface(ifReq);
+			NetworkInterface ni = ifRes.getNetworkInterface();
+			info.setWebappNetworkInterface(ni);
+			
+			// TODO: wait for instance to reach "running" state?
+			
+			AttachNetworkInterfaceRequest nReq = new AttachNetworkInterfaceRequest()
+				.withDeviceIndex(0)
+				.withInstanceId(webappInstance.getInstanceId())
+				.withNetworkInterfaceId(ni.getNetworkInterfaceId());
+			client.attachNetworkInterface(nReq);
 			
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Could not start webapp instance", e);
@@ -359,15 +382,15 @@ public class AWSCloudService {
 		String accessKeyId = keyboard.nextLine();
 		System.out.print("Secret access key: ");
 		String secretAccessKey = keyboard.nextLine();
-		//System.out.print("Keypair filename: ");
-		//String keyPairFilename = keyboard.nextLine();
+		System.out.print("Keypair filename: ");
+		String keyPairFilename = keyboard.nextLine();
 		
 		Document document = DocumentFactory.create();
 		document.getValue("aws.accessKeyId").setString(accessKeyId);
 		document.getValue("aws.secretAccessKey").setString(secretAccessKey);
 		
-		document.getValue("awsKeypair.useExisting").setBoolean(false);
-		//document.getValue("awsKeypair.filename").setString(keyPairFilename);
+		document.getValue("awsKeypair.useExisting").setBoolean(true);
+		document.getValue("awsKeypair.filename").setString(keyPairFilename);
 		
 		//document.getValue("awsRegion.region").setEnum(AWSRegion.EU_CENTRAL_1);
 		
