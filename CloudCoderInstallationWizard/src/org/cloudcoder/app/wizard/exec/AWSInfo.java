@@ -20,6 +20,7 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	private Subnet subnet;
 	private String keyPairFilename;
 	private KeyPair keyPair;
+	private File privateKeyFile;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
 	private Instance webappInstance;
@@ -39,21 +40,40 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	}
 	
 	@Override
-	public String getPrivateKeyFilename() {
-		if (keyPairFilename != null) {
-			// User specified a keypair file
-			return keyPairFilename;
+	public boolean isPrivateKeyGenerated() {
+		return keyPairFilename == null;
+	}
+	
+	@Override
+	public File getPrivateKeyFile() {
+		if (privateKeyFile != null) {
+			if (keyPairFilename != null) {
+				// User specified a keypair file
+				privateKeyFile = new File(keyPairFilename);
+			} else {
+				// Private key was generated, so save it to a file
+				privateKeyFile = saveGeneratedPrivateKey();
+			}
 		}
+		return privateKeyFile;
+	}
+	
+	@Override
+	public String getWebappServerUserName() {
+		return "ubuntu";
+	}
+
+	private File saveGeneratedPrivateKey() {
 		try {
 			// Save the generated keypair in a file in a well-known location
-			File temp = new File(getDataDir(), ICloudService.CLOUDCODER_KEYPAIR_NAME + ".pem");
-			FileWriter fw = new FileWriter(temp);
+			File f = new File(getDataDir(), ICloudService.CLOUDCODER_KEYPAIR_NAME + ".pem");
+			FileWriter fw = new FileWriter(f);
 			try {
 				fw.write(keyPair.getKeyMaterial());
 			} finally {
 				fw.close();
 			}
-			return temp.getAbsolutePath();
+			return f;
 		} catch (IOException e) {
 			throw new RuntimeException("Could not save keypair to tempfile");
 		}

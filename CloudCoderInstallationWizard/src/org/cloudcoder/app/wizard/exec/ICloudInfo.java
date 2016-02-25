@@ -31,13 +31,20 @@ public interface ICloudInfo {
 	public String getWebappPublicIp();
 	
 	/**
-	 * Get the filename of the private key (or the keypair if a PEM file)
-	 * used to connect to the webapp server.  This should be in the
-	 * local data directory.
+	 * Determine whether the private key was generated, or was pre-existing.
 	 * 
-	 * @return the filename of the private key
+	 * @return true if the private key was generated, false if
+	 *         it was pre-existing
 	 */
-	public String getPrivateKeyFilename();
+	public boolean isPrivateKeyGenerated();
+	
+	/**
+	 * Get the the private key file (or the keypair if a PEM file)
+	 * used to connect to the webapp server.
+	 * 
+	 * @return the private key file
+	 */
+	public File getPrivateKeyFile();
 	
 	/**
 	 * Get the private IP address of the webapp server:
@@ -47,4 +54,11 @@ public interface ICloudInfo {
 	 * @return the private IP address of the webapp server
 	 */
 	public String getWebappPrivateIp();
+
+	/**
+	 * Get the Unix username used to do admin on the webapp instance.
+	 * 
+	 * @return Unix username used to do admin on the webapp instance
+	 */
+	public String getWebappServerUserName();
 }

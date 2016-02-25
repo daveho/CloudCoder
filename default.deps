@@ -7,14 +7,21 @@ http://repo1.maven.org/maven2/com/google/guava/guava/13.0.1/guava-13.0.1.jar
 http://central.maven.org/maven2/log4j/log4j/1.2.16/log4j-1.2.16.jar
   CloudCoder/war/WEB-INF/lib/log4j-1.2.16.jar
   CloudCoderLogging/lib/log4j-1.2.16.jar
+  CloudCoderInstallationWizard/lib/log4j-1.2.16.jar
 http://owasp-java-html-sanitizer.googlecode.com/svn-history/r118/trunk/distrib/lib/owasp-java-html-sanitizer.jar
   CloudCoderLogging/lib/owasp-java-html-sanitizer.jar
-http://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.6.4/slf4j-api-1.6.4.jar
-  CloudCoderLogging/lib/slf4j-api-1.6.4.jar
-  CloudCoder/war/WEB-INF/lib/slf4j-api-1.6.4.jar
-http://repo2.maven.org/maven2/org/slf4j/slf4j-log4j12/1.6.4/slf4j-log4j12-1.6.4.jar
-  CloudCoderLogging/lib/slf4j-log4j12-1.6.4.jar
-  CloudCoder/war/WEB-INF/lib/slf4j-log4j12-1.6.4.jar
+
+# slf4j
+slf4j_version=1.6.4
+http://repo1.maven.org/maven2/org/slf4j/slf4j-api/${slf4j_version}/slf4j-api-${slf4j_version}.jar
+  CloudCoderLogging/lib/slf4j-api-${slf4j_version}.jar
+  CloudCoder/war/WEB-INF/lib/slf4j-api-${slf4j_version}.jar
+  CloudCoderInstallationWizard/lib/slf4j-api-${slf4j_version}.jar
+http://repo2.maven.org/maven2/org/slf4j/slf4j-log4j12/${slf4j_version}/slf4j-log4j12-${slf4j_version}.jar
+  CloudCoderLogging/lib/slf4j-log4j12-${slf4j_version}.jar
+  CloudCoder/war/WEB-INF/lib/slf4j-log4j12-${slf4j_version}.jar
+  CloudCoderInstallationWizard/lib/slf4j-log4j12-${slf4j_version}.jar
+
 http://repo1.maven.org/maven2/commons-io/commons-io/2.1/commons-io-2.1.jar
   CloudCoderBuilder2/lib/commons-io-2.1.jar
   CloudCoder/war/WEB-INF/lib/commons-io-2.1.jar
@@ -244,7 +251,23 @@ joda_time_version=2.8.1
 http://central.maven.org/maven2/joda-time/joda-time/${joda_time_version}/joda-time-${joda_time_version}.jar
   CloudCoderInstallationWizard/lib/joda-time-${joda_time_version}.jar
 
-# JSch
-jsch_version=0.1.53
-http://central.maven.org/maven2/com/jcraft/jsch/${jsch_version}/jsch-${jsch_version}.jar
-  CloudCoderInstallationWizard/lib/jsch-${jsch_version}.jar
+# sshj
+sshj_version=0.15.0
+http://repo1.maven.org/maven2/com/hierynomus/sshj/${sshj_version}/sshj-${sshj_version}.jar
+  CloudCoderInstallationWizard/lib/sshj-${sshj_version}.jar
+
+# Bouncy Castle
+bouncycastle_version=1.54
+http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/${bouncycastle_version}/bcprov-jdk15on-${bouncycastle_version}.jar
+  CloudCoderInstallationWizard/lib/bcprov-jdk15on-${bouncycastle_version}.jar
+http://central.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/${bouncycastle_version}/bcpkix-jdk15on-${bouncycastle_version}.jar
+  CloudCoderInstallationWizard/lib/bcpkix-jdk15on-${bouncycastle_version}.jar
+
+# JZlib
+jzlib_version=1.1.3
+http://central.maven.org/maven2/com/jcraft/jzlib/${jzlib_version}/jzlib-${jzlib_version}.jar
+  CloudCoderInstallationWizard/lib/jzlib-${jzlib_version}.jar
+
+# This is needed by sshj
+http://central.maven.org/maven2/net/vrallev/ecc/ecc-25519-java/1.0.1/ecc-25519-java-1.0.1.jar
+  CloudCoderInstallationWizard/lib/ecc-25519-java-1.0.1.jar
