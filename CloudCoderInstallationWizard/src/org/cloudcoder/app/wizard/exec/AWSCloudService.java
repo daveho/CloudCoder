@@ -82,10 +82,9 @@ import com.amazonaws.services.ec2.model.Vpc;
 
 // Cloud service operations for AWS.
 // Eventually, implement similar classes for other cloud providers.
-public class AWSCloudService {
+public class AWSCloudService implements ICloudService {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
-	private static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
 	private static final String UBUNTU_SERVER_AMI_OWNER = "099720109477";
 	
@@ -312,7 +311,7 @@ public class AWSCloudService {
 				throw new ExecException("Could not find keypair " + keyPairName);
 			} else {
 				// Create a new keypair.
-				CreateKeyPairRequest req = new CreateKeyPairRequest(CLOUDCODER_KEYPAIR_NAME);
+				CreateKeyPairRequest req = new CreateKeyPairRequest(ICloudService.CLOUDCODER_KEYPAIR_NAME);
 				CreateKeyPairResult result = client.createKeyPair(req);
 				this.info.setKeyPair(result.getKeyPair());
 				System.out.println("Created keypair " + this.info.getKeyPair().getKeyName());

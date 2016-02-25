@@ -15,7 +15,7 @@ import com.amazonaws.util.IOUtils;
 
 // Collects information needed to do cloud service admin actions.
 // This is the implementation for AWS.
-public class AWSInfo implements ICloudInfo {
+public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	private Vpc vpc;
 	private Subnet subnet;
 	private String keyPairFilename;
@@ -34,16 +34,19 @@ public class AWSInfo implements ICloudInfo {
 	}
 	
 	@Override
+	public String getWebappPrivateIp() {
+		return webappInstance.getNetworkInterfaces().get(0).getPrivateIpAddress();
+	}
+	
+	@Override
 	public String getPrivateKeyFilename() {
 		if (keyPairFilename != null) {
+			// User specified a keypair file
 			return keyPairFilename;
 		}
-		// Save to a delete-on-exit file
-		File tmpdir = new File(System.getProperty("user.home") + "/cloudcoderKeyfile");
-		tmpdir.mkdirs();
 		try {
-			File temp = File.createTempFile("cctmpkey", ".pem", tmpdir);
-			temp.deleteOnExit();
+			// Save the generated keypair in a file in a well-known location
+			File temp = new File(getDataDir(), ICloudService.CLOUDCODER_KEYPAIR_NAME + ".pem");
 			FileWriter fw = new FileWriter(temp);
 			try {
 				fw.write(keyPair.getKeyMaterial());
