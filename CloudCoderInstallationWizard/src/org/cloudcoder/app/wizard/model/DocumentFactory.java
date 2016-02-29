@@ -40,6 +40,16 @@ public class DocumentFactory {
 				new NoopValidator());
 		document.addPage(instanceTypePage);
 		
+		Page dnsPage = new Page("dns", "Enter DNS information");
+		dnsPage.addHelpText("msg", "Message");
+		dnsPage.add(new StringValue("hostname", "Hostname"), new StringValueNonemptyValidator());
+		dnsPage.add(new BooleanValue("useNoIp", "Use No-IP"), new NoopValidator());
+		dnsPage.add(new StringValue("noIpUsername", "No-IP username"), new StringValueNonemptyValidator());
+		dnsPage.selectivelyEnable("noIpUsername", new EnableIfBooleanFieldChecked("useNoIp"));
+		dnsPage.add(new StringValue("noIpPassword", "No-IP password"), new StringValueNonemptyValidator());
+		dnsPage.selectivelyEnable("noIpPassword", new EnableIfBooleanFieldChecked("useNoIp"));
+		document.addPage(dnsPage);
+		
 		return document;
 	}
 }
