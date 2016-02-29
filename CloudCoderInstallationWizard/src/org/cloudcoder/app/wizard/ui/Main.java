@@ -15,7 +15,7 @@ public class Main {
 				
 				Document document = DocumentFactory.create();
 				
-				WizardPanel panel = new WizardPanel();
+				WizardTopLevelPanel panel = new WizardTopLevelPanel();
 				panel.setDocument(document);
 				
 				frame.setResizable(false);
