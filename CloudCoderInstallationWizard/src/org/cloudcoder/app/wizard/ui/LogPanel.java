@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ComponentAdapter;
@@ -16,6 +17,8 @@ import java.nio.charset.CoderResult;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
@@ -23,7 +26,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
-public class LogPanel extends JTextPane {
+public class LogPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	// Collect text and send it to a queue
@@ -137,12 +140,17 @@ public class LogPanel extends JTextPane {
 		}
 	}
 
+	private JTextPane textPane;
 	private boolean monitorsStarted;
 	
 	public LogPanel() {
-		setBorder(BorderFactory.createLoweredSoftBevelBorder());
-		setBackground(Color.BLACK);
-		setFont(new Font("Courier New", Font.PLAIN, 12));
+		setLayout(new BorderLayout());
+		
+		this.textPane = new JTextPane();
+		
+		textPane.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+		textPane.setBackground(Color.BLACK);
+		textPane.setFont(new Font("Courier New", Font.PLAIN, 12));
 		monitorsStarted = false;
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -150,6 +158,9 @@ public class LogPanel extends JTextPane {
 				startMonitors();
 			}
 		});
+		JScrollPane scrollPane = new JScrollPane(textPane);
+
+		add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	private void startMonitors() {
@@ -178,10 +189,10 @@ public class LogPanel extends JTextPane {
 				// See: http://stackoverflow.com/questions/9650992/how-to-change-text-color-in-the-jtextarea
 				StyleContext sc = StyleContext.getDefaultStyleContext();
 				AttributeSet attr = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, color);
-				int len = getDocument().getLength();
-				setCaretPosition(len);
-				setCharacterAttributes(attr, false);
-				replaceSelection(line);
+				int len = textPane.getDocument().getLength();
+				textPane.setCaretPosition(len);
+				textPane.setCharacterAttributes(attr, false);
+				textPane.replaceSelection(line);
 			}
 		});
 	}
