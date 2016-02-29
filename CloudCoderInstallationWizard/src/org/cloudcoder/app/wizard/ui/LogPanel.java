@@ -9,6 +9,7 @@ import java.awt.event.ComponentListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -166,9 +167,13 @@ public class LogPanel extends JPanel {
 	private void startMonitors() {
 		if (!this.monitorsStarted) {
 			this.monitorsStarted = true;
-			System.setOut(new PrintStream(createOutputMonitor(Color.LIGHT_GRAY).getOutputSink()));
-			System.setErr(new PrintStream(createOutputMonitor(Color.RED).getOutputSink()));
-			
+			try {
+				System.setOut(new PrintStream(createOutputMonitor(Color.LIGHT_GRAY).getOutputSink(), true, "UTF-8"));
+				System.setErr(new PrintStream(createOutputMonitor(Color.RED).getOutputSink(), true, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				// Should not happen
+				throw new IllegalStateException("UTF-8 encoding not supported?");
+			}
 			System.out.println("This is text printed to System.out");
 			System.err.println("This is text printed to System.err");
 		}
