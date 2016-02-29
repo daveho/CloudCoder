@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Scanner;
@@ -22,46 +23,32 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 public class Bootstrap {
 	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 	
-	public static final String DOWNLOAD_SITE = "https://s3.amazonaws.com/cloudcoder-binaries/";
-	public static final String BOOTSTRAP_SCRIPT = DOWNLOAD_SITE + "bootstrap.pl";
+	// Real download site
+	//public static final String DOWNLOAD_SITE = "https://s3.amazonaws.com/cloudcoder-binaries";
+
+	// Temporary site for development
+	public static final String DOWNLOAD_SITE = "http://faculty.ycp.edu/~dhovemey/cloudcoder";
+	
+	public static final String BOOTSTRAP_SCRIPT = DOWNLOAD_SITE + "/bootstrap.pl";
 	
 	private static class Drain implements Runnable {
 		private InputStream is;
-		private StringWriter sink;
-		private Thread thread;
+		private OutputStream os;
 		
-		public Drain(InputStream is) {
+		public Drain(InputStream is, OutputStream os) {
 			this.is = is;
-			this.sink = new StringWriter();
-		}
-		
-		public String getOutput() {
-			return sink.toString();
+			this.os = os;
 		}
 		
 		@Override
 		public void run() {
-			InputStreamReader rdr = new InputStreamReader(is, Charset.forName("UTF-8"));
 			try {
-				IOUtils.copy(rdr, sink);
+				IOUtils.copy(is, os);
 			} catch (IOException e) {
 				logger.error("Error draining stream ", e);
 			} finally {
-				IOUtils.closeQuietly(rdr);
-				IOUtils.closeQuietly(sink);
-			}
-		}
-		
-		public void start() {
-			thread = new Thread(this);
-			thread.start();
-		}
-		
-		public void join() {
-			try {
-				thread.join();
-			} catch (InterruptedException e) {
-				logger.error("Interrupted while draining stream", e);
+				IOUtils.closeQuietly(is);
+				// Note: do NOT close the output stream
 			}
 		}
 	}
@@ -73,6 +60,18 @@ public class Bootstrap {
 	}
 	
 	public void bootstrapWebappServer() throws ExecException {
+		executeCommand("wget " + BOOTSTRAP_SCRIPT);
+	}
+
+	/**
+	 * Execute remote command on the webapp server,
+	 * diverting the remote process's stdout and stderr to
+	 * System.out and System.err.
+	 * 
+	 * @param cmdStr  the command to execute
+	 * @throws ExecException
+	 */
+	private void executeCommand(String cmdStr) throws ExecException {
 		try {
 			SSHClient ssh = new SSHClient();
 			ssh.addHostKeyVerifier(new PromiscuousVerifier()); // FIXME: would be nice to have actual host key fingerprint
@@ -81,22 +80,21 @@ public class Bootstrap {
 				KeyProvider keys = ssh.loadKeys(info.getPrivateKeyFile().getAbsolutePath());
 				ssh.authPublickey(info.getWebappServerUserName(), keys);
 				Session session = ssh.startSession();
+				session.setEnvVar("LANG", "en_US.UTF-8");
 				try {
-					System.out.println("Downloading bootstrap script");
-					Command cmd = session.exec("wget " + BOOTSTRAP_SCRIPT);
-					//System.out.println(IOUtils.readFully(cmd.getInputStream()));
-					Drain out = new Drain(cmd.getInputStream());
-					Drain err = new Drain(cmd.getErrorStream());
-					out.start();
-					err.start();
-					out.join();
-					err.join();
+					System.out.println("Executing command: " + cmdStr);
+					Command cmd = session.exec(cmdStr);
+
+					// Divert command output and error
+					Thread t1 = new Thread(new Drain(cmd.getInputStream(), System.out));
+					Thread t2 = new Thread(new Drain(cmd.getErrorStream(), System.err));
+					t1.start();
+					t2.start();
+					t1.join();
+					t2.join();
+					
 					cmd.join(10, TimeUnit.SECONDS);
 					System.out.println("Command exit code is " + cmd.getExitStatus());
-					System.out.println("Output:");
-					System.out.println(out.getOutput());
-					System.out.println("Error:");
-					System.out.println(err.getOutput());
 				} finally {
 					session.close();
 				}
