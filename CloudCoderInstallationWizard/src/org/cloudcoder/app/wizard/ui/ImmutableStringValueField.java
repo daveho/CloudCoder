@@ -10,7 +10,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.cloudcoder.app.wizard.model.DisplayOption;
-import org.cloudcoder.app.wizard.model.DisplayOptions;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 

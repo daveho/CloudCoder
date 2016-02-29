@@ -10,7 +10,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cloudcoder.app.wizard.model.DisplayOption;
-import org.cloudcoder.app.wizard.model.DisplayOptions;
 import org.cloudcoder.app.wizard.model.IValue;
 
 public abstract class LabeledField<E extends IValue> extends JPanel implements UIConstants {
