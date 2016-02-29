@@ -50,6 +50,21 @@ public class DocumentFactory {
 		dnsPage.selectivelyEnable("noIpPassword", new EnableIfBooleanFieldChecked("useNoIp"));
 		document.addPage(dnsPage);
 		
+		Page ccAcctPage = new Page("ccAcct", "Enter CloudCoder account information");
+		ccAcctPage.addHelpText("msg", "Message", DisplayOption.HALF_HEIGHT);
+		ccAcctPage.add(new StringValue("username", "Username"), new StringValueNonemptyValidator());
+		ccAcctPage.add(new StringValue("password", "Password"), new StringValueNonemptyValidator());
+		ccAcctPage.add(new StringValue("firstname", "First name"), new StringValueNonemptyValidator());
+		ccAcctPage.add(new StringValue("lastname", "Last name"), new StringValueNonemptyValidator());
+		ccAcctPage.add(new StringValue("email", "Email address (optional)"), new NoopValidator());
+		ccAcctPage.add(new StringValue("website", "Website (optional)"), new NoopValidator());
+		document.addPage(ccAcctPage);
+		
+		Page instDetailsPage = new Page("instDetails", "Enter instance details");
+		instDetailsPage.addHelpText("msg", "Message");
+		instDetailsPage.add(new StringValue("institutionName", "Institution name"), new StringValueNonemptyValidator());
+		document.addPage(instDetailsPage);
+		
 		return document;
 	}
 }

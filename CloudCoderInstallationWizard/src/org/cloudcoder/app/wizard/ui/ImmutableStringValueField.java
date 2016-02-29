@@ -9,6 +9,8 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.cloudcoder.app.wizard.model.DisplayOption;
+import org.cloudcoder.app.wizard.model.DisplayOptions;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
@@ -51,8 +53,11 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	
 	@Override
 	public int getFieldHeight() {
-		// Should this be configurable somehow?
-		return 240;
+		int height = 240;
+		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
+			height /= 2;
+		}
+		return height;
 	}
 	
 	@Override

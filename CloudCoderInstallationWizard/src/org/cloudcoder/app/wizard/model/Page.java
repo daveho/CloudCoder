@@ -24,13 +24,17 @@ public class Page implements Cloneable, Iterable<IValue> {
 		this.selectiveEnablementMap = new HashMap<String, ISelectiveEnablement>();
 	}
 	
-	public void add(IValue value, IValidator validator) {
+	public void add(IValue value, IValidator validator, DisplayOption... displayOptions) {
+		for (DisplayOption opt : displayOptions) {
+			value.addDisplayOption(opt);
+		}
 		values.add(value);
 		validators.add(validator);
 	}
 
-	public void addHelpText(String name, String label) {
-		add(ImmutableStringValue.createHelpText(pageName, name, label), NoopValidator.INSTANCE);
+	public void addHelpText(String name, String label, DisplayOption... displayOptions) {
+		ImmutableStringValue helpText = ImmutableStringValue.createHelpText(pageName, name, label);
+		add(helpText, NoopValidator.INSTANCE, displayOptions);
 	}
 	
 	public void selectivelyEnable(String name, ISelectiveEnablement selectiveEnablement) {

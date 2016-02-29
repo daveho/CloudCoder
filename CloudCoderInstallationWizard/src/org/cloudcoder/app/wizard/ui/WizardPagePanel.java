@@ -1,12 +1,15 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
@@ -14,13 +17,19 @@ import org.cloudcoder.app.wizard.model.Page;
 public class WizardPagePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
+	private JPanel content;
 	private Page page;
 	private List<IPageField> fields;
 	private Runnable changeCallback;
 	
 	public WizardPagePanel() {
+		setLayout(new BorderLayout());
+		
+		this.content = new JPanel();
+		BoxLayout boxLayout = new BoxLayout(content, BoxLayout.Y_AXIS);
+		content.setLayout(boxLayout);
+
 		fields = new ArrayList<IPageField>();
-		setLayout(new FlowLayout());
 
 		// Callback to execute when UI values change -
 		// used to update selective enablement.
@@ -30,6 +39,9 @@ public class WizardPagePanel extends JPanel {
 				updateSelectiveEnablement();
 			}
 		};
+		
+		JScrollPane scrollPane = new JScrollPane(content);
+		add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	/**
@@ -53,7 +65,8 @@ public class WizardPagePanel extends JPanel {
 			fields.add(field);
 			Component component = field.asComponent();
 			component.setPreferredSize(new Dimension(720, field.getFieldHeight()));
-			add(component);
+			component.setMaximumSize(new Dimension(720, field.getFieldHeight()));
+			content.add(component);
 			field.setChangeCallback(this.changeCallback);
 		}
 		updateSelectiveEnablement();

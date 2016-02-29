@@ -9,6 +9,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cloudcoder.app.wizard.model.DisplayOption;
+import org.cloudcoder.app.wizard.model.DisplayOptions;
 import org.cloudcoder.app.wizard.model.IValue;
 
 public abstract class LabeledField<E extends IValue> extends JPanel implements UIConstants {
@@ -56,7 +58,11 @@ public abstract class LabeledField<E extends IValue> extends JPanel implements U
 	}
 
 	public int getFieldHeight() {
-		return UIConstants.FIELD_HEIGHT;
+		int height = UIConstants.FIELD_HEIGHT;
+		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
+			height /= 2;
+		}
+		return height;
 	}
 	
 	public void setChangeCallback(Runnable callback) {

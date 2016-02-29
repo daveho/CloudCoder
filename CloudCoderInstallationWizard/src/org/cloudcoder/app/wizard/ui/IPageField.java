@@ -2,6 +2,7 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Component;
 
+import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.IValue;
 
 public interface IPageField {

@@ -15,4 +15,7 @@ public interface IValue extends Cloneable {
 	public boolean getBoolean();
 	
 	public IValue clone();
+
+	public void addDisplayOption(DisplayOption opt);
+	public boolean hasDisplayOption(DisplayOption opt);
 }
