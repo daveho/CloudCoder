@@ -229,6 +229,15 @@ public class Bootstrap {
 		Document document = DocumentFactory.create();
 		// TODO: populate Document
 		
+		// Create ccinstall directory if it doesn't exist
+		File dataDir = new File(System.getProperty("user.home"), "ccinstall");
+		dataDir.mkdirs();
+		if (!dataDir.isDirectory()) {
+			System.err.println("Could not create " + dataDir.getAbsolutePath());
+			System.exit(1);
+		}
+		info.setDataDir(dataDir);
+		
 		Bootstrap bootstrap = new Bootstrap(info, document);
 		
 		bootstrap.bootstrapWebappServer();
