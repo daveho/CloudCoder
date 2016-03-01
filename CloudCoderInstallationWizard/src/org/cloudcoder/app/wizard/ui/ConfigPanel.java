@@ -3,7 +3,6 @@ package org.cloudcoder.app.wizard.ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import javax.swing.JScrollPane;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
-public class WizardPagePanel extends JPanel {
+public class ConfigPanel extends JPanel implements IWizardPagePanel {
 	private static final long serialVersionUID = 1L;
 
 	private JPanel content;
@@ -22,7 +21,7 @@ public class WizardPagePanel extends JPanel {
 	private List<IPageField> fields;
 	private Runnable changeCallback;
 	
-	public WizardPagePanel() {
+	public ConfigPanel() {
 		setLayout(new BorderLayout());
 		
 		this.content = new JPanel();
@@ -44,6 +43,21 @@ public class WizardPagePanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 	
+	@Override
+	public Type getType() {
+		return Type.CONFIG;
+	}
+	
+	@Override
+	public ConfigPanel asConfigPanel() {
+		return this;
+	}
+	
+	@Override
+	public Component asComponent() {
+		return this;
+	}
+	
 	/**
 	 * Get a version of the {@link Page} with updated values
 	 * from the UI fields.
@@ -58,6 +72,7 @@ public class WizardPagePanel extends JPanel {
 		return current;
 	}
 
+	@Override
 	public void setPage(Page page) {
 		this.page = page;
 		for (IValue v : page) {

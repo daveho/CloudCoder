@@ -73,6 +73,16 @@ public class DocumentFactory {
 		instDetailsPage.add(new StringValue("institutionName", "Institution name"), new StringValueNonemptyValidator());
 		document.addPage(instDetailsPage);
 		
+		Page readyPage = new Page("ready", "Ready to install");
+		readyPage.addHelpText("msg", "Message");
+		document.addPage(readyPage);
+		
+		Page installPage = new Page("install", "Installing CloudCoder");
+		document.addPage(installPage);
+		
+		Page finishedPage = new Page("finished", "CloudCoder is installed!");
+		document.addPage(finishedPage);
+		
 		return document;
 	}
 }

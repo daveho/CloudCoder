@@ -23,10 +23,14 @@ import org.cloudcoder.app.wizard.model.validators.IValidator;
 import org.cloudcoder.app.wizard.model.validators.ValidationException;
 
 public class WizardPanel extends JPanel {
+	private static final String INSTALL_BUTTON_TEXT = "Install";
+	private static final String NEXT_BUTTON_TEXT = "Next >>";
+	private static final String PREV_BUTTON_TEXT = "<< Previous";
+
 	private static final long serialVersionUID = 1L;
 	
 	private Document document;
-	private List<WizardPagePanel> wizardPagePanels;
+	private List<IWizardPagePanel> wizardPagePanels;
 	private int currentPage;
 	private JLabel pageLabel;
 	private JButton prevButton;
@@ -35,7 +39,7 @@ public class WizardPanel extends JPanel {
 	private JLabel errorLabel;
 
 	public WizardPanel() {
-		wizardPagePanels = new ArrayList<WizardPagePanel>();
+		wizardPagePanels = new ArrayList<IWizardPagePanel>();
 		
 		setPreferredSize(new Dimension(800, 600));
 
@@ -51,9 +55,9 @@ public class WizardPanel extends JPanel {
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		this.prevButton = new JButton("<< Previous");
+		this.prevButton = new JButton(PREV_BUTTON_TEXT);
 		prevButton.setPreferredSize(new Dimension(140, 26));
-		this.nextButton = new JButton("Next >>");
+		this.nextButton = new JButton(NEXT_BUTTON_TEXT);
 		nextButton.setPreferredSize(new Dimension(140, 26));
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
@@ -106,7 +110,11 @@ public class WizardPanel extends JPanel {
 
 	private boolean doValidate() {
 		Page page = document.get(currentPage);
-		WizardPagePanel pp = wizardPagePanels.get(currentPage);
+		IWizardPagePanel p = wizardPagePanels.get(currentPage);
+		if (p.getType() != IWizardPagePanel.Type.CONFIG) {
+			return true;
+		}
+		ConfigPanel pp = p.asConfigPanel();
 		pp.markAllValid();
 		errorLabel.setText("");
 		try {
@@ -138,7 +146,11 @@ public class WizardPanel extends JPanel {
 	
 	private void commitCurrentValues() {
 		Page page = document.get(currentPage);
-		WizardPagePanel pp = wizardPagePanels.get(currentPage);
+		IWizardPagePanel p = wizardPagePanels.get(currentPage);
+		if (p.getType() != IWizardPagePanel.Type.CONFIG) {
+			return;
+		}
+		ConfigPanel pp = p.asConfigPanel();
 		for (int i = 0; i < page.getNumValues(); i++) {
 			IValue currentValue = pp.getField(i).getCurrentValue();
 			page.set(i, currentValue);
@@ -151,10 +163,17 @@ public class WizardPanel extends JPanel {
 		// Create WizardPagePanels
 		for (int i = 0; i < document.getNumPages(); i++) {
 			Page p = document.get(i);
-			WizardPagePanel pp = new WizardPagePanel();
+			IWizardPagePanel pp;
+			
+			if (p.getPageName().equals("install")) {
+				pp = new InstallPanel();
+			} else {
+				pp = new ConfigPanel();
+			}
+			
 			pp.setPage(p);
 			wizardPagePanels.add(pp);
-			pagePanel.add(pp, String.valueOf(i));
+			pagePanel.add(pp.asComponent(), String.valueOf(i));
 		}
 		
 		currentPage = 0;
@@ -162,10 +181,14 @@ public class WizardPanel extends JPanel {
 	}
 
 	private void changePage() {
-		pageLabel.setText(document.get(currentPage).getLabel());
+		Page page = document.get(currentPage);
+		pageLabel.setText(page.getLabel());
 		CardLayout cl = (CardLayout) pagePanel.getLayout();
 		cl.show(pagePanel, String.valueOf(currentPage));
-		prevButton.setEnabled(currentPage > 0);
-		nextButton.setEnabled(currentPage < document.getNumPages() - 1);
+		boolean isInstallPage = page.getPageName().equals("install");
+		prevButton.setEnabled(!isInstallPage && currentPage > 0);
+		nextButton.setEnabled(!isInstallPage && currentPage < document.getNumPages() - 1);
+		boolean isReadyPage = page.getPageName().equals("ready");
+		nextButton.setText(isReadyPage ? INSTALL_BUTTON_TEXT : NEXT_BUTTON_TEXT);
 	}
 }
