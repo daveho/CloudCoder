@@ -7,6 +7,8 @@ import org.cloudcoder.app.wizard.model.validators.StringValueNonemptyValidator;
 import com.amazonaws.services.ec2.model.InstanceType;
 
 public class DocumentFactory {
+	public static final String DEFAULT_MYSQL_PASSWD = "abc123";
+
 	public static Document create() {
 		Document document = new Document();
 		
@@ -59,6 +61,12 @@ public class DocumentFactory {
 		ccAcctPage.add(new StringValue("email", "Email address (optional)"), new NoopValidator());
 		ccAcctPage.add(new StringValue("website", "Website (optional)"), new NoopValidator());
 		document.addPage(ccAcctPage);
+		
+		Page mysqlAcctPage = new Page("mysqlAcct", "Enter MySQL account information");
+		mysqlAcctPage.addHelpText("msg", "Message");
+		mysqlAcctPage.add(new StringValue("rootPasswd", "MySQL root password", DEFAULT_MYSQL_PASSWD), new StringValueNonemptyValidator());
+		mysqlAcctPage.add(new StringValue("ccPasswd", "MySQL cloudcoder password", DEFAULT_MYSQL_PASSWD), new StringValueNonemptyValidator());
+		document.addPage(mysqlAcctPage);
 		
 		Page instDetailsPage = new Page("instDetails", "Enter instance details");
 		instDetailsPage.addHelpText("msg", "Message");

@@ -4,8 +4,12 @@ public class StringValue extends AbstractValue implements IValue {
 	private String value;
 	
 	public StringValue(String name, String label) {
+		this(name, label, "");
+	}
+	
+	public StringValue(String name, String label, String defValue) {
 		super(name, label);
-		value = "";
+		value = defValue;
 	}
 
 	@Override

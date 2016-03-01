@@ -16,7 +16,7 @@ public interface UIConstants {
 	public static final int FIELD_HEIGHT = FIELD_COMPONENT_HEIGHT + FIELD_PADDING;
 	
 	/** Label width. */
-	public static final int LABEL_WIDTH = 200;
+	public static final int LABEL_WIDTH = 240;
 	
 	/** Width in pixels of the editable component in a "standard" UI field. */
 	public static final int FIELD_COMPONENT_WIDTH = 420;
