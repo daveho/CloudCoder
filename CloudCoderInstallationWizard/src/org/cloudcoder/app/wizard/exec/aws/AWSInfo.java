@@ -1,8 +1,12 @@
-package org.cloudcoder.app.wizard.exec;
+package org.cloudcoder.app.wizard.exec.aws;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import org.cloudcoder.app.wizard.exec.AbstractCloudInfo;
+import org.cloudcoder.app.wizard.exec.ICloudInfo;
+import org.cloudcoder.app.wizard.exec.ICloudService;
 
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;

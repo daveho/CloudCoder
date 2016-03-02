@@ -1,4 +1,4 @@
-package org.cloudcoder.app.wizard.exec;
+package org.cloudcoder.app.wizard.exec.aws;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cloudcoder.app.wizard.exec.ExecException;
+import org.cloudcoder.app.wizard.exec.ICloudService;
 import org.cloudcoder.app.wizard.model.AWSRegion;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
@@ -104,6 +106,11 @@ public class AWSCloudService implements ICloudService {
 	public void setDocument(Document document) {
 		this.document = document;
 		this.info = new AWSInfo();
+	}
+	
+	@Override
+	public Document getDocument() {
+		return document;
 	}
 	
 	public void login() throws ExecException {
