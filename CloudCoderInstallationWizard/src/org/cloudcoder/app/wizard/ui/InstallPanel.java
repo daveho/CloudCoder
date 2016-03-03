@@ -5,9 +5,9 @@ import java.awt.Dimension;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -23,26 +23,37 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	// TODO: progress indicator for steps
 	// TODO: progress indicator for sub-steps in current step
 	
-	private InstallationProgress progress;
+	private InstallationProgress<?,?> progress;
+	private JProgressBar stepProgressBar;
+	private JProgressBar subStepProgressBar;
 	
 	public InstallPanel() {
 		stepDescription = new JLabel();
-		stepDescription.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
-		stepDescription.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
+		setComponentSize(stepDescription, FIELD_HEIGHT);
 		stepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(stepDescription);
 		helpTextField = new ImmutableStringValueField();
-		helpTextField.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FULL_HELP_TEXT_HEIGHT/2));
-		helpTextField.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FULL_HELP_TEXT_HEIGHT/2));
+		setComponentSize(helpTextField, FULL_HELP_TEXT_HEIGHT/2);
 		add(helpTextField);
 		subStepDescription = new JLabel();
-		subStepDescription.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
-		subStepDescription.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
+		setComponentSize(subStepDescription, FIELD_HEIGHT);
 		subStepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(subStepDescription);
+		setComponentSize(new JLabel(), FIELD_HEIGHT);
+		stepProgressBar = new JProgressBar();
+		setComponentSize(stepProgressBar, FIELD_HEIGHT);
+		add(stepProgressBar);
+		subStepProgressBar = new JProgressBar();
+		setComponentSize(subStepProgressBar, FIELD_HEIGHT);
+		add(subStepProgressBar);
+	}
+
+	private void setComponentSize(Component comp, int fieldHeight) {
+		comp.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, fieldHeight));
+		comp.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, fieldHeight));
 	}
 	
-	public void setProgress(InstallationProgress progress) {
+	public void setProgress(InstallationProgress<?,?> progress) {
 		this.progress = progress;
 		progress.addObserver(this);
 	}
@@ -101,6 +112,13 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		stepDescription.setText(progress.getCurrentStep().getDescription());
 		helpTextField.setValue(progress.getCurrentStep().getHelpText());
 		subStepDescription.setText(progress.getCurrentSubStep().getDescription());
-		// TODO: update progress indicators
+		
+		stepProgressBar.setMinimum(0);
+		stepProgressBar.setMaximum(progress.getNumSteps());
+		stepProgressBar.setValue(progress.getCurrentStepIndex());
+		
+		subStepProgressBar.setMinimum(0);
+		subStepProgressBar.setMaximum(progress.getCurrentStep().getInstallSubSteps().size());
+		subStepProgressBar.setValue(progress.getCurrentSubStepIndex()+1);
 	}
 }

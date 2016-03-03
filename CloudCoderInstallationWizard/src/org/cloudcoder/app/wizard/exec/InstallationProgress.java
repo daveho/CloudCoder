@@ -19,6 +19,18 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 	public void addInstallStep(IInstallStep<InfoType, ServiceType> step) {
 		installSteps.add(step);
 	}
+
+	public int getNumSteps() {
+		return installSteps.size();
+	}
+
+	public int getCurrentStepIndex() {
+		return currentStep;
+	}
+
+	public int getCurrentSubStepIndex() {
+		return currentSubStep;
+	}
 	
 	/**
 	 * @return true if the installation has completed successfully, false otherwise
