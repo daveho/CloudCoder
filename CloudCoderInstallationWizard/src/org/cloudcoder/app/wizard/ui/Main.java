@@ -8,6 +8,9 @@ import org.cloudcoder.app.wizard.model.DocumentFactory;
 
 public class Main {
 	public static void main(String[] args) {
+		// Hijack System.out and System.err
+		LogPanel.createInstance();
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
