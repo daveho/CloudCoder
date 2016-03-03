@@ -67,11 +67,17 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		this.cloudService = cloudService;
 	}
 	
-	public void bootstrapWebappServer() throws ExecException {
+	public void downloadBootstrapScript() throws ExecException {
 		try {
 			// Fetch the bootstrap script from the download site
 			executeCommand("wget " + BOOTSTRAP_SCRIPT);
-			
+		} catch (Exception e) {
+			throw new ExecException("Error downloading bootstrap script on webapp instance", e);
+		}
+	}
+	
+	public void uploadBootstrapProperties() throws ExecException {
+		try {
 			// Generate a bootstrap config properties file
 			File bootstrapPropertiesFile = new File(cloudService.getInfo().getDataDir(), "bootstrap.properties");
 			try (PrintWriter w = new PrintWriter(new FileWriter(bootstrapPropertiesFile))) {
@@ -91,7 +97,15 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			// Copy bootstrap properties file to webapp instance
 			copyFile(bootstrapPropertiesFile);
 		} catch (Exception e) {
-			throw new ExecException("Failed to bootstrap webapp server", e);
+			throw new ExecException("Error uploading bootstrap properties to webapp instance", e);
+		}
+	}
+	
+	public void runBootstrapScript() throws ExecException {
+		try {
+			// TODO: implement
+		} catch (Exception e) {
+			throw new ExecException("", e);
 		}
 	}
 
@@ -265,6 +279,8 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		
 		Bootstrap<TestCloudInfo, TestCloudService> bootstrap = new Bootstrap<TestCloudInfo, TestCloudService>(cloudService);
 		
-		bootstrap.bootstrapWebappServer();
+		bootstrap.downloadBootstrapScript();
+		bootstrap.uploadBootstrapProperties();
+		bootstrap.runBootstrapScript();
 	}
 }

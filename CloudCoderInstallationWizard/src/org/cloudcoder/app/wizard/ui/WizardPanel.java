@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.cloudcoder.app.wizard.exec.BootstrapStep;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
@@ -224,6 +225,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 		// significant state changes
 		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
 		aws.addInstallSteps(progress);
+		progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
 		p.setProgress(progress);
 		
 		// Start a thread to run the installation.
