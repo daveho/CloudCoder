@@ -26,7 +26,6 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	private InstallationProgress progress;
 	
 	public InstallPanel() {
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		stepDescription = new JLabel();
 		stepDescription.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
 		stepDescription.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_HEIGHT));
