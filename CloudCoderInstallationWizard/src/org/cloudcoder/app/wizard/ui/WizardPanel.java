@@ -16,13 +16,23 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.cloudcoder.app.wizard.exec.InstallationProgress;
+import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 import org.cloudcoder.app.wizard.model.validators.IValidator;
 import org.cloudcoder.app.wizard.model.validators.ValidationException;
+import org.cloudcoder.app.wizard.ui.IWizardPagePanel.Type;
 
-public class WizardPanel extends JPanel {
+/**
+ * Main UI for the installation wizard.
+ * Coordinates progressing through the configuration UI and
+ * then running the installation.
+ * 
+ * @author David Hovemeyer
+ */
+public class WizardPanel extends JPanel implements UIConstants {
 	private static final String INSTALL_BUTTON_TEXT = "Install";
 	private static final String NEXT_BUTTON_TEXT = "Next >>";
 	private static final String PREV_BUTTON_TEXT = "<< Previous";
@@ -49,7 +59,7 @@ public class WizardPanel extends JPanel {
 		errorMessageAndButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		
 		this.errorLabel = new JLabel();
-		errorLabel.setPreferredSize(new Dimension(720, 32));
+		errorLabel.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_COMPONENT_HEIGHT));
 		errorLabel.setForeground(Color.RED);
 		errorMessageAndButtonPanel.add(errorLabel);
 		
@@ -61,7 +71,7 @@ public class WizardPanel extends JPanel {
 		nextButton.setPreferredSize(new Dimension(140, 26));
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
-		buttonPanel.setPreferredSize(new Dimension(780, 32));
+		buttonPanel.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, FIELD_COMPONENT_HEIGHT));
 		errorMessageAndButtonPanel.add(buttonPanel);
 		
 		errorMessageAndButtonPanel.setPreferredSize(new Dimension(800, 96));
@@ -101,10 +111,15 @@ public class WizardPanel extends JPanel {
 	}
 
 	private void goToPage(int nextPage) {
-		if (doValidate()) {
+		// No validation is required to go to previous page.
+		// Validation IS required to advance to next page.
+		if (nextPage < currentPage || doValidate()) {
 			commitCurrentValues();
 			currentPage = nextPage;
 			changePage();
+			if (wizardPagePanels.get(currentPage).getType() == Type.INSTALL) {
+				onStartInstallation();
+			}
 		}
 	}
 
@@ -170,6 +185,7 @@ public class WizardPanel extends JPanel {
 			} else {
 				pp = new ConfigPanel();
 			}
+			// TODO: create a FinishedPanel
 			
 			pp.setPage(p);
 			wizardPagePanels.add(pp);
@@ -190,5 +206,23 @@ public class WizardPanel extends JPanel {
 		nextButton.setEnabled(!isInstallPage && currentPage < document.getNumPages() - 1);
 		boolean isReadyPage = page.getPageName().equals("ready");
 		nextButton.setText(isReadyPage ? INSTALL_BUTTON_TEXT : NEXT_BUTTON_TEXT);
+	}
+	
+	private void onStartInstallation() {
+		System.out.println("Starting installation...");
+		
+		InstallPanel p = wizardPagePanels.get(currentPage).asInstallPanel();
+		
+		// This is hard-coded for AWS at the moment.
+		// Eventually we will support other cloud providers.
+		AWSCloudService aws = new AWSCloudService();
+		aws.setDocument(document);
+		
+		InstallationProgress progress = new InstallationProgress();
+		aws.addInstallSteps(progress);
+		p.setProgress(progress);
+		
+		progress.addObserver(p);
+		progress.forceUpdate();
 	}
 }

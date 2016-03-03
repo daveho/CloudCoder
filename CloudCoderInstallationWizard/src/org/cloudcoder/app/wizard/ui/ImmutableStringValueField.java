@@ -13,7 +13,7 @@ import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
-public class ImmutableStringValueField extends JEditorPane implements IPageField {
+public class ImmutableStringValueField extends JEditorPane implements IPageField, UIConstants {
 	private static final long serialVersionUID = 1L;
 	private HTMLEditorKit kit;
 	private ImmutableStringValue value;
@@ -52,7 +52,7 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	
 	@Override
 	public int getFieldHeight() {
-		int height = 240;
+		int height = FULL_HELP_TEXT_HEIGHT;
 		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
 			height /= 2;
 		}

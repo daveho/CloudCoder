@@ -13,5 +13,6 @@ public interface IWizardPagePanel {
 	public Type getType();
 	public void setPage(Page page);
 	public ConfigPanel asConfigPanel();
+	public InstallPanel asInstallPanel();
 	public Component asComponent();
 }

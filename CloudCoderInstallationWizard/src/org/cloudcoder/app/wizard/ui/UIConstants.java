@@ -21,4 +21,9 @@ public interface UIConstants {
 	/** Width in pixels of the editable component in a "standard" UI field. */
 	public static final int FIELD_COMPONENT_WIDTH = 420;
 	
+	/** Width of a field that is a single component (such as a label). */
+	public static final int SINGLE_COMPONENT_FIELD_WIDTH = 780;
+	
+	/** Full height for a help text component. */
+	public static final int FULL_HELP_TEXT_HEIGHT = 240;
 }

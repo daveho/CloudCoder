@@ -6,11 +6,11 @@ import java.util.List;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
 public abstract class AbstractInstallStep {
-	private final String stepName;
 	private List<IInstallSubStep> subSteps;
+	private ImmutableStringValue helpText;
 	
 	public AbstractInstallStep(String stepName) {
-		this.stepName = stepName;
+		this.helpText = ImmutableStringValue.createHelpText(stepName, "msg", "Help Text");
 	}
 	
 	protected void addSubSteps(IInstallSubStep... subSteps) {
@@ -18,7 +18,7 @@ public abstract class AbstractInstallStep {
 	}
 
 	public ImmutableStringValue getHelpText() {
-		return ImmutableStringValue.createHelpText(stepName, "msg", "Help Text");
+		return this.helpText;
 	}
 
 	public List<IInstallSubStep> getInstallSubSteps() {

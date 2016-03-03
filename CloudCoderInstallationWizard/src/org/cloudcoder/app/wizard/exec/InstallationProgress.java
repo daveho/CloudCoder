@@ -14,6 +14,10 @@ public class InstallationProgress extends Observable {
 		currentStep = 0;
 		currentSubStep = 0;
 	}
+
+	public void addInstallStep(IInstallStep step) {
+		installSteps.add(step);
+	}
 	
 	/**
 	 * @return true if the installation has completed successfully, false otherwise
@@ -78,7 +82,7 @@ public class InstallationProgress extends Observable {
 	 */
 	public void executeAll() {
 		while (!isFinished() && !isFatalException()) {
-			notifyObservers(); // Allow UI to update itself
+			forceUpdate(); // Allow UI to update itself
 			try {
 				getCurrentSubStep().execute();
 				subStepFinished();
@@ -87,5 +91,10 @@ public class InstallationProgress extends Observable {
 				break;
 			}
 		}
+	}
+
+	public void forceUpdate() {
+		setChanged();
+		notifyObservers();
 	}
 }

@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 import org.cloudcoder.app.wizard.exec.ExecException;
 import org.cloudcoder.app.wizard.exec.ICloudService;
+import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.model.AWSRegion;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
@@ -111,6 +112,11 @@ public class AWSCloudService implements ICloudService {
 	@Override
 	public Document getDocument() {
 		return document;
+	}
+	
+	@Override
+	public void addInstallSteps(InstallationProgress progress) {
+		progress.addInstallStep(new ProvisioningInstallStep(this, this.info));
 	}
 	
 	public void login() throws ExecException {

@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
-public class ConfigPanel extends JPanel implements IWizardPagePanel {
+public class ConfigPanel extends JPanel implements IWizardPagePanel, UIConstants {
 	private static final long serialVersionUID = 1L;
 
 	private JPanel content;
@@ -54,6 +54,11 @@ public class ConfigPanel extends JPanel implements IWizardPagePanel {
 	}
 	
 	@Override
+	public InstallPanel asInstallPanel() {
+		throw new IllegalStateException("Not an InstallPanel");
+	}
+	
+	@Override
 	public Component asComponent() {
 		return this;
 	}
@@ -79,8 +84,8 @@ public class ConfigPanel extends JPanel implements IWizardPagePanel {
 			IPageField field = PageFieldFactory.createForValue(v);
 			fields.add(field);
 			Component component = field.asComponent();
-			component.setPreferredSize(new Dimension(720, field.getFieldHeight()));
-			component.setMaximumSize(new Dimension(720, field.getFieldHeight()));
+			component.setPreferredSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, field.getFieldHeight()));
+			component.setMaximumSize(new Dimension(SINGLE_COMPONENT_FIELD_WIDTH, field.getFieldHeight()));
 			content.add(component);
 			field.setChangeCallback(this.changeCallback);
 		}

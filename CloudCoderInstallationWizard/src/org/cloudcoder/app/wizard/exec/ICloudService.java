@@ -12,4 +12,11 @@ public interface ICloudService {
 	 * @return the {@link Document}
 	 */
 	public Document getDocument();
+	
+	/**
+	 * Add {@link IInstallStep}s to the specified {@link InstallationProgress}
+	 * object.  This allows the progress object to carry out the installation
+	 * in a provider-specific manner.
+	 */
+	public void addInstallSteps(InstallationProgress progress);
 }
