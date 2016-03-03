@@ -8,6 +8,10 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -219,6 +223,26 @@ public class WizardPanel extends JPanel implements UIConstants {
 		// Eventually we will support other cloud providers.
 		final AWSCloudService aws = new AWSCloudService();
 		aws.setDocument(document);
+		
+		// Create the data directory
+		aws.createDataDir();
+		
+		// Save Document in a properties file
+		try {
+			try (PrintWriter w = new PrintWriter(new FileWriter(new File(aws.getInfo().getDataDir(), "ccinstall.properties")))) {
+				w.println("# CloudCoder installation wizard saved configuration properties");
+				for (int i = 0; i < aws.getDocument().getNumPages(); i++) {
+					Page page = aws.getDocument().get(i);
+					for (IValue value : page) {
+						w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getObject().toString());
+					}
+				}
+			}
+		} catch (IOException e) {
+			// Should this be fatal?
+			System.err.println("Error saving installer configuration to file");
+			e.printStackTrace();
+		}
 
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of

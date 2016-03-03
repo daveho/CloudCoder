@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cloudcoder.app.wizard.exec.AbstractCloudService;
 import org.cloudcoder.app.wizard.exec.ExecException;
 import org.cloudcoder.app.wizard.exec.ICloudService;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
@@ -79,7 +80,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 
 // Cloud service operations for AWS.
 // Eventually, implement similar classes for other cloud providers.
-public class AWSCloudService implements ICloudService<AWSInfo, AWSCloudService> {
+public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudService> {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";

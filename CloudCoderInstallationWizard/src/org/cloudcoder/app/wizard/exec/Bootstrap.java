@@ -103,9 +103,13 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	
 	public void runBootstrapScript() throws ExecException {
 		try {
-			// TODO: implement
+			// Make the bootstrap script executable
+			executeCommand("chmod a+x bootstrap.pl");
+			
+			// Execute the bootstrap script
+			executeCommand("./bootstrap.pl --config=bootstrap.properties --enable=integrated-builder");
 		} catch (Exception e) {
-			throw new ExecException("", e);
+			throw new ExecException("Error executing build script", e);
 		}
 	}
 
@@ -226,7 +230,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		}
 	}
 	
-	private static class TestCloudService implements ICloudService<TestCloudInfo, TestCloudService> {
+	private static class TestCloudService extends AbstractCloudService<TestCloudInfo, TestCloudService> {
 		private Document document;
 		private TestCloudInfo info;
 
@@ -267,15 +271,8 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		Document document = DocumentFactory.create();
 		// TODO: populate Document
 		TestCloudService cloudService = new TestCloudService(document, info);
-		
-		// Create ccinstall directory if it doesn't exist
-		File dataDir = new File(System.getProperty("user.home"), "ccinstall");
-		dataDir.mkdirs();
-		if (!dataDir.isDirectory()) {
-			System.err.println("Could not create " + dataDir.getAbsolutePath());
-			System.exit(1);
-		}
-		info.setDataDir(dataDir);
+
+		cloudService.createDataDir();
 		
 		Bootstrap<TestCloudInfo, TestCloudService> bootstrap = new Bootstrap<TestCloudInfo, TestCloudService>(cloudService);
 		

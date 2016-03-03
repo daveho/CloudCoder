@@ -24,4 +24,9 @@ public interface ICloudService<InfoType extends ICloudInfo, ServiceType extends 
 	 * @return the {@link ICloudInfo}
 	 */
 	public InfoType getInfo();
+	
+	/**
+	 * Create the data directory.
+	 */
+	public void createDataDir();
 }

@@ -48,6 +48,11 @@ public class StringValue extends AbstractValue implements IValue {
 	}
 	
 	@Override
+	public Object getObject() {
+		return value;
+	}
+	
+	@Override
 	public StringValue clone() {
 		try {
 			return (StringValue) super.clone();

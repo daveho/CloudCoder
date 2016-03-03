@@ -43,6 +43,11 @@ public class BooleanValue extends AbstractValue implements IValue {
 	}
 	
 	@Override
+	public Object getObject() {
+		return value;
+	}
+	
+	@Override
 	public BooleanValue clone() {
 		try {
 			return (BooleanValue) super.clone();

@@ -55,6 +55,11 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 		throw new IllegalArgumentException();
 	}
 	
+	@Override
+	public Object getObject() {
+		return enumCls.getEnumConstants()[value.ordinal()];
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EnumValue<E> clone() {

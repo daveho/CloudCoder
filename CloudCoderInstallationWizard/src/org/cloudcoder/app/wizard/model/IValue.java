@@ -13,6 +13,7 @@ public interface IValue extends Cloneable {
 	public String getString();
 	public<T extends Enum<T>> T getEnum(Class<T> cls);
 	public boolean getBoolean();
+	public Object getObject();
 	
 	public IValue clone();
 
