@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
+import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
@@ -215,14 +216,28 @@ public class WizardPanel extends JPanel implements UIConstants {
 		
 		// This is hard-coded for AWS at the moment.
 		// Eventually we will support other cloud providers.
-		AWSCloudService aws = new AWSCloudService();
+		final AWSCloudService aws = new AWSCloudService();
 		aws.setDocument(document);
-		
-		InstallationProgress progress = new InstallationProgress();
+
+		// The InstallationProgress object orchestrates the installation
+		// process and notifies observers (i.e., the InstallPanel) of
+		// significant state changes
+		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
 		aws.addInstallSteps(progress);
 		p.setProgress(progress);
 		
-		progress.addObserver(p);
-		progress.forceUpdate();
+		// Start a thread to run the installation.
+		// We will create it as a daemon thread, trusting that
+		// it will eventually reach a state where the UI will know
+		// to continue (either because the installation succeeded
+		// or because a fatal exception occurred.)
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				progress.executeAll(aws);
+			}
+		});
+		t.setDaemon(true);
+		t.start();
 	}
 }

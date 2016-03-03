@@ -34,9 +34,6 @@ import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.CreateInternetGatewayResult;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
-import com.amazonaws.services.ec2.model.CreateNetworkAclEntryRequest;
-import com.amazonaws.services.ec2.model.CreateNetworkAclRequest;
-import com.amazonaws.services.ec2.model.CreateNetworkAclResult;
 import com.amazonaws.services.ec2.model.CreateRouteRequest;
 import com.amazonaws.services.ec2.model.CreateRouteResult;
 import com.amazonaws.services.ec2.model.CreateRouteTableRequest;
@@ -71,11 +68,8 @@ import com.amazonaws.services.ec2.model.InternetGateway;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.KeyPair;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
-import com.amazonaws.services.ec2.model.NetworkAcl;
-import com.amazonaws.services.ec2.model.PortRange;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RouteTable;
-import com.amazonaws.services.ec2.model.RuleAction;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SecurityGroup;
@@ -85,7 +79,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 
 // Cloud service operations for AWS.
 // Eventually, implement similar classes for other cloud providers.
-public class AWSCloudService implements ICloudService {
+public class AWSCloudService implements ICloudService<AWSInfo, AWSCloudService> {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
@@ -115,8 +109,13 @@ public class AWSCloudService implements ICloudService {
 	}
 	
 	@Override
-	public void addInstallSteps(InstallationProgress progress) {
-		progress.addInstallStep(new ProvisioningInstallStep(this, this.info));
+	public void addInstallSteps(InstallationProgress<AWSInfo, AWSCloudService> progress) {
+		progress.addInstallStep(new ProvisioningInstallStep(this));
+	}
+	
+	@Override
+	public AWSInfo getInfo() {
+		return info;
 	}
 	
 	public void login() throws ExecException {

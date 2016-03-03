@@ -4,18 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
-public class InstallationProgress extends Observable {
-	private List<IInstallStep> installSteps;
+public class InstallationProgress<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
+		extends Observable {
+	private List<IInstallStep<InfoType, ServiceType>> installSteps;
 	private int currentStep, currentSubStep;
 	public Throwable fatalException;
 	
 	public InstallationProgress() {
-		installSteps = new ArrayList<IInstallStep>();
+		installSteps = new ArrayList<IInstallStep<InfoType, ServiceType>>();
 		currentStep = 0;
 		currentSubStep = 0;
 	}
 
-	public void addInstallStep(IInstallStep step) {
+	public void addInstallStep(IInstallStep<InfoType, ServiceType> step) {
 		installSteps.add(step);
 	}
 	
@@ -56,14 +57,14 @@ public class InstallationProgress extends Observable {
 	/**
 	 * @return currently-executing {@link IInstallStep}
 	 */
-	public IInstallStep getCurrentStep() {
+	public IInstallStep<InfoType, ServiceType> getCurrentStep() {
 		return installSteps.get(currentStep);
 	}
 	
 	/**
 	 * @return currently-executing {@link IInstallSubStep}
 	 */
-	public IInstallSubStep getCurrentSubStep() {
+	public IInstallSubStep<InfoType, ServiceType> getCurrentSubStep() {
 		return getCurrentStep().getInstallSubSteps().get(currentSubStep);
 	}
 	
@@ -80,11 +81,11 @@ public class InstallationProgress extends Observable {
 	 * until either the installation finishes or a fatal exception
 	 * occurs.
 	 */
-	public void executeAll() {
+	public void executeAll(ServiceType cloudService) {
 		while (!isFinished() && !isFatalException()) {
 			forceUpdate(); // Allow UI to update itself
 			try {
-				getCurrentSubStep().execute();
+				getCurrentSubStep().execute(cloudService);
 				subStepFinished();
 			} catch (ExecException e) {
 				setFatalException(e);

@@ -15,6 +15,7 @@ public class DocumentFactory {
 		// Add pages
 		Page welcomePage = new Page("welcome", "Welcome to the CloudCoder installation wizard");
 		welcomePage.addHelpText("msg", "Welcome message");
+		welcomePage.add(new BooleanValue("dryRun", "Do a dry run"), new NoopValidator());
 		document.addPage(welcomePage);
 		
 		Page awsCredentialsPage = new Page("aws", "Enter your AWS credentials");

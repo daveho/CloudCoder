@@ -11,7 +11,7 @@ import org.cloudcoder.app.wizard.model.ImmutableStringValue;
  *
  * @param <E> the implementing class's type
  */
-public interface IInstallStep {
+public interface IInstallStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>> {
 	/**
 	 * @return detailed help text
 	 */
@@ -25,5 +25,5 @@ public interface IInstallStep {
 	/**
 	 * @return the sequence of {@link IInstallSubStep}s
 	 */
-	public List<IInstallSubStep> getInstallSubSteps();
+	public List<IInstallSubStep<InfoType, ServiceType>> getInstallSubSteps();
 }
