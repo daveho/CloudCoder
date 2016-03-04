@@ -122,7 +122,7 @@ public class ServerTask implements Runnable {
 			}
 		
 		} catch (UnknownHostException e) {
-			
+			logger.error("ServerTask received UnknownHostException", e);
 		} catch (IOException e) {
 			if (!shutdownRequested) {
 			    logger.error("IOException waiting for connections", e);
