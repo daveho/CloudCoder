@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -207,9 +209,16 @@ public class WizardPanel extends JPanel implements UIConstants {
 		pageLabel.setText(page.getLabel());
 		CardLayout cl = (CardLayout) pagePanel.getLayout();
 		cl.show(pagePanel, String.valueOf(currentPage));
+		
+		// Enable prev/next buttons as appropriate.
+		// The "special" pages don't allow manual navigation.
 		boolean isInstallPage = page.getPageName().equals("install");
-		prevButton.setEnabled(!isInstallPage && currentPage > 0);
-		nextButton.setEnabled(!isInstallPage && currentPage < document.getNumPages() - 1);
+		boolean isErrorPage = page.getPageName().equals("error");
+		boolean isFinishedPage = page.getPageName().equals("finished");
+		boolean isSpecialPage = isInstallPage || isErrorPage || isFinishedPage;
+		prevButton.setEnabled(!isSpecialPage && currentPage > 0);
+		nextButton.setEnabled(!isSpecialPage && currentPage < document.getNumPages() - 1);
+		
 		boolean isReadyPage = page.getPageName().equals("ready");
 		nextButton.setText(isReadyPage ? INSTALL_BUTTON_TEXT : NEXT_BUTTON_TEXT);
 	}
@@ -228,6 +237,44 @@ public class WizardPanel extends JPanel implements UIConstants {
 		aws.createDataDir();
 		
 		// Save Document in a properties file
+		saveConfiguration(aws);
+
+		// The InstallationProgress object orchestrates the installation
+		// process and notifies observers (i.e., the InstallPanel) of
+		// significant state changes
+		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
+		aws.addInstallSteps(progress);
+		progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
+		p.setProgress(progress);
+		
+		// Listen for completion events
+		progress.addObserver(new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				if (progress.isFinished()) {
+					onFinished();
+				} else if (progress.isFatalException()) {
+					onFatalException();
+				}
+			}
+		});
+		
+		// Start a thread to run the installation.
+		// We will create it as a daemon thread, trusting that
+		// it will eventually reach a state where the UI will know
+		// to continue (either because the installation succeeded
+		// or because a fatal exception occurred.)
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				progress.executeAll(aws);
+			}
+		});
+		t.setDaemon(true);
+		t.start();
+	}
+
+	private void saveConfiguration(final AWSCloudService aws) {
 		try {
 			try (PrintWriter w = new PrintWriter(new FileWriter(new File(aws.getInfo().getDataDir(), "ccinstall.properties")))) {
 				w.println("# CloudCoder installation wizard saved configuration properties");
@@ -243,27 +290,25 @@ public class WizardPanel extends JPanel implements UIConstants {
 			System.err.println("Error saving installer configuration to file");
 			e.printStackTrace();
 		}
+	}
+	
+	private void onFinished() {
+		goToPage("finished");
+	}
+	
+	private void onFatalException() {
+		goToPage("error");
+	}
 
-		// The InstallationProgress object orchestrates the installation
-		// process and notifies observers (i.e., the InstallPanel) of
-		// significant state changes
-		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
-		aws.addInstallSteps(progress);
-		progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
-		p.setProgress(progress);
-		
-		// Start a thread to run the installation.
-		// We will create it as a daemon thread, trusting that
-		// it will eventually reach a state where the UI will know
-		// to continue (either because the installation succeeded
-		// or because a fatal exception occurred.)
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				progress.executeAll(aws);
+	private void goToPage(String pageName) {
+		for (int i = 0; i < document.getNumPages(); i++) {
+			Page p = document.get(i);
+			if (p.getPageName().equals(pageName)) {
+				currentPage = i;
+				changePage();
+				return;
 			}
-		});
-		t.setDaemon(true);
-		t.start();
+		}
+		throw new IllegalArgumentException("No such page: " + pageName);
 	}
 }

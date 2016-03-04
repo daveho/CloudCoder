@@ -81,7 +81,12 @@ public class DocumentFactory {
 		Page installPage = new Page("install", "Installing CloudCoder");
 		document.addPage(installPage);
 		
+		Page errorPage = new Page("error", "An error occurred");
+		errorPage.addHelpText("msg", "Message");
+		document.addPage(errorPage);
+		
 		Page finishedPage = new Page("finished", "CloudCoder is installed!");
+		finishedPage.addHelpText("msg", "Message");
 		document.addPage(finishedPage);
 		
 		return document;
