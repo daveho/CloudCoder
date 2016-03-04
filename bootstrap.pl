@@ -371,9 +371,38 @@ sub Step2 {
 	# ----------------------------------------------------------------------
 	Section("Configuring $appJar and $builderJar...");
 
-	# Generate cloudcoder.properties
-	GenerateCloudCoderProperties();
+	# Generate cloudcoder.properties for webapp.
+	# Note that there is an interesting issue here:
+	# the cloudcoder.submitsvc.oop.host property
+	# (controlled by the ccHostname bootstrap property), which defines
+	# the hostname to which the builders connect to reach the
+	# webapp, needs to be resolvable *by the webapp*.
+	# The reason for this is that I added some poorly thought
+	# out code to reject connections from arbitrary hosts if non-SSL
+	# connections are being used, such that the code only allows
+	# connections originating from the same host
+	# (as resolved via DNS, or from localhost.)  Unfortunately, when
+	# I added this code, I didn't handle UnknownHostException in a
+	# useful  way.  So, if the user specified a hostname that isn't
+	# currently resolvable, *no builders  can connect*.  Since we
+	# want the bootstrap script to support versions of the webapp with
+	# this particular quirk, we need to work around the issue
+	# here (as opposed to just fixing the code in the webapp).
+	#
+	# The solution, as seen here, is to specify this property
+	# as localhost, guaranteed to be resolvable.
+	#
+	# Note that we *do* want the "correct" hostname to appear in the
+	# cloudcoder.properties used by the "external" builder jarfile,
+	# even if the hostname isn't resolvable right away. (Which is
+	# typical, since you kind of need to know the webapp instance's
+	# IP address in order to create a DNS entry for it :-)
+	#
+	# Also note that the integrated builder, if enabled, hard-codes
+	# the webapp hostname as localhost, for obvious reasons.
+	GenerateCloudCoderProperties('ccHostname' => 'localhost');
 
+	# Generate keystore file.
 	if (!exists $opts{'defer-keystore'}) {
 		# Generate keystore for secure communication between webapp and builders
 		GenerateKeystore();
@@ -391,6 +420,10 @@ sub Step2 {
 		"--editJar=$appJar",
 		"--replace=cloudcoder.properties=cloudcoder.properties",
 		"--replace=war/WEB-INF/classes/keystore.jks=keystore.jks");
+
+	# Regenerate cloudcoder.properties to have the "official" webapp
+	# hostname.  (See above.)
+	GenerateCloudCoderProperties();
 
 	# Configure builder jarfile to use the same cloudcoder.properties
 	# and keystore
