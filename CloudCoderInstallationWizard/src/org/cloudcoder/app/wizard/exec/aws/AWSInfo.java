@@ -50,7 +50,7 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	
 	@Override
 	public File getPrivateKeyFile() {
-		if (privateKeyFile != null) {
+		if (privateKeyFile == null) {
 			if (keyPairFilename != null) {
 				// User specified a keypair file
 				privateKeyFile = new File(keyPairFilename);

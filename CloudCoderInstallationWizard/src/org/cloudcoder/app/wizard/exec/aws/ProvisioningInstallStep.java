@@ -21,7 +21,7 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	private static class FindOrCreateVPCSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
 		@Override
 		public String getDescription() {
-			return "Find or create cloudcoder PC (virtual private cloud)";
+			return "Find or create cloudcoder VPC (virtual private cloud)";
 		}
 
 		@Override

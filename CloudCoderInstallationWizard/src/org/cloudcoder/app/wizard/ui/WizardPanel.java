@@ -28,6 +28,7 @@ import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
+import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.Page;
 import org.cloudcoder.app.wizard.model.validators.IValidator;
 import org.cloudcoder.app.wizard.model.validators.ValidationException;
@@ -281,7 +282,9 @@ public class WizardPanel extends JPanel implements UIConstants {
 				for (int i = 0; i < aws.getDocument().getNumPages(); i++) {
 					Page page = aws.getDocument().get(i);
 					for (IValue value : page) {
-						w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getObject().toString());
+						if (!(value instanceof ImmutableStringValue)) {
+							w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getObject().toString());
+						}
 					}
 				}
 			}

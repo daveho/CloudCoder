@@ -96,11 +96,17 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 	public void executeAll(ServiceType cloudService) {
 		while (!isFinished() && !isFatalException()) {
 			forceUpdate(); // Allow UI to update itself
+			IInstallSubStep<InfoType, ServiceType> subStep = getCurrentSubStep();
 			try {
-				getCurrentSubStep().execute(cloudService);
+				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
+				subStep.execute(cloudService);
+				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
 				subStepFinished();
 			} catch (ExecException e) {
+				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
+				e.printStackTrace();
 				setFatalException(e);
+				forceUpdate();
 				break;
 			}
 		}

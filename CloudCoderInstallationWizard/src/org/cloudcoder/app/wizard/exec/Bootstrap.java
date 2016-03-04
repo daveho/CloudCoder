@@ -130,28 +130,35 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			doSsh(new SSHRunnable() {
 				@Override
 				public void run(SSHClient ssh) throws IOException {
+					System.out.println("Starting ssh session...");
 					Session session = ssh.startSession();
+					System.out.println("ssh session started");
 					session.setEnvVar("LANG", "en_US.UTF-8");
 					try {
 						System.out.println("Executing command: " + cmdStr);
 						Command cmd = session.exec(cmdStr);
 
 						// Divert command output and error
+						System.out.println("Starting output redirection threads");
 						Thread t1 = new Thread(new Drain(cmd.getInputStream(), System.out));
 						Thread t2 = new Thread(new Drain(cmd.getErrorStream(), System.err));
 						t1.start();
 						t2.start();
 						try {
+							System.out.println("Waiting for output redirection threads to complete...");
 							t1.join();
 							t2.join();
+							System.out.println("Output redirection threads are complete");
 						} catch (InterruptedException e) {
 							// Should not happen (?)
 							throw new IOException("Drain thread interrupted?", e);
 						}
 						
+						System.out.println("Waiting for command to complete...");
 						cmd.join(10, TimeUnit.SECONDS);
 						System.out.println("Command exit code is " + cmd.getExitStatus());
 					} finally {
+						System.out.println("Closing ssh session");
 						session.close();
 					}
 				}
@@ -183,11 +190,16 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		ssh.addHostKeyVerifier(new PromiscuousVerifier()); // FIXME: would be nice to have actual host key fingerprint
 		try {
 			InfoType info = cloudService.getInfo();
+			System.out.println("Starting ssh connection...");
 			ssh.connect(info.getWebappPublicIp());
+			System.out.println("Connected");
 			KeyProvider keys = ssh.loadKeys(info.getPrivateKeyFile().getAbsolutePath());
+			System.out.println("Doing ssh authentication using keypair");
 			ssh.authPublickey(info.getWebappServerUserName(), keys);
+			System.out.println("Authentication successful");
 			r.run(ssh);
 		} finally {
+			System.out.println("Closing ssh connection");
 			ssh.close();
 		}
 	}
