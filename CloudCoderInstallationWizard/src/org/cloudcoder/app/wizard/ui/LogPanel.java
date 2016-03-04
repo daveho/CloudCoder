@@ -59,7 +59,7 @@ public class LogPanel extends JPanel {
 		public void append(String line) {
 			List<String> toAppend = new ArrayList<String>();
 			synchronized (lock) {
-				if (!logPanelShown) {
+				if (!logPanelAdded) {
 					queuedText.add(line);
 					return;
 				}
@@ -205,7 +205,7 @@ public class LogPanel extends JPanel {
 	}
 
 	private JTextPane textPane;
-	private volatile boolean logPanelShown;
+	private volatile boolean logPanelAdded;
 	private LogAppender stdoutAppender;
 	private LogAppender stderrAppender;
 	
@@ -217,15 +217,7 @@ public class LogPanel extends JPanel {
 		textPane.setBorder(BorderFactory.createLoweredSoftBevelBorder());
 		textPane.setBackground(Color.BLACK);
 		textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
-		logPanelShown = false;
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				logPanelShown = true;
-				stdoutAppender.flush();
-				stderrAppender.flush();
-			}
-		});
+		logPanelAdded = false;
 		JScrollPane scrollPane = new JScrollPane(textPane);
 
 		add(scrollPane, BorderLayout.CENTER);
@@ -274,5 +266,14 @@ public class LogPanel extends JPanel {
 				textPane.replaceSelection(line);
 			}
 		});
+	}
+
+	/**
+	 * This must be called to enable output to be displayed.
+	 */
+	public void enableOutput() {
+		logPanelAdded = true;
+		stdoutAppender.flush();
+		stderrAppender.flush();
 	}
 }

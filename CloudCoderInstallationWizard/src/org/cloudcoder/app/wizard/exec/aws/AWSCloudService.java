@@ -316,6 +316,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 					if (keyPairInfo.getKeyName().equals(keyPairName)) {
 						System.out.println("Found keypair " + keyPairName);
 						this.info.setKeyPair(loadKeyPair(keyPairFilename, keyPairName));
+						this.info.setKeyPairFilename(keyPairFilename);
 						System.out.println("Loading key from file " + keyPairFilename);
 						return;
 					}
@@ -327,6 +328,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 				CreateKeyPairRequest req = new CreateKeyPairRequest(ICloudService.CLOUDCODER_KEYPAIR_NAME);
 				CreateKeyPairResult result = client.createKeyPair(req);
 				this.info.setKeyPair(result.getKeyPair());
+				// The keypair file will be saved automatically in the ccinstall directory
 				System.out.println("Created keypair " + this.info.getKeyPair().getKeyName());
 			}
 		} catch (AmazonServiceException e) {

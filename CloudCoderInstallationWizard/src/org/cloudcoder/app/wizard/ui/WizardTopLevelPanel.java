@@ -13,6 +13,7 @@ public class WizardTopLevelPanel extends JTabbedPane {
 	public WizardTopLevelPanel() {
 		wizardPanel = new WizardPanel();
 		logPanel = LogPanel.getInstance();
+		logPanel.enableOutput();
 		
 		addTab("Wizard", wizardPanel);
 		addTab("Output log", logPanel);
