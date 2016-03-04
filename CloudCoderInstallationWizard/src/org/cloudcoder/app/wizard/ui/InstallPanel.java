@@ -2,6 +2,7 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -27,8 +28,11 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	private JProgressBar stepProgressBar;
 	private JProgressBar subStepProgressBar;
 	
+	private static final Font STEP_DESCRIPTION_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 16);
+	
 	public InstallPanel() {
 		stepDescription = new JLabel();
+		stepDescription.setFont(STEP_DESCRIPTION_LABEL_FONT);
 		setComponentSize(stepDescription, FIELD_HEIGHT);
 		stepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(stepDescription);
@@ -36,13 +40,20 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		setComponentSize(helpTextField, FULL_HELP_TEXT_HEIGHT/2);
 		add(helpTextField);
 		subStepDescription = new JLabel();
+		subStepDescription.setFont(STEP_DESCRIPTION_LABEL_FONT);
 		setComponentSize(subStepDescription, FIELD_HEIGHT);
 		subStepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(subStepDescription);
 		setComponentSize(new JLabel(), FIELD_HEIGHT);
+		JLabel stepProgressLabel = new JLabel("Overall progress:");
+		setComponentSize(stepProgressLabel, FIELD_HEIGHT);
+		add(stepProgressLabel);
 		stepProgressBar = new JProgressBar();
 		setComponentSize(stepProgressBar, FIELD_HEIGHT);
 		add(stepProgressBar);
+		JLabel subStepProgressLabel = new JLabel("Progress for current step:");
+		setComponentSize(subStepProgressLabel, FIELD_HEIGHT);
+		add(subStepProgressLabel);
 		subStepProgressBar = new JProgressBar();
 		setComponentSize(subStepProgressBar, FIELD_HEIGHT);
 		add(subStepProgressBar);

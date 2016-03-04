@@ -106,10 +106,11 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
 				e.printStackTrace();
 				setFatalException(e);
-				forceUpdate();
-				break;
 			}
 		}
+		// If the loop terminated, then either the installation finished
+		// successfully, or there was a fatal exception.  Let the UI know.
+		forceUpdate();
 	}
 
 	public void forceUpdate() {

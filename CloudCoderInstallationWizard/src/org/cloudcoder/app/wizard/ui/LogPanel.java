@@ -216,7 +216,7 @@ public class LogPanel extends JPanel {
 		
 		textPane.setBorder(BorderFactory.createLoweredSoftBevelBorder());
 		textPane.setBackground(Color.BLACK);
-		textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
+		textPane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		logPanelAdded = false;
 		JScrollPane scrollPane = new JScrollPane(textPane);
 
