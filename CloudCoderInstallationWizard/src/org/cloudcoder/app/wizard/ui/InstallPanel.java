@@ -85,7 +85,8 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		System.out.println("InstallPanel received a notification?");
+		//System.out.println("InstallPanel received a notification?");
+		
 		// This is a notification from the thread running the installation
 		// that progress has been made (or a fatal exception has occurred.)
 		SwingUtilities.invokeLater(new Runnable() {
@@ -97,7 +98,7 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	}
 
 	protected void sync() {
-		System.out.println("Syncing InstallPanel with InstallationProgress...");
+		//System.out.println("Syncing InstallPanel with InstallationProgress...");
 		if (progress.isFinished()) {
 			// TODO
 			System.out.println("Installation finished - should update UI and re-enable next button");

@@ -3,6 +3,18 @@ package org.cloudcoder.app.wizard.exec;
 
 public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends AbstractInstallStep<InfoType, ServiceType> {
+	private class EstablishSshConnectivitySubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		@Override
+		public String getDescription() {
+			return "Establishing ssh connectivity with ssh instance";
+		}
+		
+		@Override
+		protected void doExecute(ServiceType cloudService) throws ExecException {
+			bootstrap.establishSshConnectivity();
+		}
+	}
+	
 	private class DownloadBootstrapScriptSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
 		@Override
 		public String getDescription() {
@@ -45,7 +57,8 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		super("bootstrap");
 		this.bootstrap = new Bootstrap<InfoType, ServiceType>(cloudService);
 		
-		// TODO: add sub-steps
+		// Add sub-steps
+		addSubStep(new EstablishSshConnectivitySubStep());
 		addSubStep(new DownloadBootstrapScriptSubStep());
 		addSubStep(new UploadBootstrapPropertiesSubStep());
 		addSubStep(new RunBootstrapScriptSubStep());

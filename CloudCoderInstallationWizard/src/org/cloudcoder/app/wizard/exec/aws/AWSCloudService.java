@@ -15,6 +15,7 @@ import org.cloudcoder.app.wizard.exec.AbstractCloudService;
 import org.cloudcoder.app.wizard.exec.ExecException;
 import org.cloudcoder.app.wizard.exec.ICloudService;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
+import org.cloudcoder.app.wizard.exec.Util;
 import org.cloudcoder.app.wizard.model.AWSRegion;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
@@ -82,7 +83,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 // Eventually, implement similar classes for other cloud providers.
 public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudService> {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
-	private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
+	//private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
 	private static final String UBUNTU_SERVER_AMI_OWNER = "099720109477";
 	
@@ -516,11 +517,12 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 					break;
 				}
 				System.out.println("Sleeping for 20 seconds...");
-				try {
-					Thread.sleep(20000);
-				} catch (InterruptedException e) {
-					System.out.println("Interrupted while waiting for instance to reach running state");
-				}
+//				try {
+//					Thread.sleep(20000);
+//				} catch (InterruptedException e) {
+//					System.out.println("Interrupted while waiting for instance to reach running state");
+//				}
+				Util.sleep(20000);
 				retries++;
 			}
 		} catch (AmazonServiceException e) {

@@ -17,12 +17,13 @@ public abstract class AbstractInstallSubStep<InfoType extends ICloudInfo, Servic
 		if (document.getValue("welcome.dryRun").getBoolean()) {
 			// Doing a dry run
 			System.out.println("Doing a dry run for install sub-step " + getClass().getSimpleName());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				System.err.println("Unexpected interruption");
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				System.err.println("Unexpected interruption");
+//				e.printStackTrace();
+//			}
+			Util.sleep(1000);
 		} else {
 			// Doing a real run
 			doExecute(cloudService);

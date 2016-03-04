@@ -67,6 +67,35 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		this.cloudService = cloudService;
 	}
 	
+	public void establishSshConnectivity() throws ExecException {
+		// Run a simple "Hello, world" command on the webapp instance.
+		// This establishes that it is possible to connect via ssh,
+		// which can take some time, so some number of retries may
+		// be needed.
+		int retries = 0;
+		ExecException ex = null;
+		while (true) {
+			try {
+				executeCommand("echo 'Hello world'");
+				System.out.println("Hello world command executed successfully - ssh connectivity established");
+				return;
+			} catch (ExecException e) {
+				System.err.println("Error executing hello world command (to establish ssh connectivity)");
+				e.printStackTrace();
+				ex = e;
+				retries++;
+
+				if (retries >= 10) {
+					System.err.println("Too many retries attempting to run hello world command");
+					throw ex;
+				}
+				
+				System.out.println("Waiting 10 seconds before next retry");
+				Util.sleep(10000);
+			}
+		}
+	}
+	
 	public void downloadBootstrapScript() throws ExecException {
 		try {
 			// Fetch the bootstrap script from the download site
