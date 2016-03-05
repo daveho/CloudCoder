@@ -51,6 +51,18 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		}
 	}
 	
+	public class ConfigureNoIpDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		@Override
+		public String getDescription() {
+			return "Using No-IP to configure hostname";
+		}
+		
+		@Override
+		protected void doExecute(ServiceType cloudService) throws ExecException {
+			bootstrap.configureNoIpDNSHostName();
+		}
+	}
+	
 	private Bootstrap<InfoType, ServiceType> bootstrap;
 	
 	public BootstrapStep(ServiceType cloudService) {
@@ -62,6 +74,7 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		addSubStep(new DownloadBootstrapScriptSubStep());
 		addSubStep(new UploadBootstrapPropertiesSubStep());
 		addSubStep(new RunBootstrapScriptSubStep());
+		addSubStep(new ConfigureNoIpDNSHostnameSubStep());
 	}
 
 	@Override
