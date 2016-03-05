@@ -141,6 +141,9 @@ sub Start {
 		ConfigureInteractively();
 	}
 
+	# Ensure that $HOME directory is not world-readable
+	RunAdmin(cmd => ['chmod', '0700', $ENV{'HOME'}]);
+
 	# We will run apt noninteractively
 	$ENV{'DEBIAN_FRONTEND'} = 'noninteractive';
 	
@@ -215,6 +218,9 @@ sub Start {
 		cmd => [ 'adduser', '--disabled-password', '--home', '/home/cloud', '--gecos', '', 'cloud' ]
 	);
 
+	# Ensure that /home/cloud is not world-readable
+	RunAdmin(cmd => ['chmod', '0700', '/home/cloud']);
+
 	# ----------------------------------------------------------------------
 	# Configure apache2
 	# ----------------------------------------------------------------------
@@ -266,6 +272,9 @@ sub Start {
 		RunAdmin(
 			cmd => [ 'adduser', '--disabled-password', '--home', '/home/builder', '--gecos', '', 'builder' ]
 		);
+
+		# Ensure that /home/builder is not world-readable
+		RunAdmin(cmd => ['chmod', '0700', '/home/builder']);
 
 		# Create builder directory,
 		# copy builder jarfile to builder directory,
