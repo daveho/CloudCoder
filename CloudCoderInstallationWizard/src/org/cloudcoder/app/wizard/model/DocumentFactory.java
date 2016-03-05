@@ -13,6 +13,13 @@ public class DocumentFactory {
 		Document document = new Document();
 		
 		// Add pages
+		
+		Page selectTaskPage = new Page("selectTask", "Select installation task");
+		selectTaskPage.addHelpText("msg", "Message");
+		selectTaskPage.add(new EnumValue<InstallationTask>(
+				InstallationTask.class, "installationTask", "Installation task"), new NoopValidator());
+		document.addPage(selectTaskPage);
+		
 		Page welcomePage = new Page("welcome", "Welcome to the CloudCoder installation wizard");
 		welcomePage.addHelpText("msg", "Welcome message");
 		welcomePage.add(new BooleanValue("dryRun", "Do a dry run"), new NoopValidator());

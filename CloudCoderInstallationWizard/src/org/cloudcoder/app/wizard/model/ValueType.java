@@ -6,4 +6,5 @@ public enum ValueType {
 	BOOLEAN,
 	ENUM_CHOICE,
 	FILENAME,
+	TASK_BOOLEAN, // a button on the select task screen
 }
