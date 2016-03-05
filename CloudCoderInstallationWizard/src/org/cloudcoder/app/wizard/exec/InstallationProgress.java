@@ -1,6 +1,7 @@
 package org.cloudcoder.app.wizard.exec;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 
@@ -8,12 +9,14 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		extends Observable {
 	private List<IInstallStep<InfoType, ServiceType>> installSteps;
 	private int currentStep, currentSubStep;
-	public Throwable fatalException;
+	private Throwable fatalException;
+	private List<NonFatalExecException> nonFatalExceptions;
 	
 	public InstallationProgress() {
 		installSteps = new ArrayList<IInstallStep<InfoType, ServiceType>>();
 		currentStep = 0;
 		currentSubStep = 0;
+		nonFatalExceptions = new ArrayList<NonFatalExecException>();
 	}
 
 	public void addInstallStep(IInstallStep<InfoType, ServiceType> step) {
@@ -67,6 +70,13 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 	}
 	
 	/**
+	 * @return list of non-fatal exceptions that occurred (if any)
+	 */
+	public List<NonFatalExecException> getNonFatalExceptions() {
+		return Collections.unmodifiableList(nonFatalExceptions);
+	}
+	
+	/**
 	 * @return currently-executing {@link IInstallStep}
 	 */
 	public IInstallStep<InfoType, ServiceType> getCurrentStep() {
@@ -101,6 +111,12 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
 				subStep.execute(cloudService);
 				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
+				subStepFinished();
+			} catch (NonFatalExecException e) {
+				nonFatalExceptions.add(e);
+				System.err.println("Sub-step " +
+						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
+						e.getMessage());
 				subStepFinished();
 			} catch (ExecException e) {
 				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());

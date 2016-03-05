@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+
+import javax.xml.bind.DatatypeConverter;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -19,6 +22,10 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
 import org.slf4j.Logger;
@@ -139,6 +146,41 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			executeCommand("./bootstrap.pl --config=bootstrap.properties --enable=integrated-builder");
 		} catch (Exception e) {
 			throw new ExecException("Error executing build script", e);
+		}
+	}
+	
+	public void configureNoIpDNSHostName() throws ExecException {
+		// Note that errors here are non-fatal.
+		
+		int statusCode;
+		try {
+			if (!cloudService.getDocument().getValue("dns.useNoIp").getBoolean()) {
+				// Not using no-ip
+				System.out.println("Not using No-IP");
+				return;
+			}
+			
+			String username = cloudService.getDocument().getValue("dns.noIpUsername").getString();
+			String password = cloudService.getDocument().getValue("dns.noIpPassword").getString();
+			String dnsHostname = cloudService.getDocument().getValue("dns.hostname").getString();
+			String ipAddress = cloudService.getInfo().getWebappPublicIp();
+			
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpGet httpGet = new HttpGet(
+					"https://dynupdate.no-ip.com/nic/update?hostname=" + dnsHostname + "&myip=" + ipAddress);
+			String authHeaderValue =
+					"Basic " +
+					DatatypeConverter.printBase64Binary((username + ":" + password).getBytes(Charset.forName("UTF-8")));
+			httpGet.addHeader("Authorization", authHeaderValue);
+			
+			HttpResponse resp = client.execute(httpGet);
+			statusCode = resp.getStatusLine().getStatusCode();
+		} catch (Exception e) {
+			throw new NonFatalExecException("Error updating no-ip dynamic IP address", e);
+		}
+		
+		if (statusCode != 200) {
+			throw new NonFatalExecException("No-ip update request failed with code " + statusCode);
 		}
 	}
 
