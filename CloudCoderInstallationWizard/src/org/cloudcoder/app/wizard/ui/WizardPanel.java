@@ -112,11 +112,29 @@ public class WizardPanel extends JPanel implements UIConstants {
 	}
 
 	protected void onNext() {
-		goToPage(currentPage + 1);
+		//goToPage(currentPage + 1);
+		int targetPage = currentPage;
+		do {
+			if (targetPage >= document.getNumPages()) {
+				System.err.println("onNext: cannot find enabled page, currentPage=" + currentPage);
+				return;
+			}
+			targetPage++;
+		} while (!document.isPageEnabled(targetPage));
+		goToPage(targetPage);
 	}
 
 	protected void onPrevious() {
-		goToPage(currentPage - 1);
+		//goToPage(currentPage - 1);
+		int targetPage = currentPage;
+		do {
+			if (targetPage < 0) {
+				System.err.println("onPrevious: cannot find enabled page, currentPage=" + currentPage);
+				return;
+			}
+			targetPage--;
+		} while (!document.isPageEnabled(targetPage));
+		goToPage(targetPage);
 	}
 
 	private void goToPage(int nextPage) {

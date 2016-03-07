@@ -96,6 +96,22 @@ public class DocumentFactory {
 		finishedPage.addHelpText("msg", "Message");
 		document.addPage(finishedPage);
 		
+		document.selectivelyEnablePageRange("welcome", "finished",
+				new EnablePageIfEnumSelected<InstallationTask>(
+						"selectTask.installationTask",
+						InstallationTask.class,
+						InstallationTask.INSTALL_CLOUDCODER));
+		
+		// TODO: needs an actual UI
+		Page issueSslPage = new Page("issueSsl", "Issue and install SSL certificate");
+		document.addPage(issueSslPage);
+		
+		document.selectivelyEnablePageRange("issueSsl", "issueSsl",
+				new EnablePageIfEnumSelected<InstallationTask>(
+						"selectTask.installationTask",
+						InstallationTask.class,
+						InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE));
+		
 		return document;
 	}
 }
