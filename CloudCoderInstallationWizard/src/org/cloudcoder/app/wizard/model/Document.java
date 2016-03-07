@@ -63,11 +63,11 @@ public class Document implements Cloneable {
 		Page p = pages.get(pageIndex);
 		ISelectivePageEnablement enablement = selectivePageEnablementMap.get(p.getPageName());
 		if (enablement == null) {
-			System.out.println("No selective enablement for page " + p.getPageName());
+			//System.out.println("No selective enablement for page " + p.getPageName());
 			return true;
 		}
 		boolean enabled = enablement.isEnabled(this);
-		System.out.printf("Page %s %s enabled\n", p.getPageName(), enabled ? "is" : "is not");
+		//System.out.printf("Page %s %s enabled\n", p.getPageName(), enabled ? "is" : "is not");
 		return enabled;
 	}
 }

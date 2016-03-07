@@ -112,41 +112,39 @@ public class WizardPanel extends JPanel implements UIConstants {
 	}
 
 	protected void onNext() {
-		//goToPage(currentPage + 1);
-		int targetPage = currentPage;
-		do {
-			if (targetPage >= document.getNumPages()) {
-				System.err.println("onNext: cannot find enabled page, currentPage=" + currentPage);
-				return;
-			}
-			targetPage++;
-		} while (!document.isPageEnabled(targetPage));
-		goToPage(targetPage);
+		navigate(1);
 	}
 
 	protected void onPrevious() {
-		//goToPage(currentPage - 1);
-		int targetPage = currentPage;
-		do {
-			if (targetPage < 0) {
-				System.err.println("onPrevious: cannot find enabled page, currentPage=" + currentPage);
-				return;
-			}
-			targetPage--;
-		} while (!document.isPageEnabled(targetPage));
-		goToPage(targetPage);
+		navigate(-1);
 	}
 
-	private void goToPage(int nextPage) {
-		// No validation is required to go to previous page.
-		// Validation IS required to advance to next page.
-		if (nextPage < currentPage || doValidate()) {
-			commitCurrentValues();
-			currentPage = nextPage;
-			changePage();
-			if (wizardPagePanels.get(currentPage).getType() == Type.INSTALL) {
-				onStartInstallation();
+	private void navigate(int delta) {
+		// If this is forward navigation, then validate and commit
+		// the current page values (returning if validation fails.)
+		// No validation is required to navigate backwards.
+		if (delta > 0 && !doValidate()) {
+			return;
+		}
+		commitCurrentValues();
+		
+		// Find the next enabled page
+		int targetPage = currentPage;
+		do {
+			if (targetPage < 0 || targetPage >= document.getNumPages()) {
+				System.err.printf("cannot find enabled page for delta %d, currentPage=%d", delta, currentPage);
+				return;
 			}
+			targetPage += delta;
+		} while (!document.isPageEnabled(targetPage));
+		
+		// Go to the target page
+		currentPage = targetPage;
+		changePage();
+		
+		// Start the installation if we have reached the install page
+		if (wizardPagePanels.get(currentPage).getType() == Type.INSTALL) {
+			onStartInstallation();
 		}
 	}
 

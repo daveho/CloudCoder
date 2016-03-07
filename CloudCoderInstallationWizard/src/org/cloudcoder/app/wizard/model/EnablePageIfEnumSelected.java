@@ -14,7 +14,7 @@ public class EnablePageIfEnumSelected<E extends Enum<E>> implements ISelectivePa
 	@Override
 	public boolean isEnabled(Document document) {
 		E selected = document.getValue(valueName).getEnum(enumCls);
-		System.out.printf("selected=%s, value=%s\n", selected.name(), value.name());
+		//System.out.printf("selected=%s, value=%s\n", selected.name(), value.name());
 		return selected == value;
 	}
 }
