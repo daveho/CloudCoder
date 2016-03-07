@@ -526,7 +526,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 				retries++;
 			}
 		} catch (AmazonServiceException e) {
-			throw new ExecException("Failure waiting for webapp instance to start");
+			throw new ExecException("Failure waiting for webapp instance to start", e);
 		}
 	}
 	
