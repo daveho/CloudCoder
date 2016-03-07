@@ -8,13 +8,17 @@ import javax.swing.JTextField;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.StringValue;
 
-public class StringValueField extends LabeledField<StringValue> implements IPageField, UIConstants {
+public class StringValueField<E extends StringValue> extends LabeledField<E> implements IPageField, UIConstants {
 	private static final long serialVersionUID = 1L;
 	
 	private JTextField textField;
 	
 	public StringValueField() {
-		textField = new JTextField();
+		this(new JTextField());
+	}
+	
+	protected StringValueField(JTextField tf) {
+		textField = tf;
 		textField.setPreferredSize(new Dimension(FIELD_COMPONENT_WIDTH, FIELD_COMPONENT_HEIGHT));
 		add(textField);
 		textField.getDocument().addDocumentListener(new ChangeReportingDocumentListener());
@@ -22,7 +26,7 @@ public class StringValueField extends LabeledField<StringValue> implements IPage
 	}
 	
 	@Override
-	public void setValue(StringValue value) {
+	public void setValue(E value) {
 		super.setValue(value);
 		textField.setText(value.getString());
 	}

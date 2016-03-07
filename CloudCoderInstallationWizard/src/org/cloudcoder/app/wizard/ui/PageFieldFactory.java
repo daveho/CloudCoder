@@ -5,6 +5,7 @@ import org.cloudcoder.app.wizard.model.EnumValue;
 import org.cloudcoder.app.wizard.model.FilenameValue;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
+import org.cloudcoder.app.wizard.model.PasswordValue;
 import org.cloudcoder.app.wizard.model.StringValue;
 
 public class PageFieldFactory {
@@ -16,7 +17,7 @@ public class PageFieldFactory {
 			return isvf;
 			
 		case STRING:
-			StringValueField svf = new StringValueField();
+			StringValueField<StringValue> svf = new StringValueField<StringValue>();
 			svf.setValue((StringValue) v);
 			return svf;
 			
@@ -32,6 +33,11 @@ public class PageFieldFactory {
 			FileChooserField fcf = new FileChooserField();
 			fcf.setValue((FilenameValue) v);
 			return fcf;
+			
+		case PASSWORD:
+			PasswordValueField pvf = new PasswordValueField();
+			pvf.setValue((PasswordValue) v);
+			return pvf;
 			
 		default:
 			throw new IllegalArgumentException("Value type " + v.getValueType() + " not supported yet");

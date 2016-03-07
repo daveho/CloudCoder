@@ -14,19 +14,24 @@ public class Main {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				JFrame frame = new JFrame("CloudCoder installation wizard");
-				
-				Document document = DocumentFactory.create();
-				
-				WizardTopLevelPanel panel = new WizardTopLevelPanel();
-				panel.setDocument(document);
-				
-				frame.setResizable(false);
-				frame.setContentPane(panel);
-				frame.pack();
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // should have a close dialog
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
+				try {
+					JFrame frame = new JFrame("CloudCoder installation wizard");
+					
+					Document document = DocumentFactory.create();
+					
+					WizardTopLevelPanel panel = new WizardTopLevelPanel();
+					panel.setDocument(document);
+					
+					frame.setResizable(false);
+					frame.setContentPane(panel);
+					frame.pack();
+					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // should have a close dialog
+					frame.setLocationRelativeTo(null);
+					frame.setVisible(true);
+				} catch (Throwable e) {
+					LogPanel.realErr.println("Error launching UI: " + e.toString());
+					e.printStackTrace(LogPanel.realErr);
+				}
 			}
 		});
 	}

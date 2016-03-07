@@ -167,7 +167,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 				if (current.isEnabled(page.get(i).getName())) {
 					IValue updatedValue = current.get(i);
 					IValidator validator = page.getValidator(i);
-					validator.validate(origValue, updatedValue);
+					validator.validate(current, origValue, updatedValue);
 				}
 			}
 			return true;

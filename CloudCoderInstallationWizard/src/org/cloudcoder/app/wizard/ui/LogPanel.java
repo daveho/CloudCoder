@@ -31,8 +31,8 @@ import javax.swing.text.StyleContext;
 public class LogPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	private static PrintStream realOut;
-	private static PrintStream realErr;
+	public static PrintStream realOut;
+	public static PrintStream realErr;
 	
 	// Display log messages, queueing them if the LogPanel
 	// is not visible yet.
