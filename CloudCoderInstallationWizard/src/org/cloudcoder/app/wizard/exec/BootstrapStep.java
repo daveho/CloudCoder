@@ -6,7 +6,7 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 	private class EstablishSshConnectivitySubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
 		@Override
 		public String getDescription() {
-			return "Establishing ssh connectivity with ssh instance";
+			return "Establishing ssh connectivity with webapp instance";
 		}
 		
 		@Override

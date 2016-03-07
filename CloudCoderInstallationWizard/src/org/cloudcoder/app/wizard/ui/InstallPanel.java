@@ -25,7 +25,7 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	// TODO: progress indicator for sub-steps in current step
 	
 	private InstallationProgress<?,?> progress;
-	private JProgressBar stepProgressBar;
+	private JProgressBar overallProgressBar;
 	private JProgressBar subStepProgressBar;
 	
 	private static final Font STEP_DESCRIPTION_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 16);
@@ -36,25 +36,32 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		setComponentSize(stepDescription, FIELD_HEIGHT);
 		stepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(stepDescription);
+		
 		helpTextField = new ImmutableStringValueField();
 		setComponentSize(helpTextField, FULL_HELP_TEXT_HEIGHT/2);
 		add(helpTextField);
+		
 		subStepDescription = new JLabel();
 		subStepDescription.setFont(STEP_DESCRIPTION_LABEL_FONT);
 		setComponentSize(subStepDescription, FIELD_HEIGHT);
 		subStepDescription.setHorizontalAlignment(SwingConstants.CENTER);
 		add(subStepDescription);
-		setComponentSize(new JLabel(), FIELD_HEIGHT);
+		
 		JLabel stepProgressLabel = new JLabel("Overall progress:");
 		setComponentSize(stepProgressLabel, FIELD_HEIGHT);
 		add(stepProgressLabel);
-		stepProgressBar = new JProgressBar();
-		setComponentSize(stepProgressBar, FIELD_HEIGHT);
-		add(stepProgressBar);
+		
+		overallProgressBar = new JProgressBar();
+		overallProgressBar.setStringPainted(true);
+		setComponentSize(overallProgressBar, FIELD_HEIGHT);
+		add(overallProgressBar);
+		
 		JLabel subStepProgressLabel = new JLabel("Progress for current step:");
 		setComponentSize(subStepProgressLabel, FIELD_HEIGHT);
 		add(subStepProgressLabel);
+		
 		subStepProgressBar = new JProgressBar();
+		subStepProgressBar.setStringPainted(true);
 		setComponentSize(subStepProgressBar, FIELD_HEIGHT);
 		add(subStepProgressBar);
 	}
@@ -125,12 +132,18 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		helpTextField.setValue(progress.getCurrentStep().getHelpText());
 		subStepDescription.setText(progress.getCurrentSubStep().getDescription());
 		
-		stepProgressBar.setMinimum(0);
-		stepProgressBar.setMaximum(progress.getNumSteps());
-		stepProgressBar.setValue(progress.getCurrentStepIndex());
+		overallProgressBar.setMinimum(0);
+		int overallTotal = progress.getTotalSubSteps();
+		int overallIndex = progress.getCurrentTotalSubStepIndex();
+		overallProgressBar.setMaximum(overallTotal);
+		overallProgressBar.setValue(overallIndex);
+		overallProgressBar.setString(overallIndex + "/" + overallTotal);
 		
 		subStepProgressBar.setMinimum(0);
-		subStepProgressBar.setMaximum(progress.getCurrentStep().getInstallSubSteps().size());
-		subStepProgressBar.setValue(progress.getCurrentSubStepIndex()+1);
+		int curStepTotal = progress.getCurrentStep().getInstallSubSteps().size();
+		int curStepIndex = progress.getCurrentSubStepIndex()+1;
+		subStepProgressBar.setMaximum(curStepTotal);
+		subStepProgressBar.setValue(curStepIndex);
+		subStepProgressBar.setString(curStepIndex + "/" + curStepTotal);
 	}
 }

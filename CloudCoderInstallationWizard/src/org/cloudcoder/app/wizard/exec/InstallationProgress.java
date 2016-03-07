@@ -133,4 +133,27 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		setChanged();
 		notifyObservers();
 	}
+
+	/**
+	 * @return total number of sub-steps over all steps
+	 */
+	public int getTotalSubSteps() {
+		int count = 0;
+		for (IInstallStep<InfoType, ServiceType> step : installSteps) {
+			count += step.getInstallSubSteps().size();
+		}
+		return count;
+	}
+
+	/**
+	 * @return the sub-step index relative to the total number of sub-steps
+	 */
+	public int getCurrentTotalSubStepIndex() {
+		int index = 0;
+		for (int i = 0; i < currentStep; i++) {
+			index += installSteps.get(i).getInstallSubSteps().size();
+		}
+		index += currentSubStep;
+		return index;
+	}
 }
