@@ -3,18 +3,23 @@ package org.cloudcoder.app.wizard.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,6 +33,12 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
+import org.cloudcoder.app.wizard.exec.InstallationConstants;
+
+/**
+ * Capture all output written to System.out and System.err
+ * to a text pane and to a log file.
+ */
 public class LogPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
@@ -67,7 +78,8 @@ public class LogPanel extends JPanel {
 				toAppend.add(line);
 			}
 			for (String text : toAppend) {
-				appendText(text, color);
+				appendText(text, color); // log to text pane
+				log.print(text); // log to file
 			}
 		}
 	}
@@ -75,13 +87,11 @@ public class LogPanel extends JPanel {
 	// Collect text and send it to a queue
 	private class OutputSink extends OutputStream {
 		private LinkedBlockingQueue<String> queue;
-		private LogAppender appender; // only used to display error messages related to stdout/stderr diversion
 		private CharsetDecoder decoder;
 		private boolean closed;
 		
-		public OutputSink(LinkedBlockingQueue<String> queue, LogAppender appender) {
+		public OutputSink(LinkedBlockingQueue<String> queue) {
 			this.queue = queue;
-			this.appender = appender;
 			this.decoder = Charset.forName("UTF-8").newDecoder();
 			decoder.reset();
 			this.closed = false;
@@ -116,7 +126,7 @@ public class LogPanel extends JPanel {
 				return;
 			}
 			String text = new String(outArr, 0, out.position());
-//			realOut.println("Sending " + text.length() + " chars", Color.GREEN);
+//			realOut.println("Sending " + text.length() + " chars");
 			queue.offer(text);
 		}
 		
@@ -143,6 +153,10 @@ public class LogPanel extends JPanel {
 		}
 	}
 	
+	// Runnable for monitoring a queue (fed by an OutputSink)
+	// to which output from System.out and System.err is arriving.
+	// Append the output to the text pane and to the current
+	// log file.
 	private class OutputMonitor implements Runnable {
 		private LogAppender appender;
 		private LinkedBlockingQueue<String> queue;
@@ -159,7 +173,7 @@ public class LogPanel extends JPanel {
 			try {
 				while (true) {
 					String buf = queue.take();
-//					realOut.println("Received " + buf.length() + " chars\n", Color.GREEN);
+//					realOut.println("Received " + buf.length() + " chars\n");
 					this.buf.append(buf);
 					process();
 				}
@@ -181,7 +195,7 @@ public class LogPanel extends JPanel {
 		}
 		
 		public OutputStream getOutputSink() {
-			return new OutputSink(queue, appender);
+			return new OutputSink(queue);
 		}
 	}
 	
@@ -190,7 +204,7 @@ public class LogPanel extends JPanel {
 	// being cached.)
 	private static LogPanel instance;
 	
-	public static void createInstance() {
+	public static void createInstance() throws IOException {
 		if (instance != null) {
 			throw new IllegalStateException();
 		}
@@ -208,8 +222,10 @@ public class LogPanel extends JPanel {
 	private volatile boolean logPanelAdded;
 	private LogAppender stdoutAppender;
 	private LogAppender stderrAppender;
+	private File logFile;
+	private PrintWriter log;
 	
-	private LogPanel() {
+	private LogPanel() throws IOException {
 		setLayout(new BorderLayout());
 		
 		this.textPane = new JTextPane();
@@ -222,8 +238,22 @@ public class LogPanel extends JPanel {
 
 		add(scrollPane, BorderLayout.CENTER);
 		
+		// Log to text pane
 		stdoutAppender = new LogAppender(Color.GRAY);
 		stderrAppender = new LogAppender(Color.RED);
+
+		// Also log to file
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+		String logFileName = "installwizard-" + df.format(new Date()) + ".log";
+		this.logFile = new File(InstallationConstants.DATA_DIR, logFileName);
+		this.log = new PrintWriter(
+				new OutputStreamWriter(
+						new BufferedOutputStream(
+							new FileOutputStream(logFile)
+						),
+						Charset.forName("UTF-8")
+					)
+				);
 		
 		startMonitors();
 	}
@@ -275,5 +305,22 @@ public class LogPanel extends JPanel {
 		logPanelAdded = true;
 		stdoutAppender.flush();
 		stderrAppender.flush();
+	}
+	
+	/**
+	 * Flush the log file.
+	 * This should be called once the installation has
+	 * finished (successfully or unsuccessfully)
+	 * to ensure that all output has made it to the log file.
+	 */
+	public void flushLog() {
+		log.flush();
+	}
+	
+	/**
+	 * @return the log file
+	 */
+	public File getLogFile() {
+		return logFile;
 	}
 }

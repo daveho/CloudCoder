@@ -1,5 +1,7 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.io.IOException;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -7,7 +9,7 @@ import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
 
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// Hijack System.out and System.err
 		LogPanel.createInstance();
 		

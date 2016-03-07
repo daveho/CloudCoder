@@ -312,10 +312,12 @@ public class WizardPanel extends JPanel implements UIConstants {
 	}
 	
 	private void onFinished() {
+		LogPanel.getInstance().flushLog();
 		goToPage("finished");
 	}
 	
 	private void onFatalException() {
+		LogPanel.getInstance().flushLog();
 		goToPage("error");
 	}
 
