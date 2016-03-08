@@ -15,6 +15,10 @@ my %features = (
 	'apache' => 1,
 	'integrated-builder' => 0,
 );
+my %featuresHelp = (
+	'apache' => 'Install Apache2 as an SSL proxy',
+	'integrated-builder' => 'Install integrated builder',
+);
 
 # Download site
 my $DOWNLOAD_SITE = 'https://s3.amazonaws.com/cloudcoder-binaries';
@@ -556,12 +560,26 @@ Options:
                           the keystore and add it to the webapp/builder
                           jarfiles
 
+Modes:
+  start                 Start an installation (this is the default)
+  step2                 Continue an installation as 'cloud' user
+                          (called automatically from start mode, don't
+                          do this manually)
+  generate-keystore     Generate keystore for webapp and builder
+                          (needed only if --defer-keystore was used
+                          during original installation)
+  configure-builder     Continue an installation as 'builder' user
+                          (called automatically from start mode, don't
+                          do this manually)
+  letsencrypt           Use letsencrypt to issue and configure an SSL
+                          certificate
+
 Selectable features are:
 USAGE
-	printf("%18s Default\n", "Feature");
-	print "-" x 18, " ", "-" x 8, "\n";
+	printf("%18s %8s %s\n", "Feature", "Default", "Description");
+	print "-" x 18, " ", "-" x 8, " ", "-" x 40, "\n";
 	for my $feature (sort keys %features) {
-		printf("%18s %s\n", $feature, $features{$feature} ? 'enabled' : 'disabled');
+		printf("%18s %8s %s\n", $feature, $features{$feature} ? 'enabled' : 'disabled', $featuresHelp{$feature});
 	}
 	return 1;
 }
