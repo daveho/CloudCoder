@@ -51,15 +51,15 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		}
 	}
 	
-	public class ConfigureNoIpDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+	public class ConfigureDuckDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
 		@Override
 		public String getDescription() {
-			return "Using No-IP to configure hostname";
+			return "Using Duck DNS to configure hostname";
 		}
 		
 		@Override
 		protected void doExecute(ServiceType cloudService) throws ExecException {
-			bootstrap.configureNoIpDNSHostName();
+			bootstrap.configureDuckDnsHostName();
 		}
 	}
 	
@@ -74,7 +74,7 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		addSubStep(new DownloadBootstrapScriptSubStep());
 		addSubStep(new UploadBootstrapPropertiesSubStep());
 		addSubStep(new RunBootstrapScriptSubStep());
-		addSubStep(new ConfigureNoIpDNSHostnameSubStep());
+		addSubStep(new ConfigureDuckDnsDNSHostnameSubStep());
 	}
 
 	@Override

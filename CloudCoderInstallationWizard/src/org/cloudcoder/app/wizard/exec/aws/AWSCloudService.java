@@ -469,7 +469,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 			info.setElasticIpAllocationId(aaRes.getAllocationId());
 			info.setElasticIp(aaRes.getPublicIp());
 		} catch (AmazonServiceException e) {
-			throw new ExecException("Could not find or create an elastic IP address for webapp instance");
+			throw new ExecException("Could not find or create an elastic IP address for webapp instance", e);
 		}
 	}
 	

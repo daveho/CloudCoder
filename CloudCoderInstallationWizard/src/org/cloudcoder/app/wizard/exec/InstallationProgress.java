@@ -117,6 +117,7 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 				System.err.println("Sub-step " +
 						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
 						e.getMessage());
+				e.printStackTrace(System.err);
 				subStepFinished();
 			} catch (ExecException e) {
 				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());

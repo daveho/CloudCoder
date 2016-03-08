@@ -96,7 +96,7 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	private static class WaitForWebappInstanceToStartSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
 		@Override
 		public String getDescription() {
-			return "Waiting for webapp instance to start";
+			return "Waiting for webapp instance to start (can take 1 minute or more)";
 		}
 		
 		@Override

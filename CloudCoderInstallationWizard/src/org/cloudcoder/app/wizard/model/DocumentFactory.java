@@ -1,7 +1,10 @@
 package org.cloudcoder.app.wizard.model;
 
+import org.cloudcoder.app.wizard.model.validators.ConditionalValidator;
 import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
+import org.cloudcoder.app.wizard.model.validators.MultiValidator;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
+import org.cloudcoder.app.wizard.model.validators.StringValueEndsInSuffixValidator;
 import org.cloudcoder.app.wizard.model.validators.StringValueEqualValidator;
 import org.cloudcoder.app.wizard.model.validators.StringValueNonemptyValidator;
 
@@ -53,12 +56,16 @@ public class DocumentFactory {
 		
 		Page dnsPage = new Page("dns", "Enter DNS information");
 		dnsPage.addHelpText("msg", "Message");
-		dnsPage.add(new StringValue("hostname", "Hostname"), StringValueNonemptyValidator.INSTANCE);
-		dnsPage.add(new BooleanValue("useNoIp", "Use No-IP"), NoopValidator.INSTANCE);
-		dnsPage.add(new StringValue("noIpUsername", "No-IP username"), StringValueNonemptyValidator.INSTANCE);
-		dnsPage.selectivelyEnable("noIpUsername", new EnableIfBooleanFieldChecked("useNoIp"));
-		dnsPage.add(new PasswordValue("noIpPassword", "No-IP password"), StringValueNonemptyValidator.INSTANCE);
-		dnsPage.selectivelyEnable("noIpPassword", new EnableIfBooleanFieldChecked("useNoIp"));
+		dnsPage.add(
+				new StringValue("hostname", "Hostname"),
+				new MultiValidator(
+						StringValueNonemptyValidator.INSTANCE,
+						new ConditionalValidator("useDuckDns", new StringValueEndsInSuffixValidator(".duckdns.org", true))
+						)
+				);
+		dnsPage.add(new BooleanValue("useDuckDns", "Use Duck DNS"), NoopValidator.INSTANCE);
+		dnsPage.add(new PasswordValue("duckDnsToken", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
+		dnsPage.selectivelyEnable("duckDnsToken", new EnableIfBooleanFieldChecked("useDuckDns"));
 		document.addPage(dnsPage);
 		
 		Page ccAcctPage = new Page("ccAcct", "Enter CloudCoder account information");

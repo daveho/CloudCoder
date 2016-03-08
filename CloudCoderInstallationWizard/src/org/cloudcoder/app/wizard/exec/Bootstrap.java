@@ -149,38 +149,37 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		}
 	}
 	
-	public void configureNoIpDNSHostName() throws ExecException {
+	public void configureDuckDnsHostName() throws ExecException {
 		// Note that errors here are non-fatal.
 		
 		int statusCode;
 		try {
-			if (!cloudService.getDocument().getValue("dns.useNoIp").getBoolean()) {
-				// Not using no-ip
-				System.out.println("Not using No-IP");
+			if (!cloudService.getDocument().getValue("dns.useDuckDns").getBoolean()) {
+				// Not using Duck DNS
+				System.out.println("Not using Duck DNS");
 				return;
 			}
 			
-			String username = cloudService.getDocument().getValue("dns.noIpUsername").getString();
-			String password = cloudService.getDocument().getValue("dns.noIpPassword").getString();
+			String authToken = cloudService.getDocument().getValue("dns.duckDnsToken").getString();
 			String dnsHostname = cloudService.getDocument().getValue("dns.hostname").getString();
 			String ipAddress = cloudService.getInfo().getWebappPublicIp();
 			
+			String domain = dnsHostname.substring(0, dnsHostname.length() - ".duckdns.org".length());
+			
 			HttpClient client = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet(
-					"https://dynupdate.no-ip.com/nic/update?hostname=" + dnsHostname + "&myip=" + ipAddress);
-			String authHeaderValue =
-					"Basic " +
-					DatatypeConverter.printBase64Binary((username + ":" + password).getBytes(Charset.forName("UTF-8")));
-			httpGet.addHeader("Authorization", authHeaderValue);
+			String updateUrl =
+					"https://www.duckdns.org/update?domains=" + domain + "&token=" + authToken + "&ip=" + ipAddress;
+			System.out.println("Updating Duck DNS using URL " + updateUrl);
+			HttpGet httpGet = new HttpGet(updateUrl);
 			
 			HttpResponse resp = client.execute(httpGet);
 			statusCode = resp.getStatusLine().getStatusCode();
 		} catch (Exception e) {
-			throw new NonFatalExecException("Error updating no-ip dynamic IP address", e);
+			throw new NonFatalExecException("Error updating Duck DNS dynamic IP address", e);
 		}
 		
 		if (statusCode != 200) {
-			throw new NonFatalExecException("No-ip update request failed with code " + statusCode);
+			throw new NonFatalExecException("Duck DNS update request failed with code " + statusCode);
 		}
 	}
 
