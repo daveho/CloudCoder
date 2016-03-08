@@ -68,7 +68,7 @@ public class DocumentFactory {
 		ccAcctPage.add(new PasswordValue("confirmPassword", "Confirm password"), new StringValueEqualValidator("password"));
 		ccAcctPage.add(new StringValue("firstname", "First name"), StringValueNonemptyValidator.INSTANCE);
 		ccAcctPage.add(new StringValue("lastname", "Last name"), StringValueNonemptyValidator.INSTANCE);
-		ccAcctPage.add(new StringValue("email", "Email address (optional)"), NoopValidator.INSTANCE);
+		ccAcctPage.add(new StringValue("email", "Email address"), StringValueNonemptyValidator.INSTANCE);
 		ccAcctPage.add(new StringValue("website", "Website (optional)"), NoopValidator.INSTANCE);
 		document.addPage(ccAcctPage);
 		
