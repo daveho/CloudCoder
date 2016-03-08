@@ -1,11 +1,13 @@
 package org.cloudcoder.app.wizard.exec;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -19,10 +21,7 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
 import org.slf4j.Logger;
@@ -31,8 +30,8 @@ import org.slf4j.LoggerFactory;
 public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>> {
 	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-	public interface SSHRunnable {
-		public void run(SSHClient ssh) throws IOException;
+	public interface SSHRunnable<E> {
+		public E run(SSHClient ssh) throws IOException;
 	}
 	
 	// Real download site
@@ -46,22 +45,38 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	private static class Drain implements Runnable {
 		private InputStream is;
 		private OutputStream os;
+		private ByteArrayOutputStream capture;
 		
 		public Drain(InputStream is, OutputStream os) {
+			this(is, os, false);
+		}		
+		
+		public Drain(InputStream is, OutputStream os, boolean capture) {
 			this.is = is;
 			this.os = os;
+			if (capture) {
+				this.capture = new ByteArrayOutputStream();
+			}
 		}
 		
 		@Override
 		public void run() {
 			try {
+				OutputStream os = (capture != null) ? new TeeOutputStream(this.os, capture) : this.os;
+				
 				IOUtils.copy(is, os);
+				os.flush();
 			} catch (IOException e) {
 				logger.error("Error draining stream ", e);
 			} finally {
 				IOUtils.closeQuietly(is);
-				// Note: do NOT close the output stream
+				// Note: do NOT close the output stream, but close the capture output stream if there is one
+				IOUtils.closeQuietly(capture);
 			}
+		}
+		
+		public String getCapturedOutput() {
+			return new String(capture.toByteArray(), Charset.forName("UTF-8"));
 		}
 	}
 
@@ -171,7 +186,10 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			// so we can't use Java to update Duck DNS.  However,
 			// we CAN use ssh to run a curl command on the webapp
 			// instance.
-			executeCommand("curl '" + updateUrl + "'");
+			String output = executeCommandAndCaptureOutput("curl '" + updateUrl + "'");
+			if (!output.trim().equals("OK")) {
+				throw new NonFatalExecException("Non-OK result from Duck DNS update: " + output);
+			}
 		} catch (Exception e) {
 			throw new NonFatalExecException("Error updating Duck DNS dynamic IP address", e);
 		}
@@ -180,6 +198,10 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	private void writeConfigProperty(PrintWriter w, String propName, String varName) {
 		w.printf("%s=%s\n", propName, cloudService.getDocument().getValue(varName).getString());
 	}
+	
+	private interface GetCommandResult<E> {
+		public E get(Command cmd, Drain outputDrain);
+	}
 
 	/**
 	 * Execute remote command on the webapp server,
@@ -187,13 +209,42 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	 * System.out and System.err.
 	 * 
 	 * @param cmdStr  the command to execute
+	 * @return the command's exit code
 	 * @throws ExecException
 	 */
-	private void executeCommand(final String cmdStr) throws ExecException {
+	private int executeCommand(final String cmdStr) throws ExecException {
+		return doCommand(cmdStr, false, new GetCommandResult<Integer>() {
+			@Override
+			public Integer get(Command cmd, Drain outputDrain) {
+				return cmd.getExitStatus();
+			}
+		});
+	}
+	
+	/**
+	 * Execute remote command on the webapp server,
+	 * diverting the remote process's stdout and stderr to
+	 * System.out and System.err, and also capturing
+	 * the remote process's stdout as a string.
+	 * 
+	 * @param cmdStr  the command to execute
+	 * @return the captured stdout of the command
+	 * @throws ExecException
+	 */
+	private String executeCommandAndCaptureOutput(final String cmdStr) throws ExecException {
+		return doCommand(cmdStr, true, new GetCommandResult<String>() {
+			@Override
+			public String get(Command cmd, Drain outputDrain) {
+				return outputDrain.getCapturedOutput();
+			}
+		});
+	}
+
+	private<E> E doCommand(final String cmdStr, final boolean captureOutput, final GetCommandResult<E> getResult) throws ExecException {
 		try {
-			doSsh(new SSHRunnable() {
+			return doSsh(new SSHRunnable<E>() {
 				@Override
-				public void run(SSHClient ssh) throws IOException {
+				public E run(SSHClient ssh) throws IOException {
 					System.out.println("Starting ssh session...");
 					Session session = ssh.startSession();
 					System.out.println("ssh session started");
@@ -204,7 +255,8 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 
 						// Divert command output and error
 						System.out.println("Starting output redirection threads");
-						Thread t1 = new Thread(new Drain(cmd.getInputStream(), System.out));
+						Drain outputDrain = new Drain(cmd.getInputStream(), System.out, captureOutput);
+						Thread t1 = new Thread(outputDrain);
 						Thread t2 = new Thread(new Drain(cmd.getErrorStream(), System.err));
 						t1.start();
 						t2.start();
@@ -221,6 +273,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 						System.out.println("Waiting for command to complete...");
 						cmd.join(10, TimeUnit.SECONDS);
 						System.out.println("Command exit code is " + cmd.getExitStatus());
+						return getResult.get(cmd, outputDrain);
 					} finally {
 						System.out.println("Closing ssh session");
 						session.close();
@@ -234,14 +287,15 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	
 	private void copyFile(final File localFile) throws ExecException {
 		try {
-			doSsh(new SSHRunnable() {
+			doSsh(new SSHRunnable<Boolean>() {
 				@Override
-				public void run(SSHClient ssh) throws IOException {
+				public Boolean run(SSHClient ssh) throws IOException {
 					System.out.println("Uploading " + localFile.getAbsolutePath() + " to webapp server");
 					ssh.useCompression();
 					SCPFileTransfer scp = ssh.newSCPFileTransfer();
 					// TODO: use TransferListener to report progress
 					scp.upload(localFile.getAbsolutePath(), ".");
+					return true;
 				}
 			});
 		} catch (Exception e) {
@@ -249,7 +303,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		}
 	}
 
-	private void doSsh(SSHRunnable r) throws IOException, UserAuthException, TransportException {
+	private<E> E doSsh(SSHRunnable<E> r) throws IOException, UserAuthException, TransportException {
 		SSHClient ssh = new SSHClient();
 		ssh.addHostKeyVerifier(new PromiscuousVerifier()); // FIXME: would be nice to have actual host key fingerprint
 		try {
@@ -261,7 +315,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			System.out.println("Doing ssh authentication using keypair");
 			ssh.authPublickey(info.getWebappServerUserName(), keys);
 			System.out.println("Authentication successful");
-			r.run(ssh);
+			return r.run(ssh);
 		} finally {
 			System.out.println("Closing ssh connection");
 			ssh.close();
