@@ -6,11 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.DatatypeConverter;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -152,7 +149,6 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	public void configureDuckDnsHostName() throws ExecException {
 		// Note that errors here are non-fatal.
 		
-		int statusCode;
 		try {
 			if (!cloudService.getDocument().getValue("dns.useDuckDns").getBoolean()) {
 				// Not using Duck DNS
@@ -166,20 +162,18 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			
 			String domain = dnsHostname.substring(0, dnsHostname.length() - ".duckdns.org".length());
 			
-			HttpClient client = HttpClientBuilder.create().build();
 			String updateUrl =
 					"https://www.duckdns.org/update?domains=" + domain + "&token=" + authToken + "&ip=" + ipAddress;
 			System.out.println("Updating Duck DNS using URL " + updateUrl);
-			HttpGet httpGet = new HttpGet(updateUrl);
-			
-			HttpResponse resp = client.execute(httpGet);
-			statusCode = resp.getStatusLine().getStatusCode();
+
+			// OpenJDK doesn't trust the StartSSL root certificate,
+			// which is needed to talk to duckdns.org via HTTPS,
+			// so we can't use Java to update Duck DNS.  However,
+			// we CAN use ssh to run a curl command on the webapp
+			// instance.
+			executeCommand("curl '" + updateUrl + "'");
 		} catch (Exception e) {
 			throw new NonFatalExecException("Error updating Duck DNS dynamic IP address", e);
-		}
-		
-		if (statusCode != 200) {
-			throw new NonFatalExecException("Duck DNS update request failed with code " + statusCode);
 		}
 	}
 
