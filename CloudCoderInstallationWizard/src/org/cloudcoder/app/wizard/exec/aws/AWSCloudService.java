@@ -386,9 +386,10 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 			
 			// Configure rules
 			String groupId = gRes.getGroupId();
-			allowIngress(22, groupId);
-			allowIngress(443, groupId);
-			allowIngress(47374, groupId);
+			allowIngress(22, groupId); // SSH
+			allowIngress(80, groupId); // HTTP, needed for Let's Encrypt webroot authorization
+			allowIngress(443, groupId); // HTTPS, Apache will proxy this to the CloudCoder webapp
+			allowIngress(47374, groupId); // TLS connection from builder(s)
 			System.out.println("Added ingress rules to " + CLOUDCODER_SECURITY_GROUP_NAME);
 			
 			// Annoyingness: the CreateSecurityGroupResult doesn't give us a
