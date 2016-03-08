@@ -543,6 +543,11 @@ sub GenerateKeystore {
 
 # Use Let's Encrypt to issue or renew an SSL certificate
 sub LetsEncrypt {
+	my $home = $ENV{'HOME'};
+
+	# Paranoia
+	chdir $home || die "Could not change directory to $home: $!\n";
+
 	# Properties must be specified noninteractively
 	if (!$propsLoaded) {
 		die "Properties must be specified non-interactively\n" .
@@ -550,13 +555,13 @@ sub LetsEncrypt {
 	}
 
 	# Get the Let's Encrypt software if not already installed...
-	if (! -d "$ENV{'HOME'}/letsencrypt") {
+	if (! -d "$home/letsencrypt") {
 		Run('git', 'clone', 'https://github.com/letsencrypt/letsencrypt');
 	}
 
 	# Generate the certificate
 	RunAdmin(cmd => [
-		"$ENV{'HOME'}/letsencrypt/letsencrypt-auto",
+		"$home/letsencrypt/letsencrypt-auto",
 		"-n", # non-interactive
 		"--apache", # use Apache plugin for both authentication and cert installation
 		"--renew-by-default", # renew 
