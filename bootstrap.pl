@@ -127,6 +127,8 @@ if ($mode eq 'start') {
 	GenerateAndConfigureKeystore();
 } elsif ($mode eq 'configure-builder') {
 	ConfigureIntegratedBuilder();
+} elsif ($mode eq 'letsencrypt') {
+	LetsEncrypt();
 } else {
 	die "Unknown mode: $mode\n";
 }
@@ -174,7 +176,8 @@ sub Start {
 	# "fastjar" is needed because the JRE doesn't include the jar
 	# utility, which the docker image entrypoint needs to check
 	# whether a keystore has been generated/configured.
-	my @packages = ("wget", "fastjar", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
+	# "git" is needed for Let's Encrypt.
+	my @packages = ("wget", "fastjar", "git", "openjdk-7-jre-headless", "mysql-client-$mysqlVersion", "mysql-server-$mysqlVersion");
 	if ($features{'apache'}) {
 		push @packages, 'apache2';
 	}
@@ -538,6 +541,31 @@ sub GenerateKeystore {
 		'-dname', "CN=None, OU=None, L=None, ST=None, C=None");
 }
 
+# Use Let's Encrypt to issue or renew an SSL certificate
+sub LetsEncrypt {
+	# Properties must be specified noninteractively
+	if (!$propsLoaded) {
+		die "Properties must be specified non-interactively\n" .
+			"(E.g., use the --config option.)\n";
+	}
+
+	# Get the Let's Encrypt software if not already installed...
+	if (! -d "$ENV{'HOME'}/letsencrypt") {
+		Run('git', 'clone', 'https://github.com/letsencrypt/letsencrypt');
+	}
+
+	# Generate the certificate
+	RunAdmin(cmd => [
+		"$ENV{'HOME'}/letsencrypt/letsencrypt-auto",
+		"-n", # non-interactive
+		"--apache", # use Apache plugin for both authentication and cert installation
+		"--renew-by-default", # renew 
+		"--agree-tos",
+		"-m", $props{'ccEmail'},
+		"-d", $props{'ccHostname'}
+	]);
+}
+
 sub Usage {
 	print << "USAGE";
 ./bootstrap.pl [options] [mode [config props]]
@@ -571,8 +599,10 @@ Modes:
   configure-builder     Continue an installation as 'builder' user
                           (called automatically from start mode, don't
                           do this manually)
-  letsencrypt           Use letsencrypt to issue and configure an SSL
-                          certificate
+  letsencrypt           Use letsencrypt to issue and configure, or renew,
+                          an SSL certificate; note that config properties
+                          must be specified noninteractively (e.g.,
+                          using the --config option)
 
 Selectable features are:
 USAGE
