@@ -10,12 +10,14 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 	private List<IInstallStep<InfoType, ServiceType>> installSteps;
 	private int currentStep, currentSubStep;
 	private Throwable fatalException;
+	private List<IInstallSubStep<InfoType, ServiceType>> succeededSubSteps;
 	private List<NonFatalExecException> nonFatalExceptions;
 	
 	public InstallationProgress() {
 		installSteps = new ArrayList<IInstallStep<InfoType, ServiceType>>();
 		currentStep = 0;
 		currentSubStep = 0;
+		succeededSubSteps = new ArrayList<IInstallSubStep<InfoType, ServiceType>>();
 		nonFatalExceptions = new ArrayList<NonFatalExecException>();
 	}
 
@@ -90,7 +92,34 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		return getCurrentStep().getInstallSubSteps().get(currentSubStep);
 	}
 	
-	private void subStepFinished() {
+	public IInstallStep<InfoType, ServiceType> getStepByName(String stepName) {
+		for (IInstallStep<InfoType, ServiceType> step : installSteps) {
+			if (step.getName().equals(stepName)) {
+				return step;
+			}
+		}
+		throw new IllegalArgumentException("No step with name " + stepName);
+	}
+	
+	public IInstallSubStep<InfoType, ServiceType> getSubStep(String compositeName) {
+		int dot = compositeName.indexOf('.');
+		if (dot < 0) {
+			throw new IllegalArgumentException("Bad composite name: " + compositeName);
+		}
+		String stepName = compositeName.substring(0, dot);
+		String subStepName = compositeName.substring(dot+1);
+		IInstallStep<InfoType, ServiceType> step = getStepByName(stepName);
+		IInstallSubStep<InfoType, ServiceType> subStep = step.getSubStepByName(subStepName);
+		return subStep;
+	}
+	
+	private void subStepFinished(boolean succeeded) {
+		if (succeeded) {
+			// Current sub-step succeeded, yay
+			succeededSubSteps.add(getCurrentSubStep());
+		}
+		
+		// Advance to next sub-step
 		currentSubStep++;
 		if (currentSubStep >= getCurrentStep().getInstallSubSteps().size()) {
 			currentSubStep = 0;
@@ -106,25 +135,50 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 	public void executeAll(ServiceType cloudService) {
 		while (!isFinished() && !isFatalException()) {
 			forceUpdate(); // Allow UI to update itself
+			IInstallStep<InfoType, ServiceType> step = getCurrentStep();
 			IInstallSubStep<InfoType, ServiceType> subStep = getCurrentSubStep();
+			
+			// See if this sub-step is dependent on the successful completion
+			// of a previous sub-step.
+			if (step.isDependent(subStep)) {
+				// Find the prerequisite
+				String prerequisiteSubstep = step.getPrerequisiteSubStepName(subStep);
+				IInstallSubStep<InfoType, ServiceType> prereq = getSubStep(prerequisiteSubstep);
+				
+				// See if the prerequisite succeeded
+				if (!succeededSubSteps.contains(prereq)) {
+					// The prerequisite failed, so this step fails as well.
+					// However, we consider this a non-fatal error.
+					System.out.printf(
+							"Sub-step %s cannot execute because prerequisite %s failed\n",
+							subStep.getClass().getSimpleName(),
+							prereq.getClass().getSimpleName()
+							);
+					subStepFinished(false);
+					continue;
+				}
+			}
+			
+			// Execute the sub-step.
 			try {
 				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
 				subStep.execute(cloudService);
 				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
-				subStepFinished();
+				subStepFinished(true);
 			} catch (NonFatalExecException e) {
 				nonFatalExceptions.add(e);
 				System.err.println("Sub-step " +
 						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
 						e.getMessage());
 				e.printStackTrace(System.err);
-				subStepFinished();
+				subStepFinished(false);
 			} catch (ExecException e) {
 				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
 				e.printStackTrace();
 				setFatalException(e);
 			}
 		}
+		
 		// If the loop terminated, then either the installation finished
 		// successfully, or there was a fatal exception.  Let the UI know.
 		forceUpdate();

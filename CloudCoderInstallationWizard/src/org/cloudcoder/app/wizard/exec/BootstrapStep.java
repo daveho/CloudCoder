@@ -67,7 +67,7 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		}
 	}
 	
-	public class ConfigureDuckDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+	private class ConfigureDuckDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
 		public ConfigureDuckDnsDNSHostnameSubStep() {
 			super("configureDuckDns");
 		}
@@ -83,6 +83,38 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		}
 	}
 	
+	private class VerifyHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public VerifyHostnameSubStep() {
+			super("verifyHostname");
+		}
+		
+		@Override
+		public String getDescription() {
+			return "Verify dynamic DNS hostname";
+		}
+		
+		@Override
+		protected void doExecute(ServiceType cloudService) throws ExecException {
+			bootstrap.verifyDnsHostname();
+		}
+	}
+	
+	private class LetsEncryptSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public LetsEncryptSubStep() {
+			super("letsencrypt");
+		}
+		
+		@Override
+		public String getDescription() {
+			return "Issue and install Let's Encrypt SSL certificate";
+		}
+		
+		@Override
+		protected void doExecute(ServiceType cloudService) throws ExecException {
+			bootstrap.letsEncrypt();
+		}
+	}
+	
 	private Bootstrap<InfoType, ServiceType> bootstrap;
 	
 	public BootstrapStep(ServiceType cloudService) {
@@ -94,7 +126,19 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		addSubStep(new DownloadBootstrapScriptSubStep());
 		addSubStep(new UploadBootstrapPropertiesSubStep());
 		addSubStep(new RunBootstrapScriptSubStep());
-		addSubStep(new ConfigureDuckDnsDNSHostnameSubStep());
+		
+		ConfigureDuckDnsDNSHostnameSubStep duckDnsSubStep = new ConfigureDuckDnsDNSHostnameSubStep();
+		addSubStep(duckDnsSubStep);
+		
+		// Configuring DNS is a prerequisite for verifying DNS (for somewhat obvious reasons)
+		VerifyHostnameSubStep verifyDnsSubStep = new VerifyHostnameSubStep();
+		addSubStep(verifyDnsSubStep);
+		setPrerequisite(verifyDnsSubStep, getName() + "." + duckDnsSubStep.getName());
+		
+		// Verifying DNS is a prerequisite for using Let's Encrypt to issue/install an SSL cert
+		LetsEncryptSubStep letsEncryptSubStep = new LetsEncryptSubStep();
+		addSubStep(letsEncryptSubStep);
+		setPrerequisite(letsEncryptSubStep, getName() + "." + verifyDnsSubStep.getName());
 	}
 
 	@Override

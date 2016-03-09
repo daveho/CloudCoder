@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -193,6 +195,66 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		} catch (Exception e) {
 			throw new NonFatalExecException("Error updating Duck DNS dynamic IP address", e);
 		}
+	}
+	
+	public void verifyDnsHostname() throws ExecException {
+		// Get hostname and public ip address
+		String hostname = cloudService.getDocument().getValue("dns.hostname").getString();
+		String publicIp = cloudService.getInfo().getWebappPublicIp();
+		
+		// Convert public ip address to an InetAddress
+		InetAddress expectedAddr;
+		try {
+			expectedAddr = InetAddress.getByName(publicIp);
+		} catch (UnknownHostException e1) {
+			throw new NonFatalExecException(
+					"Public ip " + publicIp + " could not be converted to InetAddress (should not happen)", e1);
+		}
+		
+		// It might take a few tries to resolve the hostname, since we just
+		// added the DNS entry.
+		int retries = 0;
+		while (true) {
+			try {
+				InetAddress addr = InetAddress.getByName(hostname);
+				if (addr.equals(expectedAddr)) {
+					System.out.printf("Hostname %s resolves as %s, looks good\n", hostname, addr.toString());
+					return;
+				}
+				System.err.printf(
+						"Resolved ip address %s for hostname %s does not match expected ip address %s\n",
+						addr.toString(), hostname, expectedAddr.toString());
+			} catch (UnknownHostException e) {
+				System.err.printf("Could not resolve hostname %s\n", hostname);
+			}
+			
+			if (retries >= 20) {
+				throw new NonFatalExecException("Too many retries verifying DNS entry, giving up");
+			}
+			
+			System.err.println("Waiting 10 seconds to retry...");
+			Util.sleep(10000);
+			retries++;
+		}
+	}
+	
+	// Issue and install a Let's Encrypt SSL certificate!
+	public void letsEncrypt() throws ExecException {
+		int exitCode;
+		try {
+			System.out.println("Issuing/installing Let's Encrypt SSL certificate...");
+			// The bootstrap script handles the work here
+			exitCode = executeCommand("./bootstrap.pl --config=bootstrap.properties letsencrypt");
+		} catch (Exception e) {
+			throw new NonFatalExecException("Error issuing/installing Let's Encrypt SSL certificate", e);
+		}
+		
+		if (exitCode != 0) {
+			throw new NonFatalExecException(
+					"Executing bootstrap script to issue/install Let's Encrypt SSL cert exited with code " +
+					exitCode);
+		}
+		System.out.println("Let's Encrypt SSL certificate issued and installed!");
 	}
 
 	private void writeConfigProperty(PrintWriter w, String propName, String varName) {
