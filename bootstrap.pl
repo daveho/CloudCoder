@@ -52,6 +52,7 @@ GetOptions(\%opts,
 		disable=s
 		config=s
 		no-start!
+		no-crontab!
 		no-localhost-only!
 		defer-keystore!
 	)
@@ -66,6 +67,11 @@ my $dryRun = 0;
 if (exists $opts{'dry-run'}) {
 	print ">>> Dry run <<<\n";
 	$dryRun = 1;
+}
+
+# --no-start implies --no-crontab
+if (exists $opts{'no-start'}) {
+	$opts{'no-crontab'} = 1;
 }
 
 # See if any features are being enabled or disabled
@@ -464,6 +470,15 @@ sub Step2 {
 		Section("Starting the CloudCoder web application");
 		Run("java", "-jar", $appJar, "start");
 	}
+
+	# ----------------------------------------------------------------------
+	# Set up a cron job to automatically poke the webapp every 5 minutes
+	# ----------------------------------------------------------------------
+	if (!exists $opts{'no-crontab'}) {
+		Section("Adding a crontab entry to automatically start/restart the webapp");
+		chdir "/home/cloud" || die "Couldn't chdir to /home/cloud: $!\n";
+		InstallCrontab("/home/cloud/webapp", $appJar);
+	}
 }
 
 # Generate and configure the keystore as a post-installation step.
@@ -522,6 +537,13 @@ sub ConfigureIntegratedBuilder {
 	if (!exists $opts{'no-start'}) {
 		print "Starting integrated builder...\n";
 		Run("java", "-jar", $builderJar, "start");
+	}
+
+	# Add a crontab entry to automatically start/restart the builder
+	if (!exists $opts{'no-crontab'}) {
+		print "Adding crontab entry to start/restart builder automatically...\n";
+		chdir "/home/builder" || die "Couldn't chdir to /home/builder: $!\n";
+		InstallCrontab("/home/builder/builder", $builderJar);
 	}
 }
 
@@ -583,7 +605,10 @@ Options:
   --config=<prop file>  Load configuration from specified properties file
                           (for noninteractive configuration)
   --no-start            Don't start the webapp (and if configured,
-                          the integrated builder)
+                          the integrated builder); implies --no-crontab
+  --no-crontab          Don't add a crontab entry to start or restart the
+                          webapp (and integrated builder if configured)
+                          automatically
   --no-localhost-only   Allow webapp to accept unencrypted HTTP connections
                           from anywhere (not just localhost)
   --defer-keystore      Defer generation of keystore: webapp and builder
@@ -953,6 +978,19 @@ sub WhoAmI {
 	my $whoami = `whoami`;
 	chomp $whoami;
 	return $whoami;
+}
+
+sub InstallCrontab {
+	my ($dir, $jar) = @_;
+	my $crontab_fh = new FileHandle(">crontab.txt") || die "Couldn't write crontab.txt: $!\n";
+	print $crontab_fh <<"CRONTAB_EOF";
+# m h  dom mon dow   command
+
+# Poke every 5 minutes
+*/5 * * * * cd $dir && [ ! -e nopoke ] && java -jar $jar poke
+CRONTAB_EOF
+	$crontab_fh->close();
+	Run("crontab", "crontab.txt");
 }
 
 # vim:ts=2:
