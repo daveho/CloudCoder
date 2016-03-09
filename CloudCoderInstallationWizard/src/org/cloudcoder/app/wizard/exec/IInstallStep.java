@@ -13,6 +13,11 @@ import org.cloudcoder.app.wizard.model.ImmutableStringValue;
  */
 public interface IInstallStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>> {
 	/**
+	 * @return the unique name of this step
+	 */
+	public String getName();
+	
+	/**
 	 * @return detailed help text
 	 */
 	public ImmutableStringValue getHelpText();

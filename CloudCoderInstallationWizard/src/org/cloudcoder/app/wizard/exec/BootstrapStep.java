@@ -4,6 +4,10 @@ package org.cloudcoder.app.wizard.exec;
 public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends AbstractInstallStep<InfoType, ServiceType> {
 	private class EstablishSshConnectivitySubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public EstablishSshConnectivitySubStep() {
+			super("establishSsh");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Establishing ssh connectivity with webapp instance";
@@ -16,6 +20,10 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 	}
 	
 	private class DownloadBootstrapScriptSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public DownloadBootstrapScriptSubStep() {
+			super("downloadBootstrapScript");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Downloading bootstrap script on webapp instance";
@@ -28,6 +36,10 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 	}
 	
 	private class UploadBootstrapPropertiesSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public UploadBootstrapPropertiesSubStep() {
+			super("uploadBootstrapProperties");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Upload the configuration properties to the webapp instance";
@@ -40,6 +52,10 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 	}
 	
 	private class RunBootstrapScriptSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public RunBootstrapScriptSubStep() {
+			super("runBootstrapScript");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Running the bootstrap script to install CloudCoder (takes several minutes)";
@@ -52,6 +68,10 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 	}
 	
 	public class ConfigureDuckDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public ConfigureDuckDnsDNSHostnameSubStep() {
+			super("configureDuckDns");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Using Duck DNS to configure hostname";

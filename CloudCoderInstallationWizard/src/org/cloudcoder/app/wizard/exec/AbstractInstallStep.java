@@ -8,10 +8,12 @@ import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
 public abstract class AbstractInstallStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		implements IInstallStep<InfoType, ServiceType> {
+	private String stepName;
 	private List<IInstallSubStep<InfoType, ServiceType>> subSteps;
 	private ImmutableStringValue helpText;
 	
 	public AbstractInstallStep(String stepName) {
+		this.stepName = stepName;
 		this.subSteps = new ArrayList<IInstallSubStep<InfoType, ServiceType>>();
 		this.helpText = ImmutableStringValue.createHelpText(stepName, "msg", "Help Text");
 	}
@@ -19,7 +21,13 @@ public abstract class AbstractInstallStep<InfoType extends ICloudInfo, ServiceTy
 	protected void addSubStep(IInstallSubStep<InfoType, ServiceType> subStep) {
 		subSteps.add(subStep);
 	}
+	
+	@Override
+	public String getName() {
+		return stepName;
+	}
 
+	@Override
 	public ImmutableStringValue getHelpText() {
 		return this.helpText;
 	}

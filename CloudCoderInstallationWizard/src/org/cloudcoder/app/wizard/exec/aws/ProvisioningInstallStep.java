@@ -7,6 +7,10 @@ import org.cloudcoder.app.wizard.model.Document;
 
 public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSCloudService> {
 	private static class LoginSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public LoginSubStep() {
+			super("login");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Log in to AWS";
@@ -19,6 +23,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class FindOrCreateVPCSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public FindOrCreateVPCSubStep() {
+			super("createVpc");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Find or create cloudcoder VPC (virtual private cloud)";
@@ -31,6 +39,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private class LoadOrCreateKeypairSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public LoadOrCreateKeypairSubStep() {
+			super("createKeyPair");
+		}
+		
 		@Override
 		public String getDescription() {
 			Document document = aws.getDocument();
@@ -46,6 +58,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class FindOrCreateSecurityGroup extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public FindOrCreateSecurityGroup() {
+			super("createSecurityGroup");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Finding or creating a security group";
@@ -58,6 +74,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class FindUbuntuServerImageSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public FindUbuntuServerImageSubStep() {
+			super("findUbuntuServerImage");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Find Ubuntu server image";
@@ -70,6 +90,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class CreateWebappElasticIPSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public CreateWebappElasticIPSubStep() {
+			super("createElasticIp");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Create an elastic IP address for the webapp instance";
@@ -82,6 +106,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class CreateWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public CreateWebappInstanceSubStep() {
+			super("createInstance");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Create and start webapp instance virtual machine";
@@ -94,6 +122,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class WaitForWebappInstanceToStartSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public WaitForWebappInstanceToStartSubStep() {
+			super("waitForInstance");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Waiting for webapp instance to start (can take 1 minute or more)";
@@ -106,6 +138,10 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 	}
 	
 	private static class AssignPublicIpToWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+		public AssignPublicIpToWebappInstanceSubStep() {
+			super("assignPublicIp");
+		}
+		
 		@Override
 		public String getDescription() {
 			return "Assign elastic IP address to webapp instance";
