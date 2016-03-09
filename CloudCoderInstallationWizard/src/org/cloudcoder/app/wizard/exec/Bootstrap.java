@@ -186,7 +186,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			// so we can't use Java to update Duck DNS.  However,
 			// we CAN use ssh to run a curl command on the webapp
 			// instance.
-			String output = executeCommandAndCaptureOutput("curl '" + updateUrl + "'");
+			String output = executeCommandAndCaptureOutput("curl --silent --show-error '" + updateUrl + "'");
 			if (!output.trim().equals("OK")) {
 				throw new NonFatalExecException("Non-OK result from Duck DNS update: " + output);
 			}
