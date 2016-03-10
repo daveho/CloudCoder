@@ -66,6 +66,13 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 		comboBox.setEnabled(enabled);
 	}
 	
+	@Override
+	public void updateValue(IValue value) {
+		@SuppressWarnings("unchecked")
+		EnumValue<E> v = (EnumValue<E>)value;
+		setValue(v);
+	}
+	
 	public static<T extends Enum<T>> EnumValueField<T> createForEnumClass(Class<T> enumCls) {
 		return new EnumValueField<T>();
 	}

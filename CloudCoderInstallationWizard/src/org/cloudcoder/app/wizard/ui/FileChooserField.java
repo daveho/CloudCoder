@@ -68,6 +68,11 @@ public class FileChooserField extends LabeledField<FilenameValue> implements IPa
 		textField.setEnabled(enabled);
 		browseButton.setEnabled(enabled);
 	}
+	
+	@Override
+	public void updateValue(IValue value) {
+		setValue((FilenameValue)value);
+	}
 
 	private void browse() {
 		JFileChooser chooser = new JFileChooser();

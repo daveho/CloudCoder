@@ -102,6 +102,11 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 	}
 	
 	@Override
+	public void resyncFields(Page page) {
+		// Nothing to do, this page doesn't display document fields
+	}
+	
+	@Override
 	public void update(Observable o, Object arg) {
 		//System.out.println("InstallPanel received a notification?");
 		
@@ -110,12 +115,12 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				sync();
+				syncProgress();
 			}
 		});
 	}
 
-	protected void sync() {
+	protected void syncProgress() {
 		//System.out.println("Syncing InstallPanel with InstallationProgress...");
 		if (progress.isFinished()) {
 			// TODO

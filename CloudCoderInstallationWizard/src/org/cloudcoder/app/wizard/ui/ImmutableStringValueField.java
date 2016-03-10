@@ -1,10 +1,13 @@
 package org.cloudcoder.app.wizard.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
@@ -13,18 +16,23 @@ import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 
-public class ImmutableStringValueField extends JEditorPane implements IPageField, UIConstants {
+public class ImmutableStringValueField extends JPanel implements IPageField, UIConstants {
 	private static final long serialVersionUID = 1L;
+	private JEditorPane editPane;
 	private HTMLEditorKit kit;
 	private ImmutableStringValue value;
 	
 	public ImmutableStringValueField() {
-		setEditable(false);
+		setLayout(new BorderLayout());
+		
+		this.editPane = new JEditorPane();
+		
+		editPane.setEditable(false);
 		setBorder(BorderFactory.createLoweredSoftBevelBorder());
 		this.kit = new HTMLEditorKit();
-		setDocument(kit.createDefaultDocument());
-		setEditorKit(kit);
-		addHyperlinkListener(new HyperlinkListener() {
+		editPane.setDocument(kit.createDefaultDocument());
+		editPane.setEditorKit(kit);
+		editPane.addHyperlinkListener(new HyperlinkListener() {
 			@Override
 			public void hyperlinkUpdate(HyperlinkEvent evt) {
 				if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -38,11 +46,15 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 				}
 			}
 		});
+		
+		JScrollPane scrollPane = new JScrollPane(editPane);
+		
+		add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	public void setValue(ImmutableStringValue value) {
 		this.value = value;
-		setText("<html><body>" + value.getString() + "</body></html>");
+		editPane.setText("<html><body>" + value.getString() + "</body></html>");
 	}
 	
 	@Override
@@ -55,6 +67,8 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 		int height = FULL_HELP_TEXT_HEIGHT;
 		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
 			height /= 2;
+		} else if (value.hasDisplayOption(DisplayOption.DOUBLE_HEIGHT)) {
+			height *= 2;
 		}
 		return height;
 	}
@@ -82,5 +96,10 @@ public class ImmutableStringValueField extends JEditorPane implements IPageField
 	@Override
 	public void setSelectiveEnablement(boolean enabled) {
 		// Ignore, this kind of field is never selectively enabled/disabled
+	}
+	
+	@Override
+	public void updateValue(IValue value) {
+		setValue((ImmutableStringValue)value);
 	}
 }

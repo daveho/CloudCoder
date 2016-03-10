@@ -44,12 +44,19 @@ public class StringValueField<E extends StringValue> extends LabeledField<E> imp
 	@Override
 	public IValue getCurrentValue() {
 		IValue cur = getValue().clone();
-		cur.setString(textField.getText());
+		cur.setString(textField.getText().trim());
 		return cur;
 	}
 	
 	@Override
 	public void setSelectiveEnablement(boolean enabled) {
 		textField.setEnabled(enabled);
+	}
+	
+	@Override
+	public void updateValue(IValue value) {
+		@SuppressWarnings("unchecked")
+		E v = (E)value;
+		setValue(v);
 	}
 }

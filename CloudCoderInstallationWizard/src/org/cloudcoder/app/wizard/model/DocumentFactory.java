@@ -102,6 +102,9 @@ public class DocumentFactory {
 		document.addPage(errorPage);
 		
 		Page finishedPage = new Page("finished", "CloudCoder is installed!");
+		// Note that this is just dummy help text: it will be replaced
+		// by a dynamically-generated report if the installation succeeds
+		// (which is the only way to see the finished page.)
 		finishedPage.addHelpText("msg", "Message");
 		document.addPage(finishedPage);
 		

@@ -40,15 +40,48 @@ public class Document implements Cloneable {
 		}
 		throw new NoSuchElementException("No such page: " + pageName);
 	}
+	
+	public boolean hasPage(String pageName) {
+		try {
+			getPageIndex(pageName);
+			return true;
+		} catch (NoSuchElementException e) {
+			return false;
+		}
+	}
+	
+	private interface WithCompositeName<E> {
+		public E execute(String pageName, String name);
+	}
 
 	public IValue getValue(String compositeName) {
+		return doWithCompositeName(compositeName, new WithCompositeName<IValue>() {
+			@Override
+			public IValue execute(String pageName, String name) {
+				return getPage(pageName).getValue(name);
+			}
+		});
+	}
+
+	public void replaceValue(String compositeName, final IValue value) {
+		doWithCompositeName(compositeName, new WithCompositeName<Boolean>() {
+			@Override
+			public Boolean execute(String pageName, String name) {
+				Page page = getPage(pageName);
+				page.replaceValue(name, value);
+				return true;
+			}
+		});
+	}
+
+	private<E> E doWithCompositeName(String compositeName, WithCompositeName<E> callback) {
 		int dot = compositeName.indexOf('.');
 		if (dot < 0) {
 			throw new IllegalArgumentException("Invalid composite name: " + compositeName);
 		}
 		String pageName = compositeName.substring(0, dot);
 		String name = compositeName.substring(dot+1);
-		return getPage(pageName).getValue(name);
+		return callback.execute(pageName, name);
 	}
 
 	public void selectivelyEnablePageRange(String startPage, String endPage, ISelectivePageEnablement pageEnablement) {

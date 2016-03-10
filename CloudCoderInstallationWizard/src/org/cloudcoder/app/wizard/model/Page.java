@@ -65,6 +65,16 @@ public class Page implements Cloneable, Iterable<IValue> {
 		}
 		throw new NoSuchElementException("No such value: " + pageName + "." + name);
 	}
+
+	public void replaceValue(String name, IValue value) {
+		for (int i = 0; i < values.size(); i++) {
+			if (values.get(i).getName().equals(name)) {
+				values.set(i, value);
+				return;
+			}
+		}
+		throw new NoSuchElementException("No such value: " + pageName + "." + name);
+	}
 	
 	public int getNumValues() {
 		return values.size();

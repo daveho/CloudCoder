@@ -225,6 +225,14 @@ public class WizardPanel extends JPanel implements UIConstants {
 		Page page = document.get(currentPage);
 		pageLabel.setText(page.getLabel());
 		CardLayout cl = (CardLayout) pagePanel.getLayout();
+		
+		// Resync page fields, just in case any values have been
+		// changed programmatically in the Document.
+		// This is needed for, e.g., the dynamically-generated
+		// report in the "finished" page.
+		IWizardPagePanel pp = wizardPagePanels.get(currentPage);
+		pp.resyncFields(page);
+		
 		cl.show(pagePanel, String.valueOf(currentPage));
 		
 		// Enable prev/next buttons as appropriate.

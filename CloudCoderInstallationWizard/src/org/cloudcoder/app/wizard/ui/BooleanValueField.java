@@ -52,4 +52,9 @@ public class BooleanValueField extends LabeledField<BooleanValue> implements IPa
 	public void setSelectiveEnablement(boolean enabled) {
 		checkBox.setEnabled(enabled);
 	}
+	
+	@Override
+	public void updateValue(IValue value) {
+		setValue((BooleanValue)value);
+	}
 }

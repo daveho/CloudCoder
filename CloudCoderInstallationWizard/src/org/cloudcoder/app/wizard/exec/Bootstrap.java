@@ -385,17 +385,23 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	}
 	
 	// This is just for testing
-	private static class TestCloudInfo extends AbstractCloudInfo implements ICloudInfo {
+	public static class TestCloudInfo extends AbstractCloudInfo implements ICloudInfo {
 		private String username;
 		private String hostAddress;
 		private String keyPairFilename;
+		private String privateIp;
 
 		public TestCloudInfo(String username, String hostAddress, String keyPairFilename) {
+			this(username, hostAddress, keyPairFilename, "10.0.0.222");
+		}
+		
+		public TestCloudInfo(String username, String hostAddress, String keyPairFilename, String privateIp) {
 			this.username = username;
 			this.hostAddress = hostAddress;
 			this.keyPairFilename = keyPairFilename;
+			this.privateIp = privateIp;
 		}
-
+		
 		@Override
 		public String getWebappPublicIp() {
 			return hostAddress;
@@ -413,7 +419,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 
 		@Override
 		public String getWebappPrivateIp() {
-			throw new UnsupportedOperationException();
+			return privateIp;
 		}
 
 		@Override

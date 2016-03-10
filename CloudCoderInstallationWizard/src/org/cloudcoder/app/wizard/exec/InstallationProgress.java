@@ -1,9 +1,19 @@
 package org.cloudcoder.app.wizard.exec;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
+
+import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.cloudcoder.app.wizard.model.DisplayOption;
+import org.cloudcoder.app.wizard.model.ImmutableStringValue;
+import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 
 public class InstallationProgress<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends Observable {
@@ -176,6 +186,27 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
 				e.printStackTrace();
 				setFatalException(e);
+			}
+		}
+		
+		// If we finished successfully, generate the report from
+		// the report template.
+		if (isFinished()) {
+			ImmutableStringValue template = ImmutableStringValue.createHelpText("finished", "reporttemplate", "Report template");
+			ProcessTemplate pt = new ProcessTemplate(template, cloudService.getDocument(), cloudService.getInfo());
+			String report = pt.generate();
+			ImmutableStringValue msg = new ImmutableStringValue("msg", "Message", report);
+			
+			// Add it to the "finished" page (replacing the previous dummy text)
+			cloudService.getDocument().replaceValue("finished.msg", msg);
+			
+			// Also save it to a file
+			try (Writer fw = new FileWriterWithEncoding(
+					new File(cloudService.getInfo().getDataDir(), "report.html"), Charset.forName("UTF-8"))) {
+				fw.write(msg.getString());
+			} catch (IOException e) {
+				System.err.println("Could not write report: " + e.getMessage());
+				e.printStackTrace(System.err);
 			}
 		}
 		

@@ -1,0 +1,37 @@
+<p>
+Congratulations, CloudCoder has been installed successfully!
+Please read this information carefully.
+</p>
+
+<p>
+Details about your installation:
+</p>
+<table>
+	<tr><th>Detail</th><th>Value</th></tr>
+	<tr><td>Hostname</td><td>${dns.hostname}</td></tr>
+	<tr><td>Public IP address</td><td>${cloudInfo.webappPublicIp}</td></tr>
+	<tr><td>SSL certificate installed</td><td>${dns.useDuckDns}</td></tr>
+	<tr><td>Used existing keypair</td><td>${awsKeypair.useExisting}</td></tr>
+</table>
+<p>
+The <code>${cloudInfo.dataDir}</code> directory contains files
+with information about the installation.
+Within this directory:
+</p>
+<ul>
+<li>The <code>report.html</code> file is this installation report.
+<li>The <code>ccinstall.properties</code>
+file has all of the configuration information you entered.</li>
+<li>The <code>cloudcoder-keypair.pem</code> file is the keypair
+controlling ssh access to the webapp instance.  If this keypair was
+generated (i.e., you didn't use an existing keypair), make sure
+you save the keypair.</li>
+<li>The <code>installwizard-<i>yyyy</i>-<i>MM</i>-<i>dd</i>-<i>hh</i>-<i>mm</i>.log</code>
+file is the complete output log of the installation. Note that it will
+likely contain sensitive information.
+</ul>
+
+<p>
+Please email <a href="mailto:dhovemey@ycp.edu">dhovemey@ycp.edu</a>
+if you have any questions about CloudCoder.
+</p>

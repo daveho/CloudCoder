@@ -7,6 +7,11 @@ public class BooleanValue extends AbstractValue implements IValue {
 		super(name, label);
 	}
 
+	public BooleanValue(String name, String label, boolean defValue) {
+		super(name, label);
+		this.value = defValue;
+	}
+
 	@Override
 	public ValueType getValueType() {
 		return ValueType.BOOLEAN;

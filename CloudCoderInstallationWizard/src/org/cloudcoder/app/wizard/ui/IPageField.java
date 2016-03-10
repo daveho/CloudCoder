@@ -2,7 +2,6 @@ package org.cloudcoder.app.wizard.ui;
 
 import java.awt.Component;
 
-import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.IValue;
 
 public interface IPageField {
@@ -13,4 +12,5 @@ public interface IPageField {
 	public IValue getCurrentValue();
 	public void setChangeCallback(Runnable callback);
 	public void setSelectiveEnablement(boolean enabled);
+	public void updateValue(IValue value);
 }

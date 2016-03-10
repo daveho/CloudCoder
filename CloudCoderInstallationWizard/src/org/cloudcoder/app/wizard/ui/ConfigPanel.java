@@ -91,6 +91,13 @@ public class ConfigPanel extends JPanel implements IWizardPagePanel, UIConstants
 		}
 		updateSelectiveEnablement();
 	}
+	
+	@Override
+	public void resyncFields(Page page) {
+		for (int i = 0; i < page.getNumValues(); i++) {
+			fields.get(i).updateValue(page.get(i));
+		}
+	}
 
 	public IPageField getField(int index) {
 		return fields.get(index);

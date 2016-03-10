@@ -25,5 +25,5 @@ public interface UIConstants {
 	public static final int SINGLE_COMPONENT_FIELD_WIDTH = 780;
 	
 	/** Full height for a help text component. */
-	public static final int FULL_HELP_TEXT_HEIGHT = 240;
+	public static final int FULL_HELP_TEXT_HEIGHT = 220;
 }

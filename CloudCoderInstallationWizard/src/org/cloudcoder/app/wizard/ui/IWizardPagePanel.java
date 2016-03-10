@@ -15,4 +15,5 @@ public interface IWizardPagePanel {
 	public ConfigPanel asConfigPanel();
 	public InstallPanel asInstallPanel();
 	public Component asComponent();
+	public void resyncFields(Page page);
 }
