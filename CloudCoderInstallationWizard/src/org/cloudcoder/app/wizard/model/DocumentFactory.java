@@ -105,7 +105,7 @@ public class DocumentFactory {
 		// Note that this is just dummy help text: it will be replaced
 		// by a dynamically-generated report if the installation succeeds
 		// (which is the only way to see the finished page.)
-		finishedPage.addHelpText("msg", "Message");
+		finishedPage.addHelpText("msg", "Message", DisplayOption.DOUBLE_HEIGHT);
 		document.addPage(finishedPage);
 		
 		document.selectivelyEnablePageRange("welcome", "finished",

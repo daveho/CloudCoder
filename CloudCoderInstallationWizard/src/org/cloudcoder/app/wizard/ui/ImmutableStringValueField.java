@@ -68,7 +68,9 @@ public class ImmutableStringValueField extends JPanel implements IPageField, UIC
 		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
 			height /= 2;
 		} else if (value.hasDisplayOption(DisplayOption.DOUBLE_HEIGHT)) {
-			height *= 2;
+			//height *= 2;
+			// Double height would be too big, so go with 1.7x height
+			height = (height * 1700) / 1000;
 		}
 		return height;
 	}
