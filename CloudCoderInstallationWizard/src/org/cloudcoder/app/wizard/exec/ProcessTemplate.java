@@ -29,8 +29,9 @@ public class ProcessTemplate {
 			// treat the info object as a Java Bean.)
 			// But that would be much more complicated.
 			Page cloudInfoPage = new Page("cloudInfo", "Cloud Info");
-			addCloudInfo(cloudInfoPage, "webappPublicIp", info.getWebappPublicIp());
-			addCloudInfo(cloudInfoPage, "webappPrivateIp", info.getWebappPrivateIp());
+			if (info.getWebappPublicIp() != null) {
+				addCloudInfo(cloudInfoPage, "webappPublicIp", info.getWebappPublicIp());
+			}
 			addCloudInfo(cloudInfoPage, "dataDir", info.getDataDir().getAbsolutePath());
 			document.addPage(cloudInfoPage);
 		}
