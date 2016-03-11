@@ -1,5 +1,8 @@
 package org.cloudcoder.app.wizard.model;
 
+import java.io.File;
+
+import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.model.validators.ConditionalValidator;
 import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.MultiValidator;
@@ -13,10 +16,24 @@ import com.amazonaws.services.ec2.model.InstanceType;
 public class DocumentFactory {
 	public static final String DEFAULT_MYSQL_PASSWD = "abc123";
 
+	/**
+	 * Create the instance of {@link Document}.
+	 * 
+	 * @return the instance of {@link Document}
+	 */
 	public static Document create() {
 		Document document = new Document();
 		
 		// Add pages
+		
+		// The "env" page has details about the environment.
+		// It's not actually used for user configuration.
+		Page dbPage = new Page("db", "Wizard internal db");
+		boolean hasCcinstallProperties = new File(InstallationConstants.DATA_DIR, "ccinstall.properties").exists();
+		dbPage.add(
+				new BooleanValue("hasCcinstallProperties", "hasCcinstallProperties", hasCcinstallProperties),
+				NoopValidator.INSTANCE);
+		document.addPage(dbPage);
 		
 		Page selectTaskPage = new Page("selectTask", "Select installation task");
 		selectTaskPage.addHelpText("msg", "Message");
@@ -123,6 +140,9 @@ public class DocumentFactory {
 						"selectTask.installationTask",
 						InstallationTask.class,
 						InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE));
+
+		// The "db" page is always disabled (i.e., not shown to the user)
+		document.selectivelyEnablePageRange("db", "db", DisablePage.INSTANCE);
 		
 		return document;
 	}

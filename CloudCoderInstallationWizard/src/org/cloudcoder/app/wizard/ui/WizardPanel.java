@@ -217,7 +217,11 @@ public class WizardPanel extends JPanel implements UIConstants {
 			pagePanel.add(pp.asComponent(), String.valueOf(i));
 		}
 		
+		// Find the first enabled page
 		currentPage = 0;
+		while (!document.isPageEnabled(currentPage)) {
+			currentPage++;
+		}
 		changePage();
 	}
 
@@ -241,13 +245,27 @@ public class WizardPanel extends JPanel implements UIConstants {
 		boolean isErrorPage = page.getPageName().equals("error");
 		boolean isFinishedPage = page.getPageName().equals("finished");
 		boolean isSpecialPage = isInstallPage || isErrorPage || isFinishedPage;
-		prevButton.setEnabled(!isSpecialPage && currentPage > 0);
-		nextButton.setEnabled(!isSpecialPage && currentPage < document.getNumPages() - 1);
+		prevButton.setEnabled(!isSpecialPage && anyEnabled(-1));
+		nextButton.setEnabled(!isSpecialPage && anyEnabled(1));
 		
 		boolean isReadyPage = page.getPageName().equals("ready");
 		nextButton.setText(isReadyPage ? INSTALL_BUTTON_TEXT : NEXT_BUTTON_TEXT);
 	}
 	
+	// Check whether any predecessor (delta=-1) or successor (delta=1)
+	// page is enabled.  This is part of the logic to selectively
+	// enable/disable the next and previous buttons.
+	private boolean anyEnabled(int delta) {
+		int n = currentPage + delta;
+		while (n >= 0 && n < document.getNumPages()) {
+			if (document.isPageEnabled(n)) {
+				return true;
+			}
+			n += delta;
+		}
+		return false;
+	}
+
 	private void onStartInstallation() {
 		System.out.println("Starting installation...");
 		

@@ -6,6 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+/**
+ * Contains all user-defined configuration properties.
+ * Consists of {@link Page}s, each of which is a sequence of
+ * {@link IValue}s.
+ * 
+ * @author David Hovemeyer
+ */
 public class Document implements Cloneable {
 	private List<Page> pages;
 	private Map<String, ISelectivePageEnablement> selectivePageEnablementMap;
