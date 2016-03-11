@@ -16,10 +16,12 @@ import java.util.NoSuchElementException;
 public class Document implements Cloneable {
 	private List<Page> pages;
 	private Map<String, ISelectivePageEnablement> selectivePageEnablementMap;
+	private Map<String, IPageNavigationHook> pageNavigationHookMap;
 	
 	public Document() {
 		pages = new ArrayList<Page>();
 		selectivePageEnablementMap = new HashMap<String, ISelectivePageEnablement>();
+		pageNavigationHookMap = new HashMap<String, IPageNavigationHook>();
 	}
 	
 	public int getNumPages() {
@@ -109,5 +111,17 @@ public class Document implements Cloneable {
 		boolean enabled = enablement.isEnabled(this);
 		//System.out.printf("Page %s %s enabled\n", p.getPageName(), enabled ? "is" : "is not");
 		return enabled;
+	}
+	
+	public void addPageNavigationHook(String pageName, IPageNavigationHook hook) {
+		pageNavigationHookMap.put(pageName, hook);
+	}
+	
+	public boolean hasPageNavigationHook(String pageName) {
+		return pageNavigationHookMap.containsKey(pageName);
+	}
+	
+	public IPageNavigationHook getPageNavigationHook(String pageName) {
+		return pageNavigationHookMap.get(pageName);
 	}
 }

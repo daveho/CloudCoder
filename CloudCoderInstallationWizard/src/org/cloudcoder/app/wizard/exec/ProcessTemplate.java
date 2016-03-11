@@ -1,7 +1,6 @@
 package org.cloudcoder.app.wizard.exec;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -9,7 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.cloudcoder.app.wizard.exec.Bootstrap.TestCloudInfo;
 import org.cloudcoder.app.wizard.model.BooleanValue;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
@@ -64,7 +62,7 @@ public class ProcessTemplate {
 					}
 					w.write(line.substring(0, m.start())); // write literal text preceding the match
 					String name = line.substring(m.start() + 2, m.end() - 1); // get name
-					String value = document.getValue(name).getObject().toString(); // get the value
+					String value = document.getValue(name).getPropertyValue(); // get the value
 					w.write(value);
 					
 					line = line.substring(m.end());

@@ -138,6 +138,12 @@ public class WizardPanel extends JPanel implements UIConstants {
 			targetPage += delta;
 		} while (!document.isPageEnabled(targetPage));
 		
+		// Execute page navigation hook if appropriate
+		String currentPageName = document.get(currentPage).getPageName();
+		if (document.hasPageNavigationHook(currentPageName) && delta > 0) {
+			document.getPageNavigationHook(currentPageName).onNext(document);
+		}
+		
 		// Go to the target page
 		currentPage = targetPage;
 		changePage();
@@ -325,7 +331,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 					Page page = aws.getDocument().get(i);
 					for (IValue value : page) {
 						if (!(value instanceof ImmutableStringValue)) {
-							w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getObject().toString());
+							w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getPropertyValue());
 						}
 					}
 				}

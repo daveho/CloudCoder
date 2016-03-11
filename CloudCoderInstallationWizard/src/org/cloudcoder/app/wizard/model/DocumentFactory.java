@@ -30,10 +30,27 @@ public class DocumentFactory {
 		// It's not actually used for user configuration.
 		Page dbPage = new Page("db", "Wizard internal db");
 		boolean hasCcinstallProperties = new File(InstallationConstants.DATA_DIR, "ccinstall.properties").exists();
+		// db.hasCcinstallProperties: true if previous ccinstall.properties are available
 		dbPage.add(
 				new BooleanValue("hasCcinstallProperties", "hasCcinstallProperties", hasCcinstallProperties),
 				NoopValidator.INSTANCE);
+		// db.sshConnectViaHostname: true if ssh connections to webapp instance
+		// should be made via hostname rather than public IP address.
+		// This is because we don't actually know the public IP address.
+		dbPage.add(
+				new BooleanValue("sshConnectViaHostname", "sshConnectViaHostname", false),
+				NoopValidator.INSTANCE);
 		document.addPage(dbPage);
+		
+		// Prompt to load previous ccinstall.properties values
+		Page prevCcinstallPage = new Page("prevCcinstall", "Load previous configuration values?");
+		prevCcinstallPage.addHelpText("msg", "Message");
+		prevCcinstallPage.add(new BooleanValue("usePrevious", "Load previous values"), NoopValidator.INSTANCE);
+		document.addPage(prevCcinstallPage);
+		// Add a hook to load previous properties if the usePrevious field is checked
+		document.addPageNavigationHook(
+				"prevCcinstall",
+				new ConditionalPageNavigationHook("prevCcinstall.usePrevious", new LoadPreviousCcinstallProperties()));
 		
 		Page selectTaskPage = new Page("selectTask", "Select installation task");
 		selectTaskPage.addHelpText("msg", "Message");
@@ -143,6 +160,13 @@ public class DocumentFactory {
 
 		// The "db" page is always disabled (i.e., not shown to the user)
 		document.selectivelyEnablePageRange("db", "db", DisablePage.INSTANCE);
+		
+		// The "prevCcinstall" page is enabled only if db.hasCcinstallProperties
+		// is true.
+		document.selectivelyEnablePageRange(
+				"prevCcinstall",
+				"prevCcinstall",
+				new EnablePageIfBooleanFieldChecked("db.hasCcinstallProperties"));
 		
 		return document;
 	}

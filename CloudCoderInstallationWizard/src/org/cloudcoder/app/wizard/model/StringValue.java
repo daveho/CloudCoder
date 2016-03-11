@@ -31,6 +31,11 @@ public class StringValue extends AbstractValue implements IValue {
 	public void setBoolean(boolean value) {
 		throw new IllegalArgumentException();
 	}
+	
+	@Override
+	public void setPropertyValue(String propValue) {
+		this.value = propValue;
+	}
 
 	@Override
 	public String getString() {
@@ -48,7 +53,7 @@ public class StringValue extends AbstractValue implements IValue {
 	}
 	
 	@Override
-	public Object getObject() {
+	public String getPropertyValue() {
 		return value;
 	}
 	

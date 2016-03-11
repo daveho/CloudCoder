@@ -38,6 +38,19 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	public void setBoolean(boolean value) {
 		throw new IllegalArgumentException();
 	}
+	
+	@Override
+	public void setPropertyValue(String propValue) {
+		// Find named enumeration
+		propValue = propValue.trim();
+		for (E member : enumCls.getEnumConstants()) {
+			if (member.name().equals(propValue)) {
+				value = member;
+				return;
+			}
+		}
+		throw new IllegalArgumentException("Enum " + enumCls.getSimpleName() + " has no member " + propValue);
+	}
 
 	@Override
 	public String getString() {
@@ -56,8 +69,10 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 	}
 	
 	@Override
-	public Object getObject() {
-		return enumCls.getEnumConstants()[value.ordinal()];
+	public String getPropertyValue() {
+		// Save the name of the enumeration constant, not the string
+		// representation.
+		return enumCls.getEnumConstants()[value.ordinal()].name();
 	}
 	
 	@SuppressWarnings("unchecked")

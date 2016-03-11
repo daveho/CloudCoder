@@ -31,6 +31,11 @@ public class BooleanValue extends AbstractValue implements IValue {
 	public void setBoolean(boolean value) {
 		this.value = value;
 	}
+	
+	@Override
+	public void setPropertyValue(String propValue) {
+		this.value = Boolean.valueOf(propValue);
+	}
 
 	@Override
 	public String getString() {
@@ -48,8 +53,8 @@ public class BooleanValue extends AbstractValue implements IValue {
 	}
 	
 	@Override
-	public Object getObject() {
-		return value;
+	public String getPropertyValue() {
+		return String.valueOf(value);
 	}
 	
 	@Override
