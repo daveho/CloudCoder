@@ -22,11 +22,16 @@ public class LoadPreviousCcinstallProperties implements IPageNavigationHook {
 		}
 		
 		for (Map.Entry<Object, Object> entry : props.entrySet()) {
+			String propName = entry.getKey().toString();
+			if (DocumentFactory.isInternalProperty(propName)) {
+				// Internal config variable, don't load
+				continue;
+			}
 			try {
-				IValue value = document.getValue(entry.getKey().toString());
+				IValue value = document.getValue(propName);
 				value.setPropertyValue(entry.getValue().toString());
 			} catch (NoSuchElementException e) {
-				System.err.println("ccinstall.properties has unknown property " + entry.getKey().toString());
+				System.err.println("ccinstall.properties has unknown property " + propName);
 			}
 		}
 	}

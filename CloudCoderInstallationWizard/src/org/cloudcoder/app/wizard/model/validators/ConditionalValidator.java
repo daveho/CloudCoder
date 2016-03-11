@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.model.validators;
 
+import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
@@ -13,7 +14,7 @@ public class ConditionalValidator implements IValidator {
 	/**
 	 * Constructor.
 	 * 
-	 * @param conditionValueName the name of the condition {@link BooleanValue};
+	 * @param conditionValueName the full composite name of the condition {@link BooleanValue};
 	 *                           validation will proceed only if the value named
 	 *                           is true
 	 * @param delegate the {@link IValidator} which will do the actual validation
@@ -24,9 +25,9 @@ public class ConditionalValidator implements IValidator {
 	}
 	
 	@Override
-	public void validate(Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
-		if (currentValues.getValue(conditionValueName).getBoolean()) {
-			delegate.validate(currentValues, origValue, updatedValue);
+	public void validate(Document document, Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
+		if (document.getValue(conditionValueName).getBoolean()) {
+			delegate.validate(document, currentValues, origValue, updatedValue);
 		}
 	}
 }

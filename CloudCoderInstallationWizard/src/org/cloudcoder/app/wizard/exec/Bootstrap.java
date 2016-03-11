@@ -167,13 +167,12 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		// Note that errors here are non-fatal.
 		
 		try {
-			if (!cloudService.getDocument().getValue("dns.useDuckDns").getBoolean()) {
+			if (!cloudService.getDocument().getValue("dynDns.useDuckDns").getBoolean()) {
 				// Not using Duck DNS
-				System.out.println("Not using Duck DNS");
-				return;
+				throw new NonFatalExecException("Not using Duck DNS");
 			}
 			
-			String authToken = cloudService.getDocument().getValue("dns.duckDnsToken").getString();
+			String authToken = cloudService.getDocument().getValue("dynDns.duckDnsToken").getString();
 			String dnsHostname = cloudService.getDocument().getValue("dns.hostname").getString();
 			String ipAddress = cloudService.getInfo().getWebappPublicIp();
 			

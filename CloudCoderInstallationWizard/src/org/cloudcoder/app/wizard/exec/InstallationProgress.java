@@ -242,4 +242,13 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		index += currentSubStep;
 		return index;
 	}
+	
+	public boolean subStepSucceeded(String subStepName) {
+		for (IInstallSubStep<InfoType, ServiceType> subStep : succeededSubSteps) {
+			if (subStep.getName().equals(subStepName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

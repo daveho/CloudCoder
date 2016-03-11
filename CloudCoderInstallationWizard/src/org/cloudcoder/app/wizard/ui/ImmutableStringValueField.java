@@ -67,6 +67,7 @@ public class ImmutableStringValueField extends JPanel implements IPageField, UIC
 		int height = FULL_HELP_TEXT_HEIGHT;
 		if (value.hasDisplayOption(DisplayOption.HALF_HEIGHT)) {
 			height /= 2;
+			height += 20; // tweak for ccAcct page
 		} else if (value.hasDisplayOption(DisplayOption.DOUBLE_HEIGHT)) {
 			//height *= 2;
 			// Double height would be too big, so go with 1.7x height

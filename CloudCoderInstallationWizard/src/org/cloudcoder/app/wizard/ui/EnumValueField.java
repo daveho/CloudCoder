@@ -59,7 +59,7 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 		EnumValue<E> current = getValue().clone();
 		@SuppressWarnings("unchecked")
 		E selectedItem = (E)comboBox.getSelectedItem();
-		System.out.printf("getCurrentValue, selectedItem %s null\n", selectedItem == null ? "is" : "is not");
+//		System.out.printf("getCurrentValue, selectedItem %s null\n", selectedItem == null ? "is" : "is not");
 		current.setEnum(selectedItem);
 		return current;
 	}

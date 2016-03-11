@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.model.validators;
 
+import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
@@ -11,7 +12,7 @@ public class NoopValidator implements IValidator {
 	}
 	
 	@Override
-	public void validate(Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
+	public void validate(Document document, Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
 		// Do nothing
 	}
 }

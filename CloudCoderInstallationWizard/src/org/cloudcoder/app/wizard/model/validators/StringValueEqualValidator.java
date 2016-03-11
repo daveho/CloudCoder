@@ -1,5 +1,6 @@
 package org.cloudcoder.app.wizard.model.validators;
 
+import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 import org.cloudcoder.app.wizard.model.StringValue;
@@ -17,7 +18,7 @@ public class StringValueEqualValidator implements IValidator {
 	}
 	
 	@Override
-	public void validate(Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
+	public void validate(Document document, Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
 		IValue other = currentValues.getValue(otherStringValueName);
 		if (!other.getString().equals(updatedValue.getString())) {
 			String msg = "Value does not match value of " + other.getLabel() + " field";

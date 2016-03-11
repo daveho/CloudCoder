@@ -3,24 +3,16 @@ Enter the hostname that you will use for your CloudCoder instance.
 </p>
 
 <p>
-If you would like to use <a href="https://www.duckdns.org">Duck DNS</a>
-to provide a DNS hostname for your CloudCoder instance,
-check the <b>Use Duck DNS</b> checkbox, and then
-enter your Duck DNS token as shown on your
-<a href="https://www.duckdns.org/domains">Duck DNS account page</a>.
-Note that the hostname must a subdomain of <code>duckdns.org</code>,
-e.g. <code>myserver.duckdns.org</code>.
-Duck DNS is a free service to provide DNS hostnames for
-devices whose IP address may change dynamically.
-Your CloudCoder instance's
-IP address won't actually change, but Duck DNS is an easy
-way to get a DNS hostname without registering a domain,
-configuring a nameserver, etc.
+If you will be using a dynamic DNS provider such as
+<a href="https://www.duckdns.org/">Duck DNS</a>, make sure that
+the hostname matches the subdomain(s) offered by your
+dynamic DNS provider.  For example, a Duck DNS hostname
+should be something like <code><i>myserver</i>.duckdns.org</code>.
 </p>
 
 <p>
-If you do not choose to use Duck DNS, then you will need to
+If you will not be using a dynamic DNS provider, then you will need to
 configure an <code>A</code> record for the hostname you choose.
 The wizard will let you know what IP address to use once
-the webapp server has been provisioned. 
+the webapp server has been provisioned.
 </p>

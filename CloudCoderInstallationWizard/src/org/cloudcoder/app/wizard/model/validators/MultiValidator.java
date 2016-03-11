@@ -3,6 +3,7 @@ package org.cloudcoder.app.wizard.model.validators;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.Page;
 
@@ -18,9 +19,9 @@ public class MultiValidator implements IValidator {
 	}
 
 	@Override
-	public void validate(Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
+	public void validate(Document document, Page currentValues, IValue origValue, IValue updatedValue) throws ValidationException {
 		for (IValidator delegate : delegates) {
-			delegate.validate(currentValues, origValue, updatedValue);
+			delegate.validate(document, currentValues, origValue, updatedValue);
 		}
 	}
 }

@@ -83,10 +83,15 @@ public class ProcessTemplate {
 	public static void main(String[] args) {
 		ImmutableStringValue template = ImmutableStringValue.createHelpText("finished", "reporttemplate", "Report template");
 		Document document = new Document();
+		Page dbPage = new Page("db", "db");
+		dbPage.add(new BooleanValue("sslCertInstalled", "sslCertInstalled", true), NoopValidator.INSTANCE);
+		document.addPage(dbPage);
 		Page dnsPage = new Page("dns", "dns");
 		dnsPage.add(new StringValue("hostname", "hostname", "cloudcoder-test.duckdns.org"), NoopValidator.INSTANCE);
-		dnsPage.add(new BooleanValue("useDuckDns", "useDuckDns", true), NoopValidator.INSTANCE);
 		document.addPage(dnsPage);
+		Page dynDnsPage = new Page("dynDns", "dynDns");
+		dynDnsPage.add(new BooleanValue("useDuckDns", "useDuckDns", true), NoopValidator.INSTANCE);
+		document.addPage(dynDnsPage);
 		Page awsKeypairPage = new Page("awsKeypair", "awsKeypair");
 		awsKeypairPage.add(new BooleanValue("useExisting", "useExisting", true), NoopValidator.INSTANCE);
 		document.addPage(awsKeypairPage);

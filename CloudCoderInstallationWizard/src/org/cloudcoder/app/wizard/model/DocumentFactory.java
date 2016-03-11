@@ -1,8 +1,11 @@
 package org.cloudcoder.app.wizard.model;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
+import org.cloudcoder.app.wizard.model.Document.CompositeNameCallback;
 import org.cloudcoder.app.wizard.model.validators.ConditionalValidator;
 import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.MultiValidator;
@@ -15,6 +18,26 @@ import com.amazonaws.services.ec2.model.InstanceType;
 
 public class DocumentFactory {
 	public static final String DEFAULT_MYSQL_PASSWD = "abc123";
+	
+	private static final List<String> INTERNAL_PAGES = Arrays.asList(
+		"db", "prevCcinstall", "selectTask", "welcome"
+	);
+	
+	/**
+	 * Check a property name to see whether it's an "internal"
+	 * property.  Internal properties shouldn't be loaded or saved.
+	 * 
+	 * @param propName property name
+	 * @return true if the name designates an internal property
+	 */
+	public static boolean isInternalProperty(String propName) {
+		return Document.withCompositeName(propName, new CompositeNameCallback<Boolean>() {
+			@Override
+			public Boolean execute(String pageName, String name) {
+				return INTERNAL_PAGES.contains(pageName);
+			}
+		});
+	}
 
 	/**
 	 * Create the instance of {@link Document}.
@@ -28,8 +51,9 @@ public class DocumentFactory {
 		// Add pages
 		/////////////////////////////////////////////////////////////////
 		
-		// The "env" page has details about the environment.
-		// It's not actually used for user configuration.
+		// The "db" page contains internal installation variables.
+		// It's not actually used for user configuration, and the user
+		// will not see it.
 		Page dbPage = new Page("db", "Wizard internal db");
 		boolean hasCcinstallProperties = new File(InstallationConstants.DATA_DIR, "ccinstall.properties").exists();
 		// db.hasCcinstallProperties: true if previous ccinstall.properties are available
@@ -42,6 +66,11 @@ public class DocumentFactory {
 		dbPage.add(
 				new BooleanValue("sshConnectViaHostname", "sshConnectViaHostname", false),
 				NoopValidator.INSTANCE);
+		// db.installedSslCert: set to true if an SSL certificate is successfully issued/installed
+		dbPage.add(new BooleanValue("sslCertInstalled", "sslCertInstalled"), NoopValidator.INSTANCE);
+		// db.dnsHostnameConfigured: set to true if a DNS hostname is successfully
+		// configured and validated
+		dbPage.add(new BooleanValue("dnsHostnameConfigured", "dnsHostnameConfigured"), NoopValidator.INSTANCE);
 		document.addPage(dbPage);
 		
 		// Prompt to load previous ccinstall.properties values
@@ -76,6 +105,7 @@ public class DocumentFactory {
 		// keep this up to date!
 		String[] fullInstallPages = new String[]{
 				"welcome", "aws", "awsRegion", "awsInstanceType",
+				"dynDns",
 				"ccAcct", "mysqlAcct", "instDetails",
 				"ready", "install", "error", "finished"
 		};
@@ -110,18 +140,22 @@ public class DocumentFactory {
 				NoopValidator.INSTANCE);
 		document.addPage(instanceTypePage);
 		
-		Page dnsPage = new Page("dns", "Enter DNS information");
+		Page dynDnsPage = new Page("dynDns", "Dynamic DNS information");
+		dynDnsPage.addHelpText("msg", "Message");
+		dynDnsPage.add(new BooleanValue("useDuckDns", "Use Duck DNS"), NoopValidator.INSTANCE);
+		dynDnsPage.add(new PasswordValue("duckDnsToken", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
+		dynDnsPage.selectivelyEnable("duckDnsToken", new EnableIfBooleanFieldChecked("useDuckDns"));
+		document.addPage(dynDnsPage);
+		
+		Page dnsPage = new Page("dns", "Enter DNS hostname");
 		dnsPage.addHelpText("msg", "Message");
 		dnsPage.add(
 				new StringValue("hostname", "Hostname"),
 				new MultiValidator(
 						StringValueNonemptyValidator.INSTANCE,
-						new ConditionalValidator("useDuckDns", new StringValueEndsInSuffixValidator(".duckdns.org", true))
+						new ConditionalValidator("dynDns.useDuckDns", new StringValueEndsInSuffixValidator(".duckdns.org", true))
 						)
 				);
-		dnsPage.add(new BooleanValue("useDuckDns", "Use Duck DNS"), NoopValidator.INSTANCE);
-		dnsPage.add(new PasswordValue("duckDnsToken", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
-		dnsPage.selectivelyEnable("duckDnsToken", new EnableIfBooleanFieldChecked("useDuckDns"));
 		document.addPage(dnsPage);
 		
 		Page ccAcctPage = new Page("ccAcct", "Enter CloudCoder account information");

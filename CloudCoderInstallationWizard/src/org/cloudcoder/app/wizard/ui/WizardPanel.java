@@ -23,10 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.exec.BootstrapStep;
+import org.cloudcoder.app.wizard.exec.ICloudService;
+import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
+import org.cloudcoder.app.wizard.model.DocumentFactory;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.Page;
@@ -173,7 +176,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 				if (current.isEnabled(page.get(i).getName())) {
 					IValue updatedValue = current.get(i);
 					IValidator validator = page.getValidator(i);
-					validator.validate(current, origValue, updatedValue);
+					validator.validate(document, current, origValue, updatedValue);
 				}
 			}
 			return true;
@@ -286,7 +289,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 		aws.createDataDir();
 		
 		// Save Document in a properties file
-		saveConfiguration(aws);
+		saveConfiguration(aws.getDocument());
 
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of
@@ -301,7 +304,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 			@Override
 			public void update(Observable o, Object arg) {
 				if (progress.isFinished()) {
-					onFinished();
+					onFinished(progress);
 				} else if (progress.isFatalException()) {
 					onFatalException();
 				}
@@ -323,15 +326,16 @@ public class WizardPanel extends JPanel implements UIConstants {
 		t.start();
 	}
 
-	private void saveConfiguration(final AWSCloudService aws) {
+	private void saveConfiguration(Document document) {
 		try {
-			try (PrintWriter w = new PrintWriter(new FileWriter(new File(aws.getInfo().getDataDir(), "ccinstall.properties")))) {
+			try (PrintWriter w = new PrintWriter(new FileWriter(new File(InstallationConstants.DATA_DIR, "ccinstall.properties")))) {
 				w.println("# CloudCoder installation wizard saved configuration properties");
-				for (int i = 0; i < aws.getDocument().getNumPages(); i++) {
-					Page page = aws.getDocument().get(i);
+				for (int i = 0; i < document.getNumPages(); i++) {
+					Page page = document.get(i);
 					for (IValue value : page) {
+						String propName = page.getPageName() + "." + value.getName();
 						if (!(value instanceof ImmutableStringValue)) {
-							w.printf("%s.%s=%s\n", page.getPageName(), value.getName(), value.getPropertyValue());
+							w.printf("%s=%s\n", propName, value.getPropertyValue());
 						}
 					}
 				}
@@ -343,7 +347,10 @@ public class WizardPanel extends JPanel implements UIConstants {
 		}
 	}
 	
-	private void onFinished() {
+	private void onFinished(InstallationProgress<?, ?> progress) {
+		document.getValue("db.dnsHostnameConfigured").setBoolean(progress.subStepSucceeded("verifyHostname"));
+		document.getValue("db.sslCertInstalled").setBoolean(progress.subStepSucceeded("letsencrypt"));
+		
 		LogPanel.getInstance().flushLog();
 		goToPage("finished");
 	}

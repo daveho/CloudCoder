@@ -59,12 +59,12 @@ public class Document implements Cloneable {
 		}
 	}
 	
-	private interface WithCompositeName<E> {
+	public interface CompositeNameCallback<E> {
 		public E execute(String pageName, String name);
 	}
 
 	public IValue getValue(String compositeName) {
-		return doWithCompositeName(compositeName, new WithCompositeName<IValue>() {
+		return withCompositeName(compositeName, new CompositeNameCallback<IValue>() {
 			@Override
 			public IValue execute(String pageName, String name) {
 				return getPage(pageName).getValue(name);
@@ -73,7 +73,7 @@ public class Document implements Cloneable {
 	}
 
 	public void replaceValue(String compositeName, final IValue value) {
-		doWithCompositeName(compositeName, new WithCompositeName<Boolean>() {
+		withCompositeName(compositeName, new CompositeNameCallback<Boolean>() {
 			@Override
 			public Boolean execute(String pageName, String name) {
 				Page page = getPage(pageName);
@@ -83,7 +83,7 @@ public class Document implements Cloneable {
 		});
 	}
 
-	private<E> E doWithCompositeName(String compositeName, WithCompositeName<E> callback) {
+	public static<E> E withCompositeName(String compositeName, CompositeNameCallback<E> callback) {
 		int dot = compositeName.indexOf('.');
 		if (dot < 0) {
 			throw new IllegalArgumentException("Invalid composite name: " + compositeName);
