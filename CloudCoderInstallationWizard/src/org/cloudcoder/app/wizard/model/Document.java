@@ -93,12 +93,16 @@ public class Document implements Cloneable {
 		return callback.execute(pageName, name);
 	}
 
-	public void selectivelyEnablePageRange(String startPage, String endPage, ISelectivePageEnablement pageEnablement) {
-		int startIndex = getPageIndex(startPage);
-		int endIndex = getPageIndex(endPage);
-		for (int i = startIndex; i <= endIndex; i++) {
-			selectivePageEnablementMap.put(pages.get(i).getPageName(), pageEnablement);
-		}
+//	public void selectivelyEnablePageRange(String startPage, String endPage, ISelectivePageEnablement pageEnablement) {
+//		int startIndex = getPageIndex(startPage);
+//		int endIndex = getPageIndex(endPage);
+//		for (int i = startIndex; i <= endIndex; i++) {
+//			selectivePageEnablementMap.put(pages.get(i).getPageName(), pageEnablement);
+//		}
+//	}
+
+	public void selectivelyEnablePage(String pageName, ISelectivePageEnablement pageEnablement) {
+		selectivePageEnablementMap.put(pageName, pageEnablement);
 	}
 	
 	public boolean isPageEnabled(int pageIndex) {

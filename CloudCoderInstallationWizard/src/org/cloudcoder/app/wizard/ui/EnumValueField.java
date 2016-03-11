@@ -30,9 +30,11 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 	public void setValue(EnumValue<E> value) {
 		super.setValue(value);
 		Class<E> enumCls = value.getEnumCls();
-		E[] members = enumCls.getEnumConstants();
-		for (E member : members) {
-			comboBox.addItem(member);
+		if (comboBox.getItemCount() == 0) {
+			E[] members = enumCls.getEnumConstants();
+			for (E member : members) {
+				comboBox.addItem(member);
+			}
 		}
 		comboBox.setSelectedItem(value.getEnum(enumCls));
 	}
@@ -57,6 +59,7 @@ public class EnumValueField<E extends Enum<E>> extends LabeledField<EnumValue<E>
 		EnumValue<E> current = getValue().clone();
 		@SuppressWarnings("unchecked")
 		E selectedItem = (E)comboBox.getSelectedItem();
+		System.out.printf("getCurrentValue, selectedItem %s null\n", selectedItem == null ? "is" : "is not");
 		current.setEnum(selectedItem);
 		return current;
 	}

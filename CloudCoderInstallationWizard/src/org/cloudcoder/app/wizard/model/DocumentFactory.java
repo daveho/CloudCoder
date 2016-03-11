@@ -24,7 +24,9 @@ public class DocumentFactory {
 	public static Document create() {
 		Document document = new Document();
 		
+		/////////////////////////////////////////////////////////////////
 		// Add pages
+		/////////////////////////////////////////////////////////////////
 		
 		// The "env" page has details about the environment.
 		// It's not actually used for user configuration.
@@ -57,6 +59,26 @@ public class DocumentFactory {
 		selectTaskPage.add(new EnumValue<InstallationTask>(
 				InstallationTask.class, "installationTask", "Installation task"), NoopValidator.INSTANCE);
 		document.addPage(selectTaskPage);
+		// If doing post-install issue/install SSL cert, must connect to
+		// webapp instance via DNS rather than public IP.
+		document.addPageNavigationHook("selectTask", new IPageNavigationHook() {
+			@Override
+			public void onNext(Document document) {
+				IValue taskValue = document.getValue("selectTask.installationTask");
+				InstallationTask selectedTask = taskValue.getEnum(InstallationTask.class);
+				if (selectedTask == InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE) {
+					document.getValue("db.sshConnectViaHostname").setBoolean(true);
+				}
+			}
+		});
+		
+		// Config pages that should only be used when doing a full installation:
+		// keep this up to date!
+		String[] fullInstallPages = new String[]{
+				"welcome", "aws", "awsRegion", "awsInstanceType",
+				"ccAcct", "mysqlAcct", "instDetails",
+				"ready", "install", "error", "finished"
+		};
 		
 		Page welcomePage = new Page("welcome", "Welcome to the CloudCoder installation wizard");
 		welcomePage.addHelpText("msg", "Welcome message");
@@ -142,31 +164,39 @@ public class DocumentFactory {
 		finishedPage.addHelpText("msg", "Message", DisplayOption.DOUBLE_HEIGHT);
 		document.addPage(finishedPage);
 		
-		document.selectivelyEnablePageRange("welcome", "finished",
-				new EnablePageIfEnumSelected<InstallationTask>(
-						"selectTask.installationTask",
-						InstallationTask.class,
-						InstallationTask.INSTALL_CLOUDCODER));
-		
 		// TODO: needs an actual UI
 		Page issueSslPage = new Page("issueSsl", "Issue and install SSL certificate");
 		document.addPage(issueSslPage);
 		
-		document.selectivelyEnablePageRange("issueSsl", "issueSsl",
-				new EnablePageIfEnumSelected<InstallationTask>(
-						"selectTask.installationTask",
-						InstallationTask.class,
-						InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE));
+		/////////////////////////////////////////////////////////////////
+		// Set up selective page enablement
+		/////////////////////////////////////////////////////////////////
 
 		// The "db" page is always disabled (i.e., not shown to the user)
-		document.selectivelyEnablePageRange("db", "db", DisablePage.INSTANCE);
+		document.selectivelyEnablePage("db", DisablePage.INSTANCE);
 		
 		// The "prevCcinstall" page is enabled only if db.hasCcinstallProperties
-		// is true.
-		document.selectivelyEnablePageRange(
-				"prevCcinstall",
+		// is true (which is true only if ccinstall.properties exists,
+		// see above.)
+		document.selectivelyEnablePage(
 				"prevCcinstall",
 				new EnablePageIfBooleanFieldChecked("db.hasCcinstallProperties"));
+
+		// Some config pages are only enabled for the full install step,
+		// not for the post-install issue/install SSL cert step.
+		ISelectivePageEnablement fullInstallEnablement = new EnablePageIfEnumSelected<InstallationTask>(
+				"selectTask.installationTask", InstallationTask.class, InstallationTask.INSTALL_CLOUDCODER);
+		for (String pageName : fullInstallPages) {
+			document.selectivelyEnablePage(pageName, fullInstallEnablement);
+		}
+		
+		// The issueSsl page is (obviously) only enabled if doing
+		// the SSL cert as a post-installation step
+		ISelectivePageEnablement issueSslEnablement = new EnablePageIfEnumSelected<InstallationTask>(
+				"selectTask.installationTask",
+				InstallationTask.class,
+				InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE);
+		document.selectivelyEnablePage("issueSsl", issueSslEnablement);
 		
 		return document;
 	}
