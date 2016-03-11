@@ -196,18 +196,20 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		}
 	}
 	
-	public void verifyDnsHostname() throws ExecException {
+	public void verifyDnsHostname(boolean checkPublicIp) throws ExecException {
 		// Get hostname and public ip address
 		String hostname = cloudService.getDocument().getValue("dns.hostname").getString();
 		String publicIp = cloudService.getInfo().getWebappPublicIp();
 		
 		// Convert public ip address to an InetAddress
-		InetAddress expectedAddr;
-		try {
-			expectedAddr = InetAddress.getByName(publicIp);
-		} catch (UnknownHostException e1) {
-			throw new NonFatalExecException(
-					"Public ip " + publicIp + " could not be converted to InetAddress (should not happen)", e1);
+		InetAddress expectedAddr = null;
+		if (checkPublicIp) {
+			try {
+				expectedAddr = InetAddress.getByName(publicIp);
+			} catch (UnknownHostException e1) {
+				throw new NonFatalExecException(
+						"Public ip " + publicIp + " could not be converted to InetAddress (should not happen)", e1);
+			}
 		}
 		
 		// It might take a few tries to resolve the hostname, since we just
@@ -216,6 +218,10 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		while (true) {
 			try {
 				InetAddress addr = InetAddress.getByName(hostname);
+				if (!checkPublicIp) {
+					System.out.printf("Hostname %s resolves as %s, not checking expected public ip\n", hostname, addr.toString());
+					return;
+				}
 				if (addr.equals(expectedAddr)) {
 					System.out.printf("Hostname %s resolves as %s, looks good\n", hostname, addr.toString());
 					return;
@@ -370,7 +376,18 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		try {
 			InfoType info = cloudService.getInfo();
 			System.out.println("Starting ssh connection...");
-			ssh.connect(info.getWebappPublicIp());
+			
+			String hostname;
+			Document document = cloudService.getDocument();
+			if (document.getValue("db.sshConnectViaHostname").getBoolean()) {
+				// Identify host via hostname
+				hostname = document.getValue("dns.hostname").getString();
+			} else {
+				// Identify host via public ip address
+				hostname = info.getWebappPublicIp();
+			}
+			ssh.connect(hostname);
+			
 			System.out.println("Connected");
 			KeyProvider keys = ssh.loadKeys(info.getPrivateKeyFile().getAbsolutePath());
 			System.out.println("Doing ssh authentication using keypair");
@@ -408,6 +425,11 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 
 		@Override
 		public boolean isPrivateKeyGenerated() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void setPrivateKeyFile(File privateKeyFile) {
 			throw new UnsupportedOperationException();
 		}
 

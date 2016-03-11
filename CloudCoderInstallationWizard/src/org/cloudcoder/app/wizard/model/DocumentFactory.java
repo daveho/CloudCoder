@@ -95,9 +95,15 @@ public class DocumentFactory {
 			public void onNext(Document document) {
 				IValue taskValue = document.getValue("selectTask.installationTask");
 				InstallationTask selectedTask = taskValue.getEnum(InstallationTask.class);
+				
+				// When installing SSL cert, use hostname to connect via ssh
 				if (selectedTask == InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE) {
 					document.getValue("db.sshConnectViaHostname").setBoolean(true);
 				}
+				
+				// Whichever task is being done, set error/finished targets
+				document.setErrorPage("install" + selectedTask.getPageSuffix());
+				document.setFinishedPage("finished" + selectedTask.getPageSuffix());
 			}
 		});
 		
@@ -107,7 +113,7 @@ public class DocumentFactory {
 				"welcome", "aws", "awsRegion", "awsInstanceType",
 				"dynDns",
 				"ccAcct", "mysqlAcct", "instDetails",
-				"ready", "install", "error", "finished"
+				"ready", "error", "finished"
 		};
 		
 		Page welcomePage = new Page("welcome", "Welcome to the CloudCoder installation wizard");
@@ -183,8 +189,9 @@ public class DocumentFactory {
 		Page readyPage = new Page("ready", "Ready to install");
 		readyPage.addHelpText("msg", "Message");
 		document.addPage(readyPage);
-		
-		Page installPage = new Page("install", "Installing CloudCoder");
+
+		// This is the install page for both full install and installing SSL cert
+		Page installPage = new Page("install", "Installing...");
 		document.addPage(installPage);
 		
 		Page errorPage = new Page("error", "An error occurred");
@@ -198,9 +205,15 @@ public class DocumentFactory {
 		finishedPage.addHelpText("msg", "Message", DisplayOption.DOUBLE_HEIGHT);
 		document.addPage(finishedPage);
 		
-		// TODO: needs an actual UI
-		Page issueSslPage = new Page("issueSsl", "Issue and install SSL certificate");
-		document.addPage(issueSslPage);
+		// Error page for SSL task
+		Page errorSslPage = new Page("errorSsl", "An error occurred installing the SSL certificate");
+		errorSslPage.addHelpText("msg", "Message");
+		document.addPage(errorSslPage);
+		
+		// Finished page for SSL task
+		Page finishedSslPage = new Page("finishedSsl", "SSL certificate installed successfully!");
+		finishedSslPage.addHelpText("msg", "Message", DisplayOption.DOUBLE_HEIGHT);
+		document.addPage(finishedSslPage);
 		
 		/////////////////////////////////////////////////////////////////
 		// Set up selective page enablement

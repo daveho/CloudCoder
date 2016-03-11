@@ -5,8 +5,8 @@ import org.cloudcoder.app.wizard.exec.AbstractInstallSubStep;
 import org.cloudcoder.app.wizard.exec.ExecException;
 import org.cloudcoder.app.wizard.model.Document;
 
-public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSCloudService> {
-	private static class LoginSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, ServiceType> {
+	private static class LoginSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public LoginSubStep() {
 			super("login");
 		}
@@ -17,12 +17,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.login();
 		}
 	}
 	
-	private static class FindOrCreateVPCSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class FindOrCreateVPCSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public FindOrCreateVPCSubStep() {
 			super("createVpc");
 		}
@@ -33,12 +33,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.findOrCreateVpc();
 		}
 	}
 	
-	private class LoadOrCreateKeypairSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private class LoadOrCreateKeypairSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public LoadOrCreateKeypairSubStep() {
 			super("createKeyPair");
 		}
@@ -52,12 +52,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.createOrChooseKeypair();
 		}
 	}
 	
-	private static class FindOrCreateSecurityGroup extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class FindOrCreateSecurityGroup extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public FindOrCreateSecurityGroup() {
 			super("createSecurityGroup");
 		}
@@ -68,12 +68,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.findOrCreateSecurityGroup();
 		}
 	}
 	
-	private static class FindUbuntuServerImageSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class FindUbuntuServerImageSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public FindUbuntuServerImageSubStep() {
 			super("findUbuntuServerImage");
 		}
@@ -84,12 +84,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.findUbuntuServerImage();
 		}
 	}
 	
-	private static class CreateWebappElasticIPSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class CreateWebappElasticIPSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public CreateWebappElasticIPSubStep() {
 			super("createElasticIp");
 		}
@@ -100,12 +100,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.createWebappElasticIp();
 		}
 	}
 	
-	private static class CreateWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class CreateWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public CreateWebappInstanceSubStep() {
 			super("createInstance");
 		}
@@ -116,12 +116,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		protected void doExecute(AWSCloudService cloudService) throws ExecException {
+		protected void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.createWebappInstance();
 		}
 	}
 	
-	private static class WaitForWebappInstanceToStartSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class WaitForWebappInstanceToStartSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public WaitForWebappInstanceToStartSubStep() {
 			super("waitForInstance");
 		}
@@ -132,12 +132,12 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.waitForInstanceToStart();
 		}
 	}
 	
-	private static class AssignPublicIpToWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, AWSCloudService> {
+	private static class AssignPublicIpToWebappInstanceSubStep extends AbstractInstallSubStep<AWSInfo, ServiceType> {
 		public AssignPublicIpToWebappInstanceSubStep() {
 			super("assignPublicIp");
 		}
@@ -148,14 +148,14 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
-		public void doExecute(AWSCloudService cloudService) throws ExecException {
+		public void doExecute(ServiceType cloudService) throws ExecException {
 			cloudService.assignPublicIpToWebapp();
 		}
 	}
 	
-	private AWSCloudService aws;
+	private ServiceType aws;
 	
-	public ProvisioningInstallStep(AWSCloudService aws) {
+	public ProvisioningInstallStep(ServiceType aws) {
 		super("provisioningStep");
 		this.aws = aws;
 		addSubStep(new LoginSubStep());

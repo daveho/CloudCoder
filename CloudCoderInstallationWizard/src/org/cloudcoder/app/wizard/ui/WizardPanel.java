@@ -24,14 +24,16 @@ import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.exec.BootstrapStep;
 import org.cloudcoder.app.wizard.exec.ICloudService;
+import org.cloudcoder.app.wizard.exec.InstallSslCertificateStep;
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
-import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
+import org.cloudcoder.app.wizard.exec.aws.ServiceType;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
+import org.cloudcoder.app.wizard.model.InstallationTask;
 import org.cloudcoder.app.wizard.model.Page;
 import org.cloudcoder.app.wizard.model.validators.IValidator;
 import org.cloudcoder.app.wizard.model.validators.ValidationException;
@@ -250,7 +252,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 		
 		// Enable prev/next buttons as appropriate.
 		// The "special" pages don't allow manual navigation.
-		boolean isInstallPage = page.getPageName().equals("install");
+		boolean isInstallPage = page.getPageName().startsWith("install");
 		boolean isErrorPage = page.getPageName().equals("error");
 		boolean isFinishedPage = page.getPageName().equals("finished");
 		boolean isSpecialPage = isInstallPage || isErrorPage || isFinishedPage;
@@ -282,7 +284,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 		
 		// This is hard-coded for AWS at the moment.
 		// Eventually we will support other cloud providers.
-		final AWSCloudService aws = new AWSCloudService();
+		final ServiceType aws = new ServiceType();
 		aws.setDocument(document);
 		
 		// Create the data directory
@@ -294,9 +296,23 @@ public class WizardPanel extends JPanel implements UIConstants {
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of
 		// significant state changes
-		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
-		aws.addInstallSteps(progress);
-		progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
+		final InstallationProgress<AWSInfo, ServiceType> progress = new InstallationProgress<AWSInfo, ServiceType>();
+		
+		// Add installation steps as appropriate for selected InstallationTask
+		InstallationTask selectedTask = document.getValue("selectTask.installationTask").getEnum(InstallationTask.class);
+		switch (selectedTask) {
+		case INSTALL_CLOUDCODER:
+			// Full CloudCoder install
+			aws.addInstallSteps(progress);
+			progress.addInstallStep(new BootstrapStep<AWSInfo, ServiceType>(aws));
+			break;
+		case ISSUE_AND_INSTALL_SSL_CERTIFICATE:
+			// Just issue/install Let's Encrypt SSL certificate
+			progress.addInstallStep(new InstallSslCertificateStep<AWSInfo, ServiceType>(aws));
+			break;
+		default:
+			throw new IllegalStateException("Unknown installation task: " + selectedTask);
+		}
 		p.setProgress(progress);
 		
 		// Listen for completion events
@@ -352,12 +368,12 @@ public class WizardPanel extends JPanel implements UIConstants {
 		document.getValue("db.sslCertInstalled").setBoolean(progress.subStepSucceeded("letsencrypt"));
 		
 		LogPanel.getInstance().flushLog();
-		goToPage("finished");
+		goToPage(document.getFinishedPage());
 	}
 	
 	private void onFatalException() {
 		LogPanel.getInstance().flushLog();
-		goToPage("error");
+		goToPage(document.getErrorPage());
 	}
 
 	private void goToPage(String pageName) {

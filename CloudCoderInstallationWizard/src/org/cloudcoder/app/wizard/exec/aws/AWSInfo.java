@@ -15,7 +15,6 @@ import com.amazonaws.services.ec2.model.NetworkAcl;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Subnet;
 import com.amazonaws.services.ec2.model.Vpc;
-import com.amazonaws.util.IOUtils;
 
 // Collects information needed to do cloud service admin actions.
 // This is the implementation for AWS.
@@ -46,6 +45,11 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	@Override
 	public boolean isPrivateKeyGenerated() {
 		return keyPairFilename == null;
+	}
+	
+	@Override
+	public void setPrivateKeyFile(File privateKeyFile) {
+		this.privateKeyFile = privateKeyFile;
 	}
 	
 	@Override

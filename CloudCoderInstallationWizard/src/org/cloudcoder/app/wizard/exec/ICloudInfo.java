@@ -39,6 +39,14 @@ public interface ICloudInfo {
 	public boolean isPrivateKeyGenerated();
 	
 	/**
+	 * Set the private key file (or the keypair if a PEM file)
+	 * used to connect to the webapp server.
+	 * 
+	 * @param privateKeyFile the private key file
+	 */
+	public void setPrivateKeyFile(File privateKeyFile);
+	
+	/**
 	 * Get the the private key file (or the keypair if a PEM file)
 	 * used to connect to the webapp server.
 	 * 

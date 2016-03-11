@@ -81,7 +81,7 @@ import com.amazonaws.services.ec2.model.Vpc;
 
 // Cloud service operations for AWS.
 // Eventually, implement similar classes for other cloud providers.
-public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudService> {
+public class ServiceType extends AbstractCloudService<AWSInfo, ServiceType> {
 	private static final String CLOUDCODER_VPC_NAME = "cloudcoder-vpc";
 	//private static final String CLOUDCODER_VPC_SUBNET_NAME = "cloudcoder-vpc-subnet";
 	private static final String CLOUDCODER_SECURITY_GROUP_NAME = "cloudcoder-security-group";
@@ -111,7 +111,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 	}
 	
 	@Override
-	public void addInstallSteps(InstallationProgress<AWSInfo, AWSCloudService> progress) {
+	public void addInstallSteps(InstallationProgress<AWSInfo, ServiceType> progress) {
 		progress.addInstallStep(new ProvisioningInstallStep(this));
 	}
 	
@@ -567,7 +567,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 		document.getValue("awsKeypair.useExisting").setBoolean(true);
 		document.getValue("awsKeypair.filename").setString(keyPairFilename);
 		
-		AWSCloudService svc = new AWSCloudService();
+		ServiceType svc = new ServiceType();
 		svc.setDocument(document);
 		try {
 			svc.login();

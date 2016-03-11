@@ -17,6 +17,8 @@ public class Document implements Cloneable {
 	private List<Page> pages;
 	private Map<String, ISelectivePageEnablement> selectivePageEnablementMap;
 	private Map<String, IPageNavigationHook> pageNavigationHookMap;
+	private String errorPage;
+	private String finishedPage;
 	
 	public Document() {
 		pages = new ArrayList<Page>();
@@ -127,5 +129,21 @@ public class Document implements Cloneable {
 	
 	public IPageNavigationHook getPageNavigationHook(String pageName) {
 		return pageNavigationHookMap.get(pageName);
+	}
+	
+	public void setErrorPage(String errorPage) {
+		this.errorPage = errorPage;
+	}
+	
+	public String getErrorPage() {
+		return errorPage;
+	}
+	
+	public void setFinishedPage(String finishedPage) {
+		this.finishedPage = finishedPage;
+	}
+	
+	public String getFinishedPage() {
+		return finishedPage;
 	}
 }
