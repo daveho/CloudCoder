@@ -102,6 +102,7 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 	
 	private AWSInfo info;
 	
+	@Override
 	public void setDocument(Document document) {
 		this.document = document;
 		this.info = new AWSInfo();

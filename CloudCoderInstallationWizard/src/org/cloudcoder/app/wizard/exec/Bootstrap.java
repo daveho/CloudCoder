@@ -441,9 +441,13 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		private Document document;
 		private TestCloudInfo info;
 
-		public TestCloudService(Document document, TestCloudInfo info) {
-			this.document = document;
+		public TestCloudService(TestCloudInfo info) {
 			this.info = info;
+		}
+		
+		@Override
+		public void setDocument(Document document) {
+			this.document = document;
 		}
 
 		@Override
@@ -481,7 +485,8 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		TestCloudInfo info = new TestCloudInfo(username, hostAddress, keyPairFilename);
 		Document document = DocumentFactory.create();
 		// TODO: populate Document
-		TestCloudService cloudService = new TestCloudService(document, info);
+		TestCloudService cloudService = new TestCloudService(info);
+		cloudService.setDocument(document);
 		
 		Bootstrap<TestCloudInfo, TestCloudService> bootstrap = new Bootstrap<TestCloudInfo, TestCloudService>(cloudService);
 		

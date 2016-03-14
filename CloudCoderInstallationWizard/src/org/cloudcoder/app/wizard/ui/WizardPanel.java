@@ -23,14 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.cloudcoder.app.wizard.exec.BootstrapStep;
-import org.cloudcoder.app.wizard.exec.ICloudService;
 import org.cloudcoder.app.wizard.exec.InstallSslCertificateStep;
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
+import org.cloudcoder.app.wizard.exec.InstallationLogic;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
-import org.cloudcoder.app.wizard.model.DocumentFactory;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.InstallationTask;
@@ -279,43 +278,19 @@ public class WizardPanel extends JPanel implements UIConstants {
 
 	private void onStartInstallation() {
 		System.out.println("Starting installation...");
-		
-		InstallPanel p = wizardPagePanels.get(currentPage).asInstallPanel();
-		
-		// This is hard-coded for AWS at the moment.
-		// Eventually we will support other cloud providers.
-		final AWSCloudService aws = new AWSCloudService();
-		aws.setDocument(document);
-		
-		InstallationTask installationTask = aws.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
-		if (installationTask == InstallationTask.INSTALL_CLOUDCODER) {
-			// If doing a full install, save Document in a properties file
-			saveConfiguration(aws.getDocument());
-		}
 
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of
 		// significant state changes
 		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
-		
-		// Add installation steps as appropriate for selected InstallationTask
-		InstallationTask selectedTask = document.getValue("selectTask.installationTask").getEnum(InstallationTask.class);
-		switch (selectedTask) {
-		case INSTALL_CLOUDCODER:
-			// Full CloudCoder install
-			aws.addInstallSteps(progress);
-			progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
-			break;
-		case ISSUE_AND_INSTALL_SSL_CERTIFICATE:
-			// Just issue/install Let's Encrypt SSL certificate
-			progress.addInstallStep(new InstallSslCertificateStep<AWSInfo, AWSCloudService>(aws));
-			break;
-		default:
-			throw new IllegalStateException("Unknown installation task: " + selectedTask);
-		}
+
+		// The current page should be the InstallPanel.
+		// Allow it to monitor the installation progress.
+		InstallPanel p = wizardPagePanels.get(currentPage).asInstallPanel();
 		p.setProgress(progress);
 		
-		// Listen for completion events
+		// Listen for progress state changes, specifically
+		// completion events
 		progress.addObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
@@ -327,40 +302,19 @@ public class WizardPanel extends JPanel implements UIConstants {
 			}
 		});
 		
-		// Start a thread to run the installation.
-		// We will create it as a daemon thread, trusting that
-		// it will eventually reach a state where the UI will know
-		// to continue (either because the installation succeeded
-		// or because a fatal exception occurred.)
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				progress.executeAll(aws);
-			}
-		});
-		t.setDaemon(true);
-		t.start();
-	}
-
-	private void saveConfiguration(Document document) {
-		try {
-			try (PrintWriter w = new PrintWriter(new FileWriter(new File(InstallationConstants.DATA_DIR, "ccinstall.properties")))) {
-				w.println("# CloudCoder installation wizard saved configuration properties");
-				for (int i = 0; i < document.getNumPages(); i++) {
-					Page page = document.get(i);
-					for (IValue value : page) {
-						String propName = page.getPageName() + "." + value.getName();
-						if (!(value instanceof ImmutableStringValue)) {
-							w.printf("%s=%s\n", propName, value.getPropertyValue());
-						}
-					}
-				}
-			}
-		} catch (IOException e) {
-			// Should this be fatal?
-			System.err.println("Error saving installer configuration to file");
-			e.printStackTrace();
-		}
+		// This is hard-coded for AWS at the moment.
+		// Eventually we will support other cloud providers.
+		final AWSCloudService aws = new AWSCloudService();
+		
+		// Use InstallationLogic to carry out the installation
+		InstallationLogic<AWSInfo, AWSCloudService> logic =
+				new InstallationLogic<AWSInfo, AWSCloudService>();
+		
+		logic.setCloudService(aws);
+		logic.setDocument(document);
+		logic.setProgress(progress);
+		
+		logic.startInstallation();
 	}
 	
 	private void onFinished(InstallationProgress<?, ?> progress) {

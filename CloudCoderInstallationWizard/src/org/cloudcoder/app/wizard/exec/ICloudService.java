@@ -5,6 +5,8 @@ import org.cloudcoder.app.wizard.model.Document;
 public interface ICloudService<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>> {
 	public static final String CLOUDCODER_KEYPAIR_NAME = "cloudcoder-keypair";
 	
+	public void setDocument(Document document);
+	
 	/**
 	 * Get the {@link Document} that stores the user-provided
 	 * configuration information.
