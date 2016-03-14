@@ -21,13 +21,14 @@ public class InstallSslCertificateStep<
 		@Override
 		protected void doExecute(ServiceType cloudService) throws ExecException {
 			// Use previously chosen/generated keypair file.
-			File privateKeyFile = new File(InstallationConstants.DATA_DIR, "cloudcoder-keypair.pem");
-			if (!privateKeyFile.exists()) {
-				throw new ExecException("Could not file private key file " + privateKeyFile.getAbsolutePath());
+			if (!InstallationConstants.PRIVATE_KEY_FILE.exists()) {
+				throw new ExecException("Could not file private key file " + InstallationConstants.PRIVATE_KEY_FILE.getAbsolutePath());
 			}
-			cloudService.getInfo().setPrivateKeyFile(privateKeyFile);
+			
+			// There is really nothing else we need to do at this point:
+			// Bootstrap will load the keypair from its well-known
+			// location.
 		}
-		
 	}
 
 	public InstallSslCertificateStep(ServiceType cloudService) {

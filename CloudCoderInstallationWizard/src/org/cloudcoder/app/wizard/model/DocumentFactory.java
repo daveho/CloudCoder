@@ -110,7 +110,9 @@ public class DocumentFactory {
 		// Config pages that should only be used when doing a full installation:
 		// keep this up to date!
 		String[] fullInstallPages = new String[]{
-				"welcome", "aws", "awsRegion", "awsInstanceType",
+				"welcome", "aws", "awsRegion",
+				"awsKeypair", // user MUST use the previously chosen or generated keypair 
+				"awsInstanceType",
 				"dynDns",
 				"ccAcct", "mysqlAcct", "instDetails",
 				"ready", "error", "finished"

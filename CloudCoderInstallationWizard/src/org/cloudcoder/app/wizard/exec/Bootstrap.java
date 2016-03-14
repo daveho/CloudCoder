@@ -389,7 +389,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			ssh.connect(hostname);
 			
 			System.out.println("Connected");
-			KeyProvider keys = ssh.loadKeys(info.getPrivateKeyFile().getAbsolutePath());
+			KeyProvider keys = ssh.loadKeys(InstallationConstants.PRIVATE_KEY_FILE.getAbsolutePath());
 			System.out.println("Doing ssh authentication using keypair");
 			ssh.authPublickey(info.getWebappServerUserName(), keys);
 			System.out.println("Authentication successful");
@@ -404,17 +404,15 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	public static class TestCloudInfo extends AbstractCloudInfo implements ICloudInfo {
 		private String username;
 		private String hostAddress;
-		private String keyPairFilename;
 		private String privateIp;
 
-		public TestCloudInfo(String username, String hostAddress, String keyPairFilename) {
-			this(username, hostAddress, keyPairFilename, "10.0.0.222");
+		public TestCloudInfo(String username, String hostAddress) {
+			this(username, hostAddress, "10.0.0.222");
 		}
 		
-		public TestCloudInfo(String username, String hostAddress, String keyPairFilename, String privateIp) {
+		public TestCloudInfo(String username, String hostAddress, String privateIp) {
 			this.username = username;
 			this.hostAddress = hostAddress;
-			this.keyPairFilename = keyPairFilename;
 			this.privateIp = privateIp;
 		}
 		
@@ -426,16 +424,6 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		@Override
 		public boolean isPrivateKeyGenerated() {
 			throw new UnsupportedOperationException();
-		}
-		
-		@Override
-		public void setPrivateKeyFile(File privateKeyFile) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public File getPrivateKeyFile() {
-			return new File(keyPairFilename);
 		}
 
 		@Override
@@ -476,7 +464,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	}
 
 	// This is just for testing
-	public static void main(String[] args) throws ExecException {
+	public static void main(String[] args) throws ExecException, IOException {
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 		System.out.print("Host username: ");
@@ -485,6 +473,10 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		String hostAddress = keyboard.nextLine();
 		System.out.print("Keypair file: ");
 		String keyPairFilename = keyboard.nextLine();
+		
+		// Copy keypair to the well-known private key location
+		Util.createBackupFile(InstallationConstants.PRIVATE_KEY_FILE);
+		Util.copyFile(new File(keyPairFilename), InstallationConstants.PRIVATE_KEY_FILE);
 
 		TestCloudInfo info = new TestCloudInfo(username, hostAddress, keyPairFilename);
 		Document document = DocumentFactory.create();

@@ -98,7 +98,7 @@ public class ProcessTemplate {
 		awsKeypairPage.add(new BooleanValue("useExisting", "useExisting", true), NoopValidator.INSTANCE);
 		document.addPage(awsKeypairPage);
 		
-		ICloudInfo info = new Bootstrap.TestCloudInfo("ccuser", "1.2.3.4", "/home/ccuser/my-keypair.pem", "10.0.0.222");
+		ICloudInfo info = new Bootstrap.TestCloudInfo("ccuser", "1.2.3.4", "10.0.0.222");
 		
 		ProcessTemplate pt = new ProcessTemplate(template, document, info);
 		

@@ -1,12 +1,6 @@
 package org.cloudcoder.app.wizard.exec.aws;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import org.cloudcoder.app.wizard.exec.AbstractCloudInfo;
-import org.cloudcoder.app.wizard.exec.ICloudInfo;
-import org.cloudcoder.app.wizard.exec.ICloudService;
 
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
@@ -18,12 +12,10 @@ import com.amazonaws.services.ec2.model.Vpc;
 
 // Collects information needed to do cloud service admin actions.
 // This is the implementation for AWS.
-public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
+public class AWSInfo extends AbstractCloudInfo {
 	private Vpc vpc;
 	private Subnet subnet;
-	private String keyPairFilename;
 	private KeyPair keyPair;
-	private File privateKeyFile;
 	private SecurityGroup securityGroup;
 	private Image webappImage;
 	private Instance webappInstance;
@@ -43,48 +35,8 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	}
 	
 	@Override
-	public boolean isPrivateKeyGenerated() {
-		return keyPairFilename == null;
-	}
-	
-	@Override
-	public void setPrivateKeyFile(File privateKeyFile) {
-		this.privateKeyFile = privateKeyFile;
-	}
-	
-	@Override
-	public File getPrivateKeyFile() {
-		if (privateKeyFile == null) {
-			if (keyPairFilename != null) {
-				// User specified a keypair file
-				privateKeyFile = new File(keyPairFilename);
-			} else {
-				// Private key was generated, so save it to a file
-				privateKeyFile = saveGeneratedPrivateKey();
-			}
-		}
-		return privateKeyFile;
-	}
-	
-	@Override
 	public String getWebappServerUserName() {
 		return "ubuntu";
-	}
-
-	private File saveGeneratedPrivateKey() {
-		try {
-			// Save the generated keypair in a file in a well-known location
-			File f = new File(getDataDir(), ICloudService.CLOUDCODER_KEYPAIR_NAME + ".pem");
-			FileWriter fw = new FileWriter(f);
-			try {
-				fw.write(keyPair.getKeyMaterial());
-			} finally {
-				fw.close();
-			}
-			return f;
-		} catch (IOException e) {
-			throw new RuntimeException("Could not save keypair to tempfile");
-		}
 	}
 	
 	public Vpc getVpc() {
@@ -101,14 +53,6 @@ public class AWSInfo extends AbstractCloudInfo implements ICloudInfo {
 	
 	public void setSubnet(Subnet subnet) {
 		this.subnet = subnet;
-	}
-	
-	public String getKeyPairFilename() {
-		return keyPairFilename;
-	}
-	
-	public void setKeyPairFilename(String keyPairFilename) {
-		this.keyPairFilename = keyPairFilename;
 	}
 	
 	public KeyPair getKeyPair() {

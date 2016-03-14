@@ -287,8 +287,11 @@ public class WizardPanel extends JPanel implements UIConstants {
 		final AWSCloudService aws = new AWSCloudService();
 		aws.setDocument(document);
 		
-		// Save Document in a properties file
-		saveConfiguration(aws.getDocument());
+		InstallationTask installationTask = aws.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
+		if (installationTask == InstallationTask.INSTALL_CLOUDCODER) {
+			// If doing a full install, save Document in a properties file
+			saveConfiguration(aws.getDocument());
+		}
 
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of

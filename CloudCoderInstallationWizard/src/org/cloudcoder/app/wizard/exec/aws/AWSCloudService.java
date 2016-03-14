@@ -11,9 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.cloudcoder.app.wizard.exec.AbstractCloudService;
 import org.cloudcoder.app.wizard.exec.ExecException;
 import org.cloudcoder.app.wizard.exec.ICloudService;
+import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
 import org.cloudcoder.app.wizard.exec.Util;
 import org.cloudcoder.app.wizard.model.AWSRegion;
@@ -296,12 +298,21 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 		throw ex;
 	}
 	
+	/**
+	 * Depending on the properties defined in the {@link Document},
+	 * copy an existing keypair to the well-known private key
+	 * location, or have AWS generate a new keypair and save the
+	 * key material to a well-known location.
+	 * 
+	 * @throws ExecException
+	 */
 	public void createOrChooseKeypair() throws ExecException {
 		try {
 			if (document.getValue("awsKeypair.useExisting").getBoolean()) {
 				// Verify that chosen keypair filename matches the
-				// name of existant keypair.  If so, load the key material
-				// from a file and continue.
+				// name of existant keypair.  If so, save the key
+				// material to the well-known location in the data
+				// directory.
 				
 				String keyPairFilename = document.getValue("awsKeypair.filename").getString();
 				String keyPairName = new File(keyPairFilename).getName();
@@ -315,10 +326,19 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 
 				for (KeyPairInfo keyPairInfo : keyPairs) {
 					if (keyPairInfo.getKeyName().equals(keyPairName)) {
+						// Found the named keypair.
 						System.out.println("Found keypair " + keyPairName);
-						this.info.setKeyPair(loadKeyPair(keyPairFilename, keyPairName));
-						this.info.setKeyPairFilename(keyPairFilename);
-						System.out.println("Loading key from file " + keyPairFilename);
+						
+						// Load the keypair from the existing file
+						KeyPair keyPair = loadKeyPair(keyPairFilename, keyPairName);
+						
+						// Stash the keypair in the AWSInfo object
+						info.setKeyPair(keyPair);
+						
+						// Save the key material to the well-known location
+						// (InstallationConstants.PRIVATE_KEY_FILE).
+						saveKeyPairMaterial(keyPair);
+						info.setPrivateKeyGenerated(false);
 						return;
 					}
 				}
@@ -328,9 +348,13 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 				// Create a new keypair.
 				CreateKeyPairRequest req = new CreateKeyPairRequest(ICloudService.CLOUDCODER_KEYPAIR_NAME);
 				CreateKeyPairResult result = client.createKeyPair(req);
-				this.info.setKeyPair(result.getKeyPair());
-				// The keypair file will be saved automatically in the ccinstall directory
-				System.out.println("Created keypair " + this.info.getKeyPair().getKeyName());
+				System.out.println("Created new keypair " + result.getKeyPair().getKeyName());
+				
+				// Stash the keypair in the AWSInfo object
+				info.setKeyPair(result.getKeyPair());
+				
+				// Save it to the well-known keypair location.
+				saveKeyPairMaterial(result.getKeyPair());
 			}
 		} catch (AmazonServiceException e) {
 			throw new ExecException("Failed to find or create keypair", e);
@@ -347,6 +371,18 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 		keyPair.setKeyMaterial(s);
 		// FIXME: is the signature important? Not sure we'll need it.
 		return keyPair;
+	}
+	
+	private void saveKeyPairMaterial(KeyPair keyPair) throws IOException, ExecException {
+		// Make a backup of the current well-known keypair file,
+		// if there is one.
+		Util.createBackupFile(InstallationConstants.PRIVATE_KEY_FILE);
+		
+		try (FileWriterWithEncoding fw =
+				new FileWriterWithEncoding(InstallationConstants.PRIVATE_KEY_FILE, Charset.forName("UTF-8"))) {
+			fw.write(keyPair.getKeyMaterial());
+		}
+		System.out.printf("Successfully saved AWS keypair %s as %s\n", keyPair.getKeyName(), InstallationConstants.PRIVATE_KEY_FILE.getAbsolutePath());
 	}
 	
 	public void findOrCreateSecurityGroup() throws ExecException {

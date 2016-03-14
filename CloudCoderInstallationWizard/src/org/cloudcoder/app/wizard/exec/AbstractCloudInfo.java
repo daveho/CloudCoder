@@ -1,15 +1,15 @@
 package org.cloudcoder.app.wizard.exec;
 
-import java.io.File;
-
-public abstract class AbstractCloudInfo {
-	private File dataDir;
+public abstract class AbstractCloudInfo implements ICloudInfo {
+	private boolean privateKeyGenerated;
 	
-	public void setDataDir(File dataDir) {
-		this.dataDir = dataDir;
+	@Override
+	public void setPrivateKeyGenerated(boolean b) {
+		this.privateKeyGenerated = b;
 	}
 	
-	public File getDataDir() {
-		return dataDir;
+	@Override
+	public boolean isPrivateKeyGenerated() {
+		return this.privateKeyGenerated;
 	}
 }

@@ -13,6 +13,7 @@ import java.util.Observable;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
+import org.cloudcoder.app.wizard.model.InstallationTask;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 
 public class InstallationProgress<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
@@ -192,7 +193,10 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		// If we finished successfully, generate the report from
 		// the report template.
 		if (isFinished()) {
-			ImmutableStringValue template = ImmutableStringValue.createHelpText("finished", "reporttemplate", "Report template");
+			InstallationTask installTask =
+					cloudService.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
+			
+			ImmutableStringValue template = ImmutableStringValue.createHelpText("finished" + installTask.getPageSuffix(), "reporttemplate", "Report template");
 			ProcessTemplate pt = new ProcessTemplate(template, cloudService.getDocument(), cloudService.getInfo());
 			String report = pt.generate();
 			ImmutableStringValue msg = new ImmutableStringValue("msg", "Message", report);

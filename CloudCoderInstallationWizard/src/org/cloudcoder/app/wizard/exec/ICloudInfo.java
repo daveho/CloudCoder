@@ -3,7 +3,7 @@ package org.cloudcoder.app.wizard.exec;
 import java.io.File;
 
 /**
- * All of the information needed to do the install,
+ * Information needed to do the install,
  * independent of which cloud provider is being used.
  */
 public interface ICloudInfo {
@@ -15,6 +15,14 @@ public interface ICloudInfo {
 	public String getWebappPublicIp();
 	
 	/**
+	 * Set whether or not the private key was generated.
+	 * 
+	 * @param b true if the private key was generated,
+	 *          false if an existing keypair was used
+	 */
+	public void setPrivateKeyGenerated(boolean b);
+	
+	/**
 	 * Determine whether the private key was generated, or was pre-existing.
 	 * 
 	 * @return true if the private key was generated, false if
@@ -22,21 +30,21 @@ public interface ICloudInfo {
 	 */
 	public boolean isPrivateKeyGenerated();
 	
-	/**
-	 * Set the private key file (or the keypair if a PEM file)
-	 * used to connect to the webapp server.
-	 * 
-	 * @param privateKeyFile the private key file
-	 */
-	public void setPrivateKeyFile(File privateKeyFile);
-	
-	/**
-	 * Get the the private key file (or the keypair if a PEM file)
-	 * used to connect to the webapp server.
-	 * 
-	 * @return the private key file
-	 */
-	public File getPrivateKeyFile();
+//	/**
+//	 * Set the private key file (or the keypair if a PEM file)
+//	 * used to connect to the webapp server.
+//	 * 
+//	 * @param privateKeyFile the private key file
+//	 */
+//	public void setPrivateKeyFile(File privateKeyFile);
+//	
+//	/**
+//	 * Get the the private key file (or the keypair if a PEM file)
+//	 * used to connect to the webapp server.
+//	 * 
+//	 * @return the private key file
+//	 */
+//	public File getPrivateKeyFile();
 	
 	/**
 	 * Get the private IP address of the webapp server:
