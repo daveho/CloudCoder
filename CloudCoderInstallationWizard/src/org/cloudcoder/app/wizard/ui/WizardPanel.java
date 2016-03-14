@@ -27,7 +27,7 @@ import org.cloudcoder.app.wizard.exec.ICloudService;
 import org.cloudcoder.app.wizard.exec.InstallSslCertificateStep;
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.exec.InstallationProgress;
-import org.cloudcoder.app.wizard.exec.aws.ServiceType;
+import org.cloudcoder.app.wizard.exec.aws.AWSCloudService;
 import org.cloudcoder.app.wizard.exec.aws.AWSInfo;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
@@ -284,11 +284,8 @@ public class WizardPanel extends JPanel implements UIConstants {
 		
 		// This is hard-coded for AWS at the moment.
 		// Eventually we will support other cloud providers.
-		final ServiceType aws = new ServiceType();
+		final AWSCloudService aws = new AWSCloudService();
 		aws.setDocument(document);
-		
-		// Create the data directory
-		aws.createDataDir();
 		
 		// Save Document in a properties file
 		saveConfiguration(aws.getDocument());
@@ -296,7 +293,7 @@ public class WizardPanel extends JPanel implements UIConstants {
 		// The InstallationProgress object orchestrates the installation
 		// process and notifies observers (i.e., the InstallPanel) of
 		// significant state changes
-		final InstallationProgress<AWSInfo, ServiceType> progress = new InstallationProgress<AWSInfo, ServiceType>();
+		final InstallationProgress<AWSInfo, AWSCloudService> progress = new InstallationProgress<AWSInfo, AWSCloudService>();
 		
 		// Add installation steps as appropriate for selected InstallationTask
 		InstallationTask selectedTask = document.getValue("selectTask.installationTask").getEnum(InstallationTask.class);
@@ -304,11 +301,11 @@ public class WizardPanel extends JPanel implements UIConstants {
 		case INSTALL_CLOUDCODER:
 			// Full CloudCoder install
 			aws.addInstallSteps(progress);
-			progress.addInstallStep(new BootstrapStep<AWSInfo, ServiceType>(aws));
+			progress.addInstallStep(new BootstrapStep<AWSInfo, AWSCloudService>(aws));
 			break;
 		case ISSUE_AND_INSTALL_SSL_CERTIFICATE:
 			// Just issue/install Let's Encrypt SSL certificate
-			progress.addInstallStep(new InstallSslCertificateStep<AWSInfo, ServiceType>(aws));
+			progress.addInstallStep(new InstallSslCertificateStep<AWSInfo, AWSCloudService>(aws));
 			break;
 		default:
 			throw new IllegalStateException("Unknown installation task: " + selectedTask);

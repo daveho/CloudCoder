@@ -202,7 +202,7 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 			
 			// Also save it to a file
 			try (Writer fw = new FileWriterWithEncoding(
-					new File(cloudService.getInfo().getDataDir(), "report.html"), Charset.forName("UTF-8"))) {
+					new File(InstallationConstants.DATA_DIR, "report.html"), Charset.forName("UTF-8"))) {
 				fw.write(msg.getString());
 			} catch (IOException e) {
 				System.err.println("Could not write report: " + e.getMessage());

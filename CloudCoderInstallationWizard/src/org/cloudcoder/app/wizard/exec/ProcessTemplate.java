@@ -32,7 +32,7 @@ public class ProcessTemplate {
 			if (info.getWebappPublicIp() != null) {
 				addCloudInfo(cloudInfoPage, "webappPublicIp", info.getWebappPublicIp());
 			}
-			addCloudInfo(cloudInfoPage, "dataDir", info.getDataDir().getAbsolutePath());
+			addCloudInfo(cloudInfoPage, "dataDir", InstallationConstants.DATA_DIR.getAbsolutePath());
 			document.addPage(cloudInfoPage);
 		}
 	}
@@ -86,6 +86,7 @@ public class ProcessTemplate {
 		Document document = new Document();
 		Page dbPage = new Page("db", "db");
 		dbPage.add(new BooleanValue("sslCertInstalled", "sslCertInstalled", true), NoopValidator.INSTANCE);
+		dbPage.add(new BooleanValue("dnsHostnameConfigured", "dnsHostnameConfigured", true), NoopValidator.INSTANCE);
 		document.addPage(dbPage);
 		Page dnsPage = new Page("dns", "dns");
 		dnsPage.add(new StringValue("hostname", "hostname", "cloudcoder-test.duckdns.org"), NoopValidator.INSTANCE);
@@ -98,7 +99,6 @@ public class ProcessTemplate {
 		document.addPage(awsKeypairPage);
 		
 		ICloudInfo info = new Bootstrap.TestCloudInfo("ccuser", "1.2.3.4", "/home/ccuser/my-keypair.pem", "10.0.0.222");
-		info.setDataDir(InstallationConstants.DATA_DIR);
 		
 		ProcessTemplate pt = new ProcessTemplate(template, document, info);
 		

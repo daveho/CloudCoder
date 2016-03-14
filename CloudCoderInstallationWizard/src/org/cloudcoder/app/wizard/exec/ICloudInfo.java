@@ -8,22 +8,6 @@ import java.io.File;
  */
 public interface ICloudInfo {
 	/**
-	 * Set the local data directory where we can store
-	 * files needed during the installation process.
-	 * 
-	 * @param dir the data directory
-	 */
-	public void setDataDir(File dir);
-	
-	/**
-	 * Get the local directory where files needed during the
-	 * installation process are stored.
-	 *  
-	 * @return the data directory
-	 */
-	public File getDataDir();
-	
-	/**
 	 * Get the public IP address of the webapp server.
 	 * 
 	 * @return public IP address of the webapp server
