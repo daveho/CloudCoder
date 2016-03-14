@@ -1,7 +1,6 @@
 package org.cloudcoder.app.wizard.exec;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -11,10 +10,8 @@ import java.util.List;
 import java.util.Observable;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.cloudcoder.app.wizard.model.DisplayOption;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.InstallationTask;
-import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 
 public class InstallationProgress<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends Observable {
@@ -212,6 +209,13 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 				System.err.println("Could not write report: " + e.getMessage());
 				e.printStackTrace(System.err);
 			}
+		}
+		
+		if (isFinished()) {
+			// Set values that will be needed to generate the final
+			// installation report.
+			cloudService.getDocument().getValue("db.dnsHostnameConfigured").setBoolean(subStepSucceeded("verifyHostname"));
+			cloudService.getDocument().getValue("db.sslCertInstalled").setBoolean(subStepSucceeded("letsencrypt"));
 		}
 		
 		// If the loop terminated, then either the installation finished

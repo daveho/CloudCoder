@@ -309,8 +309,6 @@ public class WizardPanel extends JPanel implements UIConstants {
 	}
 	
 	private void onFinished(InstallationProgress<?, ?> progress) {
-		document.getValue("db.dnsHostnameConfigured").setBoolean(progress.subStepSucceeded("verifyHostname"));
-		document.getValue("db.sslCertInstalled").setBoolean(progress.subStepSucceeded("letsencrypt"));
 		
 		LogPanel.getInstance().flushLog();
 		goToPage(document.getFinishedPage());
