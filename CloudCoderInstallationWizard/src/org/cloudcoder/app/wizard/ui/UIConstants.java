@@ -26,4 +26,7 @@ public interface UIConstants {
 	
 	/** Full height for a help text component. */
 	public static final int FULL_HELP_TEXT_HEIGHT = 250;
+	
+	/** Progress bar height. */
+	public static final int PROGRESS_BAR_HEIGHT = (FIELD_HEIGHT * 200) / 300;
 }

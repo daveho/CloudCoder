@@ -379,6 +379,11 @@ public class AWSCloudService extends AbstractCloudService<AWSInfo, AWSCloudServi
 		// if there is one.
 		Util.createBackupFile(InstallationConstants.PRIVATE_KEY_FILE);
 		
+		// If the original file was write-protected, opening it for
+		// writing will fail.  Attempt to delete it (which should be fine
+		// since we just made a backup.)
+		InstallationConstants.PRIVATE_KEY_FILE.delete();
+		
 		try (FileWriterWithEncoding fw =
 				new FileWriterWithEncoding(InstallationConstants.PRIVATE_KEY_FILE, Charset.forName("UTF-8"))) {
 			fw.write(keyPair.getKeyMaterial());

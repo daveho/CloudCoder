@@ -1,7 +1,5 @@
 package org.cloudcoder.app.wizard.exec;
 
-import java.io.File;
-
 /**
  * Information needed to do the install,
  * independent of which cloud provider is being used.

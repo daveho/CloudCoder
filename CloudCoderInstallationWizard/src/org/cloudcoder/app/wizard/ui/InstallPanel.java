@@ -53,7 +53,7 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		
 		overallProgressBar = new JProgressBar();
 		overallProgressBar.setStringPainted(true);
-		setComponentSize(overallProgressBar, FIELD_HEIGHT);
+		setComponentSize(overallProgressBar, PROGRESS_BAR_HEIGHT);
 		add(overallProgressBar);
 		
 		JLabel subStepProgressLabel = new JLabel("Progress for current step:");
@@ -62,7 +62,7 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		
 		subStepProgressBar = new JProgressBar();
 		subStepProgressBar.setStringPainted(true);
-		setComponentSize(subStepProgressBar, FIELD_HEIGHT);
+		setComponentSize(subStepProgressBar, PROGRESS_BAR_HEIGHT);
 		add(subStepProgressBar);
 	}
 
@@ -146,7 +146,7 @@ public class InstallPanel extends JPanel implements IWizardPagePanel, Observer, 
 		
 		subStepProgressBar.setMinimum(0);
 		int curStepTotal = progress.getCurrentStep().getInstallSubSteps().size();
-		int curStepIndex = progress.getCurrentSubStepIndex()+1;
+		int curStepIndex = progress.getCurrentSubStepIndex();
 		subStepProgressBar.setMaximum(curStepTotal);
 		subStepProgressBar.setValue(curStepIndex);
 		subStepProgressBar.setString(curStepIndex + "/" + curStepTotal);

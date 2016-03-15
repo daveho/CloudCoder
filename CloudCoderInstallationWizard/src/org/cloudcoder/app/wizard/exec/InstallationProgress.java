@@ -171,10 +171,17 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		index += currentSubStep;
 		return index;
 	}
-	
-	public boolean subStepSucceeded(String subStepName) {
-		for (IInstallSubStep<InfoType, ServiceType> subStep : succeededSubSteps) {
-			if (subStep.getName().equals(subStepName)) {
+
+	/**
+	 * Check whether a sub-step succeeded.
+	 * 
+	 * @param compositeName the full composite name of the sub-step to check
+	 * @return true if the sub-step succeeded, false otherwise
+	 */
+	public boolean subStepSucceeded(String compositeName) {
+		IInstallSubStep<InfoType, ServiceType> subStep = getSubStep(compositeName);
+		for (IInstallSubStep<InfoType, ServiceType> succeededSubStep : succeededSubSteps) {
+			if (subStep == succeededSubStep) {
 				return true;
 			}
 		}

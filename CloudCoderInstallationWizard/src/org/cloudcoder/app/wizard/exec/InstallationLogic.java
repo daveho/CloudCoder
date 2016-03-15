@@ -97,7 +97,7 @@ public class InstallationLogic<InfoType extends ICloudInfo, ServiceType extends 
 	 * until either the installation finishes or a fatal exception
 	 * occurs.
 	 */
-	public void executeAll() {
+	private void executeAll() {
 		while (!progress.isFinished() && !progress.isFatalException()) {
 			progress.forceUpdate(); // Allow UI to update itself
 			IInstallStep<InfoType, ServiceType> step = progress.getCurrentStep();
@@ -125,21 +125,25 @@ public class InstallationLogic<InfoType extends ICloudInfo, ServiceType extends 
 			}
 			
 			// Execute the sub-step.
+			String subStepClassName = subStep.getClass().getSimpleName();
 			try {
-				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
+				System.out.println("Executing installation sub-step " + subStepClassName);
 				subStep.execute(cloudService);
-				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
+				System.out.println("Sub-step " + subStepClassName + " completed successfully");
 				progress.subStepFinished(true);
 			} catch (NonFatalExecException e) {
-				//nonFatalExceptions.add(e);
 				progress.addNonFatalException(e);
 				System.err.println("Sub-step " +
-						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
+						subStepClassName + " failed with non-fatal exception: " +
 						e.getMessage());
 				e.printStackTrace(System.err);
 				progress.subStepFinished(false);
 			} catch (ExecException e) {
-				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
+				System.err.println("Fatal exception occurred executing sub-step " + subStepClassName);
+				e.printStackTrace();
+				progress.setFatalException(e);
+			} catch (Throwable e) {
+				System.err.println("Internal error executing sub-step " + subStepClassName);
 				e.printStackTrace();
 				progress.setFatalException(e);
 			}
@@ -157,14 +161,17 @@ public class InstallationLogic<InfoType extends ICloudInfo, ServiceType extends 
 	}
 
 	private void generateReport() {
-		// Set values that will be needed to generate the final
-		// installation report.
-		setReportValue("db.dnsHostnameConfigured", progress.subStepSucceeded("verifyHostname"));
-		setReportValue("db.sslCertInstalled", progress.subStepSucceeded("letsencrypt"));
-
-		// Get the appropriate template, depending on the installation task
+		// Determine which installation task we were executing
 		InstallationTask installTask =
 				cloudService.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
+
+		// Set values that will be needed to generate the final
+		// installation report.
+		String stepName = installTask.getStepName();
+		setReportValue("db.dnsHostnameConfigured", progress.subStepSucceeded(stepName + ".verifyHostname"));
+		setReportValue("db.sslCertInstalled", progress.subStepSucceeded(stepName + ".letsencrypt"));
+
+		// Get the appropriate template, depending on the installation task
 		String finishedPageName = "finished" + installTask.getPageSuffix();
 		ImmutableStringValue template =
 				ImmutableStringValue.createHelpText(finishedPageName, "reporttemplate", "Report template");

@@ -112,7 +112,7 @@ public abstract class AbstractBootstrapStep<
 		
 		@Override
 		public String getDescription() {
-			return "Issue and install Let's Encrypt SSL certificate";
+			return "Issue and install Let's Encrypt SSL certificate (can take 1 minute or more)";
 		}
 		
 		@Override

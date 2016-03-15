@@ -1,14 +1,11 @@
 package org.cloudcoder.app.wizard.exec;
 
-import java.io.File;
-
 public class InstallSslCertificateStep<
 		InfoType extends ICloudInfo,
 		ServiceType extends ICloudService<InfoType, ServiceType>
 	> extends AbstractBootstrapStep<InfoType, ServiceType> {
 	
 	private class UseExistingKeypairSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
-
 		public UseExistingKeypairSubStep() {
 			super("useExistingKeypair");
 		}

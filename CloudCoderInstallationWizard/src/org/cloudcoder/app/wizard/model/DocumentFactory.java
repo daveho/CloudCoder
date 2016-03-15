@@ -102,7 +102,7 @@ public class DocumentFactory {
 				}
 				
 				// Whichever task is being done, set error/finished targets
-				document.setErrorPage("install" + selectedTask.getPageSuffix());
+				document.setErrorPage("error" + selectedTask.getPageSuffix());
 				document.setFinishedPage("finished" + selectedTask.getPageSuffix());
 			}
 		});
@@ -111,7 +111,7 @@ public class DocumentFactory {
 		// keep this up to date!
 		String[] fullInstallPages = new String[]{
 				"welcome", "aws", "awsRegion",
-				"awsKeypair", // user MUST use the previously chosen or generated keypair 
+				"awsKeypair", // user MUST use the previously chosen or generated keypair when installing SSL cert
 				"awsInstanceType",
 				"dynDns",
 				"ccAcct", "mysqlAcct", "instDetails",

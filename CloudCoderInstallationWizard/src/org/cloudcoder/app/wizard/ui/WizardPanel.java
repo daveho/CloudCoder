@@ -243,8 +243,8 @@ public class WizardPanel extends JPanel implements UIConstants {
 		// Enable prev/next buttons as appropriate.
 		// The "special" pages don't allow manual navigation.
 		boolean isInstallPage = page.getPageName().startsWith("install");
-		boolean isErrorPage = page.getPageName().equals("error");
-		boolean isFinishedPage = page.getPageName().equals("finished");
+		boolean isErrorPage = page.getPageName().startsWith("error");
+		boolean isFinishedPage = page.getPageName().startsWith("finished");
 		boolean isSpecialPage = isInstallPage || isErrorPage || isFinishedPage;
 		prevButton.setEnabled(!isSpecialPage && anyEnabled(-1));
 		nextButton.setEnabled(!isSpecialPage && anyEnabled(1));
@@ -285,9 +285,12 @@ public class WizardPanel extends JPanel implements UIConstants {
 		progress.addObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
+				System.out.println("Progress updated!");
 				if (progress.isFinished()) {
+					System.out.println("Installation finished");
 					onFinished(progress);
 				} else if (progress.isFatalException()) {
+					System.out.println("Installation failed with fatal exception");
 					onFatalException();
 				}
 			}
@@ -309,17 +312,19 @@ public class WizardPanel extends JPanel implements UIConstants {
 	}
 	
 	private void onFinished(InstallationProgress<?, ?> progress) {
-		
+		System.out.println("WizardPanel.onFinished called");
 		LogPanel.getInstance().flushLog();
 		goToPage(document.getFinishedPage());
 	}
 	
 	private void onFatalException() {
+		System.out.println("WizardPanel.onFatalException called");
 		LogPanel.getInstance().flushLog();
 		goToPage(document.getErrorPage());
 	}
 
 	private void goToPage(String pageName) {
+		System.out.println("Going to page " + pageName);
 		for (int i = 0; i < document.getNumPages(); i++) {
 			Page p = document.get(i);
 			if (p.getPageName().equals(pageName)) {
