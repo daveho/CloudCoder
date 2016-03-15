@@ -69,7 +69,8 @@ public class Page implements Cloneable, Iterable<IValue> {
 	public void replaceValue(String name, IValue value) {
 		for (int i = 0; i < values.size(); i++) {
 			if (values.get(i).getName().equals(name)) {
-				values.set(i, value);
+				//values.set(i, value);
+				values.get(i).update(value);
 				return;
 			}
 		}

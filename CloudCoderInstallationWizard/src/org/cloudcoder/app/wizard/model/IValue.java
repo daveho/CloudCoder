@@ -10,6 +10,7 @@ public interface IValue extends Cloneable {
 	public<T extends Enum<T>> void setEnum(T value);
 	public void setBoolean(boolean value);
 	public void setPropertyValue(String propValue);
+	public void update(IValue otherValue);
 	
 	public String getString();
 	public<T extends Enum<T>> T getEnum(Class<T> cls);

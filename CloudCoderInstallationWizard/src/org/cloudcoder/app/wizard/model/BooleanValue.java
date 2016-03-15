@@ -36,6 +36,15 @@ public class BooleanValue extends AbstractValue implements IValue {
 	public void setPropertyValue(String propValue) {
 		this.value = Boolean.valueOf(propValue);
 	}
+	
+	@Override
+	public void update(IValue otherValue) {
+		if (otherValue.getClass() != this.getClass()) {
+			throw new IllegalArgumentException("Cannot update " + this.getClass().getSimpleName() +
+					" from " + otherValue.getClass().getSimpleName());
+		}
+		this.value = ((BooleanValue)otherValue).value;
+	}
 
 	@Override
 	public String getString() {

@@ -5,7 +5,7 @@ public enum InstallationTask {
 	ISSUE_AND_INSTALL_SSL_CERTIFICATE("Issue and install SSL certificate", "Ssl");
 	
 	private final String desc;
-	private String pageSuffix;
+	private final String pageSuffix;
 	
 	private InstallationTask(String desc, String pageSuffix) {
 		this.desc = desc;

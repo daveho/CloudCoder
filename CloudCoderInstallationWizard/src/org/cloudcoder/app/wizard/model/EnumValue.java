@@ -51,6 +51,22 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 		}
 		throw new IllegalArgumentException("Enum " + enumCls.getSimpleName() + " has no member " + propValue);
 	}
+	
+	@Override
+	public void update(IValue otherValue) {
+		if (otherValue.getClass() != this.getClass()) {
+			throw new IllegalArgumentException("Cannot update " + this.getClass().getSimpleName() +
+					" from " + otherValue.getClass().getSimpleName());
+		}
+		EnumValue<?> other = (EnumValue<?>)otherValue;
+		if (other.enumCls != this.enumCls) {
+			throw new IllegalArgumentException("Cannot update " + this.enumCls.getSimpleName() +
+					" EnumValue from " + other.enumCls.getSimpleName() + " EnumValue");
+		}
+		@SuppressWarnings("unchecked")
+		E otherEnumValue = (E)other.value;
+		this.value = otherEnumValue;
+	}
 
 	@Override
 	public String getString() {

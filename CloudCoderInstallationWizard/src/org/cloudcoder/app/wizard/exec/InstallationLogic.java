@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.IValue;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
@@ -61,7 +64,7 @@ public class InstallationLogic<InfoType extends ICloudInfo, ServiceType extends 
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				progress.executeAll(cloudService);
+				executeAll();
 			}
 		});
 		t.setDaemon(true);
@@ -87,5 +90,104 @@ public class InstallationLogic<InfoType extends ICloudInfo, ServiceType extends 
 			System.err.println("Error saving installer configuration to file");
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Synchronously execute all installation steps/sub-steps
+	 * until either the installation finishes or a fatal exception
+	 * occurs.
+	 */
+	public void executeAll() {
+		while (!progress.isFinished() && !progress.isFatalException()) {
+			progress.forceUpdate(); // Allow UI to update itself
+			IInstallStep<InfoType, ServiceType> step = progress.getCurrentStep();
+			IInstallSubStep<InfoType, ServiceType> subStep = progress.getCurrentSubStep();
+			
+			// See if this sub-step is dependent on the successful completion
+			// of a previous sub-step.
+			if (step.isDependent(subStep)) {
+				// Find the prerequisite
+				String prerequisiteSubstep = step.getPrerequisiteSubStepName(subStep);
+				IInstallSubStep<InfoType, ServiceType> prereq = progress.getSubStep(prerequisiteSubstep);
+				
+				// See if the prerequisite succeeded
+				if (!progress.subStepSucceeded(prerequisiteSubstep)) {
+					// The prerequisite failed, so this step fails as well.
+					// However, we consider this a non-fatal error.
+					System.out.printf(
+							"Sub-step %s cannot execute because prerequisite %s failed\n",
+							subStep.getClass().getSimpleName(),
+							prereq.getClass().getSimpleName()
+							);
+					progress.subStepFinished(false);
+					continue;
+				}
+			}
+			
+			// Execute the sub-step.
+			try {
+				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
+				subStep.execute(cloudService);
+				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
+				progress.subStepFinished(true);
+			} catch (NonFatalExecException e) {
+				//nonFatalExceptions.add(e);
+				progress.addNonFatalException(e);
+				System.err.println("Sub-step " +
+						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
+						e.getMessage());
+				e.printStackTrace(System.err);
+				progress.subStepFinished(false);
+			} catch (ExecException e) {
+				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
+				e.printStackTrace();
+				progress.setFatalException(e);
+			}
+		}
+		
+		// If we finished successfully, generate the report from
+		// the report template.
+		if (progress.isFinished()) {
+			generateReport();
+		}
+		
+		// If the loop terminated, then either the installation finished
+		// successfully, or there was a fatal exception.  Let the UI know.
+		progress.forceUpdate();
+	}
+
+	private void generateReport() {
+		// Set values that will be needed to generate the final
+		// installation report.
+		setReportValue("db.dnsHostnameConfigured", progress.subStepSucceeded("verifyHostname"));
+		setReportValue("db.sslCertInstalled", progress.subStepSucceeded("letsencrypt"));
+
+		// Get the appropriate template, depending on the installation task
+		InstallationTask installTask =
+				cloudService.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
+		String finishedPageName = "finished" + installTask.getPageSuffix();
+		ImmutableStringValue template =
+				ImmutableStringValue.createHelpText(finishedPageName, "reporttemplate", "Report template");
+		
+		// Generate the report
+		ProcessTemplate pt = new ProcessTemplate(template, cloudService.getDocument(), cloudService.getInfo());
+		String report = pt.generate();
+		ImmutableStringValue msg = new ImmutableStringValue("msg", "Message", report);
+		
+		// Add it to the appropriate "finished" page (replacing the previous dummy text)
+		cloudService.getDocument().replaceValue(finishedPageName + ".msg", msg);
+		
+		// Also save it to a file
+		try (Writer fw = new FileWriterWithEncoding(
+				new File(InstallationConstants.DATA_DIR, "report.html"), Charset.forName("UTF-8"))) {
+			fw.write(msg.getString());
+		} catch (IOException e) {
+			System.err.println("Could not write report: " + e.getMessage());
+			e.printStackTrace(System.err);
+		}
+	}
+
+	private void setReportValue(String valueName, boolean value) {
+		cloudService.getDocument().getValue(valueName).setBoolean(value);
 	}
 }

@@ -1,17 +1,9 @@
 package org.cloudcoder.app.wizard.exec;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
-
-import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.cloudcoder.app.wizard.model.ImmutableStringValue;
-import org.cloudcoder.app.wizard.model.InstallationTask;
 
 public class InstallationProgress<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends Observable {
@@ -78,6 +70,15 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		}
 		return fatalException;
 	}
+
+	/**
+	 * Add a {@link NonFatalExecException}.
+	 * 
+	 * @param e the {@link NonFatalExecException} to add
+	 */
+	public void addNonFatalException(NonFatalExecException e) {
+		nonFatalExceptions.add(e);
+	}
 	
 	/**
 	 * @return list of non-fatal exceptions that occurred (if any)
@@ -121,7 +122,15 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 		return subStep;
 	}
 	
-	private void subStepFinished(boolean succeeded) {
+	/**
+	 * Mark current {@link IInstallSubStep} as having succeeded or failed.
+	 * Note that this method is not called for fatal errors (meaning the
+	 * installation can't proceed). 
+	 * 
+	 * @param succeeded true if the current {@link IInstallSubStep} succeeded,
+	 *                  false if it failed
+	 */
+	public void subStepFinished(boolean succeeded) {
 		if (succeeded) {
 			// Current sub-step succeeded, yay
 			succeededSubSteps.add(getCurrentSubStep());
@@ -133,94 +142,6 @@ public class InstallationProgress<InfoType extends ICloudInfo, ServiceType exten
 			currentSubStep = 0;
 			currentStep++;
 		}
-	}
-	
-	/**
-	 * Synchronously execute all installation steps/sub-steps
-	 * until either the installation finishes or a fatal exception
-	 * occurs.
-	 */
-	public void executeAll(ServiceType cloudService) {
-		while (!isFinished() && !isFatalException()) {
-			forceUpdate(); // Allow UI to update itself
-			IInstallStep<InfoType, ServiceType> step = getCurrentStep();
-			IInstallSubStep<InfoType, ServiceType> subStep = getCurrentSubStep();
-			
-			// See if this sub-step is dependent on the successful completion
-			// of a previous sub-step.
-			if (step.isDependent(subStep)) {
-				// Find the prerequisite
-				String prerequisiteSubstep = step.getPrerequisiteSubStepName(subStep);
-				IInstallSubStep<InfoType, ServiceType> prereq = getSubStep(prerequisiteSubstep);
-				
-				// See if the prerequisite succeeded
-				if (!succeededSubSteps.contains(prereq)) {
-					// The prerequisite failed, so this step fails as well.
-					// However, we consider this a non-fatal error.
-					System.out.printf(
-							"Sub-step %s cannot execute because prerequisite %s failed\n",
-							subStep.getClass().getSimpleName(),
-							prereq.getClass().getSimpleName()
-							);
-					subStepFinished(false);
-					continue;
-				}
-			}
-			
-			// Execute the sub-step.
-			try {
-				System.out.println("Executing installation sub-step " + subStep.getClass().getSimpleName());
-				subStep.execute(cloudService);
-				System.out.println("Sub-step " + subStep.getClass().getSimpleName() + " completed successfully");
-				subStepFinished(true);
-			} catch (NonFatalExecException e) {
-				nonFatalExceptions.add(e);
-				System.err.println("Sub-step " +
-						subStep.getClass().getSimpleName() + " failed with non-fatal exception: " +
-						e.getMessage());
-				e.printStackTrace(System.err);
-				subStepFinished(false);
-			} catch (ExecException e) {
-				System.err.println("Fatal exception occurred executing sub-step " + subStep.getClass().getSimpleName());
-				e.printStackTrace();
-				setFatalException(e);
-			}
-		}
-		
-		// If we finished successfully, generate the report from
-		// the report template.
-		if (isFinished()) {
-			InstallationTask installTask =
-					cloudService.getDocument().getValue("selectTask.installationTask").getEnum(InstallationTask.class);
-			
-			ImmutableStringValue template = ImmutableStringValue.createHelpText("finished" + installTask.getPageSuffix(), "reporttemplate", "Report template");
-			ProcessTemplate pt = new ProcessTemplate(template, cloudService.getDocument(), cloudService.getInfo());
-			String report = pt.generate();
-			ImmutableStringValue msg = new ImmutableStringValue("msg", "Message", report);
-			
-			// Add it to the "finished" page (replacing the previous dummy text)
-			cloudService.getDocument().replaceValue("finished.msg", msg);
-			
-			// Also save it to a file
-			try (Writer fw = new FileWriterWithEncoding(
-					new File(InstallationConstants.DATA_DIR, "report.html"), Charset.forName("UTF-8"))) {
-				fw.write(msg.getString());
-			} catch (IOException e) {
-				System.err.println("Could not write report: " + e.getMessage());
-				e.printStackTrace(System.err);
-			}
-		}
-		
-		if (isFinished()) {
-			// Set values that will be needed to generate the final
-			// installation report.
-			cloudService.getDocument().getValue("db.dnsHostnameConfigured").setBoolean(subStepSucceeded("verifyHostname"));
-			cloudService.getDocument().getValue("db.sslCertInstalled").setBoolean(subStepSucceeded("letsencrypt"));
-		}
-		
-		// If the loop terminated, then either the installation finished
-		// successfully, or there was a fatal exception.  Let the UI know.
-		forceUpdate();
 	}
 
 	public void forceUpdate() {

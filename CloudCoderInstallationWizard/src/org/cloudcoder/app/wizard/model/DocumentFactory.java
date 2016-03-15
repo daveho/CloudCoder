@@ -214,6 +214,7 @@ public class DocumentFactory {
 		
 		// Finished page for SSL task
 		Page finishedSslPage = new Page("finishedSsl", "SSL certificate installed successfully!");
+		// Dummy text, replaced by report
 		finishedSslPage.addHelpText("msg", "Message", DisplayOption.DOUBLE_HEIGHT);
 		document.addPage(finishedSslPage);
 		

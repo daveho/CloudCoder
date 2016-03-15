@@ -13,5 +13,5 @@ public interface InstallationConstants {
 	 * webapp instance.  This might be a saved generated key,
 	 * or it could be a copy of an existing key.
 	 */
-	public static final File PRIVATE_KEY_FILE = new File(DATA_DIR, "cloudoder-keypair.pem");
+	public static final File PRIVATE_KEY_FILE = new File(DATA_DIR, "cloudcoder-keypair.pem");
 }
