@@ -156,7 +156,19 @@ public class Queries {
 		return result;
 	}
 
-	public static void load(Change change, ResultSet resultSet, int index) throws SQLException {
+	/**
+	 * Load a {@link Change} from a result set.
+	 * This requires a bit of special handling due to the existence
+	 * of two database fields (text and text_short) corresponding
+	 * to a single model object field.
+	 * 
+	 * @param change     the {@link Change} whose data should be loaded
+	 * @param resultSet  the result set
+	 * @param index      index of first change column in result set
+	 * @return index of column immediately following the change columns
+	 * @throws SQLException
+	 */
+	public static int load(Change change, ResultSet resultSet, int index) throws SQLException {
 		// Change objects require special handling because the database
 		// has two columns for the change text (depending on how long the
 		// text is).  Whichever of the columns is not null should be used
@@ -177,6 +189,8 @@ public class Queries {
 			}
 		}
 		change.setText(text);
+		
+		return index;
 	}
 
 	public static Change getChangeAndEvent(ResultSet resultSet) throws SQLException {

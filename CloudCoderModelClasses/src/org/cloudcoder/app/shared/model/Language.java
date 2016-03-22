@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -86,6 +86,22 @@ public enum Language {
 			return "nil";
 		default:
 			throw new IllegalStateException("No literal bottom value specified for language " + this);
+		}
+	}
+
+	/**
+	 * @return file extension suitable for this language
+	 *         (e.g., ".java" for {@link #JAVA})
+	 */
+	public String getFileExtension() {
+		switch (this) {
+		case JAVA: return ".java";
+		case C: return ".c";
+		case CPLUSPLUS: return ".cpp";
+		case PYTHON: return ".py";
+		case RUBY: return ".rb";
+		default:
+			throw new IllegalStateException("No file extension specified for language " + this);
 		}
 	}
 }

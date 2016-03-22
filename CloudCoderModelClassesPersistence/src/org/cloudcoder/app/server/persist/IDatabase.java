@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -119,9 +120,53 @@ public interface IDatabase {
 	 */
 	public Problem getProblem(int problemId);
 	
+	/**
+	 * Get given {@link User}'s most recent {@link Change} for given problem.
+	 * 
+	 * @param user       the {@link User}
+	 * @param problemId  the problem id
+	 * @return {@link User}'s most recent {@link Change}
+	 */
 	public Change getMostRecentChange(User user, int problemId);
+	
+	/**
+	 * Get given {@link User}'s most recent full-text {@link Change} for given problem.
+	 * 
+	 * @param user       the {@link User}
+	 * @param problemId  the problem id
+	 * @return {@link User}'s most recent full-text {@link Change}
+	 */
 	public Change getMostRecentFullTextChange(User user, int problemId);
+	
+	/**
+	 * Get all of given {@link User}'s {@link Change}s on given problem newer than specified
+	 * base revision.  Note that the retrieved {@link Change}s will <em>not</em>
+	 * have their associated {@link Event}s populated.
+	 * 
+	 * @param user       the {@link User}
+	 * @param problemId  the problem id
+	 * @param baseRev    the base revision
+	 * @return the {@link Change}s newer than the base revision
+	 */
 	public List<Change> getAllChangesNewerThan(User user, int problemId, int baseRev);
+	
+	public enum RetrieveChangesMode {
+		RETRIEVE_CHANGES_ONLY,
+		RETRIEVE_CHANGES_AND_EDIT_EVENTS,
+	}
+
+	/**
+	 * Visit all of given {@link User}'s {@link Change}s on given problem newer than specified
+	 * base revision.
+	 * 
+	 * @param user       the {@link User}
+	 * @param problemId  the problem id
+	 * @param baseRev    the base revision
+	 * @param visitor    the callback to do the visitation of the {@link Change}s
+	 * @param mode       mode specifying whether or not {@link Event}s should be retrieved
+	 * @return the {@link Change}s newer than the base revision
+	 */
+	public void visitAllChangesNewerThan(User user, int problemId, int baseRev, ICallback<Change> visitor, RetrieveChangesMode mode);
 	
 	/**
 	 * Get all of the courses in which given user is registered.

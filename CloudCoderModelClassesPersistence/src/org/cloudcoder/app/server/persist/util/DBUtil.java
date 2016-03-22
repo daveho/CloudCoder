@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -821,6 +821,11 @@ public class DBUtil {
 	 * @return the converted value
 	 */
 	public static Object convertValue(Object value, Class<?> type) {
+		// Null values remain null
+		if (value == null) {
+			return value;
+		}
+		
 		// Easy case: value is correct type already
 		if (value.getClass() == type) {
 			return value;

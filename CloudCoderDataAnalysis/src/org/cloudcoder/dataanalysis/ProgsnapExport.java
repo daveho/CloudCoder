@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -35,9 +35,10 @@ import java.util.Scanner;
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
+import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.CourseRegistration;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.TestCase;
@@ -54,6 +55,65 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * @author David Hovemeyer
  */
 public class ProgsnapExport {
+	private final class RecordEditEvents implements ICallback<Change> {
+		private final Problem problem;
+		private final Writer w;
+
+		private RecordEditEvents(Problem problem, Writer w) {
+			this.problem = problem;
+			this.w = w;
+		}
+
+		public void call(Change value) {
+			// x-event-id
+			// ts
+			// filename
+			// type
+			// location
+			// text
+			int xEventId = value.getEventId();
+			long ts = value.getEvent().getTimestamp();
+			String filename = "code" + problem.getProblemType().getLanguage().getFileExtension();
+			String type;
+			switch (value.getType()) {
+			case INSERT_TEXT:
+			case INSERT_LINES:
+				type = "insert";
+				break;
+			case REMOVE_TEXT:
+			case REMOVE_LINES:
+				type = "delete";
+				break;
+			case FULL_TEXT:
+				type = "fulltext";
+				break;
+			default:
+				throw new IllegalStateException("Unknown change type: " + value.getType());
+			}
+			String text = value.getText();
+			LinkedHashMap<String, Object> location = new LinkedHashMap<>();
+			location.put("startline", value.getStartRow());
+			location.put("startcol", value.getStartColumn());
+			location.put("endline", value.getEndRow());
+			location.put("endcol", value.getEndColumn());
+			
+			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
+			obj.put("x-event-id", xEventId);
+			obj.put("ts", ts);
+			obj.put("filename", filename);
+			obj.put("type", type);
+			obj.put("location", location);
+			obj.put("text", text);
+			
+			try {
+				w.write(encodeLine("edit", obj));
+				w.write("\n");
+			} catch (IOException e) {
+				throw new RuntimeIOException(e);
+			}
+		}
+	}
+
 	// Version of progsnap spec the exported data will conform to
 	private static final String PSVERSION = "0.0-dev";
 	
@@ -115,6 +175,13 @@ public class ProgsnapExport {
 		// Write students file
 		List<User> users = getUsers(course);
 		writeStudentsFile(users, course);
+		
+		// For each assignment (problem), write student work history files
+		for (Problem problem : problems.getProblemList()) {
+			for (User student : users) {
+				writeStudentWorkHistory(student, problem);
+			}
+		}
 	}
 
 	private void writeTaggedFile(Writer w, Map<String, Object> props) throws IOException {
@@ -277,6 +344,21 @@ public class ProgsnapExport {
 			}
 		}
 	}
+
+	private void writeStudentWorkHistory(final User student, final Problem problem) throws FileNotFoundException, IOException {
+		
+		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
+		try (final Writer w = writeToFile(new File(baseDir, fname))) {
+			
+			// Write edit events
+			ICallback<Change> visitor = new RecordEditEvents(problem, w);
+			try {
+				Database.getInstance().visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
+			} catch (RuntimeIOException e) {
+				throw new IOException("Exception writing edit events", e);
+			}
+		}
+	}
 	
 	public static void main(String[] args) throws IOException {
 		ProgsnapExport exporter = new ProgsnapExport();
@@ -299,7 +381,13 @@ public class ProgsnapExport {
 		if (interactiveConfig) {
 			Util.readDatabaseProperties(keyboard, config);
 		} else {
-			Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
+			try {
+				Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
+			} catch (IllegalStateException e) {
+				// Attempt to load from cloudcoder.properties in parent directory
+				Util.loadFileConfig(config, new File("../cloudcoder.properties"));
+				System.out.println("Read cloudcoder.properties in parent directory");
+			}
 		}
 		exporter.setConfig(config);
 		

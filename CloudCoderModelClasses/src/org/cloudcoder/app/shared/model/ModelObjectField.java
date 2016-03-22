@@ -197,7 +197,7 @@ public abstract class ModelObjectField<ModelObjectType, E> {
 	 */
 	@SuppressWarnings("unchecked")
 	public void setUntyped(ModelObjectType obj, Object value) {
-		if (value.getClass() != type) {
+		if (value != null && value.getClass() != type) {
 			throw new IllegalArgumentException(
 					"Value type " + value.getClass().getName() +
 					" does not match declared type " + type.getName() +

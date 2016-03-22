@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,10 @@
 
 package org.cloudcoder.dataanalysis;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -66,6 +70,12 @@ public class Util {
 		Properties embeddedConfig =
 				org.cloudcoder.daemon.Util.loadPropertiesFromResource(classLoader, "cloudcoder.properties");
 		config.putAll(embeddedConfig);
+	}
+	
+	public static void loadFileConfig(Properties config, File file) throws FileNotFoundException, IOException {
+		Properties fileConfig = new Properties();
+		fileConfig.load(new FileReader(file));
+		config.putAll(fileConfig);
 	}
 
 	/**

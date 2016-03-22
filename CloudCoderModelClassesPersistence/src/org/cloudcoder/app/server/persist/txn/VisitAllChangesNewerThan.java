@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -21,23 +21,26 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.cloudcoder.app.server.persist.IDatabase;
+import org.cloudcoder.app.server.persist.IDatabase.RetrieveChangesMode;
 import org.cloudcoder.app.server.persist.util.AbstractDatabaseRunnableNoAuthException;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.User;
 
 /**
- * Retrieve all {@link Change}s for given {@link User} and {@link Problem}
+ * Visit all {@link Change}s for given {@link User} and {@link Problem}
  * newer than a particular base revision (change event id).
  */
-public class GetAllChangesNewerThan extends AbstractDatabaseRunnableNoAuthException<List<Change>> {
+public class VisitAllChangesNewerThan extends AbstractDatabaseRunnableNoAuthException<Boolean> {
 	private final int problemId;
 	private final User user;
 	private final int baseRev;
+	private ICallback<Change> visitor;
+	private RetrieveChangesMode mode;
 
 	/**
 	 * Constructor.
@@ -45,20 +48,33 @@ public class GetAllChangesNewerThan extends AbstractDatabaseRunnableNoAuthExcept
 	 * @param problemId the {@link Problem} id
 	 * @param user      the {@link User}
 	 * @param baseRev   the base revision (change event id)
+	 * @param visitor   the visitor (callback) to which the retrieved {@link Change}s
+	 *                  should be sent
+	 * @param mode      mode specifying whether or not {@link Event}s should be retrieved
 	 */
-	public GetAllChangesNewerThan(int problemId, User user, int baseRev) {
+	public VisitAllChangesNewerThan(int problemId, User user, int baseRev, ICallback<Change> visitor, RetrieveChangesMode mode) {
 		this.problemId = problemId;
 		this.user = user;
 		this.baseRev = baseRev;
+		this.visitor = visitor;
+		this.mode = mode;
 	}
 
 	@Override
-	public List<Change> run(Connection conn) throws SQLException {
-		List<Change> result = new ArrayList<Change>();
+	public Boolean run(Connection conn) throws SQLException {
+		PreparedStatement stmt;
 		
-		PreparedStatement stmt = prepareStatement(
+		String selectEvent;
+		if (mode == IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_ONLY) {
+			selectEvent = "";
+		} else if (mode == IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS) {
+			selectEvent = ", e.*";
+		} else {
+			throw new IllegalArgumentException("Mode not handled: " + mode);
+		}
+		stmt = prepareStatement(
 				conn,
-				"select c.* from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
+				"select c.* " + selectEvent + " from " + Change.SCHEMA.getDbTableName() + " as c, " + Event.SCHEMA.getDbTableName() + " as e " +
 				" where c.event_id = e.id " +
 				"   and e.id > ? " +
 				"   and e.user_id = ? " +
@@ -72,11 +88,18 @@ public class GetAllChangesNewerThan extends AbstractDatabaseRunnableNoAuthExcept
 		ResultSet resultSet = executeQuery(stmt);
 		while (resultSet.next()) {
 			Change change = new Change();
-			Queries.load(change, resultSet, 1);
-			result.add(change);
+			int index = 1;
+			//index = Queries.loadGeneric(change, resultSet, index, Change.SCHEMA);
+			index = Queries.load(change, resultSet, index);
+			if (mode == IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS) {
+				Event event = new Event();
+				index = Queries.loadGeneric(event, resultSet, index, Event.SCHEMA);
+				change.setEvent(event);
+			}
+			visitor.call(change);
 		}
 		
-		return result;
+		return true;
 	}
 
 	@Override

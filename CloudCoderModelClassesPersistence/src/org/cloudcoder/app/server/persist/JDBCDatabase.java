@@ -21,6 +21,7 @@ package org.cloudcoder.app.server.persist;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ import org.cloudcoder.app.server.persist.txn.FindCurrentQuiz;
 import org.cloudcoder.app.server.persist.txn.FindUnfinishedQuizForStudent;
 import org.cloudcoder.app.server.persist.txn.FindUserRegistrationRequestGivenSecret;
 import org.cloudcoder.app.server.persist.txn.FindWorkSessions;
-import org.cloudcoder.app.server.persist.txn.GetAllChangesNewerThan;
+import org.cloudcoder.app.server.persist.txn.VisitAllChangesNewerThan;
 import org.cloudcoder.app.server.persist.txn.GetAllSubmissionReceiptsForUserAndProblem;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblem;
 import org.cloudcoder.app.server.persist.txn.GetBestSubmissionReceiptsForProblemForAuthenticatedUser;
@@ -112,6 +113,7 @@ import org.cloudcoder.app.shared.model.CourseRegistrationSpec;
 import org.cloudcoder.app.shared.model.CourseRegistrationType;
 import org.cloudcoder.app.shared.model.EditedUser;
 import org.cloudcoder.app.shared.model.Event;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.NamedTestResult;
@@ -210,7 +212,19 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<Change> getAllChangesNewerThan(final User user, final int problemId, final int baseRev) {
-		return databaseRun(new GetAllChangesNewerThan(problemId, user, baseRev));
+		final List<Change> result = new ArrayList<Change>();
+		databaseRun(new VisitAllChangesNewerThan(problemId, user, baseRev, new ICallback<Change>() {
+			@Override
+			public void call(Change value) {
+				result.add(value);
+			}
+		}, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_ONLY));
+		return result;
+	}
+	
+	@Override
+	public void visitAllChangesNewerThan(User user, int problemId, int baseRev, ICallback<Change> visitor, IDatabase.RetrieveChangesMode mode) {
+		databaseRun(new VisitAllChangesNewerThan(problemId, user, baseRev, visitor, mode));
 	}
 	
 	@Override
