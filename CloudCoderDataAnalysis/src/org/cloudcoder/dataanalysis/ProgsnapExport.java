@@ -191,10 +191,6 @@ public class ProgsnapExport {
 	}
 	
 	private static class UniversalIntegerSet implements IntegerSet {
-		public UniversalIntegerSet() {
-			throw new IllegalStateException();
-		}
-		
 		@Override
 		public boolean contains(int val) {
 			return true;
