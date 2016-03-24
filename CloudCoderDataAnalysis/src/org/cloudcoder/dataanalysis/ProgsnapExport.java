@@ -26,6 +26,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,8 @@ import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.User;
 
@@ -55,21 +59,46 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * @author David Hovemeyer
  */
 public class ProgsnapExport {
+	private static class WorkHistoryEvent implements Comparable<WorkHistoryEvent> {
+		final long ts;
+		final String tag;
+		final Map<String, Object> value;
+		
+		WorkHistoryEvent(long ts, String tag, Map<String, Object> value) {
+			this.ts = ts;
+			this.tag = tag;
+			this.value = value;
+		}
+		
+		@Override
+		public int compareTo(WorkHistoryEvent o) {
+			int cmp;
+			
+			cmp = ((Long)this.ts).compareTo((Long)o.ts);
+			if (cmp != 0) {
+				return cmp;
+			}
+
+			return this.tag.compareTo(o.tag);
+		}
+	}
+	
 	private final class RecordEditEvents implements ICallback<Change> {
 		private final Problem problem;
-		private final Writer w;
+		private final List<WorkHistoryEvent> eventList;
 
-		private RecordEditEvents(Problem problem, Writer w) {
+		private RecordEditEvents(Problem problem, List<WorkHistoryEvent> eventList) {
 			this.problem = problem;
-			this.w = w;
+			this.eventList = eventList;
 		}
 
 		public void call(Change value) {
-			// x-event-id
 			// ts
+			// editid
 			// filename
 			// type
-			// location
+			// start
+			// end
 			// text
 			int xEventId = value.getEventId();
 			long ts = value.getEvent().getTimestamp();
@@ -91,26 +120,23 @@ public class ProgsnapExport {
 				throw new IllegalStateException("Unknown change type: " + value.getType());
 			}
 			String text = value.getText();
-			LinkedHashMap<String, Object> location = new LinkedHashMap<>();
-			location.put("startline", value.getStartRow());
-			location.put("startcol", value.getStartColumn());
-			location.put("endline", value.getEndRow());
-			location.put("endcol", value.getEndColumn());
+			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
+			start.put("row", value.getStartRow());
+			start.put("col", value.getStartColumn());
+			LinkedHashMap<String, Object> end = new LinkedHashMap<>();
+			end.put("row", value.getEndRow());
+			end.put("col", value.getEndColumn());
 			
 			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
-			obj.put("x-event-id", xEventId);
 			obj.put("ts", ts);
+			obj.put("editid", xEventId);
 			obj.put("filename", filename);
 			obj.put("type", type);
-			obj.put("location", location);
+			obj.put("start", start);
+			obj.put("end", end);
 			obj.put("text", text);
 			
-			try {
-				w.write(encodeLine("edit", obj));
-				w.write("\n");
-			} catch (IOException e) {
-				throw new RuntimeIOException(e);
-			}
+			eventList.add(new WorkHistoryEvent(ts, "edit", obj));
 		}
 	}
 
@@ -346,16 +372,63 @@ public class ProgsnapExport {
 	}
 
 	private void writeStudentWorkHistory(final User student, final Problem problem) throws FileNotFoundException, IOException {
-		
 		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
-		try (final Writer w = writeToFile(new File(baseDir, fname))) {
+		
+		// Build a list of events: it will need to be sorted by timestamp
+		List<WorkHistoryEvent> eventList = new ArrayList<>();
+		
+		// Retrieve edit events
+		ICallback<Change> visitor = new RecordEditEvents(problem, eventList);
+		Database.getInstance().visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
+		
+		// Retrieve submission receipts, use them to generate
+		// submission and compilation events
+		SubmissionReceipt[] receipts = Database.getInstance().getAllSubmissionReceiptsForUser(problem, student);
+		for (SubmissionReceipt receipt : receipts) {
+			SubmissionStatus status = receipt.getStatus();
 			
-			// Write edit events
-			ICallback<Change> visitor = new RecordEditEvents(problem, w);
-			try {
-				Database.getInstance().visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
-			} catch (RuntimeIOException e) {
-				throw new IOException("Exception writing edit events", e);
+			if (status == SubmissionStatus.NOT_STARTED || status == SubmissionStatus.STARTED) {
+				// Not a real submission
+				continue;
+			}
+			
+			// Collect submission info
+			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
+			long ts = receipt.getEvent().getTimestamp();
+			obj.put("ts", ts);
+			obj.put("editid", receipt.getLastEditEventId());
+			eventList.add(new WorkHistoryEvent(ts, "submission", obj));
+			
+			// Collection compilation info
+			String compilationResult;
+			switch (status) {
+			case BUILD_ERROR:
+			case COMPILE_ERROR:
+				compilationResult = "failure";
+				break;
+			case TESTS_FAILED:
+			case TESTS_PASSED:
+				compilationResult = "success";
+				break;
+			default:
+				throw new IllegalStateException("Cannot infer compilation result from status " + status);
+			}
+			LinkedHashMap<String, Object> cObj = new LinkedHashMap<>();
+			cObj.put("ts", ts);
+			cObj.put("editid", receipt.getLastEditEventId());
+			cObj.put("result", compilationResult);
+			eventList.add(new WorkHistoryEvent(ts, "compilation", cObj));
+			
+			// TODO: test results events
+		}
+		
+		// Sort all work history events by timestamp
+		Collections.sort(eventList);
+		
+		// Write all work history events to the work history file
+		try (final Writer w = writeToFile(new File(baseDir, fname))) {
+			for (WorkHistoryEvent ev : eventList) {
+				w.write(encodeLine(ev.tag, ev.value));
 			}
 		}
 	}
