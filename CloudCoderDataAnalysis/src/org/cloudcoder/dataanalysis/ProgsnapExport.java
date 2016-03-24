@@ -21,18 +21,22 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
@@ -145,46 +149,56 @@ public class ProgsnapExport {
 	// Version of progsnap spec the exported data will conform to
 	private static final String PSVERSION = "0.0-dev";
 	
-	private File baseDir;
 	private Properties config;
-	private Map<String, Object> datasetProps;
-	private int courseId;
-	private String username;
 	
 	public ProgsnapExport() {
 		
-	}
-	
-	public void setBaseDir(File baseDir) {
-		this.baseDir = baseDir;
 	}
 	
 	public void setConfig(Properties config) {
 		this.config = config;
 	}
 	
-	public void setDatasetProps(Map<String, Object> datasetProps) {
-		this.datasetProps = datasetProps;
+	private File getBaseDir() {
+		return new File(config.getProperty("baseDir"));
 	}
 	
-	public void setCourseId(int courseId) {
-		this.courseId = courseId;
+	private String getUsername() {
+		return config.getProperty("username");
 	}
 	
-	public void setUsername(String username) {
-		this.username = username;
+	private int getCourseId() {
+		return Integer.valueOf(config.getProperty("courseId"));
+	}
+	
+	private static final Set<String> DATASET_PROPERTY_KEYS = new HashSet<>(
+			Arrays.asList("name", "contact", "email", "courseurl"));
+	
+	private Properties getDatasetProps() {
+		Properties datasetProps = new Properties();
+		datasetProps.put("psversion", PSVERSION);
+		for (Object keyObj : config.keySet()) {
+			String key = keyObj.toString();
+			if (DATASET_PROPERTY_KEYS.contains(key)) {
+				datasetProps.put(key, config.getProperty(key));
+			}
+		}
+		return datasetProps;
 	}
 	
 	public void execute() throws IOException {
 		Util.connectToDatabase(config);
 
-		User user = findUser(username);
-		Course course = findCourse(user, courseId);
+		User user = findUser(getUsername());
+		Course course = findCourse(user, getCourseId());
+		
+		File baseDir = getBaseDir();
 		
 		// Ensure that output directory exists
 		baseDir.mkdirs();
 		
 		// Write dataset file
+		Properties datasetProps = getDatasetProps();
 		try (Writer w = writeToFile(new File(baseDir, "/dataset.txt"))) {
 			writeTaggedFile(w, datasetProps);
 		}
@@ -212,9 +226,9 @@ public class ProgsnapExport {
 		}
 	}
 
-	private void writeTaggedFile(Writer w, Map<String, Object> props) throws IOException {
-		for (Map.Entry<String, Object> entry : props.entrySet()) {
-			String tagname = entry.getKey();
+	private void writeTaggedFile(Writer w, Properties props) throws IOException {
+		for (Map.Entry<Object, Object> entry : props.entrySet()) {
+			String tagname = entry.getKey().toString();
 			Object value = entry.getValue();
 			
 			String line = encodeLine(tagname, value);
@@ -296,7 +310,7 @@ public class ProgsnapExport {
 	}
 
 	private void writeAssignmentsFile(ProblemList problems) throws IOException {
-		Writer w = writeToFile(new File(baseDir, "/assignments.txt"));
+		Writer w = writeToFile(new File(getBaseDir(), "/assignments.txt"));
 		try {
 			for (Problem p : problems.getProblemList()) {
 				int problemId = p.getProblemId();
@@ -316,10 +330,10 @@ public class ProgsnapExport {
 	private void writeAssignmentFile(Problem p) throws IOException {
 		IDatabase db = Database.getInstance();
 		
-		Writer w = writeToFile(new File(baseDir, String.format("/assignment_%04d.txt", p.getProblemId())));
+		Writer w = writeToFile(new File(getBaseDir(), String.format("/assignment_%04d.txt", p.getProblemId())));
 		
 		try {
-			Map<String, Object> assignmentProps = new LinkedHashMap<>();
+			Properties assignmentProps = new Properties();
 			// name
 			// language
 			// assigned
@@ -364,7 +378,7 @@ public class ProgsnapExport {
 	private void writeStudentsFile(List<User> users, Course course) throws IOException {
 		IDatabase db = Database.getInstance();
 		
-		try (Writer w = writeToFile(new File(baseDir, "/students.txt"))) {
+		try (Writer w = writeToFile(new File(getBaseDir(), "/students.txt"))) {
 			for (User user : users) {
 				CourseRegistrationList regList = db.findCourseRegistrations(user, course);
 				// number
@@ -476,7 +490,7 @@ public class ProgsnapExport {
 		
 		// Write all work history events to the work history file
 		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
-		try (final Writer w = writeToFile(new File(baseDir, fname))) {
+		try (final Writer w = writeToFile(new File(getBaseDir(), fname))) {
 			for (WorkHistoryEvent ev : eventList) {
 				w.write(encodeLine(ev.tag, ev.value));
 				w.write("\n");
@@ -491,11 +505,19 @@ public class ProgsnapExport {
 		Scanner keyboard = new Scanner(System.in);
 		
 		boolean interactiveConfig = false;
+		String specFile = null;
 		
 		for (String arg : args) {
 			if (arg.equals("--interactiveConfig")) {
 				// Configure interactively rather than using embedded cloudcoder.properties
 				interactiveConfig = true;
+			} else if (arg.startsWith("--spec=")) {
+				// A "spec" file is properties defining what data should be pulled,
+				// what the dataset metadata are, etc.  It can also override
+				// cloudcoder.properties configuration values, if desirned (e.g.,
+				// database access credentials.)  The idea is to allow repeatable
+				// non-interactive exports.
+				specFile = arg.substring("--spec=".length());
 			} else {
 				throw new IllegalArgumentException("Unknown option: " + arg);
 			}
@@ -506,33 +528,45 @@ public class ProgsnapExport {
 			Util.readDatabaseProperties(keyboard, config);
 		} else {
 			try {
-				Util.loadEmbeddedConfig(config, Retest.class.getClassLoader());
+				Util.loadEmbeddedConfig(config, ProgsnapExport.class.getClassLoader());
 			} catch (IllegalStateException e) {
 				// Attempt to load from cloudcoder.properties in parent directory
 				Util.loadFileConfig(config, new File("../cloudcoder.properties"));
 				System.out.println("Read cloudcoder.properties in parent directory");
 			}
 		}
+		
+		// If a specfile was specified, layer its properties on top of
+		// whatever config properties we found.
+		if (specFile != null) {
+			Properties spec = new Properties();
+			try (FileReader fr = new FileReader(specFile)) {
+				spec.load(fr);
+			}
+			
+			Properties effectiveSpec = new Properties();
+			effectiveSpec.putAll(config);
+			effectiveSpec.putAll(spec);
+			
+			config = effectiveSpec;
+		}
+		
+		askIfMissing(config, "courseId", "Course id: ", keyboard);
+		askIfMissing(config, "username", "Instructor username: ", keyboard);
+		askIfMissing(config, "baseDir", "Output directory: ", keyboard);
+		askIfMissing(config, "name", "Data set name: ", keyboard);
+		askIfMissing(config, "contact", "Contact name: ", keyboard);
+		askIfMissing(config, "email", "Contact email: ", keyboard);
+		askIfMissing(config, "courseurl", "Course URL: ", keyboard);
+			
 		exporter.setConfig(config);
 		
-		int courseId = Integer.parseInt(Util.ask(keyboard, "Course id: "));
-		exporter.setCourseId(courseId);
-		
-		String username = Util.ask(keyboard, "Instructor username: ");
-		exporter.setUsername(username);
-		
-		File baseDir = new File(Util.ask(keyboard, "Output directory: "));
-		exporter.setBaseDir(baseDir);
-		
-		System.out.println("Enter data set properties:");
-		Map<String, Object> datasetProps = new LinkedHashMap<>();
-		datasetProps.put("psversion", PSVERSION);
-		datasetProps.put("name", Util.ask(keyboard, "Data set name: "));
-		datasetProps.put("contact", Util.ask(keyboard, "Contact name: "));
-		datasetProps.put("email", Util.ask(keyboard, "Contact email: "));
-		datasetProps.put("courseurl", Util.ask(keyboard, "Course URL: "));
-		exporter.setDatasetProps(datasetProps);
-		
 		exporter.execute();
+	}
+
+	private static void askIfMissing(Properties config, String propName, String prompt, Scanner keyboard) {
+		if (!config.containsKey(propName)) {
+			config.setProperty(propName, Util.ask(keyboard, prompt));
+		}
 	}
 }
