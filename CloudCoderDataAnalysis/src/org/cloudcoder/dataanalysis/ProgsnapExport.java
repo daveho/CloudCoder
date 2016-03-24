@@ -381,8 +381,12 @@ public class ProgsnapExport {
 
 	private void writeAssignmentFile(Problem p) throws IOException {
 		IDatabase db = Database.getInstance();
+
+		// Make sure "assignment" directory exists
+		File dir = new File(getBaseDir(), "assignment");
+		dir.mkdirs();
 		
-		Writer w = writeToFile(new File(getBaseDir(), String.format("/assignment_%04d.txt", p.getProblemId())));
+		Writer w = writeToFile(new File(dir, String.format("%04d.txt", p.getProblemId())));
 		
 		try {
 			Properties assignmentProps = new Properties();
@@ -541,8 +545,16 @@ public class ProgsnapExport {
 		Collections.sort(eventList);
 		
 		// Write all work history events to the work history file
-		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
-		try (final Writer w = writeToFile(new File(getBaseDir(), fname))) {
+		
+		// Directory name has form "/history/NNNN", where NNNN is the assignment number
+		// (i.e., problem number.)  Make sure it exists.
+		File dir = new File(getBaseDir(), String.format("history/%04d", problem.getProblemId()));
+		dir.mkdirs();
+		
+		// Filename is based on student id.
+		String fname = String.format("%04d.txt", student.getId());
+		
+		try (final Writer w = writeToFile(new File(dir, fname))) {
 			for (WorkHistoryEvent ev : eventList) {
 				w.write(encodeLine(ev.tag, ev.value));
 				w.write("\n");
