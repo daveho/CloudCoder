@@ -186,6 +186,46 @@ public class ProgsnapExport {
 		return datasetProps;
 	}
 	
+	public interface IntegerSet {
+		public boolean contains(int val);
+	}
+	
+	private static class UniversalIntegerSet implements IntegerSet {
+		public UniversalIntegerSet() {
+			throw new IllegalStateException();
+		}
+		
+		@Override
+		public boolean contains(int val) {
+			return true;
+		}
+	}
+
+	private static class ProblemIdSet implements IntegerSet {
+		private final Set<Integer> result;
+
+		private ProblemIdSet(Set<Integer> result) {
+			this.result = result;
+		}
+
+		@Override
+		public boolean contains(int val) {
+			return result.contains(val);
+		}
+	}
+	
+	private IntegerSet getProblemIds() {
+		String problemIds = config.getProperty("problemIds", "").trim();
+		if (problemIds.equals("")) {
+			return new UniversalIntegerSet();
+		}
+		final Set<Integer> result = new HashSet<>();
+		for (String s : problemIds.split(",")) {
+			result.add(Integer.valueOf(s));
+		}
+		return new ProblemIdSet(result);
+	}
+	
 	public void execute() throws IOException {
 		Util.connectToDatabase(config);
 
@@ -209,9 +249,14 @@ public class ProgsnapExport {
 		// Write assignments file
 		writeAssignmentsFile(problems);
 		
+		// See which problems are being exported
+		IntegerSet problemIds = getProblemIds();
+		
 		// Write assignment files
 		for (Problem p : problems.getProblemList()) {
-			writeAssignmentFile(p);
+			if (problemIds.contains(p.getProblemId())) {
+				writeAssignmentFile(p);
+			}
 		}
 		
 		// Write students file
@@ -219,9 +264,11 @@ public class ProgsnapExport {
 		writeStudentsFile(users, course);
 		
 		// For each assignment (problem), write student work history files
-		for (Problem problem : problems.getProblemList()) {
-			for (User student : users) {
-				writeStudentWorkHistory(user, student, problem);
+		for (Problem p : problems.getProblemList()) {
+			if (problemIds.contains(p.getProblemId())) {
+				for (User student : users) {
+					writeStudentWorkHistory(user, student, p);
+				}
 			}
 		}
 	}
@@ -310,10 +357,15 @@ public class ProgsnapExport {
 	}
 
 	private void writeAssignmentsFile(ProblemList problems) throws IOException {
+		IntegerSet problemIds = getProblemIds();
+		
 		Writer w = writeToFile(new File(getBaseDir(), "/assignments.txt"));
 		try {
 			for (Problem p : problems.getProblemList()) {
 				int problemId = p.getProblemId();
+				if (!problemIds.contains(problemId)) {
+					continue;
+				}
 				Map<String, Object> obj = new LinkedHashMap<>();
 				String path = String.format("/assignment_%04d.txt", problemId);
 				obj.put("number", problemId);
@@ -552,6 +604,7 @@ public class ProgsnapExport {
 		}
 		
 		askIfMissing(config, "courseId", "Course id: ", keyboard);
+		askIfMissing(config, "problemIds", "Problem ids (comma separated, leave blank for all): ", keyboard);
 		askIfMissing(config, "username", "Instructor username: ", keyboard);
 		askIfMissing(config, "baseDir", "Output directory: ", keyboard);
 		askIfMissing(config, "name", "Data set name: ", keyboard);
