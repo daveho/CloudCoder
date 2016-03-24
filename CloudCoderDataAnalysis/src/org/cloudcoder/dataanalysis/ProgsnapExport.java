@@ -41,11 +41,13 @@ import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.ICallback;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.User;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -205,7 +207,7 @@ public class ProgsnapExport {
 		// For each assignment (problem), write student work history files
 		for (Problem problem : problems.getProblemList()) {
 			for (User student : users) {
-				writeStudentWorkHistory(student, problem);
+				writeStudentWorkHistory(user, student, problem);
 			}
 		}
 	}
@@ -258,6 +260,13 @@ public class ProgsnapExport {
 			jg.writeEndObject();
 		} else if (value instanceof Boolean) {
 			jg.writeBoolean(((Boolean)value).booleanValue());
+		} else if (value instanceof Object[]) {
+			Object[] arr = (Object[]) value;
+			jg.writeStartArray();
+			for (Object elt : arr) {
+				writeJsonFieldValue(jg, elt);
+			}
+			jg.writeEndArray();
 		} else {
 			throw new IllegalArgumentException("Don't know how to encode " + value.getClass().getSimpleName() + " as JSON value");
 		}
@@ -371,9 +380,7 @@ public class ProgsnapExport {
 		}
 	}
 
-	private void writeStudentWorkHistory(final User student, final Problem problem) throws FileNotFoundException, IOException {
-		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
-		
+	private void writeStudentWorkHistory(final User instructor, final User student, final Problem problem) throws FileNotFoundException, IOException {
 		// Build a list of events: it will need to be sorted by timestamp
 		List<WorkHistoryEvent> eventList = new ArrayList<>();
 		
@@ -419,16 +426,60 @@ public class ProgsnapExport {
 			cObj.put("result", compilationResult);
 			eventList.add(new WorkHistoryEvent(ts, "compilation", cObj));
 			
-			// TODO: test results events
+			// Collection test results.
+			// Note that we need to specify the instructor account here to ensure
+			// that we can get the test results for any user.
+			NamedTestResult[] testResults =
+					Database.getInstance().getTestResultsForSubmission(instructor, problem, receipt);
+			Object[] statuses = new Object[testResults.length];
+			for (int i = 0; i < testResults.length; i++) {
+				NamedTestResult tr = testResults[i];
+				String trStatus;
+				TestOutcome outcome = tr.getTestResult().getOutcome();
+				switch (outcome) {
+				case FAILED_ASSERTION:
+					trStatus = "failed";
+					break;
+				case FAILED_BY_SECURITY_MANAGER:
+				case FAILED_WITH_EXCEPTION:
+				case INTERNAL_ERROR:
+					trStatus = "exception";
+					break;
+				case FAILED_FROM_TIMEOUT:
+					trStatus = "timeout";
+					break;
+				case PASSED:
+					trStatus = "passed";
+					break;
+				default:
+					throw new IllegalStateException("Can't infer test result status from test outcome " + outcome);
+				}
+				statuses[i] = trStatus;
+			}
+			LinkedHashMap<String, Object> trObj = new LinkedHashMap<>();
+			trObj.put("ts", ts);
+			trObj.put("editid", receipt.getLastEditEventId());
+			trObj.put("numtests", receipt.getNumTestsAttempted());
+			trObj.put("numpassed", receipt.getNumTestsPassed());
+			trObj.put("statuses", statuses);
+			eventList.add(new WorkHistoryEvent(ts, "testresults", trObj));
+		}
+		
+		// If there were no events for this student/assignment combo,
+		// don't bother writing a file.
+		if (eventList.isEmpty()) {
+			return;
 		}
 		
 		// Sort all work history events by timestamp
 		Collections.sort(eventList);
 		
 		// Write all work history events to the work history file
+		String fname = String.format("/history_%04d_%04d.txt", problem.getProblemId(), student.getId());
 		try (final Writer w = writeToFile(new File(baseDir, fname))) {
 			for (WorkHistoryEvent ev : eventList) {
 				w.write(encodeLine(ev.tag, ev.value));
+				w.write("\n");
 			}
 		}
 	}
