@@ -17,7 +17,6 @@
 
 package org.cloudcoder.dataanalysis;
 
-import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -352,11 +351,6 @@ public class ProgsnapExport {
 		jg.writeEndObject();
 		jg.close();
 		return sw.toString();
-	}
-
-	private Writer writeToFile(File out) throws FileNotFoundException {
-		return new BufferedWriter(new OutputStreamWriter(
-				new FileOutputStream(out), Charset.forName("UTF-8")));
 	}
 
 	private void writeJsonFieldValue(JsonGenerator jg, Object value) throws IOException {
