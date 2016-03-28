@@ -18,6 +18,7 @@
 package org.cloudcoder.dataanalysis;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,6 +31,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +39,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
@@ -65,6 +70,65 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * @author David Hovemeyer
  */
 public class ProgsnapExport {
+	private interface DataWriter extends Closeable {
+		public Writer writeTo(String fileName) throws IOException;
+	}
+	
+	private static class DirectoryDataWriter implements DataWriter {
+		private File baseDir;
+		
+		public DirectoryDataWriter(File baseDir) {
+			this.baseDir = baseDir;
+		}
+
+		@Override
+		public Writer writeTo(String fileName) throws IOException {
+			File f = new File(baseDir, fileName);
+			
+			// make sure parent directory exists
+			File parent = f.getParentFile();
+			if (parent != null) {
+				parent.mkdirs();
+			}
+			
+			return new OutputStreamWriter(new FileOutputStream(f), Charset.forName("UTF-8"));
+		}
+		
+		@Override
+		public void close() throws IOException {
+			// Nothing to do
+		}
+	}
+	
+	private static class ZipfileDataWriter implements DataWriter {
+		private ZipOutputStream zos;
+		
+		public ZipfileDataWriter(File zipFile) throws FileNotFoundException {
+			this.zos = new ZipOutputStream(new FileOutputStream(zipFile));
+		}
+
+		@Override
+		public Writer writeTo(String fileName) throws IOException {
+			ZipEntry entry = new ZipEntry(fileName);
+			zos.putNextEntry(entry);
+			
+			// Return an OutputStreamWriter with the close() method overridden to flush
+			// and close the current zip entry.
+			return new OutputStreamWriter(zos, Charset.forName("UTF-8")) {
+				@Override
+				public void close() throws IOException {
+					super.flush();
+					zos.closeEntry();
+				}
+			};
+		}
+
+		@Override
+		public void close() throws IOException {
+			zos.close();
+		}
+	}
+	
 	private static class WorkHistoryEvent implements Comparable<WorkHistoryEvent> {
 		final long ts;
 		final String tag;
@@ -150,6 +214,7 @@ public class ProgsnapExport {
 	private static final String PSVERSION = "0.0-dev";
 	
 	private Properties config;
+	private DataWriter dataWriter;
 	
 	public ProgsnapExport() {
 		
@@ -159,8 +224,8 @@ public class ProgsnapExport {
 		this.config = config;
 	}
 	
-	private File getBaseDir() {
-		return new File(config.getProperty("baseDir"));
+	public void setDataWriter(DataWriter dataWriter) {
+		this.dataWriter = dataWriter;
 	}
 	
 	private String getUsername() {
@@ -225,22 +290,17 @@ public class ProgsnapExport {
 	public void execute() throws IOException {
 		Util.connectToDatabase(config);
 
-		User user = findUser(getUsername());
-		Course course = findCourse(user, getCourseId());
-		
-		File baseDir = getBaseDir();
-		
-		// Ensure that output directory exists
-		baseDir.mkdirs();
+		User instructor = findUser(getUsername());
+		Course course = findCourse(instructor, getCourseId());
 		
 		// Write dataset file
 		Properties datasetProps = getDatasetProps();
-		try (Writer w = writeToFile(new File(baseDir, "/dataset.txt"))) {
+		try (Writer w = dataWriter.writeTo("dataset.txt")) {
 			writeTaggedFile(w, datasetProps);
 		}
 		
 		// Gather problems
-		ProblemList problems = getProblems(user, course); 
+		ProblemList problems = getProblems(instructor, course); 
 		
 		// Write assignments file
 		writeAssignmentsFile(problems);
@@ -263,7 +323,7 @@ public class ProgsnapExport {
 		for (Problem p : problems.getProblemList()) {
 			if (problemIds.contains(p.getProblemId())) {
 				for (User student : users) {
-					writeStudentWorkHistory(user, student, p);
+					writeStudentWorkHistory(instructor, student, p);
 				}
 			}
 		}
@@ -355,8 +415,7 @@ public class ProgsnapExport {
 	private void writeAssignmentsFile(ProblemList problems) throws IOException {
 		IntegerSet problemIds = getProblemIds();
 		
-		Writer w = writeToFile(new File(getBaseDir(), "/assignments.txt"));
-		try {
+		try (Writer w = dataWriter.writeTo("assignments.txt")) {
 			for (Problem p : problems.getProblemList()) {
 				int problemId = p.getProblemId();
 				if (!problemIds.contains(problemId)) {
@@ -370,21 +429,13 @@ public class ProgsnapExport {
 				w.write(line);
 				w.write("\n");
 			}
-		} finally {
-			IOUtils.closeQuietly(w);
 		}
 	}
 
 	private void writeAssignmentFile(Problem p) throws IOException {
 		IDatabase db = Database.getInstance();
 
-		// Make sure "assignment" directory exists
-		File dir = new File(getBaseDir(), "assignment");
-		dir.mkdirs();
-		
-		Writer w = writeToFile(new File(dir, String.format("%04d.txt", p.getProblemId())));
-		
-		try {
+		try (Writer w = dataWriter.writeTo(String.format("assignment/%04d.txt", p.getProblemId()))) {
 			Properties assignmentProps = new Properties();
 			// name
 			// language
@@ -416,21 +467,36 @@ public class ProgsnapExport {
 				w.write(line);
 				w.write("\n");
 			}
-		} finally {
-			IOUtils.closeQuietly(w);
 		}
 	}
 
 	private List<User> getUsers(Course course) {
 		IDatabase db = Database.getInstance();
 		
-		return db.getUsersInCourse(course.getId(), 0);
+		List<User> rawUsers = db.getUsersInCourse(course.getId(), 0);
+		
+		// Ensure that the list doesn't contain duplicates.
+		// Duplicates can arise when a single user has multiple course
+		// registrations (e.g. an instructor who is teaching multiple
+		// sections.)
+		Set<User> userSet = new TreeSet<>(new Comparator<User>() {
+			@Override
+			public int compare(User o1, User o2) {
+				return ((Integer)o1.getId()).compareTo(o2.getId());
+			}
+		});
+		userSet.addAll(rawUsers);
+		
+		List<User> result = new ArrayList<>();
+		result.addAll(userSet);
+		
+		return result;
 	}
 
 	private void writeStudentsFile(List<User> users, Course course) throws IOException {
 		IDatabase db = Database.getInstance();
 		
-		try (Writer w = writeToFile(new File(getBaseDir(), "/students.txt"))) {
+		try (Writer w = dataWriter.writeTo("students.txt")) {
 			for (User user : users) {
 				CourseRegistrationList regList = db.findCourseRegistrations(user, course);
 				// number
@@ -543,14 +609,9 @@ public class ProgsnapExport {
 		// Write all work history events to the work history file
 		
 		// Directory name has form "/history/NNNN", where NNNN is the assignment number
-		// (i.e., problem number.)  Make sure it exists.
-		File dir = new File(getBaseDir(), String.format("history/%04d", problem.getProblemId()));
-		dir.mkdirs();
-		
-		// Filename is based on student id.
-		String fname = String.format("%04d.txt", student.getId());
-		
-		try (final Writer w = writeToFile(new File(dir, fname))) {
+		// (i.e., problem number.) Filename is based on student id.
+		String fname = String.format("history/%04d/%04d.txt", problem.getProblemId(), student.getId());
+		try (Writer w = dataWriter.writeTo(fname)) {
 			for (WorkHistoryEvent ev : eventList) {
 				w.write(encodeLine(ev.tag, ev.value));
 				w.write("\n");
@@ -614,15 +675,29 @@ public class ProgsnapExport {
 		askIfMissing(config, "courseId", "Course id: ", keyboard);
 		askIfMissing(config, "problemIds", "Problem ids (comma separated, leave blank for all): ", keyboard);
 		askIfMissing(config, "username", "Instructor username: ", keyboard);
-		askIfMissing(config, "baseDir", "Output directory: ", keyboard);
+		askIfMissing(config, "dest", "Output directory or zipfile name: ", keyboard);
 		askIfMissing(config, "name", "Data set name: ", keyboard);
 		askIfMissing(config, "contact", "Contact name: ", keyboard);
 		askIfMissing(config, "email", "Contact email: ", keyboard);
 		askIfMissing(config, "courseurl", "Course URL: ", keyboard);
 			
 		exporter.setConfig(config);
-		
-		exporter.execute();
+
+		// Depending on output path, write to a zipfile or a directory.
+		String dest = config.getProperty("dest");
+		DataWriter dataWriter;
+		File destFile = new File(dest);
+		dataWriter = dest.toLowerCase().endsWith(".zip")
+				? new ZipfileDataWriter(destFile)
+				: new DirectoryDataWriter(destFile);
+		exporter.setDataWriter(dataWriter);
+
+		// Do the export
+		try {
+			exporter.execute();
+		} finally {
+			IOUtils.closeQuietly(dataWriter);
+		}
 	}
 
 	private static void askIfMissing(Properties config, String propName, String prompt, Scanner keyboard) {
