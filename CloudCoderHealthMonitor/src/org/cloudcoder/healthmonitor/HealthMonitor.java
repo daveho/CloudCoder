@@ -17,6 +17,7 @@
 
 package org.cloudcoder.healthmonitor;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +46,7 @@ import org.cloudcoder.app.shared.model.json.JSONConversion;
 import org.cloudcoder.healthmonitor.HealthMonitorReport.Entry;
 import org.cloudcoder.healthmonitor.HealthMonitorReport.Status;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,32 +217,45 @@ public class HealthMonitor implements Runnable {
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(buf.toString());
 		
-		Entry result = null;
+		// Get the health info from the webapp
 		long timestamp = System.currentTimeMillis();
+		String responseBody;
 		try {
 			HttpResponse response = client.execute(request);
-			String responseBody = EntityUtils.toString(response.getEntity());
-			Object responseObj = new JSONParser().parse(responseBody);
-			HealthData healthData = new HealthData();
-			JSONConversion.convertJSONToModelObject(responseObj, healthData, HealthData.SCHEMA);
-			
-			// Create a report entry.
-			if (healthData.getNumConnectedBuilderThreads() == 0) {
-				result = new Entry(instance, Status.NO_BUILDER_THREADS, timestamp);
-				logger.info("Unhealthy instance {} detected: {}", instance, Status.NO_BUILDER_THREADS);
-			} else if (healthData.getSubmissionQueueSizeMaxLastFiveMinutes() >= SUBMISSION_QUEUE_DANGER_THRESHOLD) {
-				result = new Entry(instance, Status.EXCESSIVE_LOAD, timestamp);
-				logger.info("Unhealthy instance {} detected: {}", instance, Status.EXCESSIVE_LOAD);
-			} else {
-				// Woo-hoo, everything looks fine.
-				result = new Entry(instance, Status.HEALTHY, timestamp);
-				logger.debug("Instance {} is healthy", instance);
-			}
+			responseBody = EntityUtils.toString(response.getEntity());
 		} catch (Exception e) {
 			logger.info("Error connecting to instance " + instance + ": " + e.getMessage(), e);
-			result = new Entry(instance, Status.CANNOT_CONNECT, timestamp);
+			return new Entry(instance, Status.CANNOT_CONNECT, timestamp);
 		} finally {
 			client.getConnectionManager().shutdown();
+		}
+		
+		// Decode it into a HealthData object
+		HealthData healthData;
+		try {
+			Object responseObj = new JSONParser().parse(responseBody);
+			healthData = new HealthData();
+			JSONConversion.convertJSONToModelObject(responseObj, healthData, HealthData.SCHEMA);
+		} catch (ParseException e) {
+			logger.info("Error parsing JSON response from webapp", e);
+			return new Entry(instance, Status.CANNOT_CONNECT, timestamp);
+		} catch (IOException e) {
+			logger.info("Error reading JSON response from webapp", e);
+			return new Entry(instance, Status.CANNOT_CONNECT, timestamp);
+		}
+		
+		// Create a report entry.
+		Entry result;
+		if (healthData.getNumConnectedBuilderThreads() == 0) {
+			result = new Entry(instance, Status.NO_BUILDER_THREADS, timestamp);
+			logger.info("Unhealthy instance {} detected: {}", instance, Status.NO_BUILDER_THREADS);
+		} else if (healthData.getSubmissionQueueSizeMaxLastFiveMinutes() >= SUBMISSION_QUEUE_DANGER_THRESHOLD) {
+			result = new Entry(instance, Status.EXCESSIVE_LOAD, timestamp);
+			logger.info("Unhealthy instance {} detected: {}", instance, Status.EXCESSIVE_LOAD);
+		} else {
+			// Woo-hoo, everything looks fine.
+			result = new Entry(instance, Status.HEALTHY, timestamp);
+			logger.debug("Instance {} is healthy", instance);
 		}
 		
 		return result;
