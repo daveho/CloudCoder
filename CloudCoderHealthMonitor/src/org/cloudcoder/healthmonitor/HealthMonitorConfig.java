@@ -42,6 +42,7 @@ public class HealthMonitorConfig implements Cloneable {
 	private String smtpServer;
 	private int smtpPort;
 	private boolean smtpUseTLS;
+	private String httpAccess;
 	
 	/**
 	 * Constructor.
@@ -174,6 +175,24 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 	
 	/**
+	 * Set the http access mechanism, either "httpclient" (Apache httpcomponents
+	 * <code>HttpClient</code> class), or "curl" (for executing <code>curl</code>
+	 * as a subprocess.)  The default is "httpclient".
+	 * 
+	 * @param httpAccess the http access mechanism
+	 */
+	public void setHttpAccess(String httpAccess) {
+		this.httpAccess = httpAccess;
+	}
+	
+	/**
+	 * @return http access type, either "httpclient" or "curl"
+	 */
+	public String getHttpAccess() {
+		return httpAccess;
+	}
+	
+	/**
 	 * Load from a reader reading a properties file.
 	 * 
 	 * @param reader a Reader reading the properties file
@@ -202,6 +221,7 @@ public class HealthMonitorConfig implements Cloneable {
 		smtpServer = getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.host");
 		smtpPort = Integer.parseInt(getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.port"));
 		smtpUseTLS = Boolean.parseBoolean(getRequiredProperty(props, "cloudcoder.healthmonitor.smtp.useTLS"));
+		httpAccess = props.getProperty("cloudcoder.healthmonitor.httpaccess", "httpclient");
 	}
 	
 	/**
@@ -232,10 +252,10 @@ public class HealthMonitorConfig implements Cloneable {
 	}
 
 	private String getRequiredProperty(Properties props, String propName) {
-		String instances = props.getProperty(propName);
-		if (instances == null) {
-			throw new IllegalArgumentException("Missing cloudcoder.healthmonitor.instances property");
+		String propVal = props.getProperty(propName);
+		if (propVal == null) {
+			throw new IllegalArgumentException("Missing " + propName + " property");
 		}
-		return instances;
+		return propVal;
 	}
 }

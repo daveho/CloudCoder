@@ -47,7 +47,7 @@ public class TestMain {
 		HealthMonitorConfig config = new HealthMonitorConfig();
 		config.addWebappInstance("https://cs.ycp.edu/cloudcoder");
 		config.addWebappInstance("https://cloudcoder.org/demo/");
-		config.addWebappInstance("http://localhost:8081/cloudcoder");
+		//config.addWebappInstance("http://localhost:8081/cloudcoder");
 		
 		// Prompt for info that we can't commit to a public git repository :-)
 		Scanner keyboard = new Scanner(System.in);
@@ -57,6 +57,7 @@ public class TestMain {
 		config.setSmtpServer(ask(keyboard, "SMTP server: "));
 		config.setSmtpPort(Integer.parseInt(ask(keyboard, "SMTP port: ")));
 		config.setSmtpUseTLS(true);
+		config.setHttpAccess(ask(keyboard, "Http access mechanism (httpclient or curl): "));
 		
 		daemon.setConfig(config);
 		

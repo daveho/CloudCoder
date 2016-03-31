@@ -18,6 +18,10 @@
 package org.cloudcoder.healthmonitor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +40,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -210,6 +215,56 @@ public class HealthMonitor implements Runnable {
 			}
 		}
 	}
+	
+	private static class OutputMonitor implements Runnable {
+		private InputStream in;
+		private StringWriter sw;
+		
+		public OutputMonitor(InputStream in) {
+			this.in = in;
+			this.sw = new StringWriter();
+		}
+		
+		@Override
+		public String toString() {
+			return sw.toString();
+		}
+		
+		@Override
+		public void run() {
+			InputStreamReader r = new InputStreamReader(in, Charset.forName("UTF-8"));
+			try {
+				IOUtils.copy(r, sw);
+			} catch (IOException e) {
+				logger.warn("Exception reading from process output", e);
+			} finally {
+				IOUtils.closeQuietly(r);
+			}
+		}
+	}
+	
+	private static class GetHealthInfoViaCurl implements RequestHealthInfo {
+		@Override
+		public String getHealthInfo(String url) throws Exception {
+			ProcessBuilder pb = new ProcessBuilder("curl", url);
+			pb.environment().put("LANG", "en_US.UTF-8");
+			Process p = pb.start();
+			OutputMonitor stdout = new OutputMonitor(p.getInputStream());
+			OutputMonitor stderr = new OutputMonitor(p.getErrorStream());
+			Thread stdoutThread = new Thread(stdout);
+			Thread stderrThread = new Thread(stderr);
+			stdoutThread.start();
+			stderrThread.start();
+			try {
+				stdoutThread.join();
+				stderrThread.join();
+			} catch (InterruptedException e) {
+				// This cannot happen
+				logger.warn("Monitor thread interrupted (should not happen!", e);
+			}
+			return stdout.toString();
+		}
+	}
 
 	/**
 	 * Check a webapp instance to see whether or not it is healthy,
@@ -234,8 +289,17 @@ public class HealthMonitor implements Runnable {
 		
 		long timestamp = System.currentTimeMillis();
 
-		// TODO: support other access methods (e.g., curl)
-		RequestHealthInfo request = new GetHealthInfoViaHttpClient();
+		// Instantiate the access mechanism
+		RequestHealthInfo request;
+		String httpAccess = config.getHttpAccess();
+		if (httpAccess.equals("httpclient")) {
+			request = new GetHealthInfoViaHttpClient();
+		} else if (httpAccess.equals("curl")) {
+			request = new GetHealthInfoViaCurl();
+		} else {
+			logger.error("Unrecognized cloudcoder.healthmonitor.httpaccess value: {}", httpAccess);
+			return new Entry(instance, Status.CANNOT_CONNECT, timestamp);
+		}
 
 		// Get the instance's health information
 		String responseBody;
