@@ -192,6 +192,24 @@ public class HealthMonitor implements Runnable {
 			}
 		}
 	}
+	
+	private interface RequestHealthInfo {
+		public String getHealthInfo(String url) throws Exception;
+	}
+	
+	private static class GetHealthInfoViaHttpClient implements RequestHealthInfo {
+		@Override
+		public String getHealthInfo(String url) throws Exception {
+			HttpClient client = new DefaultHttpClient();
+			HttpGet request = new HttpGet(url);
+			try {
+				HttpResponse response = client.execute(request);
+				return EntityUtils.toString(response.getEntity());
+			} finally {
+				client.getConnectionManager().shutdown();
+			}
+		}
+	}
 
 	/**
 	 * Check a webapp instance to see whether or not it is healthy,
@@ -212,22 +230,20 @@ public class HealthMonitor implements Runnable {
 			buf.append("/");
 		}
 		buf.append("health");
+		String url = buf.toString();
+		
+		long timestamp = System.currentTimeMillis();
+
+		// TODO: support other access methods (e.g., curl)
+		RequestHealthInfo request = new GetHealthInfoViaHttpClient();
 
 		// Get the instance's health information
-		HttpClient client = new DefaultHttpClient();
-		HttpGet request = new HttpGet(buf.toString());
-		
-		// Get the health info from the webapp
-		long timestamp = System.currentTimeMillis();
 		String responseBody;
 		try {
-			HttpResponse response = client.execute(request);
-			responseBody = EntityUtils.toString(response.getEntity());
+			responseBody = request.getHealthInfo(url);
 		} catch (Exception e) {
 			logger.info("Error connecting to instance " + instance + ": " + e.getMessage(), e);
 			return new Entry(instance, Status.CANNOT_CONNECT, timestamp);
-		} finally {
-			client.getConnectionManager().shutdown();
 		}
 		
 		// Decode it into a HealthData object
