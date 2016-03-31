@@ -255,8 +255,9 @@ public class HealthMonitor implements Runnable {
 			Thread stderrThread = new Thread(stderr);
 			stdoutThread.start();
 			stderrThread.start();
-			Util.joinQuietly(stdoutThread, logger, "stdout thread");
-			Util.joinQuietly(stderrThread, logger, "stderr thread");
+			Util.joinQuietly(stdoutThread, logger, "stdout");
+			Util.joinQuietly(stderrThread, logger, "stderr");
+			Util.waitForQuietly(p, logger, "curl");
 			return stdout.toString();
 		}
 	}

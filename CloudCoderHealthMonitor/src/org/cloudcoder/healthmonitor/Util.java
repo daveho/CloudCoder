@@ -25,14 +25,32 @@ public class Util {
 	 * if an InterruptedException occurs.
 	 * 
 	 * @param t           the thread to join
-	 * @param logger      logger to log warning to if the thread is interrupted
+	 * @param logger      logger to log warning to if interrupted
 	 * @param threadDesc  description of thread (for the log message)
 	 */
 	public static void joinQuietly(Thread t, Logger logger, String threadDesc) {
 		try {
 			t.join();
 		} catch (InterruptedException e) {
-			logger.warn("Thread {} interrupted unexpectedly", e);
+			logger.warn("Interrupted waiting for thread " + threadDesc, e);
+		}
+	}
+
+	/**
+	 * Wait for a process to complete, logging a warning
+	 * if an InterruptedException occurs.
+	 * 
+	 * @param p         the process to wait for
+	 * @param logger    logger to log warning to if interrupted 
+	 * @param procDesc  description of process (for the log message)
+	 * @return exit code of process, or -1 if interrupted waiting for the process to exit
+	 */
+	public static int waitForQuietly(Process p, Logger logger, String procDesc) {
+		try {
+			return p.waitFor();
+		} catch (InterruptedException e) {
+			logger.warn("Interrupted waiting for process " + procDesc, e);
+			return -1;
 		}
 	}
 }
