@@ -260,7 +260,7 @@ public class HealthMonitor implements Runnable {
 				stderrThread.join();
 			} catch (InterruptedException e) {
 				// This cannot happen
-				logger.warn("Monitor thread interrupted (should not happen!", e);
+				logger.warn("Monitor thread interrupted (should not happen!)", e);
 			}
 			return stdout.toString();
 		}
