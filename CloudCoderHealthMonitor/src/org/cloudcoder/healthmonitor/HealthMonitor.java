@@ -255,13 +255,8 @@ public class HealthMonitor implements Runnable {
 			Thread stderrThread = new Thread(stderr);
 			stdoutThread.start();
 			stderrThread.start();
-			try {
-				stdoutThread.join();
-				stderrThread.join();
-			} catch (InterruptedException e) {
-				// This cannot happen
-				logger.warn("Monitor thread interrupted (should not happen!)", e);
-			}
+			Util.joinQuietly(stdoutThread, logger, "stdout thread");
+			Util.joinQuietly(stderrThread, logger, "stderr thread");
 			return stdout.toString();
 		}
 	}
