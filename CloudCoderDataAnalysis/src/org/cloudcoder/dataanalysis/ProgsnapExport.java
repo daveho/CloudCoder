@@ -426,7 +426,7 @@ public class ProgsnapExport {
 					continue;
 				}
 				Map<String, Object> obj = new LinkedHashMap<>();
-				String path = String.format("/assignment/%04d.txt", problemId);
+				String path = String.format("assignment/%04d.txt", problemId);
 				obj.put("number", problemId);
 				obj.put("path", path);
 				String line = encodeLine("assignment", obj);
