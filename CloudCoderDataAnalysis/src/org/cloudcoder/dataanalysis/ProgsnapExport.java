@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -169,7 +170,7 @@ public class ProgsnapExport {
 			// start
 			// end
 			// text
-			int xEventId = value.getEventId();
+			int editId = value.getEventId();
 			long ts = value.getEvent().getTimestamp();
 			String filename = "code" + problem.getProblemType().getLanguage().getFileExtension();
 			String type;
@@ -198,7 +199,7 @@ public class ProgsnapExport {
 			
 			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
 			obj.put("ts", ts);
-			obj.put("editid", xEventId);
+			obj.put("editid", editId);
 			obj.put("filename", filename);
 			obj.put("type", type);
 			obj.put("start", start);
@@ -210,7 +211,7 @@ public class ProgsnapExport {
 	}
 
 	// Version of progsnap spec the exported data will conform to
-	private static final String PSVERSION = "0.0-dev";
+	private static final String PSVERSION = "0.1-dev";
 	
 	private Properties config;
 	private DataWriter dataWriter;
@@ -372,9 +373,18 @@ public class ProgsnapExport {
 		} else if (value instanceof Boolean) {
 			jg.writeBoolean(((Boolean)value).booleanValue());
 		} else if (value instanceof Object[]) {
+			// Encode array as JSON array
 			Object[] arr = (Object[]) value;
 			jg.writeStartArray();
 			for (Object elt : arr) {
+				writeJsonFieldValue(jg, elt);
+			}
+			jg.writeEndArray();
+		} else if (value instanceof List) {
+			// Encode list as JSON array
+			List<?> list = (List<?>) value;
+			jg.writeStartArray();
+			for (Object elt : list) {
 				writeJsonFieldValue(jg, elt);
 			}
 			jg.writeEndArray();
@@ -416,7 +426,7 @@ public class ProgsnapExport {
 					continue;
 				}
 				Map<String, Object> obj = new LinkedHashMap<>();
-				String path = String.format("/assignment_%04d.txt", problemId);
+				String path = String.format("/assignment/%04d.txt", problemId);
 				obj.put("number", problemId);
 				obj.put("path", path);
 				String line = encodeLine("assignment", obj);
@@ -514,9 +524,20 @@ public class ProgsnapExport {
 		ICallback<Change> visitor = new RecordEditEvents(problem, eventList);
 		Database.getInstance().visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
 		
-		// Retrieve submission receipts, use them to generate
-		// submission and compilation events
+		// Build map of edit ids to edit events
+		Map<Integer, WorkHistoryEvent> editEventMap = new HashMap<>();
+		for (WorkHistoryEvent evt : eventList) {
+			Integer editId = (Integer)evt.value.get("editid");
+			//System.out.println("Add edit event " + editId + " to map");
+			editEventMap.put(editId, evt);
+		}
+		
+		// Retrieve submission receipts
 		SubmissionReceipt[] receipts = Database.getInstance().getAllSubmissionReceiptsForUser(problem, student);
+		
+		// Use submission receipts to
+		// - annotate edit events with snapshot ids (which are submission event ids)
+		// - generate submission and compilation events
 		for (SubmissionReceipt receipt : receipts) {
 			SubmissionStatus status = receipt.getStatus();
 			
@@ -525,14 +546,28 @@ public class ProgsnapExport {
 				continue;
 			}
 			
-			// Collect submission info
+			// Annotate edit event with snapshot id
+			int lastEditId = receipt.getLastEditEventId();
+			WorkHistoryEvent editEvent = editEventMap.get(lastEditId);
+			if (editEvent == null) {
+				throw new IllegalStateException("No such edit id: " + lastEditId);
+			}
+			@SuppressWarnings("unchecked")
+			List<Integer> snapids = (List<Integer>) editEvent.value.get("snapids");
+			if (snapids == null) {
+				snapids = new ArrayList<>();
+				editEvent.value.put("snapids", snapids);
+			}
+			snapids.add(receipt.getEventId()); // snapshot ids are submission event ids
+			
+			// Collect submission info, add Submission event
 			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
 			long ts = receipt.getEvent().getTimestamp();
 			obj.put("ts", ts);
-			obj.put("editid", receipt.getLastEditEventId());
+			obj.put("snapid", receipt.getEventId()); // snapshot ids are submission event ids
 			eventList.add(new WorkHistoryEvent(ts, "submission", obj));
 			
-			// Collection compilation info
+			// Collection compilation info, add Compilation event
 			String compilationResult;
 			switch (status) {
 			case BUILD_ERROR:
@@ -548,11 +583,11 @@ public class ProgsnapExport {
 			}
 			LinkedHashMap<String, Object> cObj = new LinkedHashMap<>();
 			cObj.put("ts", ts);
-			cObj.put("editid", receipt.getLastEditEventId());
+			cObj.put("snapid", receipt.getEventId()); // snapshot ids are submission event ids
 			cObj.put("result", compilationResult);
 			eventList.add(new WorkHistoryEvent(ts, "compilation", cObj));
 			
-			// Collection test results.
+			// Collect test results, add TestResults event.
 			// Note that we need to specify the instructor account here to ensure
 			// that we can get the test results for any user.
 			NamedTestResult[] testResults =
@@ -584,7 +619,7 @@ public class ProgsnapExport {
 			}
 			LinkedHashMap<String, Object> trObj = new LinkedHashMap<>();
 			trObj.put("ts", ts);
-			trObj.put("editid", receipt.getLastEditEventId());
+			trObj.put("snapid", receipt.getEventId()); // snapshot ids are submission event ids
 			trObj.put("numtests", receipt.getNumTestsAttempted());
 			trObj.put("numpassed", receipt.getNumTestsPassed());
 			trObj.put("statuses", statuses);
