@@ -587,43 +587,46 @@ public class ProgsnapExport {
 			cObj.put("result", compilationResult);
 			eventList.add(new WorkHistoryEvent(ts, "compilation", cObj));
 			
-			// Collect test results, add TestResults event.
-			// Note that we need to specify the instructor account here to ensure
-			// that we can get the test results for any user.
-			NamedTestResult[] testResults =
-					Database.getInstance().getTestResultsForSubmission(instructor, problem, receipt);
-			Object[] statuses = new Object[testResults.length];
-			for (int i = 0; i < testResults.length; i++) {
-				NamedTestResult tr = testResults[i];
-				String trStatus;
-				TestOutcome outcome = tr.getTestResult().getOutcome();
-				switch (outcome) {
-				case FAILED_ASSERTION:
-					trStatus = "failed";
-					break;
-				case FAILED_BY_SECURITY_MANAGER:
-				case FAILED_WITH_EXCEPTION:
-				case INTERNAL_ERROR:
-					trStatus = "exception";
-					break;
-				case FAILED_FROM_TIMEOUT:
-					trStatus = "timeout";
-					break;
-				case PASSED:
-					trStatus = "passed";
-					break;
-				default:
-					throw new IllegalStateException("Can't infer test result status from test outcome " + outcome);
+			// Only report test results if testing was actually performed
+			if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
+				// Collect test results, add TestResults event.
+				// Note that we need to specify the instructor account here to ensure
+				// that we can get the test results for any user.
+				NamedTestResult[] testResults =
+						Database.getInstance().getTestResultsForSubmission(instructor, problem, receipt);
+				Object[] statuses = new Object[testResults.length];
+				for (int i = 0; i < testResults.length; i++) {
+					NamedTestResult tr = testResults[i];
+					String trStatus;
+					TestOutcome outcome = tr.getTestResult().getOutcome();
+					switch (outcome) {
+					case FAILED_ASSERTION:
+						trStatus = "failed";
+						break;
+					case FAILED_BY_SECURITY_MANAGER:
+					case FAILED_WITH_EXCEPTION:
+					case INTERNAL_ERROR:
+						trStatus = "exception";
+						break;
+					case FAILED_FROM_TIMEOUT:
+						trStatus = "timeout";
+						break;
+					case PASSED:
+						trStatus = "passed";
+						break;
+					default:
+						throw new IllegalStateException("Can't infer test result status from test outcome " + outcome);
+					}
+					statuses[i] = trStatus;
 				}
-				statuses[i] = trStatus;
+				LinkedHashMap<String, Object> trObj = new LinkedHashMap<>();
+				trObj.put("ts", ts);
+				trObj.put("snapid", receipt.getEventId()); // snapshot ids are submission event ids
+				trObj.put("numtests", receipt.getNumTestsAttempted());
+				trObj.put("numpassed", receipt.getNumTestsPassed());
+				trObj.put("statuses", statuses);
+				eventList.add(new WorkHistoryEvent(ts, "testresults", trObj));
 			}
-			LinkedHashMap<String, Object> trObj = new LinkedHashMap<>();
-			trObj.put("ts", ts);
-			trObj.put("snapid", receipt.getEventId()); // snapshot ids are submission event ids
-			trObj.put("numtests", receipt.getNumTestsAttempted());
-			trObj.put("numpassed", receipt.getNumTestsPassed());
-			trObj.put("statuses", statuses);
-			eventList.add(new WorkHistoryEvent(ts, "testresults", trObj));
 		}
 		
 		// If there were no events for this student/assignment combo,
