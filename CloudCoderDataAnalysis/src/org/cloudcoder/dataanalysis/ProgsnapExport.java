@@ -47,6 +47,7 @@ import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseRegistrationList;
 import org.cloudcoder.app.shared.model.ICallback;
@@ -190,6 +191,9 @@ public class ProgsnapExport {
 				throw new IllegalStateException("Unknown change type: " + value.getType());
 			}
 			String text = value.getText();
+			if (value.getType() == ChangeType.INSERT_LINES) {
+				text = text + "\n";
+			}
 			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
 			start.put("row", value.getStartRow());
 			start.put("col", value.getStartColumn());
