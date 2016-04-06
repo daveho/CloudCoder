@@ -659,6 +659,7 @@ public class ProgsnapExport {
 		
 		boolean interactiveConfig = false;
 		String specFile = null;
+		Properties config = new Properties();
 		
 		for (String arg : args) {
 			if (arg.equals("--interactiveConfig")) {
@@ -671,12 +672,19 @@ public class ProgsnapExport {
 				// database access credentials.)  The idea is to allow repeatable
 				// non-interactive exports.
 				specFile = arg.substring("--spec=".length());
+			} else if (arg.startsWith("-D")) {
+				// Set an individual config property
+				String keyVal = arg.substring("-D".length());
+				int eq = keyVal.indexOf('=');
+				if (eq < 0) {
+					throw new IllegalArgumentException("Invalid key/value pair: " + keyVal);
+				}
+				config.setProperty(keyVal.substring(0, eq), keyVal.substring(eq+1));
 			} else {
 				throw new IllegalArgumentException("Unknown option: " + arg);
 			}
 		}
 		Util.configureLogging();
-		Properties config = new Properties();
 		if (interactiveConfig) {
 			Util.readDatabaseProperties(keyboard, config);
 		} else {
