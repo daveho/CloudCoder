@@ -101,35 +101,6 @@ public class ProgsnapExport {
 		}
 	}
 	
-	private static class ZipfileDataWriter implements DataWriter {
-		private ZipOutputStream zos;
-		
-		public ZipfileDataWriter(File zipFile) throws FileNotFoundException {
-			this.zos = new ZipOutputStream(new FileOutputStream(zipFile));
-		}
-
-		@Override
-		public Writer writeTo(String fileName) throws IOException {
-			ZipEntry entry = new ZipEntry(fileName);
-			zos.putNextEntry(entry);
-			
-			// Return an OutputStreamWriter with the close() method overridden to flush
-			// and close the current zip entry.
-			return new OutputStreamWriter(zos, Charset.forName("UTF-8")) {
-				@Override
-				public void close() throws IOException {
-					super.flush();
-					zos.closeEntry();
-				}
-			};
-		}
-
-		@Override
-		public void close() throws IOException {
-			zos.close();
-		}
-	}
-	
 	private static class WorkHistoryEvent implements Comparable<WorkHistoryEvent> {
 		final long ts;
 		final String tag;
@@ -158,8 +129,37 @@ public class ProgsnapExport {
 			if (cmp != 0) {
 				return cmp;
 			}
-
+	
 			return this.tag.compareTo(o.tag);
+		}
+	}
+
+	private static class ZipfileDataWriter implements DataWriter {
+		private ZipOutputStream zos;
+		
+		public ZipfileDataWriter(File zipFile) throws FileNotFoundException {
+			this.zos = new ZipOutputStream(new FileOutputStream(zipFile));
+		}
+
+		@Override
+		public Writer writeTo(String fileName) throws IOException {
+			ZipEntry entry = new ZipEntry(fileName);
+			zos.putNextEntry(entry);
+			
+			// Return an OutputStreamWriter with the close() method overridden to flush
+			// and close the current zip entry.
+			return new OutputStreamWriter(zos, Charset.forName("UTF-8")) {
+				@Override
+				public void close() throws IOException {
+					super.flush();
+					zos.closeEntry();
+				}
+			};
+		}
+
+		@Override
+		public void close() throws IOException {
+			zos.close();
 		}
 	}
 	
@@ -208,6 +208,8 @@ public class ProgsnapExport {
 				// final "\n" is missing.  Add it.
 				text = text + "\n";
 			}
+			// Purge all \r characters from the text of the edit
+			text = text.replace("\r", "");
 			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
 			start.put("row", value.getStartRow());
 			start.put("col", value.getStartColumn());
