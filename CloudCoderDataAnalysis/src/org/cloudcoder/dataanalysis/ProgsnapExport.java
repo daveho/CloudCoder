@@ -145,6 +145,15 @@ public class ProgsnapExport {
 		public int compareTo(WorkHistoryEvent o) {
 			int cmp;
 			
+			// Special case: if both objects have edit ids,
+			// order them by edit id regardless of how the timestamps compare.
+			// I have observed at least one case in CloudCoder of
+			// timestamps going backwards in an edit sequence.
+			// FIXME: really, in this case, we should fix the timestamps
+			if (this.value.containsKey("editid") && o.value.containsKey("editid")) {
+				return ((Integer)this.value.get("editid")).compareTo((Integer)o.value.get("editid"));
+			}
+			
 			cmp = ((Long)this.ts).compareTo((Long)o.ts);
 			if (cmp != 0) {
 				return cmp;
