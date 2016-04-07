@@ -206,9 +206,7 @@ public class ProgsnapExport {
 				// (in ACE, and in the CloudCoder database) don't actually
 				// match the precise text being removed, because the
 				// final "\n" is missing.  Add it.
-				if (!text.endsWith("\n")) {
-					text = text + "\n";
-				}
+				text = text + "\n";
 			}
 			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
 			start.put("row", value.getStartRow());
