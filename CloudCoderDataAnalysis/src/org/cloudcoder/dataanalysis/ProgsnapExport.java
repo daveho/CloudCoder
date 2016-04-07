@@ -191,8 +191,15 @@ public class ProgsnapExport {
 				throw new IllegalStateException("Unknown change type: " + value.getType());
 			}
 			String text = value.getText();
-			if (value.getType() == ChangeType.INSERT_LINES) {
-				text = text + "\n";
+			if (value.getType() == ChangeType.INSERT_LINES || value.getType() == ChangeType.REMOVE_LINES) {
+				// These types of edits occur when ACE notices that entire lines
+				// are being inserted or removed.  However, the text of these edits
+				// (in ACE, and in the CloudCoder database) don't actually
+				// match the precise text being removed, because the
+				// final "\n" is missing.  Add it.
+				if (!text.endsWith("\n")) {
+					text = text + "\n";
+				}
 			}
 			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
 			start.put("row", value.getStartRow());
