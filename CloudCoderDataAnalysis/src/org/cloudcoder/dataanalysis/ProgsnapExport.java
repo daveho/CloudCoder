@@ -199,6 +199,8 @@ public class ProgsnapExport {
 			default:
 				throw new IllegalStateException("Unknown change type: " + value.getType());
 			}
+			
+			// Fix the text of the edit to conform to the progsnap spec.
 			String text = value.getText();
 			if (value.getType() == ChangeType.INSERT_LINES || value.getType() == ChangeType.REMOVE_LINES) {
 				// These types of edits occur when ACE notices that entire lines
@@ -210,20 +212,20 @@ public class ProgsnapExport {
 			}
 			// Purge all \r characters from the text of the edit
 			text = text.replace("\r", "");
+			
+			// Create a Position object for the insert/delete position
+			// (the "start" attribute of the edit).
 			LinkedHashMap<String, Object> start = new LinkedHashMap<>();
 			start.put("row", value.getStartRow());
 			start.put("col", value.getStartColumn());
-			LinkedHashMap<String, Object> end = new LinkedHashMap<>();
-			end.put("row", value.getEndRow());
-			end.put("col", value.getEndColumn());
 			
+			// Create the Edit object.
 			LinkedHashMap<String, Object> obj = new LinkedHashMap<>();
 			obj.put("ts", ts);
 			obj.put("editid", editId);
 			obj.put("filename", filename);
 			obj.put("type", type);
 			obj.put("start", start);
-			obj.put("end", end);
 			obj.put("text", text);
 			
 			eventList.add(new WorkHistoryEvent(ts, "edit", obj));
