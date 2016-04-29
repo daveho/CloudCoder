@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -147,8 +147,13 @@ public class RegisterSingleUserPanel extends ValidatedFormUI
         user.setFirstname(firstnameBox.getText().trim());
         user.setLastname(lastnameBox.getText().trim());
         user.setEmail(emailBox.getText().trim());
-        // We send the password in the clear from the client side
-        // and the hash is created on the server side in the DB backend code
+        
+        // For creating an existing user account, the initial password
+        // is set in the EditedUser object, not the User object.
+        // Just to be paranoid, however, we'll set everything that looks
+        // remotely like a password :-)
+        editedUser.setCurrentPassword(passwordBox.getText());
+        editedUser.setPassword(passwordBox.getText()); // <-- this alone is sufficient
         user.setPasswordHash(passwordBox.getText());
 
         // TODO some way to set super-user permissions
