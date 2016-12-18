@@ -100,7 +100,7 @@ http://download.eclipse.org/jetty/orbit/org.apache.taglibs.standard.glassfish_1.
   CloudCoderJetty/lib/jetty/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar
 http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-jsp-2.1/7.4.4.v20110707/jetty-jsp-2.1-7.4.4.v20110707.jar
   CloudCoderJetty/lib/jetty/jsp/jetty-jsp-2.1-7.4.4.v20110707.jar
-http://json-simple.googlecode.com/files/json-simple-1.1.1.jar
+http://central.maven.org/maven2/com/googlecode/json-simple/json-simple/1.1.1/json-simple-1.1.1.jar
   CloudCoderModelClassesJSON/lib/json-simple-1.1.1.jar
   CloudCoder/war/WEB-INF/lib/json-simple-1.1.1.jar
   CloudCoderRepository/war/WEB-INF/lib/json-simple-1.1.1.jar
@@ -191,7 +191,7 @@ ${mirrorServiceEclipse371}/org.eclipse.text_3.5.101.r371_v20110810-0800.jar
 # CloudCoderDataAnalysis uses opencsv
 #
 opencsv_version=2.4
-https://opencsv.googlecode.com/files/opencsv-${opencsv_version}.jar
+http://central.maven.org/maven2/au/com/bytecode/opencsv/${opencsv_version}/opencsv-${opencsv_version}.jar
   CloudCoderDataAnalysis/lib/opencsv-${opencsv_version}.jar
 
 #
