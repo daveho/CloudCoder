@@ -324,13 +324,13 @@ public class ProgsnapExport {
 		// Gather problems
 		ProblemList problems = getProblems(instructor, course); 
 		
-		// Write assignments file
-		writeAssignmentsFile(problems);
+		// Write activities file
+		writeActivitiesFile(problems);
 		
 		// See which problems are being exported
 		IntegerSet problemIds = getProblemIds();
 		
-		// Write assignment files
+		// Write activity files
 		for (Problem p : problems.getProblemList()) {
 			if (problemIds.contains(p.getProblemId())) {
 				writeAssignmentFile(p);
@@ -341,7 +341,7 @@ public class ProgsnapExport {
 		List<User> users = getUsers(course);
 		writeStudentsFile(users, course);
 		
-		// For each assignment (problem), write student work history files
+		// For each activity (problem), write student work history files
 		for (Problem p : problems.getProblemList()) {
 			if (problemIds.contains(p.getProblemId())) {
 				for (User student : users) {
@@ -438,20 +438,20 @@ public class ProgsnapExport {
 		return db.getProblemsInCourse(user, course);
 	}
 
-	private void writeAssignmentsFile(ProblemList problems) throws IOException {
+	private void writeActivitiesFile(ProblemList problems) throws IOException {
 		IntegerSet problemIds = getProblemIds();
 		
-		try (Writer w = dataWriter.writeTo("assignments.txt")) {
+		try (Writer w = dataWriter.writeTo("activities.txt")) {
 			for (Problem p : problems.getProblemList()) {
 				int problemId = p.getProblemId();
 				if (!problemIds.contains(problemId)) {
 					continue;
 				}
 				Map<String, Object> obj = new LinkedHashMap<>();
-				String path = String.format("assignment/%04d.txt", problemId);
+				String path = String.format("activity/%04d.txt", problemId);
 				obj.put("number", problemId);
 				obj.put("path", path);
-				String line = encodeLine("assignment", obj);
+				String line = encodeLine("activity", obj);
 				w.write(line);
 				w.write("\n");
 			}
@@ -461,17 +461,17 @@ public class ProgsnapExport {
 	private void writeAssignmentFile(Problem p) throws IOException {
 		IDatabase db = Database.getInstance();
 
-		try (Writer w = dataWriter.writeTo(String.format("assignment/%04d.txt", p.getProblemId()))) {
-			Properties assignmentProps = new Properties();
+		try (Writer w = dataWriter.writeTo(String.format("activity/%04d.txt", p.getProblemId()))) {
+			Properties activityProps = new Properties();
 			// name
 			// language
 			// assigned
 			// due
-			assignmentProps.put("name", p.toNiceString());
-			assignmentProps.put("language", p.getProblemType().getLanguage().getName());
-			assignmentProps.put("assigned", p.getWhenAssigned());
-			assignmentProps.put("due", p.getWhenDue());
-			writeTaggedFile(w, assignmentProps);
+			activityProps.put("name", p.toNiceString());
+			activityProps.put("language", p.getProblemType().getLanguage().getName());
+			activityProps.put("assigned", p.getWhenAssigned());
+			activityProps.put("due", p.getWhenDue());
+			writeTaggedFile(w, activityProps);
 			
 			List<TestCase> tests = db.getTestCasesForProblem(p.getProblemId());
 			int count = 0;
@@ -651,7 +651,7 @@ public class ProgsnapExport {
 			}
 		}
 		
-		// If there were no events for this student/assignment combo,
+		// If there were no events for this student/activity combo,
 		// don't bother writing a file.
 		if (eventList.isEmpty()) {
 			return;
@@ -662,7 +662,7 @@ public class ProgsnapExport {
 		
 		// Write all work history events to the work history file
 		
-		// Directory name has form "/history/NNNN", where NNNN is the assignment number
+		// Directory name has form "/history/NNNN", where NNNN is the activity number
 		// (i.e., problem number.) Filename is based on student id.
 		String fname = String.format("history/%04d/%04d.txt", problem.getProblemId(), student.getId());
 		try (Writer w = dataWriter.writeTo(fname)) {
