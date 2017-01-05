@@ -529,7 +529,7 @@ public class ProgsnapExport {
 				// instructor
 				// FIXME: allow loading of demographic information
 				Map<String, Object> student = new LinkedHashMap<>();
-				student.put("number", user.getId());
+				student.put("id", String.valueOf(user.getId()));
 				student.put("instructor", regList.isInstructor());
 				String line = encodeLine("student", student);
 				w.write(line);
