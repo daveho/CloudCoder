@@ -333,7 +333,7 @@ public class ProgsnapExport {
 		// Write activity files
 		for (Problem p : problems.getProblemList()) {
 			if (problemIds.contains(p.getProblemId())) {
-				writeAssignmentFile(p);
+				writeActivityFile(p);
 			}
 		}
 		
@@ -458,7 +458,7 @@ public class ProgsnapExport {
 		}
 	}
 
-	private void writeAssignmentFile(Problem p) throws IOException {
+	private void writeActivityFile(Problem p) throws IOException {
 		IDatabase db = Database.getInstance();
 
 		try (Writer w = dataWriter.writeTo(String.format("activity/%04d.txt", p.getProblemId()))) {
