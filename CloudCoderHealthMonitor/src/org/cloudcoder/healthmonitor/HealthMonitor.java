@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -28,11 +28,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.mail.Authenticator;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -391,7 +388,7 @@ public class HealthMonitor implements Runnable {
 
 	private void sendEmail(Map<String, Info> infoMap, List<ReportItem> reportItems, boolean goodNews, boolean badNews,
 			String reportEmailAddress) throws MessagingException, AddressException {
-		Session session = createMailSession(config);
+		Session session = Email.createMailSession(config);
 		
 		MimeMessage message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(reportEmailAddress));
@@ -473,32 +470,5 @@ public class HealthMonitor implements Runnable {
 		// Since a report has been generated, update the Info for the instance
 		Info updatedInfo = new Info(item.entry.status, now, unhealthyTimestamp);
 		infoMap.put(item.entry.instance, updatedInfo);
-	}
-
-	/**
-	 * Create a mail Session based on information in the
-	 * given {@link HealthMonitorConfig}.
-	 * 
-	 * @param config the {@link HealthMonitorConfig}
-	 * @return the mail Session
-	 */
-	private Session createMailSession(HealthMonitorConfig config) {
-		final PasswordAuthentication passwordAuthentication =
-				new PasswordAuthentication(config.getSmtpUsername(), config.getSmtpPassword());
-		
-		Properties properties = new Properties();
-		properties.putAll(System.getProperties());
-		properties.setProperty("mail.smtp.submitter", passwordAuthentication.getUserName());
-		properties.setProperty("mail.smtp.auth", "true");
-		properties.setProperty("mail.smtp.host", config.getSmtpServer());
-		properties.setProperty("mail.smtp.port", String.valueOf(config.getSmtpPort()));
-		properties.setProperty("mail.smtp.starttls.enable", String.valueOf(config.isSmtpUseTLS()));
-		
-		return Session.getInstance(properties, new Authenticator() {
-			@Override
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return passwordAuthentication;
-			}
-		});
 	}
 }

@@ -9,7 +9,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/mail.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="http://javamail.kenai.com/nonav/javadocs"/>
+			<attribute name="javadoc_location" value="https://javamail.java.net/nonav/docs/api/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/httpclient-4.2.1.jar">

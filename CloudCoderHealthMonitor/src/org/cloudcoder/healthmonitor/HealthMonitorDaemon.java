@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2014, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2014, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -18,6 +18,12 @@
 package org.cloudcoder.healthmonitor;
 
 import java.util.Properties;
+
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.cloudcoder.daemon.IDaemon;
 import org.cloudcoder.daemon.Util;
@@ -73,8 +79,38 @@ public class HealthMonitorDaemon implements IDaemon {
 
 	@Override
 	public void handleCommand(String command) {
-		// No commands are implemented at the moment
-		logger.info("Unrecognized command: {}", command);
+		if (command.equals("testemail")) {
+			sendTestEmail();
+		} else {
+			logger.info("Unrecognized command: {}", command);
+		}
+	}
+
+	private void sendTestEmail() {
+		String[] recipients = config.getReportEmailAddress().split(",");
+		
+		for (String reportEmailAddress : recipients) {
+			try {
+				logger.info("Sending test email to {}...", reportEmailAddress);
+				
+				Session session = Email.createMailSession(config);
+		
+				MimeMessage message = new MimeMessage(session);
+				message.setFrom(new InternetAddress(reportEmailAddress));
+				message.addRecipient(RecipientType.TO, new InternetAddress(reportEmailAddress));
+				message.setSubject("CloudCoder health monitor report");
+				
+				StringBuilder buf = new StringBuilder();
+				buf.append("<h1>Test email</h1>");
+				buf.append("<p>This is a test email sent from the CloudCoder health monitor.</p>");
+				message.setContent(buf.toString(), "text/html");
+				
+				Transport.send(message);
+			} catch (Exception e) {
+				//logger.error("Error sending email to {}", reportEmailAddress, e);
+				logger.error("Error sending email", e);
+			}
+		}
 	}
 
 	@Override
