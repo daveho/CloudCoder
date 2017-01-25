@@ -109,10 +109,6 @@ http://repo1.maven.org/maven2/javax/mail/mail/1.4/mail-1.4.jar
   CloudCoderRepository/war/WEB-INF/lib/mail.jar
   CloudCoder/war/WEB-INF/lib/mail.jar
   CloudCoderHealthMonitor/lib/mail.jar
-#http://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar
-#  CloudCoderModelClassesPersistence/lib/mysql-connector-java-5.1.16-bin.jar
-#  CloudCoderRepository/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar
-#  CloudCoder/war/WEB-INF/lib/mysql-connector-java-5.1.16-bin.jar
 https://downloads.mariadb.com/Connectors/java/connector-java-1.5.7/mariadb-java-client-1.5.7.jar
   CloudCoderModelClassesPersistence/lib/mariadb-java-client-1.5.7.jar
   CloudCoderRepository/war/WEB-INF/lib/mariadb-java-client-1.5.7.jar
