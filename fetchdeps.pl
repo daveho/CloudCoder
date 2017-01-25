@@ -165,7 +165,7 @@ sub ReadDeps {
 		}
 
 		# Perform variable substitutions
-		s,\${([A-Za-z_][A-Za-z_0-9]*)},$vars{$1},ge;
+		s,\$\{([A-Za-z_][A-Za-z_0-9]*)\},$vars{$1},ge;
 
 		if (/^(\S+)/) {
 			# Download
