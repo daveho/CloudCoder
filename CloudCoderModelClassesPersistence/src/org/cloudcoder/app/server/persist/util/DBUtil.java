@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.cloudcoder.app.server.persist.JDBCDatabase;
 import org.cloudcoder.app.server.persist.NoSuchUniqueIdException;
 import org.cloudcoder.app.shared.model.ConfigurationSetting;
 import org.cloudcoder.app.shared.model.ConfigurationSettingName;
@@ -59,7 +60,7 @@ public class DBUtil {
     
     static {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(JDBCDatabase.JDBC_DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

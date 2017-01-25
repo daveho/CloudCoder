@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2016, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2016, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -151,6 +151,9 @@ import org.slf4j.LoggerFactory;
  * @author Jaime Spacco
  */
 public class JDBCDatabase implements IDatabase {
+	/** JDBC driver class to use */
+	public static final String JDBC_DRIVER_CLASS = "org.mariadb.jdbc.Driver";
+	
 	static final Logger logger=LoggerFactory.getLogger(JDBCDatabase.class);
 
 	private IConnectionPool connectionPool;
@@ -386,8 +389,8 @@ public class JDBCDatabase implements IDatabase {
 	
 	@Override
 	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(
-			final Course unused, final int section, final Problem problem) {
-		return databaseRun(new GetBestSubmissionReceiptsForProblem(section, problem));
+			final Course unused, final int section, final Problem problem, final long maxTs) {
+		return databaseRun(new GetBestSubmissionReceiptsForProblem(section, problem, maxTs));
 	}
 
 	@Override

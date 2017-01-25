@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -33,22 +33,26 @@ public class GetBestSubmissionReceiptsForProblem
 		extends AbstractDatabaseRunnableNoAuthException<List<UserAndSubmissionReceipt>> {
 	private final int section;
 	private final Problem problem;
+	private final long maxTs;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param section  the course section (0 for all sections)
 	 * @param problem  the {@link Problem}
+	 * @param maxTs    the submission maximum timestamp (submissions with greater timestamps
+	 *                 are ignored
 	 */
-	public GetBestSubmissionReceiptsForProblem(int section, Problem problem) {
+	public GetBestSubmissionReceiptsForProblem(int section, Problem problem, long maxTs) {
 		this.section = section;
 		this.problem = problem;
+		this.maxTs = maxTs;
 	}
 
 	@Override
 	public List<UserAndSubmissionReceipt> run(Connection conn)
 			throws SQLException {
-		return Queries.doGetBestSubmissionReceipts(conn, problem, section, this);
+		return Queries.doGetBestSubmissionReceipts(conn, problem, section, maxTs, this);
 	}
 
 	@Override

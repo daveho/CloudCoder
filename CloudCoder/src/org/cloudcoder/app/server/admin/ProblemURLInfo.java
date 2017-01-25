@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -32,6 +32,7 @@ public class ProblemURLInfo {
 	private final int courseId;
 	private final int section;
 	private final int problemId;
+	private final long maxTs;
 	private final int userId;
 	
 	/**
@@ -40,12 +41,14 @@ public class ProblemURLInfo {
 	 * @param courseId   the course id
 	 * @param section    the section
 	 * @param problemId  the problem id
+	 * @param maxTs      the maximum timestamp
 	 * @param userId     the user id (student)
 	 */
-	public ProblemURLInfo(int courseId, int section, int problemId, int userId) {
+	public ProblemURLInfo(int courseId, int section, int problemId, long maxTs, int userId) {
 		this.courseId = courseId;
 		this.section = section;
 		this.problemId = problemId;
+		this.maxTs = maxTs;
 		this.userId = userId;
 	}
 	
@@ -71,17 +74,26 @@ public class ProblemURLInfo {
 	}
 	
 	/**
+	 * @return the maximum timestamp (submissions occurring after this time
+	 *         will not be considered)
+	 */
+	public long getMaxTs() {
+		return maxTs;
+	}
+	
+	/**
 	 * @return the user id (-1 if a user id was not specified)
 	 */
 	public int getUserId() {
 		return userId;
 	}
 	
-	private static final Pattern PROBLEM_URLINFO_PATTERN = Pattern.compile("(\\d+)(-\\d+)?(/(\\d+)(/(\\d+))?)?");
+	private static final Pattern PROBLEM_URLINFO_PATTERN = Pattern.compile("(\\d+)(-\\d+)?(/(\\d+)(-(\\d+))?(/(\\d+))?)?");
 	private static final int COURSE_ID_GROUP = 1;
 	private static final int SECTION_GROUP = 2;
 	private static final int PROBLEM_ID_GROUP = 4;
-	private static final int USER_ID_GROUP = 6;
+	private static final int MAX_TS_GROUP = 6;
+	private static final int USER_ID_GROUP = 8;
 	
 	/**
 	 * Parse the path info of a request to the {@link Problems} servlet.
@@ -99,6 +111,10 @@ public class ProblemURLInfo {
 		//   specific student's work on specific problem in course
 		
 		// <course id> may optionally have a hyphen and a section appended
+		
+		// <problem id> may optionally have a hyphen and maximum timestamp
+		// appended (to retrieve stats on a problem considering only submissions
+		// not greater than the timestamp)
 		
 		String pathInfo = req.getPathInfo();
 		if (pathInfo == null) {
@@ -118,6 +134,7 @@ public class ProblemURLInfo {
 		int courseId;
 		int section = 0;
 		int problemId = -1;
+		long maxTs = Long.MAX_VALUE;
 		int userId = -1;
 		
 		courseId = Integer.parseInt(m.group(COURSE_ID_GROUP));
@@ -131,12 +148,16 @@ public class ProblemURLInfo {
 		if (nonEmptyMatch(optProblemId)) {
 			problemId = Integer.parseInt(optProblemId);
 		}
+		String optMaxTs = m.group(MAX_TS_GROUP);
+		if (nonEmptyMatch(optMaxTs)) {
+			maxTs = Long.parseLong(optMaxTs);
+		}
 		String optUserId = m.group(USER_ID_GROUP);
 		if (nonEmptyMatch(optUserId)) {
 			userId = Integer.parseInt(optUserId);
 		}
 
-		return new ProblemURLInfo(courseId, section, problemId, userId);
+		return new ProblemURLInfo(courseId, section, problemId, maxTs, userId);
 	}
 
 	private static boolean nonEmptyMatch(String s) {

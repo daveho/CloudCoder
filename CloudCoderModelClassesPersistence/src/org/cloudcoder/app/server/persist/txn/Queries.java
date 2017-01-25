@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -725,6 +725,7 @@ public class Queries {
 			Connection conn,
 			final Problem problem,
 			final int section,
+			long maxTs,
 			AbstractDatabaseRunnable<?> dbRunnable) throws SQLException {
 		
 		// Clearly, my SQL is either amazing or appalling.
@@ -745,6 +746,7 @@ public class Queries {
 				"                    where ii_u.id = ii_e.user_id " +
 				"                      and ii_e.id = ii_sr.event_id " +
 				"                      and ii_e.problem_id = ?" +
+				"                      and ii_e.timestamp <= ?" + // restrict sub events to those occurring before max ts
 				"                   group by ii_u.id) as best" +
 				"" +
 				"             where i_u.id = i_e.user_id" +
@@ -769,11 +771,12 @@ public class Queries {
 		);
 		int problemId = problem.getProblemId();
 		stmt.setInt(1, problemId);
-		stmt.setInt(2, problemId);
+		stmt.setLong(2, maxTs);
 		stmt.setInt(3, problemId);
-		stmt.setInt(4, problem.getCourseId());
-		stmt.setInt(5, section); // if section is 0, all sections will be included
-		stmt.setInt(6, section);
+		stmt.setInt(4, problemId);
+		stmt.setInt(5, problem.getCourseId());
+		stmt.setInt(6, section); // if section is 0, all sections will be included
+		stmt.setInt(7, section);
 		
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		List<UserAndSubmissionReceipt> result = new ArrayList<UserAndSubmissionReceipt>();

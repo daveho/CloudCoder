@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -68,14 +68,25 @@ public class Problems extends HttpServlet {
 		User user = (User) req.getAttribute(RequestAttributeKeys.USER_KEY);
 		Course course = (Course) req.getAttribute(RequestAttributeKeys.COURSE_KEY);
 		
-		Problem problem = new Problem();
-		problem.setProblemId(problemURLInfo.getProblemId());
-		Database.getInstance().reloadModelObject(problem);
-		
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
 		} else {
-			summarizeStudentWorkOnProblem(user, course, problemURLInfo.getSection(), problem, resp);
+			// Load the problem (is this actually necessary?)
+			Problem problem = new Problem();
+			problem.setProblemId(problemURLInfo.getProblemId());
+			if (!Database.getInstance().reloadModelObject(problem)) {
+				logger.error("Could not load Problem object for id={}", problemURLInfo.getProblemId());
+				AdminServletUtil.badRequest(resp);
+				return;
+			}
+
+			summarizeStudentWorkOnProblem(
+					user,
+					course,
+					problemURLInfo.getSection(),
+					problem,
+					problemURLInfo.getMaxTs(),
+					resp);
 		}
 	}
 	
@@ -126,16 +137,23 @@ public class Problems extends HttpServlet {
 	 * @param course      the course
 	 * @param section     the section of the course
 	 * @param problem     the problem
+	 * @param maxTs       the maximum timestamp (submissions later than this are ignored)
 	 * @param resp        the HttpServletResponse to write to
 	 * @throws ServletException 
 	 * @throws IOException 
 	 */
-	private void summarizeStudentWorkOnProblem(User user, Course course, int section, Problem problem, HttpServletResponse resp) throws ServletException, IOException {
+	private void summarizeStudentWorkOnProblem(User user, Course course, int section, Problem problem, long maxTs,
+			HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/csv");
 		String fileName = "course" + course.getId() + (section != 0 ? ("Section" + section) : "") + "Problem" + problem.getProblemId() + ".csv";
 		resp.addHeader("Content-disposition", "attachment;filename=" + fileName);
 
-		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(course, section, problem);
+		List<UserAndSubmissionReceipt> bestSubmissions = Database.getInstance().getBestSubmissionReceipts(
+				course,
+				section,
+				problem,
+				maxTs
+				);
 		
 		@SuppressWarnings("resource")
 		CSVWriter writer = new CSVWriter(resp.getWriter());

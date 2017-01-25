@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -206,7 +206,7 @@ public class CreateWebappDatabase {
 
 	private static void doCreateWebappDatabase(Props props)
 			throws ClassNotFoundException, IOException, SQLException {
-		Class.forName("com.mysql.jdbc.Driver");
+		Class.forName(JDBCDatabase.JDBC_DRIVER_CLASS);
 
 		Properties config = DBUtil.getConfigProperties();
 		

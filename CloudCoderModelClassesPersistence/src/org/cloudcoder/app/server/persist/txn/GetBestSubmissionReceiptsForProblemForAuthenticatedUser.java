@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -62,7 +62,7 @@ public class GetBestSubmissionReceiptsForProblemForAuthenticatedUser
 			return new ArrayList<UserAndSubmissionReceipt>();
 		}
 
-		return Queries.doGetBestSubmissionReceipts(conn, problem, section, this);
+		return Queries.doGetBestSubmissionReceipts(conn, problem, section, Long.MAX_VALUE, this);
 	}
 
 	@Override

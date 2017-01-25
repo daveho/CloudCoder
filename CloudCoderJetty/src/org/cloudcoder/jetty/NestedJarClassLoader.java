@@ -33,6 +33,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 /**
  * <p>Load classes from jarfiles nested within the given jarfile.
  * This is <em>extremely</em> slow, since resources are located by a
@@ -207,16 +209,19 @@ public class NestedJarClassLoader extends ClassLoader {
 					throw new IllegalStateException("Couldn't find resource " + resourceName + " in " + nestedJar);
 				}
 				if (nestedEntry.getName().equals(resourceName)) {
-					int length = (int) nestedEntry.getSize();
-					byte[] bytes = new byte[length];
-					int n = 0;
-					while (n < length) {
-						int r = jin.read(bytes, n, bytes.length - n);
-						if (r > 0) {
-							n += r;
+					// It turns out that some jar entries don't specify the size of the
+					// entry.  So, just read the data into a ByteArrayOutputStream
+					// and create the byte array that way.
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					byte[] buf = new byte[4096];
+					while (true) {
+						int r = jin.read(buf);
+						if (r < 0) {
+							break;
 						}
+						out.write(buf, 0, r);
 					}
-					return bytes;
+					return out.toByteArray();
 				}
 			}
 		} finally {

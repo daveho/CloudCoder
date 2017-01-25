@@ -463,9 +463,12 @@ public interface IDatabase {
 	 * @param course   the {@link Course}
 	 * @param section  the section number of the course (0 for all sections)
 	 * @param problem  the {@link Problem}
+	 * @param maxTs    timestamps of submissions preceeding this timestamp are
+	 *                 ignored; pass Long.MAX_VALUE to consider all submissions
+	 *                 regardless of timestamp
 	 * @return list of {@link UserAndSubmissionReceipt} objects
 	 */
-	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int section, Problem problem);
+	public List<UserAndSubmissionReceipt> getBestSubmissionReceipts(Course course, int section, Problem problem, long maxTs);
 
 	/**
 	 * Get best submission receipts for given {@link Problem}.

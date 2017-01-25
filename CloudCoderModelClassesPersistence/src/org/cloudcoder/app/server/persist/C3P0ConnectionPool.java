@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class C3P0ConnectionPool extends AbstractConnectionPool {
 	public C3P0ConnectionPool(JDBCDatabaseConfig.ConfigProperties config) throws SQLException {
 		cpds = new ComboPooledDataSource();
 		try {
-			cpds.setDriverClass("com.mysql.jdbc.Driver");
+			cpds.setDriverClass(JDBCDatabase.JDBC_DRIVER_CLASS);
 		} catch (Exception e) {
 			throw new SQLException("Could not set JDBC driver class", e);
 		}
