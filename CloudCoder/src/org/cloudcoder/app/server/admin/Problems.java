@@ -71,7 +71,10 @@ public class Problems extends HttpServlet {
 		if (problemURLInfo.getProblemId() < 0) {
 			summarizeProblems(user, course, resp);
 		} else {
-			// Load the problem (is this actually necessary?)
+			// Load the problem.
+			// This is necessary because the returned CSV data
+			// may include problem metadata (such as testname and
+			// brief description.)
 			Problem problem = new Problem();
 			problem.setProblemId(problemURLInfo.getProblemId());
 			if (!Database.getInstance().reloadModelObject(problem)) {
@@ -158,10 +161,11 @@ public class Problems extends HttpServlet {
 		@SuppressWarnings("resource")
 		CSVWriter writer = new CSVWriter(resp.getWriter());
 		
-		String problemName = Database.getInstance().getProblem(problem.getProblemId()).getBriefDescription();
+		String problemName = problem.getTestname();
+		String briefDesc = problem.getBriefDescription();
 		int numTests = Database.getInstance().getTestCasesForProblem(problem.getProblemId()).size();
 		
-		writer.writeNext(new String[]{course.getName(), problemName});
+		writer.writeNext(new String[]{course.getName(), problemName, briefDesc});
 		writer.writeNext(new String[]{});
 		writer.writeNext(BEST_SUBMISSION_HEADER);
 		
