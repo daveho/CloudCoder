@@ -179,6 +179,11 @@ public class DocumentFactory {
 		ccAcctPage.add(new StringValue("website", "Website (optional)"), NoopValidator.INSTANCE);
 		document.addPage(ccAcctPage);
 		
+		Page intBuildPage = new Page("intBuild", "Enable integrated builder");
+		intBuildPage.addHelpText("msg", "Message");
+		intBuildPage.add(new BooleanValue("enable", "Enable integrated builder?"), NoopValidator.INSTANCE);
+		document.addPage(intBuildPage);
+		
 		Page mysqlAcctPage = new Page("mysqlAcct", "Enter MySQL account information");
 		mysqlAcctPage.addHelpText("msg", "Message");
 		mysqlAcctPage.add(new PasswordValue("rootPasswd", "MySQL root password", DEFAULT_MYSQL_PASSWD), StringValueNonemptyValidator.INSTANCE);
