@@ -41,6 +41,8 @@ public class DocumentFactory {
 
 	/**
 	 * Create the instance of {@link Document}.
+	 * This has all of the {@link Page}s which in turn define the various
+	 * wizard pages.
 	 * 
 	 * @return the instance of {@link Document}
 	 */

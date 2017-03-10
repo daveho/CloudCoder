@@ -100,6 +100,17 @@ public class ProvisioningInstallStep extends AbstractInstallStep<AWSInfo, AWSClo
 		}
 		
 		@Override
+		public void execute(AWSCloudService cloudService) throws ExecException {
+			// If we're doing a dry run, set a fake IP.
+			if (cloudService.getDocument().getValue("welcome.dryRun").getBoolean()) {
+				cloudService.getInfo().setElasticIp("127.0.0.1");
+			}
+			
+			// Delegate to the superclass implementation
+			super.execute(cloudService);
+		}
+		
+		@Override
 		public void doExecute(AWSCloudService cloudService) throws ExecException {
 			cloudService.createWebappElasticIp();
 		}
