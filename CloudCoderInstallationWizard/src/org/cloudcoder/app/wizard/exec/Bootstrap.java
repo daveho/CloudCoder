@@ -155,9 +155,17 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		try {
 			// Make the bootstrap script executable
 			executeCommand("chmod a+x bootstrap.pl");
+
+			// Build the bootstap command
+			StringBuilder buf = new StringBuilder();
+			buf.append("./bootstrap.pl --config=bootstrap.properties");
+			if (cloudService.getDocument().getValue("intBuild.enable").getBoolean()) {
+				buf.append(" --enable=integrated-builder");
+			}
+			String bootstrapCmd = buf.toString();
 			
-			// Execute the bootstrap script
-			executeCommand("./bootstrap.pl --config=bootstrap.properties --enable=integrated-builder");
+			// Execute the bootstrap command
+			executeCommand(bootstrapCmd);
 		} catch (Exception e) {
 			throw new ExecException("Error executing build script", e);
 		}
