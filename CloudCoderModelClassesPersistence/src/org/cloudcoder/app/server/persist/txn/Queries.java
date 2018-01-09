@@ -248,24 +248,26 @@ public class Queries {
 			AbstractDatabaseRunnableNoAuthException<?> dbRunnable) throws SQLException {
 		
 		//
-		// Note that we have to join on course registrations to ensure
-		// that we return courses that the user is actually registered for.
-		// For each problem, we also have to check that the user is either
-		// an instructor or that the problem is visible.  Students should
-		// not be allowed to see problems that are not visible.
+		// Note that the query checks to see what the user's
+		// maximum (most privileged) registration type is: -1 if
+		// the user isn't registered in the course at all,
+		// 0 if student, 1 if instructor, etc.  Only instructors
+		// are allowed to import problems.
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
-				"select p.* from " + Problem.SCHEMA.getDbTableName() + " as p, " + Course.SCHEMA.getDbTableName() + " as c, " + CourseRegistration.SCHEMA.getDbTableName() + " as r " +
-				" where p.course_id = c.id " +
-				"   and p." + Problem.DELETED.getName() + " = 0 " +
-				"   and r.course_id = c.id " +
-				"   and r.user_id = ? " +
-				"   and (r.registration_type >= " + CourseRegistrationType.INSTRUCTOR.ordinal() + " or p.visible <> 0)" +
-				"   and c.id = ?"
+				"select p.*, rr.max_reg_type" +
+				"  from cc_problems as p," +
+				"       (select coalesce(max(r.registration_type), -1) as max_reg_type from cc_course_registrations as r" +
+				"         where r.course_id = ? and r.user_id = ?) as rr" +
+				"  where p.course_id = ?" +
+				"    and p.deleted = 0" +
+				"    and rr.max_reg_type >= ?"
 		);
-		stmt.setInt(1, user.getId());
-		stmt.setInt(2, course.getId());
+		stmt.setInt(1, course.getId());
+		stmt.setInt(2, user.getId());
+		stmt.setInt(3, course.getId());
+		stmt.setInt(4, CourseRegistrationType.INSTRUCTOR.ordinal());
 		
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		
