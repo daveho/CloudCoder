@@ -26,6 +26,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClasses"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderModelClassesJSON"/>
-	<classpathentry kind="lib" path="lib/daemon-0.7.jar" sourcepath="lib/daemon-0.7.jar"/>
+	<classpathentry kind="lib" path="lib/daemon-0.8.jar" sourcepath="lib/daemon-0.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
