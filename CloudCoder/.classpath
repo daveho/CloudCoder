@@ -36,5 +36,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueue"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderSubmissionQueueServletContextListener"/>
 	<classpathentry kind="con" path="com.gwtplugins.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
