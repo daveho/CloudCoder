@@ -34,6 +34,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
+import org.cloudcoder.app.wizard.exec.Util;
 
 /**
  * Capture all output written to System.out and System.err
@@ -241,6 +242,9 @@ public class LogPanel extends JPanel {
 		// Log to text pane
 		stdoutAppender = new LogAppender(Color.GRAY);
 		stderrAppender = new LogAppender(Color.RED);
+		
+		// Make sure data directory exists
+		Util.createDataDir();
 
 		// Also log to file
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
