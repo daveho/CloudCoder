@@ -115,6 +115,7 @@ public class DocumentFactory {
 				"welcome", "aws", "awsRegion",
 				"awsKeypair", // user MUST use the previously chosen or generated keypair when installing SSL cert
 				"awsInstanceType",
+				"dynDnsProvider",
 				"dynDns",
 				"ccAcct", "mysqlAcct", "instDetails",
 				"ready", "error", "finished"
@@ -149,6 +150,11 @@ public class DocumentFactory {
 				new EnumValue<InstanceType>(InstanceType.class, "instanceType", "Instance type", InstanceType.T2Micro),
 				NoopValidator.INSTANCE);
 		document.addPage(instanceTypePage);
+		
+		Page dynDnsProviderPage = new Page("dynDnsProvider", "Choose dynamic DNS provider");
+		dynDnsProviderPage.addHelpText("msg", "Message");
+		dynDnsProviderPage.add(new EnumValue<>(DynamicDnsProvider.class, "dynDnsProvider", "Dynamic DNS provider"), NoopValidator.INSTANCE);
+		document.addPage(dynDnsProviderPage);
 		
 		Page dynDnsPage = new Page("dynDns", "Dynamic DNS information");
 		dynDnsPage.addHelpText("msg", "Message");
