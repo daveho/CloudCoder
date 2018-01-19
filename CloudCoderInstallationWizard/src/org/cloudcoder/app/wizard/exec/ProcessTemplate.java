@@ -8,13 +8,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.cloudcoder.app.wizard.model.BooleanValue;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.ImmutableStringValue;
 import org.cloudcoder.app.wizard.model.Page;
 import org.cloudcoder.app.wizard.model.StringValue;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
 
+/**
+ * Process text template to fill in dynamic values from
+ * the {@link Document}.
+ */
 public class ProcessTemplate {
 	private ImmutableStringValue template;
 	private Document document;
@@ -78,30 +81,5 @@ public class ProcessTemplate {
 		}
 		
 		return w.toString();
-	}
-	
-	// Just for testing
-	public static void main(String[] args) {
-		ImmutableStringValue template = ImmutableStringValue.createHelpText("finished", "reporttemplate", "Report template");
-		Document document = new Document();
-		Page dbPage = new Page("db", "db");
-		dbPage.add(new BooleanValue("sslCertInstalled", "sslCertInstalled", true), NoopValidator.INSTANCE);
-		dbPage.add(new BooleanValue("dnsHostnameConfigured", "dnsHostnameConfigured", true), NoopValidator.INSTANCE);
-		document.addPage(dbPage);
-		Page dnsPage = new Page("dns", "dns");
-		dnsPage.add(new StringValue("hostname", "hostname", "cloudcoder-test.duckdns.org"), NoopValidator.INSTANCE);
-		document.addPage(dnsPage);
-		Page dynDnsPage = new Page("dynDns", "dynDns");
-		dynDnsPage.add(new BooleanValue("useDuckDns", "useDuckDns", true), NoopValidator.INSTANCE);
-		document.addPage(dynDnsPage);
-		Page awsKeypairPage = new Page("awsKeypair", "awsKeypair");
-		awsKeypairPage.add(new BooleanValue("useExisting", "useExisting", true), NoopValidator.INSTANCE);
-		document.addPage(awsKeypairPage);
-		
-		ICloudInfo info = new Bootstrap.TestCloudInfo("ccuser", "1.2.3.4", "10.0.0.222");
-		
-		ProcessTemplate pt = new ProcessTemplate(template, document, info);
-		
-		System.out.print(pt.generate());
 	}
 }

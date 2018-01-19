@@ -22,4 +22,5 @@ public interface IValue extends Cloneable {
 
 	public void addDisplayOption(DisplayOption opt);
 	public boolean hasDisplayOption(DisplayOption opt);
+	public boolean isEnum(Enum<?> enumVal);
 }

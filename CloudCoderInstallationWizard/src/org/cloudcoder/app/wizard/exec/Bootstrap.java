@@ -26,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.cloudcoder.app.wizard.model.Document;
 import org.cloudcoder.app.wizard.model.DocumentFactory;
+import org.cloudcoder.app.wizard.model.DynamicDnsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,13 +176,19 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		// Note that errors here are non-fatal.
 		
 		try {
-			if (!cloudService.getDocument().getValue("dynDns.useDuckDns").getBoolean()) {
+			Document document = cloudService.getDocument();
+			
+//			if (!document.getValue("dynDns.useDuckDns").getBoolean()) {
+//				// Not using Duck DNS
+//				throw new NonFatalExecException("Not using Duck DNS");
+//			}
+			if (!document.getValue("dynDns.provider").isEnum(DynamicDnsProvider.DUCK_DNS)) {
 				// Not using Duck DNS
 				throw new NonFatalExecException("Not using Duck DNS");
 			}
 			
-			String authToken = cloudService.getDocument().getValue("dynDns.duckDnsToken").getString();
-			String dnsHostname = cloudService.getDocument().getValue("dns.hostname").getString();
+			String authToken = document.getValue("duckDns.token").getString();
+			String dnsHostname = document.getValue("dns.hostname").getString();
 			String ipAddress = cloudService.getInfo().getWebappPublicIp();
 			
 			String domain = dnsHostname.substring(0, dnsHostname.length() - ".duckdns.org".length());

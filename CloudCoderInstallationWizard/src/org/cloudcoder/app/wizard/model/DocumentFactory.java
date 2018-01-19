@@ -7,6 +7,7 @@ import java.util.List;
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.model.Document.CompositeNameCallback;
 import org.cloudcoder.app.wizard.model.validators.ConditionalValidator;
+import org.cloudcoder.app.wizard.model.validators.EnumEqualsValidator;
 import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.MultiValidator;
 import org.cloudcoder.app.wizard.model.validators.NoopValidator;
@@ -16,6 +17,12 @@ import org.cloudcoder.app.wizard.model.validators.StringValueNonemptyValidator;
 
 import com.amazonaws.services.ec2.model.InstanceType;
 
+/**
+ * Factory to create the {@link Document} representing all
+ * configuration information and (by extension) the wizard
+ * pages which will allow the user to provide the configuration
+ * information.
+ */
 public class DocumentFactory {
 	public static final String DEFAULT_MYSQL_PASSWD = "abc123";
 	
@@ -151,17 +158,21 @@ public class DocumentFactory {
 				NoopValidator.INSTANCE);
 		document.addPage(instanceTypePage);
 		
-		Page dynDnsProviderPage = new Page("dynDnsProvider", "Choose dynamic DNS provider");
+		Page dynDnsProviderPage = new Page("dynDns", "Choose dynamic DNS provider");
 		dynDnsProviderPage.addHelpText("msg", "Message");
-		dynDnsProviderPage.add(new EnumValue<>(DynamicDnsProvider.class, "dynDnsProvider", "Dynamic DNS provider"), NoopValidator.INSTANCE);
+		dynDnsProviderPage.add(new EnumValue<>(DynamicDnsProvider.class, "provider", "Dynamic DNS provider"), NoopValidator.INSTANCE);
 		document.addPage(dynDnsProviderPage);
 		
-		Page dynDnsPage = new Page("dynDns", "Dynamic DNS information");
-		dynDnsPage.addHelpText("msg", "Message");
-		dynDnsPage.add(new BooleanValue("useDuckDns", "Use Duck DNS"), NoopValidator.INSTANCE);
-		dynDnsPage.add(new PasswordValue("duckDnsToken", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
-		dynDnsPage.selectivelyEnable("duckDnsToken", new EnableIfBooleanFieldChecked("useDuckDns"));
-		document.addPage(dynDnsPage);
+		Page duckDnsPage = new Page("duckDns", "Duck DNS configuration");
+		duckDnsPage.addHelpText("msg", "Message");
+		duckDnsPage.add(new PasswordValue("token", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
+		document.addPage(duckDnsPage);
+		document.selectivelyEnablePage("duckDns", new ISelectivePageEnablement() {
+			@Override
+			public boolean isEnabled(Document document) {
+				return document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class) == DynamicDnsProvider.DUCK_DNS;
+			}
+		});
 		
 		Page dnsPage = new Page("dns", "Enter DNS hostname");
 		dnsPage.addHelpText("msg", "Message");
@@ -169,7 +180,7 @@ public class DocumentFactory {
 				new StringValue("hostname", "Hostname"),
 				new MultiValidator(
 						StringValueNonemptyValidator.INSTANCE,
-						new ConditionalValidator("dynDns.useDuckDns", new StringValueEndsInSuffixValidator(".duckdns.org", true))
+						new EnumEqualsValidator("dynDns.provider", DynamicDnsProvider.DUCK_DNS, new StringValueEndsInSuffixValidator(".duckdns.org", true))
 						)
 				);
 		document.addPage(dnsPage);

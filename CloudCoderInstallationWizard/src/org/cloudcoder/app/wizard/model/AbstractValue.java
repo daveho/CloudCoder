@@ -26,4 +26,10 @@ public class AbstractValue {
 	public boolean hasDisplayOption(DisplayOption opt) {
 		return displayOptions.hasDisplayOption(opt);
 	}
+
+	// Default implementation: EnumValue will override to do an actual
+	// comparison.
+	public boolean isEnum(Enum<?> enumVal) {
+		return false;
+	}
 }

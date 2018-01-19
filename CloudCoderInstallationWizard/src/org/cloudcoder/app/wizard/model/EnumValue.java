@@ -91,6 +91,15 @@ public class EnumValue<E extends Enum<E>> extends AbstractValue implements IValu
 		return enumCls.getEnumConstants()[value.ordinal()].name();
 	}
 	
+	@Override
+	public boolean isEnum(Enum<?> enumVal) {
+		// Note that we don't actually need to use the generic types
+		// here because the reference equality will only evaluate
+		// to true if enumVal and value are the same enum
+		// constant.
+		return enumVal == value;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public EnumValue<E> clone() {
