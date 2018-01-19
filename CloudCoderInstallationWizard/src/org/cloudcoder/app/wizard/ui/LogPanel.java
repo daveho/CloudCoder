@@ -275,8 +275,9 @@ public class LogPanel extends JPanel {
 			// Should not happen
 			throw new IllegalStateException("UTF-8 encoding not supported?");
 		}
-		System.out.println("This is text printed to System.out");
-		System.err.println("This is text printed to System.err");
+//		System.out.println("This is text printed to System.out");
+//		System.err.println("This is text printed to System.err");
+		System.out.println("Log file for this session is: " + logFile.getAbsolutePath());
 	}
 
 	private OutputMonitor createOutputMonitor(LogAppender appender) {
