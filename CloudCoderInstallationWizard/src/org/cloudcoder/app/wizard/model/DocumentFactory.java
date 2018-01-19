@@ -122,8 +122,9 @@ public class DocumentFactory {
 				"welcome", "aws", "awsRegion",
 				"awsKeypair", // user MUST use the previously chosen or generated keypair when installing SSL cert
 				"awsInstanceType",
-				"dynDnsProvider",
 				"dynDns",
+				"duckDns",
+				"dynDnsAcct",
 				"ccAcct", "mysqlAcct", "instDetails",
 				"ready", "error", "finished"
 		};
@@ -163,16 +164,19 @@ public class DocumentFactory {
 		dynDnsProviderPage.add(new EnumValue<>(DynamicDnsProvider.class, "provider", "Dynamic DNS provider"), NoopValidator.INSTANCE);
 		document.addPage(dynDnsProviderPage);
 		
+		// This page is just for getting the DuckDNS auth token
 		Page duckDnsPage = new Page("duckDns", "Duck DNS configuration");
 		duckDnsPage.addHelpText("msg", "Message");
 		duckDnsPage.add(new PasswordValue("token", "Duck DNS token"), StringValueNonemptyValidator.INSTANCE);
 		document.addPage(duckDnsPage);
-		document.selectivelyEnablePage("duckDns", new ISelectivePageEnablement() {
-			@Override
-			public boolean isEnabled(Document document) {
-				return document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class) == DynamicDnsProvider.DUCK_DNS;
-			}
-		});
+		
+		// This page is for Dynamic DNS providers that require username and password
+		// (we can just use one such page for all of them)
+		Page dynDnsAcctPage = new Page("dynDnsAcct", "Dynamic DNS account information");
+		dynDnsAcctPage.addHelpText("msg", "Message");
+		dynDnsAcctPage.add(new StringValue("username", "Username"), StringValueNonemptyValidator.INSTANCE);
+		dynDnsAcctPage.add(new PasswordValue("password", "Password"), StringValueNonemptyValidator.INSTANCE);
+		document.addPage(dynDnsAcctPage);
 		
 		Page dnsPage = new Page("dns", "Enter DNS hostname");
 		dnsPage.addHelpText("msg", "Message");
@@ -271,6 +275,28 @@ public class DocumentFactory {
 				InstallationTask.class,
 				InstallationTask.ISSUE_AND_INSTALL_SSL_CERTIFICATE);
 		document.selectivelyEnablePage("issueSsl", issueSslEnablement);
+		
+		// The Duck DNS auth token page should only be enabled if the
+		// dynamic DNS provide is DuckDNS
+		document.selectivelyEnablePage("duckDns", new ISelectivePageEnablement() {
+			@Override
+			public boolean isEnabled(Document document) {
+				DynamicDnsProvider provider = document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class);
+				//System.out.println("Check enablement for DuckDNS page: provider=" + provider.name());
+				return provider == DynamicDnsProvider.DUCK_DNS;
+			}
+		});
+		
+		// The generic dynamic DNS username/password page should only be enabled
+		// if the provider requires username/password.
+		document.selectivelyEnablePage("dynDnsAcct", new ISelectivePageEnablement() {
+			@Override
+			public boolean isEnabled(Document document) {
+				DynamicDnsProvider provider = document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class);
+				//System.out.println("Check enablement for dyn DNS auth page: provider=" + provider.name());
+				return provider.requireUsernameAndPassword();
+			}
+		});
 		
 		return document;
 	}
