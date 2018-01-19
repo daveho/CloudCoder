@@ -13,7 +13,7 @@ public class NoIpUpdater implements IDynamicDnsUpdater {
 		String updateCommand =
 				"curl -u '" +
 				username + ":" + password +
-				"' 'http://dynupdate.no-ip.com/nic/update?hostname=" +
+				"' 'https://dynupdate.no-ip.com/nic/update?hostname=" +
 				dnsHostname +
 				"&myip=" +
 				publicIpAddr +
