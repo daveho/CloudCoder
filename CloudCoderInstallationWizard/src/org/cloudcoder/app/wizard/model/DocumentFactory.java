@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.cloudcoder.app.wizard.exec.InstallationConstants;
 import org.cloudcoder.app.wizard.model.Document.CompositeNameCallback;
-import org.cloudcoder.app.wizard.model.validators.ConditionalValidator;
 import org.cloudcoder.app.wizard.model.validators.EnumEqualsValidator;
 import org.cloudcoder.app.wizard.model.validators.FileReadableValidator;
 import org.cloudcoder.app.wizard.model.validators.MultiValidator;

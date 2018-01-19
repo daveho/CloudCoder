@@ -6,11 +6,25 @@ import org.cloudcoder.app.wizard.model.Document;
 public class NoIpUpdater implements IDynamicDnsUpdater {
 	@Override
 	public String getUpdateCommand(Document document, String publicIpAddr) {
-		throw new UnsupportedOperationException("No-IP updater not supported yet");
+		String dnsHostname = document.getValue("dns.hostname").getString();
+		String username = document.getValue("dynDnsAcct.username").getString();
+		String password = document.getValue("dynDnsAcct.password").getString();
+		
+		String updateCommand =
+				"curl -u '" +
+				username + ":" + password +
+				"' 'http://dynupdate.no-ip.com/nic/update?hostname=" +
+				dnsHostname +
+				"&myip=" +
+				publicIpAddr +
+				"'";
+		
+		return updateCommand;
 	}
 
 	@Override
 	public boolean checkResult(String resultText) {
-		throw new UnsupportedOperationException("No-IP updater not supported yet");
+		resultText = resultText.trim().toLowerCase();
+		return resultText.startsWith("good ") || resultText.startsWith("nochg ");
 	}
 }

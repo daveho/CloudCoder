@@ -193,6 +193,10 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			}
 
 			IDynamicDnsUpdater updater = UPDATER_MAP.get(provider);
+			if (updater == null) {
+				// This should not happen unless UPDATER_MAP isn't up to date.
+				throw new NonFatalExecException("No dynamic DNS updater found for provider " + provider.name());
+			}
 			String updateCommand = updater.getUpdateCommand(document, cloudService.getInfo().getWebappPublicIp()); 
 			System.out.println("Updating dynamic DNS using command " + updateCommand);
 
@@ -206,7 +210,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 			//       to create the hostname
 			String output = executeCommandAndCaptureOutput(updateCommand);
 			if (!updater.checkResult(output)) {
-				throw new NonFatalExecException("Non-OK result dynamic Duck DNS update: " + output);
+				throw new NonFatalExecException("Failed dynamic DNS update: " + output);
 			}
 		} catch (Exception e) {
 			throw new NonFatalExecException("Error updating dynamic DNS", e);
