@@ -1,5 +1,8 @@
 package org.cloudcoder.app.wizard.exec;
 
+import org.cloudcoder.app.wizard.model.Document;
+import org.cloudcoder.app.wizard.model.DynamicDnsProvider;
+
 public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends ICloudService<InfoType, ServiceType>>
 		extends AbstractBootstrapStep<InfoType, ServiceType> {
 	public BootstrapStep(ServiceType cloudService) {
@@ -11,18 +14,24 @@ public class BootstrapStep<InfoType extends ICloudInfo, ServiceType extends IClo
 		addSubStep(new UploadBootstrapPropertiesSubStep());
 		addSubStep(new RunBootstrapScriptSubStep());
 		
-		ConfigureDuckDnsDNSHostnameSubStep duckDnsSubStep = new ConfigureDuckDnsDNSHostnameSubStep();
-		addSubStep(duckDnsSubStep);
+		Document document = cloudService.getDocument();
+
+		// Configure dynamic DNS if a provider was selected/configured
+		DynamicDnsProvider provider = document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class);
+		if (provider != DynamicDnsProvider.NONE) {
+			ConfigureDynDnsDNSHostnameSubStep dynDnsSubStep = new ConfigureDynDnsDNSHostnameSubStep();
+			addSubStep(dynDnsSubStep);
 		
-		// Configuring DNS is a prerequisite for verifying DNS (for somewhat obvious reasons)
-		VerifyHostnameSubStep verifyDnsSubStep = new VerifyHostnameSubStep(true);
-		addSubStep(verifyDnsSubStep);
-		setPrerequisite(verifyDnsSubStep, getName() + "." + duckDnsSubStep.getName());
-		
-		// Verifying DNS is a prerequisite for using Let's Encrypt to issue/install an SSL cert
-		LetsEncryptSubStep letsEncryptSubStep = new LetsEncryptSubStep();
-		addSubStep(letsEncryptSubStep);
-		setPrerequisite(letsEncryptSubStep, getName() + "." + verifyDnsSubStep.getName());
+			// Configuring DNS is a prerequisite for verifying DNS (for somewhat obvious reasons)
+			VerifyHostnameSubStep verifyDnsSubStep = new VerifyHostnameSubStep(true);
+			addSubStep(verifyDnsSubStep);
+			setPrerequisite(verifyDnsSubStep, getName() + "." + dynDnsSubStep.getName());
+			
+			// Verifying DNS is a prerequisite for using Let's Encrypt to issue/install an SSL cert
+			LetsEncryptSubStep letsEncryptSubStep = new LetsEncryptSubStep();
+			addSubStep(letsEncryptSubStep);
+			setPrerequisite(letsEncryptSubStep, getName() + "." + verifyDnsSubStep.getName());
+		}
 	}
 
 	@Override

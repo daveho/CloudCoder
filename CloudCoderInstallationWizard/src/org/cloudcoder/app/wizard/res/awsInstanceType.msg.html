@@ -7,12 +7,20 @@ for the CloudCoder webapp/database server.
 A <code>t2.micro</code> instance, which is eligible for the EC2 free
 tier, is known to work well for CloudCoder if you have 60 or fewer
 concurrent users.  It is likely that a <code>t2.nano</code>
-instance is likely to work reasonably well if you have a relatively
+instance will work reasonably well if you have a relatively
 small number of concurrent users (perhaps 30 or so).  If you are
 expecting a large number of concurrent users (100 or more)
 you should consider using one of the larger instance types. 
 </p>
 
+<p>
+Note that if you will have a significant number of concurrent
+users, you will want to run some number of builders
+separately (not on the webapp server.)  See [TODO: link to
+documentation] for details on setting up builders.
+</p>
+
+<!--
 <p>
 Note that builder servers will be provisioned dynamically
 as the webapp runs, and will incur additional charges depending
@@ -21,3 +29,4 @@ the cost of running the builders is likely to
 be <i>much</i> lower than the cost of running the webapp.
 (Dynamic scaling FTW!)
 </p>
+ -->

@@ -70,19 +70,19 @@ public abstract class AbstractBootstrapStep<
 		}
 	}
 	
-	protected class ConfigureDuckDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
-		public ConfigureDuckDnsDNSHostnameSubStep() {
-			super("configureDuckDns");
+	protected class ConfigureDynDnsDNSHostnameSubStep extends AbstractInstallSubStep<InfoType, ServiceType> {
+		public ConfigureDynDnsDNSHostnameSubStep() {
+			super("configureDynDns");
 		}
 		
 		@Override
 		public String getDescription() {
-			return "Using Duck DNS to configure hostname";
+			return "Using dynamic DNS to configure hostname";
 		}
 		
 		@Override
 		protected void doExecute(ServiceType cloudService) throws ExecException {
-			bootstrap.configureDuckDnsHostName();
+			bootstrap.configureDynkDnsHostName();
 		}
 	}
 	

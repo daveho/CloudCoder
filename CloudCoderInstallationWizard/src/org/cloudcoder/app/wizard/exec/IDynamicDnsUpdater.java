@@ -4,16 +4,16 @@ import org.cloudcoder.app.wizard.model.Document;
 
 public interface IDynamicDnsUpdater {
 	/**
-	 * Get an update URL to update the IP address associated with
+	 * Get an update curl command to update the IP address associated with
 	 * the dyanamic DNS hostname.
 	 * 
 	 * @param document      the {@link Document} (which has properties needed to
 	 *                      authorize the update, e.g., the Duck DNS token)
 	 * @param publicIpAddr  the public IP address to associate with the
 	 *                      dynamic DNS hostname
-	 * @return the update URL (should be issued using an HTTP GET)
+	 * @return the update curl command
 	 */
-	public String getUpdateUrl(Document document, String publicIpAddr);
+	public String getUpdateCommand(Document document, String publicIpAddr);
 	
 	/**
 	 * Check the result of the update.

@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +43,7 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 	//public static final String DOWNLOAD_SITE = "https://s3.amazonaws.com/cloudcoder-binaries";
 
 	// Temporary site for development
-	public static final String DOWNLOAD_SITE = "http://faculty.ycp.edu/~dhovemey/cloudcoder";
+	public static final String DOWNLOAD_SITE = "https://daveho.github.io/cctest";
 	
 	public static final String BOOTSTRAP_SCRIPT = DOWNLOAD_SITE + "/bootstrap.pl";
 	
@@ -172,42 +174,42 @@ public class Bootstrap<InfoType extends ICloudInfo, ServiceType extends ICloudSe
 		}
 	}
 	
-	public void configureDuckDnsHostName() throws ExecException {
+	private static final Map<DynamicDnsProvider, IDynamicDnsUpdater> UPDATER_MAP = new HashMap<>();
+	static {
+		UPDATER_MAP.put(DynamicDnsProvider.DUCK_DNS, new DuckDnsUpdater());
+		UPDATER_MAP.put(DynamicDnsProvider.NOIP, new NoIpUpdater());
+	}
+	
+	public void configureDynkDnsHostName() throws ExecException {
 		// Note that errors here are non-fatal.
 		
 		try {
 			Document document = cloudService.getDocument();
 			
-//			if (!document.getValue("dynDns.useDuckDns").getBoolean()) {
-//				// Not using Duck DNS
-//				throw new NonFatalExecException("Not using Duck DNS");
-//			}
-			if (!document.getValue("dynDns.provider").isEnum(DynamicDnsProvider.DUCK_DNS)) {
-				// Not using Duck DNS
-				throw new NonFatalExecException("Not using Duck DNS");
+			DynamicDnsProvider provider = document.getValue("dynDns.provider").getEnum(DynamicDnsProvider.class);
+			if (provider == DynamicDnsProvider.NONE) {
+				// Not using dynamic DNS?
+				throw new NonFatalExecException("Not using dynamic DNS? (this shouldn't happen)");
 			}
-			
-			String authToken = document.getValue("duckDns.token").getString();
-			String dnsHostname = document.getValue("dns.hostname").getString();
-			String ipAddress = cloudService.getInfo().getWebappPublicIp();
-			
-			String domain = dnsHostname.substring(0, dnsHostname.length() - ".duckdns.org".length());
-			
-			String updateUrl =
-					"https://www.duckdns.org/update?domains=" + domain + "&token=" + authToken + "&ip=" + ipAddress;
-			System.out.println("Updating Duck DNS using URL " + updateUrl);
 
-			// OpenJDK doesn't trust the StartSSL root certificate,
-			// which is needed to talk to duckdns.org via HTTPS,
-			// so we can't use Java to update Duck DNS.  However,
-			// we CAN use ssh to run a curl command on the webapp
-			// instance.
-			String output = executeCommandAndCaptureOutput("curl --silent --show-error '" + updateUrl + "'");
-			if (!output.trim().equals("OK")) {
-				throw new NonFatalExecException("Non-OK result from Duck DNS update: " + output);
+			IDynamicDnsUpdater updater = UPDATER_MAP.get(provider);
+			String updateCommand = updater.getUpdateCommand(document, cloudService.getInfo().getWebappPublicIp()); 
+			System.out.println("Updating dynamic DNS using command " + updateCommand);
+
+			// We update dynamic DNS by executing a curl command
+			// on the webapp server, rather than having the installer
+			// do the update directly.  This is because
+			//   (1) Java might not trust the cert used by the dynamic DNS service
+			//       (have seen this with Duck DNS), and
+			//   (2) on some networks (e.g., YCP) access to dynamic DNS services is blocked,
+			//       although that begs the question of how the user is supposed
+			//       to create the hostname
+			String output = executeCommandAndCaptureOutput(updateCommand);
+			if (!updater.checkResult(output)) {
+				throw new NonFatalExecException("Non-OK result dynamic Duck DNS update: " + output);
 			}
 		} catch (Exception e) {
-			throw new NonFatalExecException("Error updating Duck DNS dynamic IP address", e);
+			throw new NonFatalExecException("Error updating dynamic DNS", e);
 		}
 	}
 	
