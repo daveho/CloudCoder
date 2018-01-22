@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2013, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2013, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2013,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -192,4 +192,20 @@ public interface IProblemData {
 	 * @return the MD5 checksum of the external library required for this problem
 	 */
 	public String getExternalLibraryMD5();
+
+	/**
+	 * Set the equality predicate.
+	 * 
+	 * @param equalityPredicate the equality predicate to set
+	 */
+	public void setEqualityPredicate(String equalityPredicate);
+
+	/**
+	 * Get the equality predicate.
+	 * Will return an empty string if this problem does not define
+	 * a custom equality predicate.
+	 * 
+	 * @return the equality predicate
+	 */
+	public String getEqualityPredicate();
 }

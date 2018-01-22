@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -50,6 +50,7 @@ public class ProblemData implements Serializable, IProblemData {
 	private String parentHash;
 	private String externalLibraryUrl;
 	private String externalLibraryMD5;
+	private String equalityPredicate;
 
 	// Schema version 0 fields
 	
@@ -156,6 +157,13 @@ public class ProblemData implements Serializable, IProblemData {
 		public String get(IProblemData obj) { return obj.getExternalLibraryMD5(); }
 	};
 	
+	// Schema version 8 fields
+	
+	public static final ModelObjectField<IProblemData, String> EQUALITY_PREDICATE = new ModelObjectField<IProblemData, String>("equality_predicate", String.class, 4096, ModelObjectIndexType.NONE, 0, "''") {
+		public void set(IProblemData obj, String value) { obj.setEqualityPredicate(value); }
+		public String get(IProblemData obj) { return obj.getEqualityPredicate(); }
+	};
+	
 	/**
 	 * Description of fields (version 0 schema).
 	 */
@@ -222,17 +230,25 @@ public class ProblemData implements Serializable, IProblemData {
 		.finishDelta();
 	
 	/**
-	 * Description of firlds (schema version 7).
+	 * Description of fields (schema version 7).
 	 * No field changes, but new {@link ProblemType} members
 	 * have been added.
 	 */
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6, ProblemData.class)
 		.finishDelta();
+	
+	/**
+	 * Description of fields (schema version 8).
+	 * The <code>equalityPredicate</code> field was added.
+	 */
+	public static final ModelObjectSchema<IProblemData> SCHEMA_V8 = ModelObjectSchema.basedOn(SCHEMA_V7, ProblemData.class)
+		.add(EQUALITY_PREDICATE)
+		.finishDelta();
 
 	/**
 	 * Description of fields (current schema).
 	 */
-	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V7;
+	public static final ModelObjectSchema<IProblemData> SCHEMA = SCHEMA_V8;
 
 	/**
 	 * Constructor.
@@ -241,6 +257,7 @@ public class ProblemData implements Serializable, IProblemData {
 		super();
 		externalLibraryUrl = "";
 		externalLibraryMD5 = "";
+		equalityPredicate = "";
 	}
 
 	/* (non-Javadoc)
@@ -464,6 +481,16 @@ public class ProblemData implements Serializable, IProblemData {
 		return this.externalLibraryMD5;
 	}
 	
+	@Override
+	public void setEqualityPredicate(String equalityPredicate) {
+		this.equalityPredicate = equalityPredicate;
+	}
+	
+	@Override
+	public String getEqualityPredicate() {
+		return this.equalityPredicate;
+	}
+	
 	/**
 	 * Copy all data in the given ProblemData object into this one.
 	 * 
@@ -484,6 +511,7 @@ public class ProblemData implements Serializable, IProblemData {
 		this.parentHash = other.parentHash;
 		this.externalLibraryUrl = other.externalLibraryUrl;
 		this.externalLibraryMD5 = other.externalLibraryMD5;
+		this.equalityPredicate = other.equalityPredicate;
 	}
 	
 	@Override
@@ -505,7 +533,8 @@ public class ProblemData implements Serializable, IProblemData {
 				&& ModelObjectUtil.equals(this.license, other.license)
 				&& ModelObjectUtil.equals(this.parentHash, other.parentHash)
 				&& ModelObjectUtil.equals(this.externalLibraryUrl, other.externalLibraryUrl)
-				&& ModelObjectUtil.equals(this.externalLibraryMD5, other.externalLibraryMD5);
+				&& ModelObjectUtil.equals(this.externalLibraryMD5, other.externalLibraryMD5)
+				&& ModelObjectUtil.equals(this.equalityPredicate, other.equalityPredicate);
 	}
 
 	/*
@@ -527,5 +556,6 @@ public class ProblemData implements Serializable, IProblemData {
 		empty.setTimestampUtc(System.currentTimeMillis());
 		empty.setLicense(ProblemLicense.NOT_REDISTRIBUTABLE);
 		empty.setParentHash("");
+		empty.setEqualityPredicate("");
 	}
 }

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -220,9 +220,18 @@ public class Problem extends ProblemData implements IProblem, IModelObject<Probl
 		.finishDelta();
 	
 	/**
+	 * Description of fields (schema version 12).
+	 * The <code>equalityPredicate</code> field was added to
+	 * {@link ProblemData} in {@link ProblemData#SCHEMA_V8}.
+	 */
+	public static final ModelObjectSchema<IProblem> SCHEMA_V12 = ModelObjectSchema.basedOn(SCHEMA_V11, Problem.class)
+		.addDeltasFrom(ProblemData.SCHEMA_V8)
+		.finishDelta();
+	
+	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V11;
+	public static final ModelObjectSchema<IProblem> SCHEMA = SCHEMA_V12;
 	
 	/**
 	 * Number of fields.

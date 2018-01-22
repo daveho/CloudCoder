@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2015, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2015, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2015,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -121,16 +121,25 @@ public class RepoProblem extends ProblemData implements IModelObject<RepoProblem
 	
 	/**
 	 * Description of fields (schema version 7).
-	 * No fields have chagned, but {@link ProblemData}'s schema has
+	 * No fields have changed, but {@link ProblemData}'s schema has
 	 * changed (due to new {@link ProblemType} members being added.)
 	 */
 	public static final ModelObjectSchema<RepoProblem> SCHEMA_V7 = ModelObjectSchema.basedOn(SCHEMA_V6, RepoProblem.class)
+		.finishDelta();
+
+	/**
+	 * Description of fields (schema version 12).
+	 * The <code>equalityPredicate</code> field was added to
+	 * {@link ProblemData} in {@link ProblemData#SCHEMA_V8}.
+	 */
+	public static final ModelObjectSchema<RepoProblem> SCHEMA_V8 = ModelObjectSchema.basedOn(SCHEMA_V7, RepoProblem.class)
+		.addDeltasFrom(ProblemData.SCHEMA_V8)
 		.finishDelta();
 	
 	/**
 	 * Description of fields (current schema version).
 	 */
-	public static final ModelObjectSchema<RepoProblem> SCHEMA = SCHEMA_V7;
+	public static final ModelObjectSchema<RepoProblem> SCHEMA = SCHEMA_V8;
 	
 	/** Number of fields. */
 	public static final int NUM_FIELDS = SCHEMA.getNumFields();

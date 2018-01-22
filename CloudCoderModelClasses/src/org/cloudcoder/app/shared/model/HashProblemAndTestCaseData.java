@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -87,6 +87,9 @@ public class HashProblemAndTestCaseData<
 		// Digest external library URL and MD5 if they are present
 		updateStringIfNonEmpty(problemData.getExternalLibraryUrl());
 		updateStringIfNonEmpty(problemData.getExternalLibraryMD5());
+		
+		// Digest equality predicate if it is present
+		updateStringIfNonEmpty(problemData.getEqualityPredicate());
 	}
 
 	private void hashTestCaseData(ITestCaseData testCaseData) {
