@@ -41,7 +41,9 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
+import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.IProblem;
+import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
@@ -259,24 +261,7 @@ public class EditProblemPage extends CloudCoderPage {
 			// In the editor for the skeleton, we keep the editor mode in sync
 			// with the problem type.  (I.e., for a Java problem we want Java
 			// mode, for Python we want Python mode, etc.)
-			EditStringFieldWithAceEditor<IProblem> skeletonEditor =
-					new EditStringFieldWithAceEditor<IProblem>("Skeleton code", ProblemData.SKELETON) {
-						@Override
-						public void update() {
-							setLanguage();
-							super.update();
-						}
-						@Override
-						public void onModelObjectChange() {
-							setLanguage();
-						}
-						private void setLanguage() {
-							AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
-							setEditorMode(editorMode);
-						}
-					};
-			skeletonEditor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
-			problemFieldEditorList.add(skeletonEditor);
+			problemFieldEditorList.add(createProblemSourceEditor("Skeleton code", ProblemData.SKELETON));
 			
 			// We don't need an editor for schema version - problems/testcases are
 			// automatically converted to the latest version when they are imported.
@@ -288,12 +273,37 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
 			problemFieldEditorList.add(new EditStringField<IProblem>("URL of required external library", ProblemData.EXTERNAL_LIBRARY_URL));
 			problemFieldEditorList.add(new EditStringField<IProblem>("MD5 checksum of required external library", ProblemData.EXTERNAL_LIBRARY_MD5));
+			// Also keep equality predicate editor language in sync with Problem
+			problemFieldEditorList.add(createProblemSourceEditor("Equality predicate", ProblemData.EQUALITY_PREDICATE));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(
 					"Problem visible to students",
 					"Check to make problem visible to students",
 					Problem.VISIBLE));
+		}
+		
+		// Create a field editor which automatically synchronizes its source
+		// language with the Problem's language.
+		private EditStringFieldWithAceEditor<IProblem> createProblemSourceEditor(String desc, ModelObjectField<? super IProblem, String> field) {
+			EditStringFieldWithAceEditor<IProblem> editor;
+			editor = new EditStringFieldWithAceEditor<IProblem>(desc, field) {
+				@Override
+				public void update() {
+					setLanguage();
+					super.update();
+				}
+				@Override
+				public void onModelObjectChange() {
+					setLanguage();
+				}
+				private void setLanguage() {
+					AceEditorMode editorMode = ViewUtil.getModeForLanguage(getModelObject().getProblemType().getLanguage());
+					setEditorMode(editorMode);
+				}
+			};
+			editor.setEditorTheme(AceEditorTheme.VIBRANT_INK);
+			return editor;
 		}
 
 		/* (non-Javadoc)
