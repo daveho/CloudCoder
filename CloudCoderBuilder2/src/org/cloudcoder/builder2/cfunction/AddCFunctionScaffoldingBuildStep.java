@@ -72,10 +72,23 @@ public class AddCFunctionScaffoldingBuildStep implements IBuildStep {
 		test.append(programText);
 		test.append("\n");
 
-		// The eq macro will test the function's return value against
-		// the expected return value.
-		test.append("#undef eq\n");
-		test.append("#define eq(a,b) ((a) == (b))\n");
+		// Add equality predicate.
+		// If the problem specifies one, use it.
+		// Otherwise, generate the default equality predicate.
+		String equalityPredicate = problem.getEqualityPredicate();
+		if (equalityPredicate == null || equalityPredicate.trim().equals("")) {
+			// Generate the default equality predicate (which just
+			// applies the built-in == operator to the expected
+			// and actual values.)
+			// The eq macro will test the function's return value against
+			// the expected return value.
+			test.append("#undef eq\n");
+			test.append("#define eq(a,b) ((a) == (b))\n");
+		} else {
+			// The problem defines its own equality predicate.
+			test.append(problem.getEqualityPredicate());
+			test.append("\n");
+		}
 
 		// Generate a main() function which can run all of the test cases.
 		// argv[1] specifies the test case to execute by name.
