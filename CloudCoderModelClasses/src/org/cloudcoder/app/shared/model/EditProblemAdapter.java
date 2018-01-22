@@ -295,4 +295,15 @@ public abstract class EditProblemAdapter implements IProblem {
 	public boolean isShared() {
 		return delegate.isShared();
 	}
+	
+	@Override
+	public void setEqualityPredicate(String equalityPredicate) {
+		delegate.setEqualityPredicate(equalityPredicate);
+		onChange();
+	}
+	
+	@Override
+	public String getEqualityPredicate() {
+		return delegate.getEqualityPredicate();
+	}
 }
