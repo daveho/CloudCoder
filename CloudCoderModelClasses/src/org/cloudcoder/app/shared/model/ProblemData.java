@@ -242,7 +242,7 @@ public class ProblemData implements Serializable, IProblemData {
 	 * The <code>equalityPredicate</code> field was added.
 	 */
 	public static final ModelObjectSchema<IProblemData> SCHEMA_V8 = ModelObjectSchema.basedOn(SCHEMA_V7, ProblemData.class)
-		.add(EQUALITY_PREDICATE)
+		.addAfter(EXTERNAL_LIBRARY_MD5, EQUALITY_PREDICATE)
 		.finishDelta();
 
 	/**
