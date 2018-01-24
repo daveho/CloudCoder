@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 // Copyright (C) 2013, York College of Pennsylvania
 //
 // This program is free software: you can redistribute it and/or modify
@@ -72,6 +72,24 @@ public class AddPythonFunctionScaffoldingBuildStep implements IBuildStep {
 		programTextLength=StringUtil.countLines(programText);
 		int spaces=getIndentationIncrementFromPythonCode(programText);
 
+		// Generate an equality predicate.
+		String equalityPredicate = problem.getEqualityPredicate();
+		if (equalityPredicate.trim().equals("")) {
+			// Generate the default equality predicate.
+			// Note the check for floating point values: a delta-based comparison
+			// is done rather than requiring strict equality.
+			test.append("def eq(_output, _expected):\n");
+			test.append(indent(spaces));
+			test.append("return (_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001)\n");
+		} else {
+			// Use the Problem's custom equality predicate
+			// This is dangerous since the function under test
+			// might have used a different indent level.
+			// Stupid Python.
+			test.append(equalityPredicate);
+			test.append("\n");
+		}
+
 		for (TestCase t : testCaseList) {
 			// each test case is a function that invokes the function being tested
 			test.append("def "+t.getTestCaseName()+"():\n");
@@ -82,11 +100,12 @@ public class AddPythonFunctionScaffoldingBuildStep implements IBuildStep {
 			// def t0():
 			//    _output=plus(2,3)
 			//    _expected=<<test case output>>
-			//    _result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001) 
+			//    _result=eq(_output, _expected) 
 			//    return (_result, _output)
-			// 
-			// Note the check for floating point values: a delta-based comparison
-			// is done rather than requiring strict equality.
+			//
+			// The eq function is the equality predicate, which usually
+			// is automatically generated, but could be a custom one
+			// if the Problem specifies one.
 			// 
 			// We return a tuple with a boolean representing whether
 			// the test case passed, and a String containing the 
@@ -95,7 +114,7 @@ public class AddPythonFunctionScaffoldingBuildStep implements IBuildStep {
 			test.append(indent(spaces)+"_output="+problem.getTestname() + 
 					"(" +t.getInput()+ ")\n");
 			test.append(indent(spaces)+"_expected=" + t.getOutput() + "\n");
-			test.append(indent(spaces)+"_result=(_expected == _output) if (type(_output) != float and type(_expected) != float) else (math.fabs(_output-_expected) < 0.00001)\n");
+			test.append(indent(spaces)+"_result=eq(_output, _expected)\n");
 			test.append(indent(spaces)+"return (_result, _output)\n");
 		}
 		
@@ -103,6 +122,9 @@ public class AddPythonFunctionScaffoldingBuildStep implements IBuildStep {
 		String result=test.toString();
 		int totalLen=StringUtil.countLines(result);
 		epilogueLength=totalLen-programTextLength;
+		
+//		System.out.println("Python test scaffolding:");
+//		System.out.println(result);
 		
 		// Done!
 		return new ProgramSource(result, prologueLength, epilogueLength);

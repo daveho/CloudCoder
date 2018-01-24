@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,6 @@ import org.cloudcoder.builder2.util.ArrayUtil;
  * executed <em>after</em> {@link AddJavaMethodScaffoldingBuildStep}.
  * 
  * @author David Hovemeyer
- *
  */
 public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
 
@@ -46,7 +45,19 @@ public class AddJavaMethodTestDriverBuildStep implements IBuildStep {
 
         StringBuilder tester = new StringBuilder();
         tester.append("public class Tester {\n");
-        tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
+        
+        // Use the Problem's equality predicate if there is one, otherwise
+        // use the default one (which just calls <code>equals</code>.)
+        String equalityPredicate = problem.getEqualityPredicate();
+        if (equalityPredicate.trim().equals("")) {
+        	// Generate the default equality predicate.
+	        tester.append("\tpublic static boolean eq(Object o1, Object o2) { return o1.equals(o2); }\n");
+        } else {
+        	// Generate the Problem's custom equality predicate.
+        	tester.append(equalityPredicate);
+        	tester.append("\n");
+        }
+        
         for (TestCase tc : testCaseList) {
             tester.append("\tpublic static Object[] ");
             tester.append(tc.getTestCaseName());

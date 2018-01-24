@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -59,6 +59,19 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 		// Add method defined in user submission
 		buf.append(programText);
 		buf.append("\n");
+		
+		// Generate an equality predicate
+		String equalityPredicate = problem.getEqualityPredicate();
+		if (equalityPredicate.trim().equals("")) {
+			// Generate the default equality predicate
+			buf.append("def eq(_output, _expected)\n");
+			buf.append("  return _output == _expected\n");
+			buf.append("end\n");
+		} else {
+			// Use the Problem's custom equality predicate
+			buf.append(equalityPredicate);
+			buf.append("\n");
+		}
 
 		// Add _test method to execute test with given testname
 		// and return a boolean result (passed/failed)
@@ -71,11 +84,11 @@ public class AddRubyMethodScaffoldingBuildStep implements IBuildStep {
 def _test(testname)
   if testname == "t0"
     _output=plus(2,3)
-    _result=_output == (5)
+    _result=eq(_output, 5)
     return Array.[](_result, _output)
   elsif testname == "t1"
     _output=plus(3,2)
-    _result=_output == (5)
+    _result=eq(_output, 5)
     return Array.[](_result, _output)
   end
 end
@@ -87,7 +100,7 @@ end
 			buf.append("\"\n");
 			buf.append("    _output=");
 			buf.append(problem.getTestname()+"("+testCase.getInput()+")\n");
-			buf.append("_result=(_output == ("+testCase.getOutput()+"))\n");
+			buf.append("    _result=eq(_output, (" + testCase.getOutput() + "))\n");
 			buf.append("    return Array.[](_result, _output)\n");
 			
 			first = false;
@@ -97,7 +110,9 @@ end
 		buf.append("end\n"); // end _test method
 		
 		String scaffoldedProgramText = buf.toString();
-		//System.out.println(scaffoldedProgramText);
+		
+//		System.out.println("Ruby test scaffolding:");
+//		System.out.println(scaffoldedProgramText);
 		
 		int scaffoldedNumLines = StringUtil.countLines(scaffoldedProgramText);
 		
