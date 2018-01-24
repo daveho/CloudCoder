@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2018, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -40,6 +40,8 @@ import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.Module;
 import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
+import org.cloudcoder.app.shared.model.ProblemAuthorship;
 import org.cloudcoder.app.shared.model.Quiz;
 import org.cloudcoder.app.shared.model.StartedQuiz;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
@@ -245,14 +247,17 @@ public class CreateWebappDatabase {
 		// Terms
 		System.out.println("Creating terms...");
 		int count = 0;
-		Term lastTerm = null;
+		Term firstTerm = null;
 		for (String termName : props.termNames) {
-			lastTerm = CreateWebappDatabase.storeTerm(conn, termName, count++);
+			Term t = CreateWebappDatabase.storeTerm(conn, termName, count++);
+			if (firstTerm == null) {
+				firstTerm = t;
+			}
 		}
 		
 		// Create an initial demo course
 		System.out.println("Creating demo course...");
-		int courseId = CreateSampleData.createDemoCourse(conn, lastTerm);
+		int courseId = CreateSampleData.createDemoCourse(conn, firstTerm);
 		
 		// Create an initial user
 		System.out.println("Creating initial user...");
@@ -275,34 +280,31 @@ public class CreateWebappDatabase {
 		System.out.println("Registering initial user for demo course...");
 		ConfigurationUtil.registerUser(conn, userId, courseId, CourseRegistrationType.INSTRUCTOR, 101);
 		
-		// Create sample Problems
-		System.out.println("Creating sample problems in demo course...");
-		Problem problem = new Problem();
-		CreateSampleData.populateSampleProblem(problem, courseId);
-		DBUtil.storeModelObject(conn, problem);
-		Integer problemId = problem.getProblemId();
-		
-		// Add a TestCase
-		TestCase testCase = new TestCase();
-		CreateSampleData.populateSampleTestCase(testCase, problemId);
-		DBUtil.storeModelObject(conn, testCase);
-
-		// Create sample C_FUNCTION problem
-		Problem cFunctionProblem = new Problem();
-		CreateSampleData.populateSampleCFunctionProblem(cFunctionProblem, courseId);
-		DBUtil.storeModelObject(conn, cFunctionProblem);
-		Integer cFunctionProblemId = cFunctionProblem.getProblemId();
-		
-		// Create TestCases for sample C_FUNCTION problem
-		TestCase[] cFunctionProblemTestCases = new TestCase[]{new TestCase(), new TestCase(), new TestCase()};
-		CreateSampleData.populateSampleCFunctionTestCases(cFunctionProblemTestCases, cFunctionProblemId);
-		for (TestCase tc : cFunctionProblemTestCases) {
-			DBUtil.storeModelObject(conn, tc);
+		// Add sample exercises
+		System.out.println("Adding sample exercises to demo course...");
+		List<ProblemAndTestCaseList> sampleExercises = CreateSampleData.getSampleExercises();
+		for (ProblemAndTestCaseList ex : sampleExercises) {
+			System.out.println("  " + ex.getProblem().getTestname());
+			storeExercise(ex, courseId, conn);
 		}
 
 		conn.close();
 		
 		System.out.println("Success!");
+	}
+
+	private static void storeExercise(ProblemAndTestCaseList ex, int courseId, Connection conn) throws SQLException {
+		ex.getProblem().setCourseId(courseId);
+		
+		// All of the sample problems are imported from the repository
+		ex.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED);
+		
+		DBUtil.storeModelObject(conn, ex.getProblem());
+		int problemId = ex.getProblem().getProblemId();
+		for (TestCase tc : ex.getTestCaseData()) {
+			tc.setProblemId(problemId);
+			DBUtil.storeModelObject(conn, tc);
+		}
 	}
 
 	private static<E> void createTable(Connection conn, ModelObjectSchema<E> schema) throws SQLException {

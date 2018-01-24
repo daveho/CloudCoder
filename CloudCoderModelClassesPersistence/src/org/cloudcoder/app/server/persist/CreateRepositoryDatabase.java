@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2017, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2017, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2018, David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -27,7 +27,6 @@ import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.server.persist.util.SchemaUtil;
 import org.cloudcoder.app.shared.model.ModelObjectSchema;
 import org.cloudcoder.app.shared.model.RepoProblem;
-import org.cloudcoder.app.shared.model.RepoProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.RepoProblemRating;
 import org.cloudcoder.app.shared.model.RepoProblemTag;
 import org.cloudcoder.app.shared.model.RepoTestCase;
@@ -92,8 +91,10 @@ public class CreateRepositoryDatabase {
 
 		// Create an initial user
 		System.out.println("Creating initial user...");
+		@SuppressWarnings("unused")
 		int userId = ConfigurationUtil.createOrUpdateUser(conn, ccUserName, ccFirstname, ccLastname, ccEmail, ccPassword, ccWebsite);
 
+		/*
 		RepoProblem repoProblem = new RepoProblem();
 		repoProblem.setUserId(userId);
 		CreateSampleData.populateSampleProblemData(repoProblem);
@@ -115,6 +116,7 @@ public class CreateRepositoryDatabase {
 		DBUtil.storeModelObject(conn, repoProblem);
 		repoTestCase.setRepoProblemId(repoProblem.getId());
 		DBUtil.storeModelObject(conn, repoTestCase);
+		*/
 		
 		System.out.println("Done!");
 	}

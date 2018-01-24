@@ -3,6 +3,7 @@
 	
 	<path id="CloudCoderModelClassesPersistence.classpath">
 		<pathelement location="../CloudCoderModelClasses/bin"/>
+		<pathelement location="../CloudCoderModelClassesJSON/bin"/>
 		<fileset dir="lib" includes="**.jar"/>
 		<fileset dir="../CloudCoderJetty/lib" includes="**/*.jar"/>
 		<fileset dir="../CloudCoderLogging/lib" includes="*.jar"/>
@@ -12,7 +13,11 @@
 		<ant inheritall="false" dir="../CloudCoderModelClasses" target="build"/>
 	</target>
 
-	<target name="javac" depends="modelClasses">
+	<target name="modelClassesJSON">
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="build"/>
+	</target>
+
+	<target name="javac" depends="modelClasses,modelClassesJSON">
 		<mkdir dir="bin"/>
 		<javac source="1.6" target="1.6" srcdir="src" destdir="bin" debug="true">
 			<classpath refid="CloudCoderModelClassesPersistence.classpath"/>
@@ -24,6 +29,8 @@
 	<target name="jar" depends="javac">
 		<jar destfile="${jarfile}" update="true">
 			<fileset dir="bin" includes="**/*.class"/>
+			<!-- Include the sample exercises. -->
+			<fileset dir="src" includes="**/*.json"/>
 		</jar>
 	</target>
 	
@@ -36,5 +43,6 @@
 	
 	<target name="depclean" depends="clean">
 		<ant inheritall="false" dir="../CloudCoderModelClasses" target="clean"/>
+		<ant inheritall="false" dir="../CloudCoderModelClassesJSON" target="clean"/>
 	</target>
 </project>

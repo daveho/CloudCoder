@@ -20,6 +20,8 @@
 			classpathref="CloudCoderModelClassesJSON.classpath"/>
 	</target>
 	
+	<target name="build" depends="javac"/>
+	
 	<target name="jar" depends="javac">
 		<jar destfile="${jarfile}">
 			<fileset dir="bin" includes="**/*.class"/>

@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,20 +17,24 @@
 
 package org.cloudcoder.app.server.persist;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cloudcoder.app.server.persist.util.DBUtil;
 import org.cloudcoder.app.shared.model.Course;
-import org.cloudcoder.app.shared.model.IProblem;
-import org.cloudcoder.app.shared.model.IProblemData;
-import org.cloudcoder.app.shared.model.ITestCase;
-import org.cloudcoder.app.shared.model.ITestCaseData;
 import org.cloudcoder.app.shared.model.Problem;
-import org.cloudcoder.app.shared.model.ProblemAuthorship;
-import org.cloudcoder.app.shared.model.ProblemLicense;
-import org.cloudcoder.app.shared.model.ProblemType;
+import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.Term;
+import org.cloudcoder.app.shared.model.TestCase;
+import org.cloudcoder.app.shared.model.json.JSONConversion;
+import org.cloudcoder.app.shared.model.json.ReflectionFactory;
 
 /**
  * Create sample data.
@@ -53,118 +57,52 @@ public class CreateSampleData {
 		course.setTitle("CloudCoder demo course");
 		course.setTermId(term.getId());
 		course.setTerm(term);
-		course.setYear(2014);
+		course.setYear(2018);
 		course.setUrl("http://cloudcoder.org/");
 		DBUtil.storeModelObject(conn, course);
 		return course.getId();
 	}
-
-	public static void populateSampleTestCase(ITestCase testCase, Integer problemId) {
-		testCase.setProblemId(problemId);
-		CreateSampleData.populateSampleTestCaseData(testCase);
-	}
-
-	public static void populateSampleTestCaseData(ITestCaseData testCase) {
-		testCase.setTestCaseName("hello");
-		testCase.setInput("");
-		testCase.setOutput("^\\s*Hello\\s*,\\s*world\\s*$i");
-		testCase.setSecret(false);
-	}
-
-	public static void populateSampleProblem(IProblem problem, int courseId) {
-		problem.setCourseId(courseId);
-		problem.setWhenAssigned(System.currentTimeMillis());
-		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
-		problem.setVisible(true);
-		problem.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
-		CreateSampleData.populateSampleProblemData(problem);
-	}
-
-	public static void populateSampleProblemData(IProblemData problemData) {
-		problemData.setProblemType(ProblemType.C_PROGRAM);
-		problemData.setTestname("hello");
-		problemData.setBriefDescription("Print hello, world");
-		problemData.setDescription(
-				"<p>Print a line with the following text:</p>\n" +
-				"<blockquote><pre>Hello, world</pre></blockquote>\n"
-		);
 	
-		problemData.setSkeleton(
-				"#include <stdio.h>\n\n" +
-				"int main(void) {\n" +
-				"\t// TODO - add your code here\n\n" +
-				"\treturn 0;\n" +
-				"}\n"
-				);
-		problemData.setSchemaVersion(Problem.SCHEMA.getVersion());
-		problemData.setAuthorName("David Hovemeyer");
-		problemData.setAuthorEmail("dhovemey@ycp.edu");
-		problemData.setAuthorWebsite("http://faculty.ycp.edu/~dhovemey");
-		problemData.setTimestampUtc(1349008031587L);
-		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
-		problemData.setParentHash("");
-		problemData.setExternalLibraryUrl("");
-		problemData.setExternalLibraryMD5("");
-	}
+	public static final String[] SAMPLE_EXERCISES = {
+			"853f98340957b459d88eb7fa357a672fd93fd6c5.json", // it goes to 11
+			"af73cc5d07d227723227a97bfb69615968a7f976.json", // hamster years
+			"bc77c471d2a69114afa872d0b07f6cc31412c618.json", // Not like the others
+			"0ccb942793ee14ba1609dd371a9c6ce01ab2ccdb.json", // countOdd
+			"d40eafb5c31a84af74c0d518b85d4da18df2eb06.json", // Largest digit
+			"86bc02a726f8b86bc49e53e9777590f56219776d.json", // countAB
+			"05ca41d6881d0e476cc6e66210bbd025ce58dc94.json", // shiftChar
+			"8a670605cdc700399e86e03a027f46eeea294190.json", // min_of_three
+			
+	};
 	
-	public static void populateSampleCFunctionProblem(IProblem problem, int courseId) {
-		problem.setCourseId(courseId);
-		problem.setWhenAssigned(System.currentTimeMillis());
-		problem.setWhenDue(problem.getWhenAssigned() + (24L*60*60*1000));
-		problem.setVisible(true);
-		problem.setProblemAuthorship(ProblemAuthorship.ORIGINAL);
-		populateSampleCFunctionProblemData(problem);
-	}
-
-	private static void populateSampleCFunctionProblemData(IProblemData problemData) {
-		problemData.setProblemType(ProblemType.C_FUNCTION);
-		problemData.setTestname("addIntegers");
-		problemData.setBriefDescription("Add two integers");
-		problemData.setDescription(
-				"<p>Complete the <code>addIntegers</code> function so that it\n" +
-				"returns the sum of the two integer parameters (<code>a</code>\n" +
-				"and <code>b</code>) passed to it.</p>"
-		);
-	
-		problemData.setSkeleton(
-				"int addIntegers(int a, int b) {\n" +
-				"\t//TODO - add your code here\n" +
-				"}"
-				);
-		problemData.setSchemaVersion(Problem.SCHEMA.getVersion());
-		problemData.setAuthorName("David Hovemeyer");
-		problemData.setAuthorEmail("dhovemey@ycp.edu");
-		problemData.setAuthorWebsite("http://faculty.ycp.edu/~dhovemey");
-		problemData.setTimestampUtc(1356125346562L);
-		problemData.setLicense(ProblemLicense.CC_ATTRIB_SHAREALIKE_3_0);
-		problemData.setParentHash("");
-		problemData.setExternalLibraryUrl("");
-		problemData.setExternalLibraryMD5("");
-	}
-	
-	public static void populateSampleCFunctionTestCases(ITestCase[] testCases, int problemId) {
-		for (ITestCase tc : testCases) {
-			tc.setProblemId(problemId);
+	/**
+	 * Get sample exercises to add to test course when the
+	 * webapp database is created.
+	 * 
+	 * @return list of sample exercises
+	 * @throws IOException
+	 */
+	public static List<ProblemAndTestCaseList> getSampleExercises() throws IOException {
+		List<ProblemAndTestCaseList> result = new ArrayList<ProblemAndTestCaseList>();
+		
+		String pkgPath = "org/cloudcoder/app/server/persist";
+		
+		for (String ex : SAMPLE_EXERCISES) {
+			String resName = pkgPath + "/res/" + ex;
+			InputStream in = CreateSampleData.class.getClassLoader().getResourceAsStream(resName);
+			if (in == null) {
+				throw new RuntimeException("Could not find resource " + resName);
+			}
+			ProblemAndTestCaseList exercise = new ProblemAndTestCaseList();
+			Reader reader = new InputStreamReader(in, Charset.forName("UTF-8"));
+			JSONConversion.readProblemAndTestCaseData(
+					exercise,
+					ReflectionFactory.forClass(Problem.class),
+					ReflectionFactory.forClass(TestCase.class),
+					reader);
+			result.add(exercise);
 		}
-		populateSampleCFunctionTestCaseData(testCases);
+		
+		return result;
 	}
-
-	public static void populateSampleCFunctionTestCaseData(ITestCaseData[] testCases) {
-		if (testCases.length != 3) {
-			throw new IllegalArgumentException();
-		}
-		testCases[0].setTestCaseName("t0");
-		testCases[0].setInput("2, 3");
-		testCases[0].setOutput("5");
-		testCases[0].setSecret(false);
-		testCases[1].setTestCaseName("t1");
-		testCases[1].setInput("-3, -11");
-		testCases[1].setOutput("-14");
-		testCases[1].setSecret(false);
-		testCases[2].setTestCaseName("t2");
-		testCases[2].setInput("0, 7");
-		testCases[2].setOutput("7");
-		testCases[2].setSecret(false);
-	}
-
 }
