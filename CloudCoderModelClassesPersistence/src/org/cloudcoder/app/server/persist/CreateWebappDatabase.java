@@ -299,6 +299,11 @@ public class CreateWebappDatabase {
 		// All of the sample problems are imported from the repository
 		ex.getProblem().setProblemAuthorship(ProblemAuthorship.IMPORTED);
 		
+		// Set assigned and due dates
+		long now = System.currentTimeMillis();
+		ex.getProblem().setWhenAssigned(now);
+		ex.getProblem().setWhenDue(now + 48*3600*1000);
+		
 		DBUtil.storeModelObject(conn, ex.getProblem());
 		int problemId = ex.getProblem().getProblemId();
 		for (TestCase tc : ex.getTestCaseData()) {
