@@ -251,8 +251,9 @@ public class Queries {
 		// Note that the query checks to see what the user's
 		// maximum (most privileged) registration type is: -1 if
 		// the user isn't registered in the course at all,
-		// 0 if student, 1 if instructor, etc.  Only instructors
-		// are allowed to import problems.
+		// 0 if student, 1 if instructor, etc.  Instructors
+		// are allowed to see all problems, including invisible ones.
+		// Students are only allowed to see visible ones.
 		//
 		PreparedStatement stmt = dbRunnable.prepareStatement(
 				conn,
@@ -262,12 +263,14 @@ public class Queries {
 				"         where r.course_id = ? and r.user_id = ?) as rr" +
 				"  where p.course_id = ?" +
 				"    and p.deleted = 0" +
-				"    and rr.max_reg_type >= ?"
+				"    and (rr.max_reg_type >= ?" +
+				"         or (rr.max_reg_type >= ? and p.visible = 1))"
 		);
 		stmt.setInt(1, course.getId());
 		stmt.setInt(2, user.getId());
 		stmt.setInt(3, course.getId());
 		stmt.setInt(4, CourseRegistrationType.INSTRUCTOR.ordinal());
+		stmt.setInt(5, CourseRegistrationType.STUDENT.ordinal());
 		
 		ResultSet resultSet = dbRunnable.executeQuery(stmt);
 		
