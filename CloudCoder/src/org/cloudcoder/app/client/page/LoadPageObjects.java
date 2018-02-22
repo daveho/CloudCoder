@@ -37,6 +37,8 @@ import org.cloudcoder.app.shared.model.UserSelection;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import static org.cloudcoder.app.client.page.CloudCoderPage.logPrint;
+
 /**
  * Load required page objects.
  * This automates the process of loading the objects
@@ -105,6 +107,9 @@ public class LoadPageObjects {
 				onFailure.call(new Pair<String, Throwable>("No problem id specified", null));
 			} else {
 				CourseSelection courseSelection = session.get(CourseSelection.class);
+				
+				logPrint("Loading problems for course " + courseSelection.getCourse().getId());
+				
 				RPC.getCoursesAndProblemsService.getProblems(courseSelection.getCourse(), new AsyncCallback<Problem[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -114,6 +119,7 @@ public class LoadPageObjects {
 					public void onSuccess(Problem[] result) {
 						Problem problem = null;
 						for (Problem p : result) {
+							logPrint("Found problem " + problemId);
 							if (p.getProblemId().equals(problemId)) {
 								problem = p;
 								break;

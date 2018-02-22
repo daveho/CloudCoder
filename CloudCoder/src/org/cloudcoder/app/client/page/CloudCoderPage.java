@@ -333,4 +333,7 @@ public abstract class CloudCoderPage {
 		GWT.log("Setting URL to " + newURL);
 	}
 	
+	public static native void logPrint(String s) /*-{
+		console.log(s);
+	}-*/;
 }

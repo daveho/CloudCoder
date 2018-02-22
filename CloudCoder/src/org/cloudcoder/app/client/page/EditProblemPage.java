@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011-2012, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011-2012, David H. Hovemeyer <david.hovemeyer@gmail.com>
+// Copyright (C) 2011-2012,2018 David H. Hovemeyer <david.hovemeyer@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -41,7 +41,6 @@ import org.cloudcoder.app.shared.model.CloudCoderAuthenticationException;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.CourseSelection;
 import org.cloudcoder.app.shared.model.EditProblemAdapter;
-import org.cloudcoder.app.shared.model.IModelObject;
 import org.cloudcoder.app.shared.model.IProblem;
 import org.cloudcoder.app.shared.model.ModelObjectField;
 import org.cloudcoder.app.shared.model.Problem;
@@ -97,6 +96,7 @@ public class EditProblemPage extends CloudCoderPage {
 		private Button addTestCaseButton;
 		private FlowPanel addTestCaseButtonPanel;
 		private ProblemAndTestCaseList problemAndTestCaseListOrig;
+		private EditStringFieldWithAceEditor<IProblem> equalityPredicateEditor;
 		
 		public UI() {
 			this.dockLayoutPanel = new DockLayoutPanel(Unit.PX);
@@ -273,8 +273,11 @@ public class EditProblemPage extends CloudCoderPage {
 			problemFieldEditorList.add(new EditEnumField<IProblem, ProblemLicense>("License", ProblemLicense.class, ProblemData.LICENSE));
 			problemFieldEditorList.add(new EditStringField<IProblem>("URL of required external library", ProblemData.EXTERNAL_LIBRARY_URL));
 			problemFieldEditorList.add(new EditStringField<IProblem>("MD5 checksum of required external library", ProblemData.EXTERNAL_LIBRARY_MD5));
+			
 			// Also keep equality predicate editor language in sync with Problem
-			problemFieldEditorList.add(createProblemSourceEditor("Equality predicate", ProblemData.EQUALITY_PREDICATE));
+			this.equalityPredicateEditor = createProblemSourceEditor("Equality predicate", ProblemData.EQUALITY_PREDICATE);
+			problemFieldEditorList.add(equalityPredicateEditor);
+			
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When assigned", Problem.WHEN_ASSIGNED));
 			problemFieldEditorList.add(new EditDateTimeField<IProblem>("When due", Problem.WHEN_DUE));
 			problemFieldEditorList.add(new EditBooleanField<IProblem>(
@@ -361,13 +364,16 @@ public class EditProblemPage extends CloudCoderPage {
 			
 			// Create a ProblemAdapter to serve as the IProblem edited by the problem editors.
 			// Override the onChange() method to notify editors that the model object has changed
-			// in some way.
-			IProblem problemAdapter = new EditProblemAdapter(problemAndTestCaseList.getProblem()) {
+			// in some way.  Also handle the case where the problem type has been changed and
+			// the equality predicate editor should be hidden or shown, depending on whether
+			// or not the new problem type supports an equality predicate.
+			EditProblemAdapter problemAdapter = new EditProblemAdapter(problemAndTestCaseList.getProblem()) {
 				@Override
 				protected void onChange() {
 					for (EditModelObjectField<IProblem, ?> editor : problemFieldEditorList) {
 						editor.onModelObjectChange();
 					}
+					checkProblemTypeChange(this);
 				}
 			};
 			
@@ -411,8 +417,47 @@ public class EditProblemPage extends CloudCoderPage {
 			});
 			addTestCaseButtonPanel.add(addTestCaseButton);
 			centerPanel.add(addTestCaseButtonPanel);
+			
+			// Based on whatever the initial (default) problem type is,
+			// either show or hide the equality predicate editor.
+			checkProblemTypeChange(problemAdapter);
 		}
 		
+		private ProblemType lastProblemType = null;
+		
+		/**
+		 * Called when the problem data changes in order to check
+		 * whether the problem type has changed so that we can selectively
+		 * show/hide the equality predicate editor.
+		 * 
+		 * @param problemAdapter the {@link EditProblemAdapter} for the problem
+		 */
+		protected void checkProblemTypeChange(EditProblemAdapter problemAdapter) {
+			if (lastProblemType == null || lastProblemType != problemAdapter.getProblemType()) {
+				// Problem type has changed
+				if (problemAdapter.getProblemType().supportsEqualityPredicate()) {
+					logPrint("Enabling equality predicate, is currently " + problemAdapter.getEqualityPredicate());
+					equalityPredicateEditor.getUI().asWidget().setVisible(true);
+				} else {
+					equalityPredicateEditor.getUI().asWidget().setVisible(false);
+					
+					// Since we're switching to a problem type that doesn't
+					// support an equality predicate, clear the equality predicate
+					// field.  This has the downside that switching from
+					// a problem type with an equality predicate to one without
+					// abandons the current equality predicate, but I don't
+					// think that's really a big deal.  Generally the user
+					// will (hopefully?) select the problem type first and then
+					// make edits to it.
+					logPrint("Clearing equality predicate");
+					problemAdapter.getDelegate().setEqualityPredicate("");
+					logPrint("Equality predicate is now " + problemAdapter.getEqualityPredicate());
+					equalityPredicateEditor.update();
+				}
+			}
+			lastProblemType = problemAdapter.getProblemType();
+		}
+
 		private void leavePage(final Runnable action) {
 			// Commit all changes made in the editors to the model objects.
 			boolean successfulCommit = commitAll();

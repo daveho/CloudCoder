@@ -134,12 +134,17 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 
 	@Override
 	public Problem[] getProblems(Course course) throws CloudCoderAuthenticationException {
+		System.out.println("Loading problems for course " + course.getId());
+		
 		// Make sure user is authenticated
 		User user = ServletUtil.checkClientIsAuthenticated(getThreadLocalRequest(), GetCoursesAndProblemsServiceImpl.class);
-
+		
+		System.out.println("User is authenticated as " + user.getUsername() + "/" + user.getId());
+		
 		List<Problem> resultList = Database.getInstance().getProblemsInCourse(user, course).getProblemList();
 		for (Problem p : resultList) {
 			logger.info(p.getTestname() + " - " + p.getBriefDescription());
+			System.out.println("Found: " + p.getProblemId() + ": " + p.getTestname() + " - " + p.getBriefDescription());
 		}
 		
 		return resultList.toArray(new Problem[resultList.size()]);
