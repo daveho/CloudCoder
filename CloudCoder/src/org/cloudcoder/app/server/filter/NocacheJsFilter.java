@@ -45,7 +45,7 @@ public class NocacheJsFilter implements Filter {
 			throws IOException, ServletException {
 		HttpServletResponse resp = (HttpServletResponse) resp_;
 		logger.info("Adding Cache-Control header to {}", ((HttpServletRequest)req_).getRequestURI());
-		resp.addHeader("Cache-Control", "max-age=0, no-cache");
+		resp.addHeader("Cache-Control", "no-store");
 		chain.doFilter(req_, resp_);
 	}
 

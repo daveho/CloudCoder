@@ -208,6 +208,11 @@
     <filter-name>NocacheJsFilter</filter-name>
     <url-pattern>/CloudCoder.html</url-pattern>
   </filter-mapping>
+  <!-- Don't cache the HTML page if is loaded via the literal root URL. -->
+  <filter-mapping>
+    <filter-name>NocacheJsFilter</filter-name>
+    <url-pattern>/</url-pattern>
+  </filter-mapping>
   <!--  Also don't cache the default page (which is CloudCoder.html). -->
   <filter-mapping>
     <filter-name>NocacheJsFilter</filter-name>
