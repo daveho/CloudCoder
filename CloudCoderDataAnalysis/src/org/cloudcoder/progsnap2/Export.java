@@ -20,12 +20,15 @@ package org.cloudcoder.progsnap2;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
+import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
+import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
 
 public class Export {
@@ -47,9 +50,30 @@ public class Export {
         Util.connectToDatabase(config);
         IDatabase db = Database.getInstance();
 
-        // Dummy writes
-        mainTableWriter.writeEvent(new Event(EventType.SessionStart, 0, 0, 0, TOOL_INSTANCES));
-        mainTableWriter.writeEvent(new Event(EventType.SessionEnd, 0, 0, 0, TOOL_INSTANCES));
+        SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
+        criteria.setCourseId(-1);
+        criteria.setProblemId(-1);
+        criteria.setUserId(-1);
+
+        int separationSeconds = Integer.valueOf(config.getProperty("separationSeconds"));
+        List<WorkSession> sessions = db.findWorkSessions(criteria, separationSeconds);
+
+        for (WorkSession session : sessions) {
+            Event sessionStart = new Event(EventType.SessionStart, session.getStartEventId(), 0, session.getUserId(), TOOL_INSTANCES);
+            sessionStart.setServerTimestampt(session.getStartTime());
+            sessionStart.setProblemId(session.getProblemId());
+            sessionStart.setCourseId(session.getCourseId());
+            // TODO: SessionID
+
+            Event sessionEnd = new Event(EventType.SessionEnd, session.getEndEventId(), 0, session.getUserId(), TOOL_INSTANCES);
+            sessionEnd.setServerTimestampt(session.getEndTime());
+            sessionEnd.setProblemId(session.getProblemId());
+            sessionEnd.setCourseId(session.getCourseId());
+            // TODO: SessionID
+
+            mainTableWriter.writeEvent(sessionStart);
+            mainTableWriter.writeEvent(sessionEnd);
+        }
     }
 
     // Mostly a copy-paste of the original exporter's main() method
