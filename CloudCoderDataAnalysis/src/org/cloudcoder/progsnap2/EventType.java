@@ -46,6 +46,11 @@ public class EventType {
     public String getValue() {
         return value;
     }
+    
+    @Override
+    public String toString() {
+        return value;
+    }
 
     private String value;
 }

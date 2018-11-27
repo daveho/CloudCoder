@@ -17,51 +17,212 @@
 
 package org.cloudcoder.progsnap2;
 
-public class Event {
-    public Event(EventType eventType, long eventId, long order, long subjectId, String[] toolInstnaces) {
-        this.eventType = eventType;
-        this.eventId = eventId;
-        this.order = order;
-        this.subjectId = subjectId;
-        this.toolInstances = toolInstnaces;
-        // TODO: CodeStateId
-    }
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
-    public EventType getEventType() {
-        return eventType;
+public class Event {
+    public Event(EventType eventType, int eventId, int order, int subjectId, String[] toolInstnaces) {
+        this.setEventType(eventType);
+        this.setEventId(eventId);
+        this.setOrder(order);
+        this.setSubjectId(subjectId);
+        this.setToolInstances(toolInstnaces);
     }
 
     public String[] getToolInstances() {
         return toolInstances;
     }
 
-    public long getSubjectId() {
+    public void setToolInstances(String[] toolInstances) {
+        this.toolInstances = toolInstances;
+    }
+
+    public Integer getSubjectId() {
         return subjectId;
     }
 
-    public long getOrder() {
+    public void setSubjectId(Integer subjectId) {
+        this.subjectId = subjectId;
+    }
+
+    public Integer getOrder() {
         return order;
     }
 
-    public long getEventId() {
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
+
+    public Integer getEventId() {
         return eventId;
+    }
+
+    public void setEventId(Integer eventId) {
+        this.eventId = eventId;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public Integer getParentEventId() {
+        return parentEventId;
+    }
+
+    public void setParentEventId(Integer parentEventId) {
+        this.parentEventId = parentEventId;
+    }
+
+    public Integer getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Integer teamId) {
+        this.teamId = teamId;
+    }
+
+    public String getExperimentalCondition() {
+        return experimentalCondition;
+    }
+
+    public void setExperimentalCondition(String experimentalCondition) {
+        this.experimentalCondition = experimentalCondition;
+    }
+
+    public Integer getProblemId() {
+        return problemId;
+    }
+
+    public void setProblemId(Integer problemId) {
+        this.problemId = problemId;
+    }
+
+    public Integer getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(Integer resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public Integer getAssignmentId() {
+        return assignmentId;
+    }
+
+    public void setAssignmentId(Integer assignmentId) {
+        this.assignmentId = assignmentId;
+    }
+
+    public Integer getTermId() {
+        return termId;
+    }
+
+    public void setTermId(Integer termId) {
+        this.termId = termId;
+    }
+
+    public Integer getCourseSectionId() {
+        return courseSectionId;
+    }
+
+    public void setCourseSectionId(Integer courseSectionId) {
+        this.courseSectionId = courseSectionId;
+    }
+
+    public Integer getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(Integer courseId) {
+        this.courseId = courseId;
+    }
+
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Integer sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getServerTimestamp() {
+        if (serverTimestamp == null) {
+            return "";
+        }
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return df.format(new Date(serverTimestamp));
+    }
+
+    public String getServerTimezone() {
+        if (serverTimestamp == null) {
+            return "";
+        }
+
+        // TODO: Not sure about this
+        return "-0000";
+    }
+
+    public void setServerTimestampt(Long serverTimestamp) {
+        this.serverTimestamp = serverTimestamp;
     }
 
     public String[] toStrings() {
         return new String[] {
-            getEventType().getValue(),
-            String.valueOf(getEventId()),
-            String.valueOf(getOrder()),
-            String.valueOf(getSubjectId()),
-            String.join(",", getToolInstances())
+            eventType.getValue(),
+            eventId.toString(),
+            order.toString(),
+            subjectId.toString(),
+            String.join(",", toolInstances),
+            toStringIfExists(parentEventId),
+            toStringIfExists(this.getServerTimestamp()),
+            toStringIfExists(this.getServerTimezone()),
+            toStringIfExists(sessionId),
+            toStringIfExists(courseId),
+            toStringIfExists(courseSectionId),
+            toStringIfExists(termId),
+            toStringIfExists(assignmentId),
+            toStringIfExists(resourceId),
+            toStringIfExists(problemId),
+            toStringIfExists(experimentalCondition),
+            toStringIfExists(teamId),
         };
     }
 
-    public static String[] COLUMN_NAMES = { "EventType", "EventID", "Order", "SubjectID", "ToolInstances" };
+    public static String[] COLUMN_NAMES = { 
+        "EventType", "EventID", "Order", "SubjectID", "ToolInstances", "ParentEventID",
+        "ServerTimestamp", "ServerTimezone", "SessionID", "CourseID", "CourseSectionID",
+        "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID"
+    };
 
     private EventType eventType;
-    private long eventId;
-    private long order;
-    private long subjectId;
+    private Integer eventId;
+    private Integer order;
+    private Integer subjectId;
     private String[] toolInstances;
+    private Integer parentEventId;
+    private Long serverTimestamp;
+    private Integer sessionId;
+    private Integer courseId;
+    private Integer courseSectionId;
+    private Integer termId;
+    private Integer assignmentId;
+    private Integer resourceId;
+    private Integer problemId;
+    private String experimentalCondition;
+    private Integer teamId;
+
+    private String toStringIfExists(Object obj) {
+        if (obj == null) {
+            return "";
+        }
+        return obj.toString();
+    }
 }
