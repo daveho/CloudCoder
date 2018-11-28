@@ -48,14 +48,10 @@ public class Export {
 
     public void execute() throws IOException {
         Util.connectToDatabase(config);
-        IDatabase db = Database.getInstance();
-
-        SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
-        criteria.setCourseId(-1);
-        criteria.setProblemId(-1);
-        criteria.setUserId(-1);
+        IDatabase db = Database.getInstance();        
 
         int separationSeconds = Integer.valueOf(config.getProperty("separationSeconds"));
+        SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
         List<WorkSession> sessions = db.findWorkSessions(criteria, separationSeconds);
 
         for (WorkSession session : sessions) {
@@ -63,13 +59,13 @@ public class Export {
             sessionStart.setServerTimestampt(session.getStartTime());
             sessionStart.setProblemId(session.getProblemId());
             sessionStart.setCourseId(session.getCourseId());
-            // TODO: SessionID
+            sessionStart.setSessionId(session.getStartEventId());
 
             Event sessionEnd = new Event(EventType.SessionEnd, session.getEndEventId(), 0, session.getUserId(), TOOL_INSTANCES);
             sessionEnd.setServerTimestampt(session.getEndTime());
             sessionEnd.setProblemId(session.getProblemId());
             sessionEnd.setCourseId(session.getCourseId());
-            // TODO: SessionID
+            sessionEnd.setSessionId(session.getStartEventId());
 
             mainTableWriter.writeEvent(sessionStart);
             mainTableWriter.writeEvent(sessionEnd);
