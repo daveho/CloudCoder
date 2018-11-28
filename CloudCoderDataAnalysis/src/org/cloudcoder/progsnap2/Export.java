@@ -20,23 +20,30 @@ package org.cloudcoder.progsnap2;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
+import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Problem;
+import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
+import org.cloudcoder.app.shared.model.SubmissionReceipt;
+import org.cloudcoder.app.shared.model.SubmissionStatus;
+import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
 
 public class Export {
     private Properties config;
     private MainTableWriter mainTableWriter;
-
-    public Export() {
-    }
 
     public void setConfig(Properties config) {
         this.config = config;
@@ -48,11 +55,26 @@ public class Export {
 
     public void execute() throws IOException {
         Util.connectToDatabase(config);
-        IDatabase db = Database.getInstance();        
 
-        int separationSeconds = Integer.valueOf(config.getProperty("separationSeconds"));
+        User instructor = findUser(getUsername());
+        Course course = findCourse(instructor, getCourseId());
+        List<User> students = findUsers(course);
+        ProblemList problems = findProblems(instructor, course);
+
+        writeSessionEvents(course);
+
+        for (Problem problem : problems.getProblemList()) {
+            for (User student : students) {
+                writeCompileAndSubmitEvents(instructor, student, problem);
+            }
+        }
+    }
+
+    private void writeSessionEvents(Course course) {
+        IDatabase db = Database.getInstance();
         SnapshotSelectionCriteria criteria = new SnapshotSelectionCriteria();
-        List<WorkSession> sessions = db.findWorkSessions(criteria, separationSeconds);
+        criteria.setCourseId(course.getId());
+        List<WorkSession> sessions = db.findWorkSessions(criteria, getSeparationSeconds());
 
         for (WorkSession session : sessions) {
             Event sessionStart = new Event(EventType.SessionStart, session.getStartEventId(), 0, session.getUserId(), TOOL_INSTANCES);
@@ -72,7 +94,65 @@ public class Export {
         }
     }
 
-    // Mostly a copy-paste of the original exporter's main() method
+    private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
+    }
+
+    private String getUsername() {
+        return config.getProperty("username");
+    }
+
+    private int getCourseId() {
+        return Integer.valueOf(config.getProperty("courseId"));
+    }
+
+    private int getSeparationSeconds() {
+        return Integer.valueOf(config.getProperty("separationSeconds"));
+    }
+
+    private ProblemList findProblems(User user, Course course) {
+        IDatabase db = Database.getInstance();
+        return db.getProblemsInCourse(user, course);
+    }
+
+    private User findUser(String username) {
+        IDatabase db = Database.getInstance();
+        return db.getUserWithoutAuthentication(username);
+    }
+
+    private Course findCourse(User user, int courseId) {
+        IDatabase db = Database.getInstance();
+        List<? extends Object[]> courses = db.getCoursesForUser(user);
+        for (Object[] triple : courses) {
+            Course course = (Course) triple[0];
+            if (course.getId() == courseId) {
+                return course;
+            }
+        }
+        throw new IllegalArgumentException("Could not find course " + courseId + " for user " + user.getUsername());
+    }
+
+    private List<User> findUsers(Course course) {
+        IDatabase db = Database.getInstance();
+        List<User> rawUsers = db.getUsersInCourse(course.getId(), 0);
+
+        // Ensure that the list doesn't contain duplicates.
+        // Duplicates can arise when a single user has multiple course
+        // registrations (e.g. an instructor who is teaching multiple
+        // sections.)
+        Set<User> userSet = new TreeSet<>(new Comparator<User>() {
+            @Override
+            public int compare(User o1, User o2) {
+                return ((Integer) o1.getId()).compareTo(o2.getId());
+            }
+        });
+        userSet.addAll(rawUsers);
+
+        List<User> result = new ArrayList<>();
+        result.addAll(userSet);
+
+        return result;
+    }
+
     public static void main(String[] args) throws IOException {
         Export exporter = new Export();
 
@@ -134,8 +214,10 @@ public class Export {
             config = effectiveSpec;
         }
 
-        askIfMissing(config, "dest", "Progsnap2 output directory: ", keyboard);
+        askIfMissing(config, "courseId", "Course id: ", keyboard);
+        askIfMissing(config, "username", "Instructor username: ", keyboard);
         askIfMissing(config, "separationSeconds", "Session separation in seconds: ", keyboard);
+        askIfMissing(config, "dest", "Progsnap2 output directory: ", keyboard);
 
         exporter.setConfig(config);
 
