@@ -44,6 +44,7 @@ import org.cloudcoder.dataanalysis.Util;
 public class Export {
     private Properties config;
     private MainTableWriter mainTableWriter;
+    private int prevEventId;
 
     public void setConfig(Properties config) {
         this.config = config;
@@ -94,7 +95,62 @@ public class Export {
         }
     }
 
+    // This should really be borrowing more from ProgsnapExport.writeStudentWorkHistory
     private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
+        IDatabase db = Database.getInstance();
+        SubmissionReceipt[] receipts = db.getAllSubmissionReceiptsForUser(problem, student);
+
+        // TODO: Because all receipts have the same eventId, it is unclear how to assign eventIds
+        // for all derived events (Submit, Compile, Compile.Error, etc) without assigning duplicates.
+        // One option may be to decouple the eventId retrieved from the database and the eventId
+        // assigned to a ProgSnap2 Event. We could write arbitrary values (from a counter, guid, etc)
+        // as long as they maintain referential integrity.
+        for (SubmissionReceipt receipt : receipts) {
+            SubmissionStatus status = receipt.getStatus();
+
+            if (status == SubmissionStatus.STARTED || status == SubmissionStatus.NOT_STARTED) {
+                continue;
+            }
+
+            ProgramResult programResult = ProgramResult.Success;
+
+            if (status == SubmissionStatus.COMPILE_ERROR || status == SubmissionStatus.BUILD_ERROR) {
+                programResult = ProgramResult.Error;
+            }
+
+            Event submit = new Event(EventType.Submit, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
+            submit.setServerTimestampt(receipt.getEvent().getTimestamp());
+            submit.setProblemId(problem.getProblemId());
+            submit.setCourseId(problem.getCourseId());
+            // It would be nice to have sessionId
+            mainTableWriter.writeEvent(submit);
+
+            Event compile = new Event(EventType.Compile, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
+            compile.setServerTimestampt(receipt.getEvent().getTimestamp());
+            compile.setProblemId(problem.getProblemId());
+            compile.setCourseId(problem.getCourseId());
+            // It would be nice to have sessionId
+            compile.setProgramResult(programResult);
+            mainTableWriter.writeEvent(compile);
+
+            if (programResult == ProgramResult.Error) {
+                Event compileError = new Event(EventType.CompileError, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
+                compileError.setServerTimestampt(receipt.getEvent().getTimestamp());
+                compileError.setProgramResult(programResult);
+                // No compile message ):
+                // It would be nice to have sessionId
+                // ParentEventID
+                mainTableWriter.writeEvent(compileError);
+            }
+        }
+    }
+
+    private int peakNextEventId() {
+        return prevEventId + 1;
+    }
+
+    private int getNextEventId() {
+        return ++prevEventId;
     }
 
     private String getUsername() {

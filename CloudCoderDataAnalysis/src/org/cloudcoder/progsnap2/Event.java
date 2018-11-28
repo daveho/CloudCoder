@@ -31,6 +31,14 @@ public class Event {
         this.setToolInstances(toolInstnaces);
     }
 
+    public ProgramResult getProgramResult() {
+        return programResult;
+    }
+
+    public void setProgramResult(ProgramResult programResult) {
+        this.programResult = programResult;
+    }
+
     public String[] getToolInstances() {
         return toolInstances;
     }
@@ -193,13 +201,15 @@ public class Event {
             toStringIfExists(problemId),
             toStringIfExists(experimentalCondition),
             toStringIfExists(teamId),
+            toStringIfExists(programResult)
         };
     }
 
     public static String[] COLUMN_NAMES = { 
         "EventType", "EventID", "Order", "SubjectID", "ToolInstances", "ParentEventID",
         "ServerTimestamp", "ServerTimezone", "SessionID", "CourseID", "CourseSectionID",
-        "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID"
+        "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID",
+        "ProgramResult"
     };
 
     private EventType eventType;
@@ -218,6 +228,7 @@ public class Event {
     private Integer problemId;
     private String experimentalCondition;
     private Integer teamId;
+    private ProgramResult programResult;
 
     private String toStringIfExists(Object obj) {
         if (obj == null) {
