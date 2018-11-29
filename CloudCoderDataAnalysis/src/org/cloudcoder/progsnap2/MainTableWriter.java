@@ -27,9 +27,11 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 // TODO: Consider generalizing this to an interface for the other types of tables in the spec
 public class MainTableWriter implements Closeable {
+    private File baseDir;
     private CSVWriter csvWriter;
 
     public MainTableWriter(File baseDir) throws IOException {
+    	this.baseDir = baseDir;
         File f = new File(baseDir, "MainTable.csv");
 
         // make sure parent directory exists
@@ -50,5 +52,13 @@ public class MainTableWriter implements Closeable {
     @Override
     public void close() throws IOException {
         csvWriter.close();
+    }
+    
+    public File makeSubdir(String path) {
+    	File subdir = new File(baseDir, path);
+    	if (!subdir.mkdirs() && (!subdir.exists() || !subdir.isDirectory())) {
+    		throw new RuntimeException("Error creating subdirectory " + path);
+    	}
+    	return subdir;
     }
 }

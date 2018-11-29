@@ -23,9 +23,14 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class Event {
+	private static final int EVENT_ID_SPACING = 20;
+	
     public Event(EventType eventType, int eventId, int order, int subjectId, String[] toolInstnaces) {
         this.setEventType(eventType);
-        this.setEventId(eventId);
+        // CloudCoder "native" event ids are multiplied by 40 in order to create
+        // some space for ProgSnap 2 events that originate from a single
+        // CloudCoder event.
+        this.setEventId(((long)eventId) * EVENT_ID_SPACING);
         this.setOrder(order);
         this.setSubjectId(subjectId);
         this.setToolInstances(toolInstnaces);
@@ -87,12 +92,31 @@ public class Event {
         this.order = order;
     }
 
-    public Integer getEventId() {
+    public Long getEventId() {
         return eventId;
     }
 
-    public void setEventId(Integer eventId) {
+    // DHH: Made this private because ProgSnap 2 event ids are derived
+    // from CloudCoder ids in a way that is internal to this class,
+    // so it's not a good idea to allow them to be set arbitrarily.
+    private void setEventId(Long eventId) {
         this.eventId = eventId;
+    }
+    
+    /**
+     * "Bump" an event id by specified increment.
+     * This can be used to ensure that multiple ProgSnap 2 events that
+     * are generated from a single CloudCoder event are given different
+     * event ids. 
+     * 
+     * @param increment the increment to add to the event id
+     */
+    public void bumpEventId(int increment) {
+    	if (increment >= EVENT_ID_SPACING) {
+    		throw new IllegalArgumentException("Increment of " + increment +
+    				" exceeds event id spacing of " + EVENT_ID_SPACING);
+    	}
+    	this.eventId += increment;
     }
 
     public EventType getEventType() {
@@ -205,6 +229,14 @@ public class Event {
     public void setServerTimestampt(Long serverTimestamp) {
         this.serverTimestamp = serverTimestamp;
     }
+    
+    public void setCodeStateId(String codeStateId) {
+		this.codeStateId = codeStateId;
+	}
+    
+    public String getCodeStateId() {
+		return codeStateId;
+	}
 
     public String[] toStrings() {
         return new String[] {
@@ -212,7 +244,7 @@ public class Event {
             eventId.toString(),
             order.toString(),
             subjectId.toString(),
-            String.join(",", toolInstances),
+            String.join(";", toolInstances),
             toStringIfExists(parentEventId),
             toStringIfExists(this.getServerTimestamp()),
             toStringIfExists(this.getServerTimezone()),
@@ -229,6 +261,7 @@ public class Event {
             toStringIfExists(eventInitiator),
             toStringIfExists(programInput),
             toStringIfExists(programOutput),
+            toStringIfExists(codeStateId),
         };
     }
 
@@ -236,11 +269,11 @@ public class Event {
         "EventType", "EventID", "Order", "SubjectID", "ToolInstances", "ParentEventID",
         "ServerTimestamp", "ServerTimezone", "SessionID", "CourseID", "CourseSectionID",
         "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID",
-        "ProgramResult", "EventInitiator", "ProgramInput", "ProgramOutput"
+        "ProgramResult", "EventInitiator", "ProgramInput", "ProgramOutput", "CodeStateId"
     };
 
     private EventType eventType;
-    private Integer eventId;
+    private Long eventId;
     private Integer order;
     private Integer subjectId;
     private String[] toolInstances;
@@ -259,6 +292,7 @@ public class Event {
     private EventInitiator eventInitiator;
     private String programInput;
     private String programOutput;
+    private String codeStateId;
 
     private String toStringIfExists(Object obj) {
         if (obj == null) {

@@ -19,6 +19,7 @@ package org.cloudcoder.progsnap2;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,7 +32,11 @@ import java.util.TreeSet;
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
+import org.cloudcoder.app.shared.model.ApplyChangeToTextDocument;
+import org.cloudcoder.app.shared.model.Change;
+import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
@@ -39,6 +44,7 @@ import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.TextDocument;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
@@ -68,6 +74,7 @@ public class Export {
         for (Problem problem : problems.getProblemList()) {
             for (User student : students) {
                 writeCompileAndSubmitEvents(instructor, student, problem);
+                writeEditEvents(instructor, student, problem);
             }
         }
     }
@@ -188,6 +195,70 @@ public class Export {
                     mainTableWriter.writeEvent(runTestEvent);
                 }
             }
+        }
+    }
+    
+    // TODO: need to think of a general way to ensure that code state ids are
+    // applied to all events.  Maybe this should be done as a post-processing
+    // step.
+    private void writeEditEvents(User instructor, User student, Problem problem) throws IOException {
+        IDatabase db = Database.getInstance();
+        
+        final List<Change> changes = new ArrayList<>();
+
+        ICallback<Change> visitor = new ICallback<Change>() {
+        	@Override
+        	public void call(Change value) {
+        		changes.add(value);
+        	}
+        };
+        
+        db.visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
+        
+    	File codeStates = mainTableWriter.makeSubdir("CodeStates");
+
+        TextDocument doc = new TextDocument();
+        ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+      
+        boolean lastEditTextGood = true;
+        for (Change c : changes) {
+        	Event evt = new Event(EventType.FileEdit, c.getEventId(), 0, student.getId(), TOOL_INSTANCES);
+        	//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
+        	evt.setCourseId(problem.getCourseId());
+        	// TODO: course section id
+        	evt.setEventInitiator(EventInitiator.User);
+        	evt.setProblemId(problem.getProblemId());
+        	evt.setServerTimestampt(c.getEvent().getTimestamp());
+        	evt.setCodeStateId("c" + c.getEventId());
+        	// TODO: term id
+        	
+        	// Write the event to the main table
+        	mainTableWriter.writeEvent(evt);
+        	
+        	if (c.getType() == ChangeType.FULL_TEXT) {
+        		// If a delta failed to apply, a full text change will allow us to resync
+        		lastEditTextGood = true;
+        	}
+        	
+        	if (lastEditTextGood) {
+        		try {
+		        	// Write the code state
+		        	applicator.apply(c, doc);
+		        	
+		        	File codeStateDir = new File(codeStates, evt.getCodeStateId());
+		        	if (!codeStateDir.mkdirs()) {
+		        		throw new RuntimeException("Could not create code state directory " + codeStateDir);
+		        	}
+		        	
+		        	File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
+		        	try (FileWriter fw = new FileWriter(codeFile)) {
+		        		fw.write(doc.getText());
+		        	}
+        		} catch (Exception e) {
+        			// delta failed to apply, blargh
+        			lastEditTextGood = false;
+        		}
+        	}
         }
     }
 
@@ -334,5 +405,5 @@ public class Export {
     }
 
     // TODO: Include version number and language student is using
-    private static String[] TOOL_INSTANCES = { "CloudCoder" };
+    private static String[] TOOL_INSTANCES = { "CloudCoder 0.1.4" }; // FIXME: should not hard code version number
 }
