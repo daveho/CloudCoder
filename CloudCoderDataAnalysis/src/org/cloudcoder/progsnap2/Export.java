@@ -32,11 +32,13 @@ import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
+import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
@@ -44,7 +46,6 @@ import org.cloudcoder.dataanalysis.Util;
 public class Export {
     private Properties config;
     private MainTableWriter mainTableWriter;
-    private int prevEventId;
 
     public void setConfig(Properties config) {
         this.config = config;
@@ -95,29 +96,35 @@ public class Export {
         }
     }
 
-    // This should really be borrowing more from ProgsnapExport.writeStudentWorkHistory
     private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
         IDatabase db = Database.getInstance();
         SubmissionReceipt[] receipts = db.getAllSubmissionReceiptsForUser(problem, student);
 
-        // TODO: Because all receipts have the same eventId, it is unclear how to assign eventIds
-        // for all derived events (Submit, Compile, Compile.Error, etc) without assigning duplicates.
-        // One option may be to decouple the eventId retrieved from the database and the eventId
-        // assigned to a ProgSnap2 Event. We could write arbitrary values (from a counter, guid, etc)
-        // as long as they maintain referential integrity.
+        // Because all receipts have the same eventId, it is unclear how to assign eventIds
+        // for all derived events (Submit, Compile, Compile.Error, Run.Test) without
+        // assigning duplicates. One option may be to decouple the retrieved from the database
+        // and the eventId assigned to a ProgSnap2 Event. We could write arbitrary values (from a
+        // counter, guid, etc) as long as they maintain referential integrity.
         for (SubmissionReceipt receipt : receipts) {
             SubmissionStatus status = receipt.getStatus();
 
-            if (status == SubmissionStatus.STARTED || status == SubmissionStatus.NOT_STARTED) {
+            // Not a real submission
+            if (status == SubmissionStatus.NOT_STARTED) {
                 continue;
             }
 
-            ProgramResult programResult = ProgramResult.Success;
-
-            if (status == SubmissionStatus.COMPILE_ERROR || status == SubmissionStatus.BUILD_ERROR) {
-                programResult = ProgramResult.Error;
+            // Record File.Open if they have only STARTED
+            if (status == SubmissionStatus.STARTED) {
+                Event fileOpen = new Event(EventType.FileOpen, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
+                fileOpen.setServerTimestampt(receipt.getEvent().getTimestamp());
+                fileOpen.setProblemId(problem.getProblemId());
+                fileOpen.setCourseId(problem.getCourseId());
+                // It would be nice to have sessionId
+                mainTableWriter.writeEvent(fileOpen);
+                continue;
             }
 
+            // Record Submit event
             Event submit = new Event(EventType.Submit, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
             submit.setServerTimestampt(receipt.getEvent().getTimestamp());
             submit.setProblemId(problem.getProblemId());
@@ -125,32 +132,63 @@ public class Export {
             // It would be nice to have sessionId
             mainTableWriter.writeEvent(submit);
 
+            ProgramResult programResult = ProgramResult.Success;
+            if (status == SubmissionStatus.COMPILE_ERROR || status == SubmissionStatus.BUILD_ERROR) {
+                programResult = ProgramResult.Error;
+            }
+
+            // Record Compile event
             Event compile = new Event(EventType.Compile, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
             compile.setServerTimestampt(receipt.getEvent().getTimestamp());
             compile.setProblemId(problem.getProblemId());
             compile.setCourseId(problem.getCourseId());
+            compile.setEventInitiator(EventInitiator.User);
             // It would be nice to have sessionId
             compile.setProgramResult(programResult);
             mainTableWriter.writeEvent(compile);
 
+            // Record Compile.Error if necessary
             if (programResult == ProgramResult.Error) {
                 Event compileError = new Event(EventType.CompileError, receipt.getEventId(), 0, student.getId(), TOOL_INSTANCES);
                 compileError.setServerTimestampt(receipt.getEvent().getTimestamp());
                 compileError.setProgramResult(programResult);
                 // No compile message ):
                 // It would be nice to have sessionId
-                // ParentEventID
+                compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
                 mainTableWriter.writeEvent(compileError);
+                continue;
+            }
+
+            // Record Run.Test events
+            if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
+                NamedTestResult[] tests = db.getTestResultsForSubmission(student, problem, receipt);
+
+                for(NamedTestResult test : tests) {
+                    TestResult t = test.getTestResult();
+
+                    Event runTestEvent = new Event(EventType.RunTest, t.getId(), 0, student.getId(), TOOL_INSTANCES);
+                    runTestEvent.setServerTimestampt(receipt.getEvent().getTimestamp());
+                    runTestEvent.setProblemId(problem.getProblemId());
+                    runTestEvent.setCourseId(problem.getCourseId());
+                    runTestEvent.setParentEventId(receipt.getEventId());
+                    runTestEvent.setProgramInput(t.getInput());
+                    runTestEvent.setProgramOutput(t.getActualOutput());
+                    runTestEvent.setEventInitiator(EventInitiator.User);
+                    switch (t.getOutcome()){
+                        case PASSED:
+                            runTestEvent.setProgramResult(ProgramResult.Success);
+                            break;
+                        case FAILED_ASSERTION:
+                        case FAILED_WITH_EXCEPTION:
+                        case FAILED_BY_SECURITY_MANAGER:
+                        case FAILED_FROM_TIMEOUT:
+                        case INTERNAL_ERROR:
+                            runTestEvent.setProgramResult(ProgramResult.Error);
+                    }
+                    mainTableWriter.writeEvent(runTestEvent);
+                }
             }
         }
-    }
-
-    private int peakNextEventId() {
-        return prevEventId + 1;
-    }
-
-    private int getNextEventId() {
-        return ++prevEventId;
     }
 
     private String getUsername() {

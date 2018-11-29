@@ -31,6 +31,30 @@ public class Event {
         this.setToolInstances(toolInstnaces);
     }
 
+    public String getProgramOutput() {
+        return programOutput;
+    }
+
+    public void setProgramOutput(String programOutput) {
+        this.programOutput = programOutput;
+    }
+
+    public String getProgramInput() {
+        return programInput;
+    }
+
+    public void setProgramInput(String programInput) {
+        this.programInput = programInput;
+    }
+
+    public EventInitiator getEventInitiator() {
+        return eventInitiator;
+    }
+
+    public void setEventInitiator(EventInitiator eventInitiator) {
+        this.eventInitiator = eventInitiator;
+    }
+
     public ProgramResult getProgramResult() {
         return programResult;
     }
@@ -201,15 +225,18 @@ public class Event {
             toStringIfExists(problemId),
             toStringIfExists(experimentalCondition),
             toStringIfExists(teamId),
-            toStringIfExists(programResult)
+            toStringIfExists(programResult),
+            toStringIfExists(eventInitiator),
+            toStringIfExists(programInput),
+            toStringIfExists(programOutput),
         };
     }
 
-    public static String[] COLUMN_NAMES = { 
+    public static String[] COLUMN_NAMES = {
         "EventType", "EventID", "Order", "SubjectID", "ToolInstances", "ParentEventID",
         "ServerTimestamp", "ServerTimezone", "SessionID", "CourseID", "CourseSectionID",
         "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID",
-        "ProgramResult"
+        "ProgramResult", "EventInitiator", "ProgramInput", "ProgramOutput"
     };
 
     private EventType eventType;
@@ -229,6 +256,9 @@ public class Event {
     private String experimentalCondition;
     private Integer teamId;
     private ProgramResult programResult;
+    private EventInitiator eventInitiator;
+    private String programInput;
+    private String programOutput;
 
     private String toStringIfExists(Object obj) {
         if (obj == null) {
