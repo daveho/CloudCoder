@@ -17,6 +17,8 @@
 
 package org.cloudcoder.dataanalysis;
 
+import org.cloudcoder.progsnap2.Export;
+
 public class Main {
 	public static void main(String[] args) throws Exception {
 		if (args.length == 0) {
@@ -42,6 +44,8 @@ public class Main {
 			PauseTimes.main(rest);
 		} else if (app.equals("export")) {
 			ProgsnapExport.main(rest);
+		} else if (app.equals("export2")) {
+			Export.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);
