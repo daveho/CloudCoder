@@ -5,3 +5,4 @@
 /testout
 /cctest/
 /anon_idents.txt
+/t[0-9]*
