@@ -20,284 +20,230 @@ package org.cloudcoder.progsnap2;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class Event {
 	private static final int EVENT_ID_SPACING = 20;
 	
-    public Event(EventType eventType, int eventId, int order, int subjectId, String[] toolInstnaces) {
-        this.setEventType(eventType);
-        // CloudCoder "native" event ids are multiplied by 40 in order to create
-        // some space for ProgSnap 2 events that originate from a single
-        // CloudCoder event.
-        this.setEventId(((long)eventId) * EVENT_ID_SPACING);
-        this.setOrder(order);
-        this.setSubjectId(subjectId);
-        this.setToolInstances(toolInstnaces);
-    }
+	/**
+	 * Server timezone, which is hard-coded.
+	 * FIXME This should be configurable!
+	 */
+	public static final String SERVER_TIMEZONE = "-0500";
 
-    public String getProgramOutput() {
-        return programOutput;
-    }
-
-    public void setProgramOutput(String programOutput) {
-        this.programOutput = programOutput;
-    }
-
-    public String getProgramInput() {
-        return programInput;
-    }
-
-    public void setProgramInput(String programInput) {
-        this.programInput = programInput;
-    }
-
-    public EventInitiator getEventInitiator() {
-        return eventInitiator;
-    }
-
-    public void setEventInitiator(EventInitiator eventInitiator) {
-        this.eventInitiator = eventInitiator;
-    }
-
-    public ProgramResult getProgramResult() {
-        return programResult;
-    }
-
-    public void setProgramResult(ProgramResult programResult) {
-        this.programResult = programResult;
-    }
-
-    public String[] getToolInstances() {
-        return toolInstances;
-    }
-
-    public void setToolInstances(String[] toolInstances) {
-        this.toolInstances = toolInstances;
-    }
-
-    public Integer getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(Integer subjectId) {
-        this.subjectId = subjectId;
-    }
-
-    public Integer getOrder() {
-        return order;
-    }
-
-    public void setOrder(Integer order) {
-        this.order = order;
-    }
-
-    public Long getEventId() {
-        return eventId;
-    }
-
-    // DHH: Made this private because ProgSnap 2 event ids are derived
-    // from CloudCoder ids in a way that is internal to this class,
-    // so it's not a good idea to allow them to be set arbitrarily.
-    private void setEventId(Long eventId) {
-        this.eventId = eventId;
-    }
-    
-    /**
-     * "Bump" an event id by specified increment.
-     * This can be used to ensure that multiple ProgSnap 2 events that
-     * are generated from a single CloudCoder event are given different
-     * event ids. 
-     * 
-     * @param increment the increment to add to the event id
-     */
-    public void bumpEventId(int increment) {
-    	if (increment >= EVENT_ID_SPACING) {
-    		throw new IllegalArgumentException("Increment of " + increment +
-    				" exceeds event id spacing of " + EVENT_ID_SPACING);
-    	}
-    	this.eventId += increment;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public Integer getParentEventId() {
-        return parentEventId;
-    }
-
-    public void setParentEventId(Integer parentEventId) {
-        this.parentEventId = parentEventId;
-    }
-
-    public Integer getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(Integer teamId) {
-        this.teamId = teamId;
-    }
-
-    public String getExperimentalCondition() {
-        return experimentalCondition;
-    }
-
-    public void setExperimentalCondition(String experimentalCondition) {
-        this.experimentalCondition = experimentalCondition;
-    }
-
-    public Integer getProblemId() {
-        return problemId;
-    }
-
-    public void setProblemId(Integer problemId) {
-        this.problemId = problemId;
-    }
-
-    public Integer getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Integer resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public Integer getAssignmentId() {
-        return assignmentId;
-    }
-
-    public void setAssignmentId(Integer assignmentId) {
-        this.assignmentId = assignmentId;
-    }
-
-    public Integer getTermId() {
-        return termId;
-    }
-
-    public void setTermId(Integer termId) {
-        this.termId = termId;
-    }
-
-    public Integer getCourseSectionId() {
-        return courseSectionId;
-    }
-
-    public void setCourseSectionId(Integer courseSectionId) {
-        this.courseSectionId = courseSectionId;
-    }
-
-    public Integer getCourseId() {
-        return courseId;
-    }
-
-    public void setCourseId(Integer courseId) {
-        this.courseId = courseId;
-    }
-
-    public Integer getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(Integer sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getServerTimestamp() {
-        if (serverTimestamp == null) {
-            return "";
-        }
-
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return df.format(new Date(serverTimestamp));
-    }
-
-    public String getServerTimezone() {
-        if (serverTimestamp == null) {
-            return "";
-        }
-
-        // TODO: Not sure about this
-        return "-0000";
-    }
-
-    public void setServerTimestampt(Long serverTimestamp) {
-        this.serverTimestamp = serverTimestamp;
-    }
-    
-    public void setCodeStateId(String codeStateId) {
-		this.codeStateId = codeStateId;
-	}
-    
-    public String getCodeStateId() {
-		return codeStateId;
+	/**
+	 * Metadata for a main event table column: specifically, its name
+	 * and Java datatype.
+	 */
+	public static class Field {
+		public final String name;
+		public final Class<?> type;
+		public Field(String name, Class<?> type) {
+			this.name = name;
+			this.type = type;
+		}
+		
+		/**
+		 * Convert a field value to a String (for writing to a CSV file.)
+		 * 
+		 * @param value the field value
+		 * @return String representation of the field value
+		 */
+		public String convertToString(Object value) {
+			return (value != null) ? value.toString() : "";
+		}
 	}
 
-    public String[] toStrings() {
-        return new String[] {
-            eventType.getValue(),
-            eventId.toString(),
-            order.toString(),
-            subjectId.toString(),
-            String.join(";", toolInstances),
-            toStringIfExists(parentEventId),
-            toStringIfExists(this.getServerTimestamp()),
-            toStringIfExists(this.getServerTimezone()),
-            toStringIfExists(sessionId),
-            toStringIfExists(courseId),
-            toStringIfExists(courseSectionId),
-            toStringIfExists(termId),
-            toStringIfExists(assignmentId),
-            toStringIfExists(resourceId),
-            toStringIfExists(problemId),
-            toStringIfExists(experimentalCondition),
-            toStringIfExists(teamId),
-            toStringIfExists(programResult),
-            toStringIfExists(eventInitiator),
-            toStringIfExists(programInput),
-            toStringIfExists(programOutput),
-            toStringIfExists(codeStateId),
-        };
-    }
+	/**
+	 * ProgSnap2 main event table columns that the CloudCoder exporter generates.
+	 */
+	public static Field[] FIELDS = {
+			new Field("EventType", EventType.class),
+			new Field("EventID", Long.class),
+			//new Field("Order", Integer.class),
+			new Field("SubjectID", Integer.class),
+			new Field("ToolInstances", String[].class) {
+				@Override
+				public String convertToString(Object value) {
+					String[] toolInstances = (String[]) value;
+					StringBuilder buf = new StringBuilder();
+					for (int i = 0; i < toolInstances.length; i++) {
+						if (i > 0) {
+							buf.append("; ");
+						}
+						buf.append(toolInstances[i]);
+					}
+					return buf.toString();
+				}
+			},
+			new Field("ParentEventID", Long.class),
+			new Field("ServerTimestamp", Long.class) {
+				@Override
+				public String convertToString(Object value) {
+					Long serverTimestamp = (Long) value;
 
-    public static String[] COLUMN_NAMES = {
-        "EventType", "EventID", "Order", "SubjectID", "ToolInstances", "ParentEventID",
-        "ServerTimestamp", "ServerTimezone", "SessionID", "CourseID", "CourseSectionID",
-        "TermID", "AssignmentID", "ResourceID", "ProblemID", "ExperimentalCondition", "TeamID",
-        "ProgramResult", "EventInitiator", "ProgramInput", "ProgramOutput", "CodeStateId"
-    };
+					DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+					df.setTimeZone(TimeZone.getTimeZone(SERVER_TIMEZONE));
+					return df.format(new Date(serverTimestamp));
+				}
+			},
+			new Field("ServerTimezone", String.class),
+			//new Field("SessionID", Integer.class),
+			new Field("CourseID", Integer.class),
+			new Field("CourseSectionID", Integer.class),
+			new Field("TermID", Integer.class),
+			//new Field("AssignmentID", Integer.class),
+			//new Field("ResourceID", Integer.class),
+			new Field("ProblemID", Integer.class),
+			//new Field("ExperimentalCondition", String.class),
+			//new Field("TeamID", Integer.class),
+			new Field("ProgramResult", ProgramResult.class),
+			new Field("EventInitiator", EventInitiator.class),
+			new Field("ProgramInput", String.class),
+			new Field("ProgramOutput", String.class),
+			new Field("CodeStateID", String.class),
+			new Field("CodeStateSection", String.class),
+	};
+	
+	/**
+	 * Map of field names to {@link Field}s, for quick access.
+	 */
+	public static final Map<String, Field> FIELD_MAP = new HashMap<String, Event.Field>();
+	static {
+		for (Field f : FIELDS) {
+			FIELD_MAP.put(f.name, f);
+		}
+	}
 
-    private EventType eventType;
-    private Long eventId;
-    private Integer order;
-    private Integer subjectId;
-    private String[] toolInstances;
-    private Integer parentEventId;
-    private Long serverTimestamp;
-    private Integer sessionId;
-    private Integer courseId;
-    private Integer courseSectionId;
-    private Integer termId;
-    private Integer assignmentId;
-    private Integer resourceId;
-    private Integer problemId;
-    private String experimentalCondition;
-    private Integer teamId;
-    private ProgramResult programResult;
-    private EventInitiator eventInitiator;
-    private String programInput;
-    private String programOutput;
-    private String codeStateId;
+	private Map<String, Object> fieldValues;
+	
+	/**
+	 * Column names.
+	 */
+	public static final String[] COLUMN_NAMES = new String[FIELDS.length];
+	static {
+		for (int i = 0; i < FIELDS.length; i++) {
+			COLUMN_NAMES[i] = FIELDS[i].name;
+		}
+	}
 
-    private String toStringIfExists(Object obj) {
-        if (obj == null) {
-            return "";
-        }
-        return obj.toString();
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param eventType      the event type
+	 * @param eventId        the event id
+	 * @param subjectId      the subject id
+	 * @param toolInstances  the tool instances
+	 */
+	public Event(EventType eventType, int eventId, int subjectId, String[] toolInstances) {
+		this.fieldValues = new HashMap<String, Object>();
+
+		this.setFieldValue("EventType", eventType);
+		// CloudCoder "native" event ids are multiplied by 40 in order to create
+		// some space for ProgSnap 2 events that originate from a single
+		// CloudCoder event.
+		this.setFieldValue("EventID", ((long)eventId) * EVENT_ID_SPACING);
+		this.setFieldValue("SubjectID", subjectId);
+		this.setFieldValue("ToolInstances", toolInstances);
+		
+		this.setFieldValue("ServerTimezone", SERVER_TIMEZONE);
+	}
+	
+	public<E> void setFieldValue(String fieldName, E value) {
+		Field f = FIELD_MAP.get(fieldName);
+		if (f == null) {
+			throw new IllegalArgumentException("Unknown field: " + fieldName);
+		}
+		if (value.getClass() != f.type) {
+			throw new IllegalArgumentException(
+					value.getClass().getSimpleName() + " is wrong type for " +
+					f.type.getSimpleName() + " field");
+		}
+		fieldValues.put(f.name, value);
+	}
+	
+	public<E> E getFieldValue(String fieldName, Class<E> cls) {
+		Field f = FIELD_MAP.get(fieldName);
+		if (f == null) {
+			throw new IllegalArgumentException("Unknown field: " + fieldName);
+		}
+		Object value = fieldValues.get(fieldName);
+		if (value == null) {
+			return null;
+		}
+		if (cls != f.type) {
+			throw new IllegalStateException("Field retrieval type mismatch (wanted " + cls.getSimpleName() +
+					", got " + f.type.getSimpleName() + ")");
+		}
+		return cls.cast(value);
+	}
+
+	/**
+	 * "Bump" an event id by specified increment.
+	 * This can be used to ensure that multiple ProgSnap 2 events that
+	 * are generated from a single CloudCoder event are given different
+	 * event ids. 
+	 * 
+	 * @param increment the increment to add to the event id
+	 */
+	public void bumpEventId(int increment) {
+		if (increment >= EVENT_ID_SPACING) {
+			throw new IllegalArgumentException("Increment of " + increment +
+					" exceeds event id spacing of " + EVENT_ID_SPACING);
+		}
+		//this.eventId += increment;
+		long eventId = getFieldValue("EventID", Long.class);
+		setFieldValue("EventID", eventId + increment);
+	}
+
+	public String[] toStrings() {
+		String[] result = new String[FIELDS.length];
+		for (int i = 0; i < FIELDS.length; i++) {
+			Field f = FIELDS[i];
+			result[i] = f.convertToString(fieldValues.get(f.name));
+		}
+		return result;
+	}
+
+	public void setServerTimestamp(long timestamp) {
+		setFieldValue("ServerTimestamp", timestamp);
+	}
+
+	public void setProblemId(Integer problemId) {
+		setFieldValue("ProblemID", problemId);
+	}
+
+	public void setCourseId(Integer courseId) {
+		setFieldValue("CourseID", courseId);
+	}
+
+	public void setEventInitiator(EventInitiator eventInitiator) {
+		setFieldValue("EventInitiator", eventInitiator);
+	}
+
+	public void setProgramResult(ProgramResult programResult) {
+		setFieldValue("ProgramResult", programResult);
+	}
+
+	public void setParentEventId(long parentEventId) {
+		setFieldValue("ParentEventID", parentEventId);
+	}
+
+	public void setProgramInput(String programInput) {
+		setFieldValue("ProgramInput", programInput);
+	}
+
+	public void setProgramOutput(String programOutput) {
+		setFieldValue("ProgramOutput", programOutput);
+	}
+
+	public void setCodeStateId(String codeStateId) {
+		setFieldValue("CodeStateID", codeStateId);
+	}
+
+	public String getCodeStateId() {
+		return getFieldValue("CodeStateID", String.class);
+	}
 }
