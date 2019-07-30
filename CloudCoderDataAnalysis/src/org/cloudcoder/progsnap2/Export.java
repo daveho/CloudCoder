@@ -223,6 +223,9 @@ public class Export {
 
 		// Record File.Open if they have only STARTED
 		else if (status == SubmissionStatus.STARTED) {
+			// DHH: I don't think there's a lot of value in generating File.Open events
+			// for CloudCoder data.
+			/*
 			ProgSnap2Event fileOpen = new ProgSnap2Event(EventType.FileOpen, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 			fileOpen.setServerTimestamp(receipt.getEvent().getTimestamp());
 			fileOpen.setProblemId(problem.getProblemId());
@@ -230,12 +233,23 @@ public class Export {
 			// It would be nice to have sessionId
 			mainTableWriter.writeEvent(fileOpen, currentCodeStateId);
 			//continue;
+			 */
 		} else {
+
 			// Record Submit event
 			ProgSnap2Event submit = new ProgSnap2Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			
+			// Create an ExecutionID to link Run.Test events associated
+			// with this submission.
+			String executionId = "ex" + submit.getEventId();
+
 			submit.setServerTimestamp(receipt.getEvent().getTimestamp());
 			submit.setProblemId(problem.getProblemId());
 			submit.setCourseId(problem.getCourseId());
+			if (status == SubmissionStatus.TESTS_FAILED || status == SubmissionStatus.TESTS_PASSED) {
+				// Tests were apparently executed, so record an executionID
+				submit.setExecutionId(executionId);
+			}
 			// It would be nice to have sessionId
 			mainTableWriter.writeEvent(submit, currentCodeStateId);
 
@@ -264,6 +278,7 @@ public class Export {
 				compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
 				mainTableWriter.writeEvent(compileError, currentCodeStateId);
 			} else {
+				
 				// Record Run.Test events
 				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
 					NamedTestResult[] tests = db.getTestResultsForSubmission(student, problem, receipt);
@@ -279,6 +294,7 @@ public class Export {
 						runTestEvent.setProgramInput(t.getInput());
 						runTestEvent.setProgramOutput(t.getActualOutput());
 						runTestEvent.setEventInitiator(EventInitiator.User);
+						runTestEvent.setExecutionId(executionId);
 						switch (t.getOutcome()){
 						case PASSED:
 							runTestEvent.setProgramResult(ProgramResult.Success);
@@ -290,6 +306,7 @@ public class Export {
 						case INTERNAL_ERROR:
 							runTestEvent.setProgramResult(ProgramResult.Error);
 						}
+						runTestEvent.setExecutionId(executionId);
 						mainTableWriter.writeEvent(runTestEvent, currentCodeStateId);
 					}
 				}

@@ -105,6 +105,7 @@ public class ProgSnap2Event {
 			new Field("ProgramOutput", String.class),
 			new Field("CodeStateID", String.class),
 			new Field("CodeStateSection", String.class),
+			new Field("ExecutionID", String.class),
 	};
 	
 	/**
@@ -243,11 +244,15 @@ public class ProgSnap2Event {
 		setFieldValue("CodeStateID", codeStateId);
 	}
 
+	public void setExecutionId(String executionId) {
+		setFieldValue("ExecutionID", executionId);
+	}
+
 	public String getCodeStateId() {
 		return getFieldValue("CodeStateID", String.class);
 	}
 	
 	public Long getEventId() {
-		return getFieldValue("GetEventID", Long.class);
+		return getFieldValue("EventID", Long.class);
 	}
 }
