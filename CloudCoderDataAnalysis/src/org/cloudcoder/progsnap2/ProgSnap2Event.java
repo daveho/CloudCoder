@@ -246,4 +246,8 @@ public class ProgSnap2Event {
 	public String getCodeStateId() {
 		return getFieldValue("CodeStateID", String.class);
 	}
+	
+	public Long getEventId() {
+		return getFieldValue("GetEventID", Long.class);
+	}
 }

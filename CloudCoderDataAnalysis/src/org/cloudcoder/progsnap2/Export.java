@@ -103,8 +103,11 @@ public class Export {
 		TextDocument doc = new TextDocument();
 		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
 		
+		String currentCodeStateId = "";
+		
 		for (Triple<Event, Change, SubmissionReceipt> triple : events) {
 			if (triple.getSecond() != null) {
+				// This is a Change (i.e., an Edit event)
 				Change c = triple.getSecond();
 
 				boolean lastEditTextGood = true;
@@ -132,7 +135,8 @@ public class Export {
 						// To avoid having a huge number of immediate subdirectories in the CodeStates
 						// directory, generate CodeStateID values as a hierarchy, user id then
 						// edit event id.
-						evt.setCodeStateId("u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId());
+						currentCodeStateId = "u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId();
+						evt.setCodeStateId(currentCodeStateId);
 						
 						// TODO: term id
 
@@ -156,7 +160,7 @@ public class Export {
 			}
 			if (triple.getThird() != null) {
 				// Submission event
-				writeSubmission(student, problem, triple.getThird());
+				writeSubmission(student, problem, triple.getThird(), currentCodeStateId);
 			}
 		}
 	}
@@ -190,6 +194,7 @@ public class Export {
 	}
 	*/
 
+	@Deprecated
 	private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
 		IDatabase db = Database.getInstance();
 		SubmissionReceipt[] receipts = db.getAllSubmissionReceiptsForUser(problem, student);
@@ -200,11 +205,11 @@ public class Export {
 		// and the eventId assigned to a ProgSnap2 Event. We could write arbitrary values (from a
 		// counter, guid, etc) as long as they maintain referential integrity.
 		for (SubmissionReceipt receipt : receipts) {
-			writeSubmission(student, problem, receipt);
+			writeSubmission(student, problem, receipt, "unknown code state");
 		}
 	}
 
-	private void writeSubmission(User student, Problem problem, SubmissionReceipt receipt) {
+	private void writeSubmission(User student, Problem problem, SubmissionReceipt receipt, String currentCodeStateId) {
 		IDatabase db = Database.getInstance();
 
 		SubmissionStatus status = receipt.getStatus();
@@ -223,7 +228,7 @@ public class Export {
 			fileOpen.setProblemId(problem.getProblemId());
 			fileOpen.setCourseId(problem.getCourseId());
 			// It would be nice to have sessionId
-			mainTableWriter.writeEvent(fileOpen);
+			mainTableWriter.writeEvent(fileOpen, currentCodeStateId);
 			//continue;
 		} else {
 			// Record Submit event
@@ -232,7 +237,7 @@ public class Export {
 			submit.setProblemId(problem.getProblemId());
 			submit.setCourseId(problem.getCourseId());
 			// It would be nice to have sessionId
-			mainTableWriter.writeEvent(submit);
+			mainTableWriter.writeEvent(submit, currentCodeStateId);
 
 			ProgramResult programResult = ProgramResult.Success;
 			if (status == SubmissionStatus.COMPILE_ERROR || status == SubmissionStatus.BUILD_ERROR) {
@@ -247,7 +252,7 @@ public class Export {
 			compile.setEventInitiator(EventInitiator.User);
 			// It would be nice to have sessionId
 			compile.setProgramResult(programResult);
-			mainTableWriter.writeEvent(compile);
+			mainTableWriter.writeEvent(compile, currentCodeStateId);
 
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
@@ -257,7 +262,7 @@ public class Export {
 				// No compile message ):
 					// It would be nice to have sessionId
 				compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
-				mainTableWriter.writeEvent(compileError);
+				mainTableWriter.writeEvent(compileError, currentCodeStateId);
 			} else {
 				// Record Run.Test events
 				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
@@ -285,7 +290,7 @@ public class Export {
 						case INTERNAL_ERROR:
 							runTestEvent.setProgramResult(ProgramResult.Error);
 						}
-						mainTableWriter.writeEvent(runTestEvent);
+						mainTableWriter.writeEvent(runTestEvent, currentCodeStateId);
 					}
 				}
 			}

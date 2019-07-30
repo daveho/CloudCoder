@@ -45,7 +45,15 @@ public class MainTableWriter implements Closeable {
         csvWriter.writeNext(ProgSnap2Event.COLUMN_NAMES);
     }
 
+    public void writeEvent(ProgSnap2Event event, String currentCodeStateId) {
+    	event.setCodeStateId(currentCodeStateId);
+        csvWriter.writeNext(event.toStrings());
+    }
+
     public void writeEvent(ProgSnap2Event event) {
+    	if (event.getCodeStateId() == null) {
+    		throw new IllegalStateException("Writing event id " + event.getEventId() + " without a CodeStateID");
+    	}
         csvWriter.writeNext(event.toStrings());
     }
 
