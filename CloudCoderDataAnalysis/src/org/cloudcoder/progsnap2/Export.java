@@ -36,6 +36,7 @@ import org.cloudcoder.app.shared.model.ApplyChangeToTextDocument;
 import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.Course;
+import org.cloudcoder.app.shared.model.Event;
 import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
@@ -45,6 +46,7 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.TextDocument;
+import org.cloudcoder.app.shared.model.Triple;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
@@ -69,12 +71,92 @@ public class Export {
 		List<User> students = findUsers(course);
 		ProblemList problems = findProblems(instructor, course);
 
+		/*
 		//writeSessionEvents(course);
 
 		for (User student : students) {
 			for (Problem problem : problems.getProblemList()) {
 				writeCompileAndSubmitEvents(instructor, student, problem);
 				writeEditEvents(instructor, student, problem);
+			}
+		}
+		*/
+		
+		IDatabase db = Database.getInstance();
+		
+		for (User student : students) {
+			for (Problem problem : problems.getProblemList()) {
+				System.out.printf("Retrieving events for student %d, problem %d\n", student.getId(), problem.getProblemId());
+				List<Triple<Event, Change, SubmissionReceipt>> events =
+						db.retrieveEvents(problem, student);
+				System.out.printf("  Retrieved %d events\n", events.size());
+				writeEvents(instructor, problem, student, events);
+			}
+		}
+	}
+
+	private void writeEvents(User instructor, Problem problem, User student,
+			List<Triple<Event, Change, SubmissionReceipt>> events) {
+
+		File codeStates = mainTableWriter.makeSubdir("CodeStates");
+
+		TextDocument doc = new TextDocument();
+		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+		
+		for (Triple<Event, Change, SubmissionReceipt> triple : events) {
+			if (triple.getSecond() != null) {
+				Change c = triple.getSecond();
+
+				boolean lastEditTextGood = true;
+				if (c.getType() == ChangeType.FULL_TEXT) {
+					// If a delta failed to apply, a full text change will allow us to resync
+					lastEditTextGood = true;
+				}
+
+				if (lastEditTextGood) {
+					try {
+						// Write the code state
+						applicator.apply(c, doc);
+						
+						// Create the edit event
+						ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
+						//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
+						evt.setCourseId(problem.getCourseId());
+						// TODO: course section id
+						evt.setEventInitiator(EventInitiator.User);
+						evt.setProblemId(problem.getProblemId());
+						evt.setServerTimestamp(c.getEvent().getTimestamp());
+						
+						//evt.setCodeStateId("c" + c.getEventId());
+						
+						// To avoid having a huge number of immediate subdirectories in the CodeStates
+						// directory, generate CodeStateID values as a hierarchy, user id then
+						// edit event id.
+						evt.setCodeStateId("u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId());
+						
+						// TODO: term id
+
+						// Write the event to the main table
+						mainTableWriter.writeEvent(evt);
+
+						File codeStateDir = new File(codeStates, evt.getCodeStateId());
+						if (!codeStateDir.mkdirs()) {
+							throw new RuntimeException("Could not create code state directory " + codeStateDir);
+						}
+
+						File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
+						try (FileWriter fw = new FileWriter(codeFile)) {
+							fw.write(doc.getText());
+						}
+					} catch (Exception e) {
+						// delta failed to apply, blargh
+						lastEditTextGood = false;
+					}
+				}
+			}
+			if (triple.getThird() != null) {
+				// Submission event
+				writeSubmission(student, problem, triple.getThird());
 			}
 		}
 	}
@@ -89,6 +171,9 @@ public class Export {
 		for (WorkSession session : sessions) {
 			Event sessionStart = new Event(EventType.SessionStart, session.getStartEventId(), 0, session.getUserId(), TOOL_INSTANCES);
 			sessionStart.setServerTimestamp(session.getStartTime());
+		TextDocument doc = new TextDocument();
+		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+
 			sessionStart.setProblemId(session.getProblemId());
 			sessionStart.setCourseId(session.getCourseId());
 			sessionStart.setSessionId(session.getStartEventId());
@@ -115,26 +200,34 @@ public class Export {
 		// and the eventId assigned to a ProgSnap2 Event. We could write arbitrary values (from a
 		// counter, guid, etc) as long as they maintain referential integrity.
 		for (SubmissionReceipt receipt : receipts) {
-			SubmissionStatus status = receipt.getStatus();
+			writeSubmission(student, problem, receipt);
+		}
+	}
 
-			// Not a real submission
-			if (status == SubmissionStatus.NOT_STARTED) {
-				continue;
-			}
+	private void writeSubmission(User student, Problem problem, SubmissionReceipt receipt) {
+		IDatabase db = Database.getInstance();
 
-			// Record File.Open if they have only STARTED
-			if (status == SubmissionStatus.STARTED) {
-				Event fileOpen = new Event(EventType.FileOpen, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
-				fileOpen.setServerTimestamp(receipt.getEvent().getTimestamp());
-				fileOpen.setProblemId(problem.getProblemId());
-				fileOpen.setCourseId(problem.getCourseId());
-				// It would be nice to have sessionId
-				mainTableWriter.writeEvent(fileOpen);
-				continue;
-			}
+		SubmissionStatus status = receipt.getStatus();
 
+		File codeStates = mainTableWriter.makeSubdir("CodeStates");
+
+		// Not a real submission
+		if (status == SubmissionStatus.NOT_STARTED) {
+			//continue;
+		}
+
+		// Record File.Open if they have only STARTED
+		else if (status == SubmissionStatus.STARTED) {
+			ProgSnap2Event fileOpen = new ProgSnap2Event(EventType.FileOpen, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			fileOpen.setServerTimestamp(receipt.getEvent().getTimestamp());
+			fileOpen.setProblemId(problem.getProblemId());
+			fileOpen.setCourseId(problem.getCourseId());
+			// It would be nice to have sessionId
+			mainTableWriter.writeEvent(fileOpen);
+			//continue;
+		} else {
 			// Record Submit event
-			Event submit = new Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			ProgSnap2Event submit = new ProgSnap2Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 			submit.setServerTimestamp(receipt.getEvent().getTimestamp());
 			submit.setProblemId(problem.getProblemId());
 			submit.setCourseId(problem.getCourseId());
@@ -147,7 +240,7 @@ public class Export {
 			}
 
 			// Record Compile event
-			Event compile = new Event(EventType.Compile, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			ProgSnap2Event compile = new ProgSnap2Event(EventType.Compile, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
 			compile.setCourseId(problem.getCourseId());
@@ -158,43 +251,42 @@ public class Export {
 
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
-				Event compileError = new Event(EventType.CompileError, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+				ProgSnap2Event compileError = new ProgSnap2Event(EventType.CompileError, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
 				// No compile message ):
 					// It would be nice to have sessionId
 				compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
 				mainTableWriter.writeEvent(compileError);
-				continue;
-			}
+			} else {
+				// Record Run.Test events
+				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
+					NamedTestResult[] tests = db.getTestResultsForSubmission(student, problem, receipt);
 
-			// Record Run.Test events
-			if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
-				NamedTestResult[] tests = db.getTestResultsForSubmission(student, problem, receipt);
+					for(NamedTestResult test : tests) {
+						TestResult t = test.getTestResult();
 
-				for(NamedTestResult test : tests) {
-					TestResult t = test.getTestResult();
-
-					Event runTestEvent = new Event(EventType.RunTest, t.getId(), student.getId(), TOOL_INSTANCES);
-					runTestEvent.setServerTimestamp(receipt.getEvent().getTimestamp());
-					runTestEvent.setProblemId(problem.getProblemId());
-					runTestEvent.setCourseId(problem.getCourseId());
-					runTestEvent.setParentEventId(receipt.getEventId());
-					runTestEvent.setProgramInput(t.getInput());
-					runTestEvent.setProgramOutput(t.getActualOutput());
-					runTestEvent.setEventInitiator(EventInitiator.User);
-					switch (t.getOutcome()){
-					case PASSED:
-						runTestEvent.setProgramResult(ProgramResult.Success);
-						break;
-					case FAILED_ASSERTION:
-					case FAILED_WITH_EXCEPTION:
-					case FAILED_BY_SECURITY_MANAGER:
-					case FAILED_FROM_TIMEOUT:
-					case INTERNAL_ERROR:
-						runTestEvent.setProgramResult(ProgramResult.Error);
+						ProgSnap2Event runTestEvent = new ProgSnap2Event(EventType.RunTest, t.getId(), student.getId(), TOOL_INSTANCES);
+						runTestEvent.setServerTimestamp(receipt.getEvent().getTimestamp());
+						runTestEvent.setProblemId(problem.getProblemId());
+						runTestEvent.setCourseId(problem.getCourseId());
+						runTestEvent.setParentEventId(receipt.getEventId());
+						runTestEvent.setProgramInput(t.getInput());
+						runTestEvent.setProgramOutput(t.getActualOutput());
+						runTestEvent.setEventInitiator(EventInitiator.User);
+						switch (t.getOutcome()){
+						case PASSED:
+							runTestEvent.setProgramResult(ProgramResult.Success);
+							break;
+						case FAILED_ASSERTION:
+						case FAILED_WITH_EXCEPTION:
+						case FAILED_BY_SECURITY_MANAGER:
+						case FAILED_FROM_TIMEOUT:
+						case INTERNAL_ERROR:
+							runTestEvent.setProgramResult(ProgramResult.Error);
+						}
+						mainTableWriter.writeEvent(runTestEvent);
 					}
-					mainTableWriter.writeEvent(runTestEvent);
 				}
 			}
 		}
@@ -224,7 +316,7 @@ public class Export {
 
 		boolean lastEditTextGood = true;
 		for (Change c : changes) {
-			Event evt = new Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
+			ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
 			//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
 			evt.setCourseId(problem.getCourseId());
 			// TODO: course section id

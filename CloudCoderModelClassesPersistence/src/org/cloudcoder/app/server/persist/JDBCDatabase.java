@@ -86,6 +86,7 @@ import org.cloudcoder.app.server.persist.txn.RegisterExistingUser;
 import org.cloudcoder.app.server.persist.txn.ReloadModelObject;
 import org.cloudcoder.app.server.persist.txn.ReplaceSubmissionReceipt;
 import org.cloudcoder.app.server.persist.txn.ReplaceTestResults;
+import org.cloudcoder.app.server.persist.txn.RetrieveEvents;
 import org.cloudcoder.app.server.persist.txn.RetrieveSnapshots;
 import org.cloudcoder.app.server.persist.txn.SearchRepositoryExercises;
 import org.cloudcoder.app.server.persist.txn.SetModuleForProblem;
@@ -137,6 +138,7 @@ import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.Triple;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
@@ -568,6 +570,11 @@ public class JDBCDatabase implements IDatabase {
 	@Override
 	public boolean updateConfigurationSettings(ConfigurationSetting[] settings) {
 		return databaseRun(new UpdateConfigurationSettings(settings));
+	}
+	
+	@Override
+	public List<Triple<Event, Change, SubmissionReceipt>> retrieveEvents(Problem problem, User user) {
+		return databaseRun(new RetrieveEvents(problem, user));
 	}
 
 	/**

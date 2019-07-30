@@ -61,6 +61,7 @@ import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestCase;
 import org.cloudcoder.app.shared.model.TestResult;
+import org.cloudcoder.app.shared.model.Triple;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.app.shared.model.UserAndSubmissionReceipt;
 import org.cloudcoder.app.shared.model.UserRegistrationRequest;
@@ -828,4 +829,17 @@ public interface IDatabase {
 	 * @return true if successful, false otherwise
 	 */
 	public boolean updateConfigurationSettings(ConfigurationSetting[] settings);
+	
+	/**
+	 * Execute a query to pull all {@link Event}s for specified problem/user.
+	 * Associated {@link Change} and {@link SubmissionReceipt} objects are returned
+	 * (when appropriate). The {@link TestResult}s associated with the {@link SubmissionReceipt}s
+	 * must be retrieved as a separate step.
+	 * 
+	 * @param problem the {@link Problem}
+	 * @param user the {@link User}
+	 * @return list of {@link Triple}s with the {@link Event}, and when appropriate,
+	 *              the {@link Change} or {@link SubmissionReceipt}
+	 */
+	public List<Triple<Event, Change, SubmissionReceipt>> retrieveEvents(Problem problem, User user);
 }

@@ -42,10 +42,10 @@ public class MainTableWriter implements Closeable {
 
         FileOutputStream writer = new FileOutputStream(f);
         csvWriter = CSV.charset("UTF-8").create().writer(writer);
-        csvWriter.writeNext(Event.COLUMN_NAMES);
+        csvWriter.writeNext(ProgSnap2Event.COLUMN_NAMES);
     }
 
-    public void writeEvent(Event event) {
+    public void writeEvent(ProgSnap2Event event) {
         csvWriter.writeNext(event.toStrings());
     }
 

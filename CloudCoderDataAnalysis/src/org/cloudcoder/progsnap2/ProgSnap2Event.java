@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class Event {
+public class ProgSnap2Event {
 	private static final int EVENT_ID_SPACING = 20;
 	
 	/**
@@ -110,7 +110,7 @@ public class Event {
 	/**
 	 * Map of field names to {@link Field}s, for quick access.
 	 */
-	public static final Map<String, Field> FIELD_MAP = new HashMap<String, Event.Field>();
+	public static final Map<String, Field> FIELD_MAP = new HashMap<String, ProgSnap2Event.Field>();
 	static {
 		for (Field f : FIELDS) {
 			FIELD_MAP.put(f.name, f);
@@ -137,7 +137,7 @@ public class Event {
 	 * @param subjectId      the subject id
 	 * @param toolInstances  the tool instances
 	 */
-	public Event(EventType eventType, int eventId, int subjectId, String[] toolInstances) {
+	public ProgSnap2Event(EventType eventType, int eventId, int subjectId, String[] toolInstances) {
 		this.fieldValues = new HashMap<String, Object>();
 
 		this.setFieldValue("EventType", eventType);
