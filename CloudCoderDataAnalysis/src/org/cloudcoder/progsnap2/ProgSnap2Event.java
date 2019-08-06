@@ -129,15 +129,7 @@ public class ProgSnap2Event {
 		}
 	}
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param eventType      the event type
-	 * @param eventId        the event id
-	 * @param subjectId      the subject id
-	 * @param toolInstances  the tool instances
-	 */
-	public ProgSnap2Event(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
+	private ProgSnap2Event(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
 		this.fieldValues = new HashMap<String, Object>();
 
 		this.setFieldValue("EventType", eventType);
@@ -148,6 +140,18 @@ public class ProgSnap2Event {
 		this.setFieldValue("SubjectID", subjectId);
 		this.setFieldValue("ToolInstances", toolInstances);
 		this.setFieldValue("ServerTimezone", Export.getExport().getServerTimezone());
+	}
+	
+	/**
+	 * Create a {@link ProgSnap2Event}.
+	 * 
+	 * @param eventType      the event type
+	 * @param eventId        the event id
+	 * @param subjectId      the subject id
+	 * @param toolInstances  the tool instances
+	 */
+	public static ProgSnap2Event create(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
+		return new ProgSnap2Event(eventType, eventId, subjectId, toolInstances);
 	}
 	
 	public<E> void setFieldValue(String fieldName, E value) {
@@ -238,6 +242,10 @@ public class ProgSnap2Event {
 	
 	public void setTestId(String testId) {
 		setFieldValue("TestID", testId);
+	}
+	
+	public void setOrder(long order) {
+		setFieldValue("Order", order);
 	}
 
 	public String getCodeStateId() {

@@ -55,6 +55,8 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class Export {
 	private Properties config;
+	private EventFactory eventFactory;
+	private long nextEventOrderValue;
 	private MainTableWriter mainTableWriter;
 	
 	private static Export theInstance;
@@ -68,6 +70,22 @@ public class Export {
 
 	public void setConfig(Properties config) {
 		this.config = config;
+	}
+	
+	public void createEventFactory() {
+		//
+		// The EventFactory relies on the exporter creating ProgSnap2Event object
+		// in the "correct" order, i.e., our best-guess chronological order.
+		//
+		eventFactory = new EventFactory() {
+			@Override
+			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
+				ProgSnap2Event evt = ProgSnap2Event.create(eventType, eventId, subjectId, toolInstances);
+				evt.setOrder(nextEventOrderValue);
+				nextEventOrderValue++;
+				return evt;
+			}
+		};
 	}
 
 	public void setMainTableWriter(MainTableWriter mainTableWriter) {
@@ -143,7 +161,7 @@ public class Export {
 						applicator.apply(c, doc);
 						
 						// Create the edit event
-						ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, eventId, student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event evt = eventFactory.createEvent(EventType.FileEdit, eventId, student.getId(), TOOL_INSTANCES);
 						//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
 						evt.setCourseId(problem.getCourseId());
 						// TODO: course section id
@@ -250,7 +268,7 @@ public class Export {
 			// DHH: I don't think there's a lot of value in generating File.Open events
 			// for CloudCoder data.
 			/*
-			ProgSnap2Event fileOpen = new ProgSnap2Event(EventType.FileOpen, eventId, student.getId(), TOOL_INSTANCES);
+			ProgSnap2Event fileOpen = eventFactory.createEvent(EventType.FileOpen, eventId, student.getId(), TOOL_INSTANCES);
 			fileOpen.setServerTimestamp(receipt.getEvent().getTimestamp());
 			fileOpen.setProblemId(problem.getProblemId());
 			fileOpen.setCourseId(problem.getCourseId());
@@ -266,7 +284,7 @@ public class Export {
 			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
 
 			// Record Submit event
-			submit = new ProgSnap2Event(EventType.Submit, submitEventId, student.getId(), TOOL_INSTANCES);
+			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), TOOL_INSTANCES);
 			
 			// Create an ExecutionID to link Run.Test events associated
 			// with this submission.
@@ -289,7 +307,7 @@ public class Export {
 
 			// Record Compile event
 			long compileEventId = submitEventId + 1L;
-			compile = new ProgSnap2Event(EventType.Compile, compileEventId, student.getId(), TOOL_INSTANCES);
+			compile = eventFactory.createEvent(EventType.Compile, compileEventId, student.getId(), TOOL_INSTANCES);
 			compile.setParentEventId(submitEventId);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
@@ -302,7 +320,7 @@ public class Export {
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
 				long compileErrorEventId = compileEventId + 1L;
-				compileError = new ProgSnap2Event(EventType.CompileError, compileErrorEventId, student.getId(), TOOL_INSTANCES);
+				compileError = eventFactory.createEvent(EventType.CompileError, compileErrorEventId, student.getId(), TOOL_INSTANCES);
 				compileError.setParentEventId(compileEventId);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
@@ -318,7 +336,7 @@ public class Export {
 						
 						long runTestEventId = compileEventId + (long)testCount;
 
-						ProgSnap2Event runTestEvent = new ProgSnap2Event(EventType.RunTest, runTestEventId, student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event runTestEvent = eventFactory.createEvent(EventType.RunTest, runTestEventId, student.getId(), TOOL_INSTANCES);
 						// note that TestID is qualified with problem id, to ensure uniqueness
 						runTestEvent.setTestId("p" + problem.getProblemId() + "/" + test.getTestCaseName());
 						runTestEvent.setParentEventId(submitEventId);
@@ -401,77 +419,6 @@ public class Export {
 			}
 		}
 	}
-
-//	// TODO: need to think of a general way to ensure that code state ids are
-//	// applied to all events.  Maybe this should be done as a post-processing
-//	// step.
-//	private void writeEditEvents(User instructor, User student, Problem problem) throws IOException {
-//		IDatabase db = Database.getInstance();
-//
-//		final List<Change> changes = new ArrayList<>();
-//
-//		ICallback<Change> visitor = new ICallback<Change>() {
-//			@Override
-//			public void call(Change value) {
-//				changes.add(value);
-//			}
-//		};
-//
-//		db.visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
-//
-//		File codeStates = mainTableWriter.makeSubdir("CodeStates");
-//
-//		TextDocument doc = new TextDocument();
-//		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-//
-//		boolean lastEditTextGood = true;
-//		for (Change c : changes) {
-//			ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
-//			//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
-//			evt.setCourseId(problem.getCourseId());
-//			// TODO: course section id
-//			evt.setEventInitiator(EventInitiator.User);
-//			evt.setProblemId(problem.getProblemId());
-//			evt.setServerTimestamp(c.getEvent().getTimestamp());
-//			
-//			//evt.setCodeStateId("c" + c.getEventId());
-//			
-//			// To avoid having a huge number of immediate subdirectories in the CodeStates
-//			// directory, generate CodeStateID values as a hierarchy, user id then
-//			// edit event id.
-//			evt.setCodeStateId("u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId());
-//			
-//			// TODO: term id
-//
-//			// Write the event to the main table
-//			mainTableWriter.writeEvent(evt);
-//
-//			if (c.getType() == ChangeType.FULL_TEXT) {
-//				// If a delta failed to apply, a full text change will allow us to resync
-//				lastEditTextGood = true;
-//			}
-//
-//			if (lastEditTextGood) {
-//				try {
-//					// Write the code state
-//					applicator.apply(c, doc);
-//
-//					File codeStateDir = new File(codeStates, evt.getCodeStateId());
-//					if (!codeStateDir.mkdirs()) {
-//						throw new RuntimeException("Could not create code state directory " + codeStateDir);
-//					}
-//
-//					File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
-//					try (FileWriter fw = new FileWriter(codeFile)) {
-//						fw.write(doc.getText());
-//					}
-//				} catch (Exception e) {
-//					// delta failed to apply, blargh
-//					lastEditTextGood = false;
-//				}
-//			}
-//		}
-//	}
 
 	public String getUsername() {
 		return config.getProperty("ps2.username");
@@ -611,6 +558,8 @@ public class Export {
 		File destDir = new File(config.getProperty("ps2.dest"));
 		MainTableWriter mainTableWriter = new MainTableWriter(destDir);
 		exporter.setMainTableWriter(mainTableWriter);
+		
+		exporter.createEventFactory();
 
 		// Do the export
 		try {
