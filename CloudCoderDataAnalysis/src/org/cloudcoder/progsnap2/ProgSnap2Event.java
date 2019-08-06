@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 public class ProgSnap2Event {
-	private static final int EVENT_ID_SPACING = 20;
+	//private static final int EVENT_ID_SPACING = 20;
 
 	/**
 	 * Metadata for a main event table column: specifically, its name
@@ -56,7 +56,7 @@ public class ProgSnap2Event {
 	public static Field[] FIELDS = {
 			new Field("EventType", EventType.class),
 			new Field("EventID", Long.class),
-			//new Field("Order", Integer.class),
+			new Field("Order", Long.class),
 			new Field("SubjectID", Integer.class),
 			new Field("ToolInstances", String[].class) {
 				@Override
@@ -96,6 +96,7 @@ public class ProgSnap2Event {
 			new Field("ProblemID", Integer.class),
 			//new Field("ExperimentalCondition", String.class),
 			//new Field("TeamID", Integer.class),
+			new Field("TestID", String.class),
 			new Field("ProgramResult", ProgramResult.class),
 			new Field("EventInitiator", EventInitiator.class),
 			new Field("ProgramInput", String.class),
@@ -136,14 +137,14 @@ public class ProgSnap2Event {
 	 * @param subjectId      the subject id
 	 * @param toolInstances  the tool instances
 	 */
-	public ProgSnap2Event(EventType eventType, int eventId, int subjectId, String[] toolInstances) {
+	public ProgSnap2Event(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
 		this.fieldValues = new HashMap<String, Object>();
 
 		this.setFieldValue("EventType", eventType);
 		// CloudCoder "native" event ids are multiplied by 40 in order to create
 		// some space for ProgSnap 2 events that originate from a single
 		// CloudCoder event.
-		this.setFieldValue("EventID", ((long)eventId) * EVENT_ID_SPACING);
+		this.setFieldValue("EventID", eventId);
 		this.setFieldValue("SubjectID", subjectId);
 		this.setFieldValue("ToolInstances", toolInstances);
 		this.setFieldValue("ServerTimezone", Export.getExport().getServerTimezone());
@@ -176,24 +177,6 @@ public class ProgSnap2Event {
 					", got " + f.type.getSimpleName() + ")");
 		}
 		return cls.cast(value);
-	}
-
-	/**
-	 * "Bump" an event id by specified increment.
-	 * This can be used to ensure that multiple ProgSnap 2 events that
-	 * are generated from a single CloudCoder event are given different
-	 * event ids. 
-	 * 
-	 * @param increment the increment to add to the event id
-	 */
-	public void bumpEventId(int increment) {
-		if (increment >= EVENT_ID_SPACING) {
-			throw new IllegalArgumentException("Increment of " + increment +
-					" exceeds event id spacing of " + EVENT_ID_SPACING);
-		}
-		//this.eventId += increment;
-		long eventId = getFieldValue("EventID", Long.class);
-		setFieldValue("EventID", eventId + increment);
 	}
 
 	public String[] toStrings() {
@@ -251,6 +234,10 @@ public class ProgSnap2Event {
 	
 	public void setScore(double score) {
 		setFieldValue("Score", score);
+	}
+	
+	public void setTestId(String testId) {
+		setFieldValue("TestID", testId);
 	}
 
 	public String getCodeStateId() {

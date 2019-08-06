@@ -50,6 +50,9 @@ import org.cloudcoder.app.shared.model.Triple;
 import org.cloudcoder.app.shared.model.User;
 import org.cloudcoder.dataanalysis.Util;
 
+import au.com.bytecode.opencsv.CSV;
+import au.com.bytecode.opencsv.CSVWriter;
+
 public class Export {
 	private Properties config;
 	private MainTableWriter mainTableWriter;
@@ -94,6 +97,17 @@ public class Export {
 		
 		// Write README.txt
 		FileUtils.copyFile(new File(this.getReadmePath()), new File(mainTableWriter.getBaseDir(), "README.txt"));
+		
+		// Write DatasetMetadata.csv
+		try (FileWriter fw = new FileWriter(new File(mainTableWriter.getBaseDir(), "DatasetMetadata.csv"))) {
+			CSVWriter dm = CSV.charset("UTF-8").create().writer(fw);
+			dm.writeNext("Property", "Value");
+			dm.writeNext("Version", "6");
+			dm.writeNext("IsEventOrderingConsistent", "true");
+			dm.writeNext("EventOrderScope", "Restricted");
+			dm.writeNext("EventOrderScopeColumns", "CourseID;ProblemID;SubjectID");
+			dm.writeNext("CodeStateRepresentation", "Directory");
+		}
 	}
 
 	private void writeEvents(User instructor, Problem problem, User student,
@@ -107,6 +121,12 @@ public class Export {
 		String currentCodeStateId = "";
 		
 		for (Triple<Event, Change, SubmissionReceipt> triple : events) {
+			// Generate ProgSnap2 EventId based on CloudCoder event id, but spaced
+			// out to allow for child events (e.g., in the case of a CloudCoder
+			// submission receipt, which will generate Compile and Run.Test
+			// ProgSnap2 events.)
+			long eventId = (long)triple.getFirst().getId() * 40L;
+			
 			if (triple.getSecond() != null) {
 				// This is a Change (i.e., an Edit event)
 				Change c = triple.getSecond();
@@ -123,7 +143,7 @@ public class Export {
 						applicator.apply(c, doc);
 						
 						// Create the edit event
-						ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, eventId, student.getId(), TOOL_INSTANCES);
 						//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
 						evt.setCourseId(problem.getCourseId());
 						// TODO: course section id
@@ -164,7 +184,7 @@ public class Export {
 			}
 			if (triple.getThird() != null) {
 				// Submission event
-				writeSubmission(student, problem, triple.getThird(), currentCodeStateId);
+				writeSubmission(eventId, student, problem, triple.getThird(), currentCodeStateId);
 			}
 		}
 	}
@@ -213,7 +233,7 @@ public class Export {
 //		}
 //	}
 
-	private void writeSubmission(User student, Problem problem, SubmissionReceipt receipt, String currentCodeStateId) {
+	private void writeSubmission(long submitEventId, User student, Problem problem, SubmissionReceipt receipt, String currentCodeStateId) {
 		IDatabase db = Database.getInstance();
 
 		SubmissionStatus status = receipt.getStatus();
@@ -230,7 +250,7 @@ public class Export {
 			// DHH: I don't think there's a lot of value in generating File.Open events
 			// for CloudCoder data.
 			/*
-			ProgSnap2Event fileOpen = new ProgSnap2Event(EventType.FileOpen, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			ProgSnap2Event fileOpen = new ProgSnap2Event(EventType.FileOpen, eventId, student.getId(), TOOL_INSTANCES);
 			fileOpen.setServerTimestamp(receipt.getEvent().getTimestamp());
 			fileOpen.setProblemId(problem.getProblemId());
 			fileOpen.setCourseId(problem.getCourseId());
@@ -246,7 +266,7 @@ public class Export {
 			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
 
 			// Record Submit event
-			submit = new ProgSnap2Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			submit = new ProgSnap2Event(EventType.Submit, submitEventId, student.getId(), TOOL_INSTANCES);
 			
 			// Create an ExecutionID to link Run.Test events associated
 			// with this submission.
@@ -268,7 +288,9 @@ public class Export {
 			}
 
 			// Record Compile event
-			compile = new ProgSnap2Event(EventType.Compile, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			long compileEventId = submitEventId + 1L;
+			compile = new ProgSnap2Event(EventType.Compile, compileEventId, student.getId(), TOOL_INSTANCES);
+			compile.setParentEventId(submitEventId);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
 			compile.setCourseId(problem.getCourseId());
@@ -279,27 +301,31 @@ public class Export {
 
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
-				compileError = new ProgSnap2Event(EventType.CompileError, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+				long compileErrorEventId = compileEventId + 1L;
+				compileError = new ProgSnap2Event(EventType.CompileError, compileErrorEventId, student.getId(), TOOL_INSTANCES);
+				compileError.setParentEventId(compileEventId);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
 				// No compile message ):
-					// It would be nice to have sessionId
-				compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
-				//mainTableWriter.writeEvent(compileError, currentCodeStateId);
 			} else {
-				
 				// Record Run.Test events
 				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
 					tests = db.getTestResultsForSubmission(student, problem, receipt);
 
+					int testCount = 1;
 					for(NamedTestResult test : tests) {
 						TestResult t = test.getTestResult();
+						
+						long runTestEventId = compileEventId + (long)testCount;
 
-						ProgSnap2Event runTestEvent = new ProgSnap2Event(EventType.RunTest, t.getId(), student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event runTestEvent = new ProgSnap2Event(EventType.RunTest, runTestEventId, student.getId(), TOOL_INSTANCES);
+						// note that TestID is qualified with problem id, to ensure uniqueness
+						runTestEvent.setTestId("p" + problem.getProblemId() + "/" + test.getTestCaseName());
+						runTestEvent.setParentEventId(submitEventId);
 						runTestEvent.setServerTimestamp(receipt.getEvent().getTimestamp());
 						runTestEvent.setProblemId(problem.getProblemId());
 						runTestEvent.setCourseId(problem.getCourseId());
-						runTestEvent.setParentEventId(receipt.getEventId());
+						//runTestEvent.setParentEventId(receipt.getEventId());
 						runTestEvent.setProgramInput(t.getInput());
 						runTestEvent.setProgramOutput(t.getActualOutput());
 						runTestEvent.setEventInitiator(EventInitiator.User);
@@ -319,6 +345,8 @@ public class Export {
 						
 						//mainTableWriter.writeEvent(runTestEvent, currentCodeStateId);
 						runTests.add(runTestEvent);
+						
+						testCount++;
 					}
 				}
 			}

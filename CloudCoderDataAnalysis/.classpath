@@ -7,7 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CloudCoderLogging"/>
 	<classpathentry kind="lib" path="lib/opencsv-2.4.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="http://opencsv.sourceforge.net/apidocs/"/>
+			<attribute name="javadoc_location" value="https://jar-download.com/javaDoc/au.com.bytecode/opencsv/2.4"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/daemon-0.8.jar" sourcepath="lib/daemon-0.8.jar"/>
