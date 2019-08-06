@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
+import org.cloudcoder.app.shared.model.Term;
 import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.TextDocument;
@@ -79,10 +80,11 @@ public class Export {
 		//
 		eventFactory = new EventFactory() {
 			@Override
-			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
+			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String termId, String[] toolInstances) {
 				ProgSnap2Event evt = ProgSnap2Event.create(eventType, eventId, subjectId, toolInstances);
 				evt.setOrder(nextEventOrderValue);
 				nextEventOrderValue++;
+				evt.setTermId(termId);
 				return evt;
 			}
 		};
@@ -109,7 +111,7 @@ public class Export {
 				List<Triple<Event, Change, SubmissionReceipt>> events =
 						db.retrieveEvents(problem, student);
 				System.out.printf("  Retrieved %d events\n", events.size());
-				writeEvents(instructor, problem, student, events);
+				writeEvents(instructor, course, problem, student, events);
 			}
 		}
 		
@@ -128,7 +130,7 @@ public class Export {
 		}
 	}
 
-	private void writeEvents(User instructor, Problem problem, User student,
+	private void writeEvents(User instructor, Course course, Problem problem, User student,
 			List<Triple<Event, Change, SubmissionReceipt>> events) {
 
 		File codeStates = mainTableWriter.makeSubdir("CodeStates");
@@ -137,6 +139,11 @@ public class Export {
 		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
 		
 		String currentCodeStateId = "";
+		
+		Term term = new Term();
+		term.setId(course.getTermId());
+		Database.getInstance().reloadModelObject(term);
+		String termId = term.getName() + " " + course.getYear();
 		
 		for (Triple<Event, Change, SubmissionReceipt> triple : events) {
 			// Generate ProgSnap2 EventId based on CloudCoder event id, but spaced
@@ -161,7 +168,7 @@ public class Export {
 						applicator.apply(c, doc);
 						
 						// Create the edit event
-						ProgSnap2Event evt = eventFactory.createEvent(EventType.FileEdit, eventId, student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event evt = eventFactory.createEvent(EventType.FileEdit, eventId, student.getId(), termId, TOOL_INSTANCES);
 						//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
 						evt.setCourseId(problem.getCourseId());
 						// TODO: course section id
@@ -202,7 +209,7 @@ public class Export {
 			}
 			if (triple.getThird() != null) {
 				// Submission event
-				writeSubmission(eventId, student, problem, triple.getThird(), currentCodeStateId);
+				writeSubmission(eventId, student, problem, termId, triple.getThird(), currentCodeStateId);
 			}
 		}
 	}
@@ -251,7 +258,7 @@ public class Export {
 //		}
 //	}
 
-	private void writeSubmission(long submitEventId, User student, Problem problem, SubmissionReceipt receipt, String currentCodeStateId) {
+	private void writeSubmission(long submitEventId, User student, Problem problem, String termId, SubmissionReceipt receipt, String currentCodeStateId) {
 		IDatabase db = Database.getInstance();
 
 		SubmissionStatus status = receipt.getStatus();
@@ -284,7 +291,7 @@ public class Export {
 			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
 
 			// Record Submit event
-			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), TOOL_INSTANCES);
+			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), termId, TOOL_INSTANCES);
 			
 			// Create an ExecutionID to link Run.Test events associated
 			// with this submission.
@@ -307,7 +314,7 @@ public class Export {
 
 			// Record Compile event
 			long compileEventId = submitEventId + 1L;
-			compile = eventFactory.createEvent(EventType.Compile, compileEventId, student.getId(), TOOL_INSTANCES);
+			compile = eventFactory.createEvent(EventType.Compile, compileEventId, student.getId(), termId, TOOL_INSTANCES);
 			compile.setParentEventId(submitEventId);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
@@ -320,7 +327,7 @@ public class Export {
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
 				long compileErrorEventId = compileEventId + 1L;
-				compileError = eventFactory.createEvent(EventType.CompileError, compileErrorEventId, student.getId(), TOOL_INSTANCES);
+				compileError = eventFactory.createEvent(EventType.CompileError, compileErrorEventId, student.getId(), termId, TOOL_INSTANCES);
 				compileError.setParentEventId(compileEventId);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
@@ -336,7 +343,7 @@ public class Export {
 						
 						long runTestEventId = compileEventId + (long)testCount;
 
-						ProgSnap2Event runTestEvent = eventFactory.createEvent(EventType.RunTest, runTestEventId, student.getId(), TOOL_INSTANCES);
+						ProgSnap2Event runTestEvent = eventFactory.createEvent(EventType.RunTest, runTestEventId, student.getId(), termId, TOOL_INSTANCES);
 						// note that TestID is qualified with problem id, to ensure uniqueness
 						runTestEvent.setTestId("p" + problem.getProblemId() + "/" + test.getTestCaseName());
 						runTestEvent.setParentEventId(submitEventId);

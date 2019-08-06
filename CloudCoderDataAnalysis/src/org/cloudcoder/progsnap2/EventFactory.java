@@ -23,5 +23,5 @@ package org.cloudcoder.progsnap2;
  * for example, to add ordering information.
  */
 public interface EventFactory {
-	public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String[] toolInstances);
+	public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String termId, String[] toolInstances);
 }

@@ -90,7 +90,7 @@ public class ProgSnap2Event {
 			//new Field("SessionID", Integer.class),
 			new Field("CourseID", Integer.class),
 			new Field("CourseSectionID", Integer.class),
-			new Field("TermID", Integer.class),
+			new Field("TermID", String.class),
 			//new Field("AssignmentID", Integer.class),
 			//new Field("ResourceID", Integer.class),
 			new Field("ProblemID", Integer.class),
@@ -246,6 +246,10 @@ public class ProgSnap2Event {
 	
 	public void setOrder(long order) {
 		setFieldValue("Order", order);
+	}
+	
+	public void setTermId(String termId) {
+		setFieldValue("TermID", termId);
 	}
 
 	public String getCodeStateId() {
