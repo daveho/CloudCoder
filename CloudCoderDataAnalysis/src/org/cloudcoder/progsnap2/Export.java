@@ -43,6 +43,7 @@ import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
+import org.cloudcoder.app.shared.model.TestOutcome;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.TextDocument;
 import org.cloudcoder.app.shared.model.Triple;
@@ -238,9 +239,14 @@ public class Export {
 			//continue;
 			 */
 		} else {
+			ProgSnap2Event submit = null;
+			ProgSnap2Event compile = null;
+			ProgSnap2Event compileError = null;
+			NamedTestResult[] tests = null;
+			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
 
 			// Record Submit event
-			ProgSnap2Event submit = new ProgSnap2Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			submit = new ProgSnap2Event(EventType.Submit, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 			
 			// Create an ExecutionID to link Run.Test events associated
 			// with this submission.
@@ -254,7 +260,7 @@ public class Export {
 				submit.setExecutionId(executionId);
 			}
 			// It would be nice to have sessionId
-			mainTableWriter.writeEvent(submit, currentCodeStateId);
+			//mainTableWriter.writeEvent(submit, currentCodeStateId);
 
 			ProgramResult programResult = ProgramResult.Success;
 			if (status == SubmissionStatus.COMPILE_ERROR || status == SubmissionStatus.BUILD_ERROR) {
@@ -262,29 +268,29 @@ public class Export {
 			}
 
 			// Record Compile event
-			ProgSnap2Event compile = new ProgSnap2Event(EventType.Compile, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+			compile = new ProgSnap2Event(EventType.Compile, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
 			compile.setCourseId(problem.getCourseId());
 			compile.setEventInitiator(EventInitiator.User);
 			// It would be nice to have sessionId
 			compile.setProgramResult(programResult);
-			mainTableWriter.writeEvent(compile, currentCodeStateId);
+			//mainTableWriter.writeEvent(compile, currentCodeStateId);
 
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
-				ProgSnap2Event compileError = new ProgSnap2Event(EventType.CompileError, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
+				compileError = new ProgSnap2Event(EventType.CompileError, receipt.getEventId(), student.getId(), TOOL_INSTANCES);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
 				// No compile message ):
 					// It would be nice to have sessionId
 				compileError.setParentEventId(receipt.getEventId()); // This is not useful because they are the same id...
-				mainTableWriter.writeEvent(compileError, currentCodeStateId);
+				//mainTableWriter.writeEvent(compileError, currentCodeStateId);
 			} else {
 				
 				// Record Run.Test events
 				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
-					NamedTestResult[] tests = db.getTestResultsForSubmission(student, problem, receipt);
+					tests = db.getTestResultsForSubmission(student, problem, receipt);
 
 					for(NamedTestResult test : tests) {
 						TestResult t = test.getTestResult();
@@ -310,9 +316,60 @@ public class Export {
 							runTestEvent.setProgramResult(ProgramResult.Error);
 						}
 						runTestEvent.setExecutionId(executionId);
-						mainTableWriter.writeEvent(runTestEvent, currentCodeStateId);
+						
+						//mainTableWriter.writeEvent(runTestEvent, currentCodeStateId);
+						runTests.add(runTestEvent);
 					}
 				}
+			}
+			
+			// Add Score values if appropriate
+			boolean scoreKnown = 
+					(status == SubmissionStatus.COMPILE_ERROR) ||
+					(status == SubmissionStatus.TESTS_FAILED) ||
+					(status == SubmissionStatus.TESTS_PASSED);
+			if (scoreKnown) {
+				// Actually figure out the score for the submission and (if there are any)
+				// the tests.
+				if (tests != null) {
+					int numTestsExecuted = 0;
+					int numTestsPassed = 0;
+					for (int i = 0; i < tests.length; i++) {
+						NamedTestResult tr = tests[i];
+						if (tr.getTestResult().getOutcome() == TestOutcome.PASSED) {
+							// This test definitively passed
+							numTestsExecuted++;
+							numTestsPassed++;
+							runTests.get(i).setScore(1.0);
+						} else if (tr.getTestResult().getOutcome() != TestOutcome.INTERNAL_ERROR) {
+							// This test definitively failed
+							numTestsExecuted++;
+							runTests.get(i).setScore(0.0);
+						}
+					}
+					
+					if (numTestsExecuted > 0) {
+						// At least one test was executed, so we can compute a score
+						// for the submission.
+						submit.setScore((double)numTestsPassed / (double)numTestsExecuted);
+					}
+				}
+			}
+			
+			if (status == SubmissionStatus.COMPILE_ERROR) {
+				// Submission failed to compile, so its score is 0
+				submit.setScore(0.0);
+			}
+			
+			// Now that scores have been computed (if appropriate),
+			// we can write all of the events related to this submission
+			mainTableWriter.writeEvent(submit, currentCodeStateId);
+			mainTableWriter.writeEvent(compile, currentCodeStateId);
+			if (compileError != null) {
+				mainTableWriter.writeEvent(compileError, currentCodeStateId);
+			}
+			for (ProgSnap2Event runTest : runTests) {
+				mainTableWriter.writeEvent(runTest, currentCodeStateId);
 			}
 		}
 	}

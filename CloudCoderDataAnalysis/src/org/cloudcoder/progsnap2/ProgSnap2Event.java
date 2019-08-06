@@ -26,12 +26,6 @@ import java.util.TimeZone;
 
 public class ProgSnap2Event {
 	private static final int EVENT_ID_SPACING = 20;
-	
-//	/**
-//	 * Server timezone, which is hard-coded.
-//	 * FIXME This should be configurable!
-//	 */
-//	public static final String SERVER_TIMEZONE = "-0500";
 
 	/**
 	 * Metadata for a main event table column: specifically, its name
@@ -109,6 +103,7 @@ public class ProgSnap2Event {
 			new Field("CodeStateID", String.class),
 			new Field("CodeStateSection", String.class),
 			new Field("ExecutionID", String.class),
+			new Field("Score", Double.class),
 	};
 	
 	/**
@@ -252,6 +247,10 @@ public class ProgSnap2Event {
 	
 	public void setCodeStateSection(String codeStateSection) {
 		setFieldValue("CodeStateSection", codeStateSection);
+	}
+	
+	public void setScore(double score) {
+		setFieldValue("Score", score);
 	}
 
 	public String getCodeStateId() {
