@@ -58,7 +58,7 @@ public class Export {
 	
 	public static Export getExport() {
 		if (theInstance == null) {
-			throw new IllegalStateException("No thread local Export object");
+			throw new IllegalStateException("No singleton Export object");
 		}
 		return theInstance;
 	}
@@ -446,19 +446,19 @@ public class Export {
 //	}
 
 	public String getUsername() {
-		return config.getProperty("username");
+		return config.getProperty("ps2.username");
 	}
 
 	public int getCourseId() {
-		return Integer.valueOf(config.getProperty("courseId"));
+		return Integer.valueOf(config.getProperty("ps2.courseId"));
 	}
 	
 	public String getServerTimezone() {
-		return config.getProperty("serverTimezone");
+		return config.getProperty("ps2.serverTimezone");
 	}
 	
 	public String getReadmePath() {
-		return config.getProperty("readmePath");
+		return config.getProperty("ps2.readmePath");
 	}
 
 //	private int getSeparationSeconds() {
@@ -571,16 +571,16 @@ public class Export {
 			config = effectiveSpec;
 		}
 
-		askIfMissing(config, "courseId", "Course id: ", keyboard);
-		askIfMissing(config, "username", "Instructor username: ", keyboard);
-		askIfMissing(config, "separationSeconds", "Session separation in seconds: ", keyboard);
-		askIfMissing(config, "dest", "Progsnap2 output directory: ", keyboard);
-		askIfMissing(config, "serverTimezone", "Server timezone", keyboard);
-		askIfMissing(config, "readmePath", "Path of README.txt file", keyboard);
+		askIfMissing(config, "ps2.courseId", "Course id: ", keyboard);
+		askIfMissing(config, "ps2.username", "Instructor username: ", keyboard);
+		askIfMissing(config, "ps2.separationSeconds", "Session separation in seconds: ", keyboard);
+		askIfMissing(config, "ps2.dest", "Progsnap2 output directory: ", keyboard);
+		askIfMissing(config, "ps2.serverTimezone", "Server timezone", keyboard);
+		askIfMissing(config, "ps2.readmePath", "Path of README.txt file", keyboard);
 
 		exporter.setConfig(config);
 
-		File destDir = new File(config.getProperty("dest"));
+		File destDir = new File(config.getProperty("ps2.dest"));
 		MainTableWriter mainTableWriter = new MainTableWriter(destDir);
 		exporter.setMainTableWriter(mainTableWriter);
 
