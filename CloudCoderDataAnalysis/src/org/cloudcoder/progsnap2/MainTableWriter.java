@@ -44,6 +44,10 @@ public class MainTableWriter implements Closeable {
         csvWriter = CSV.charset("UTF-8").create().writer(writer);
         csvWriter.writeNext(ProgSnap2Event.COLUMN_NAMES);
     }
+    
+    public File getBaseDir() {
+		return baseDir;
+	}
 
     public void writeEvent(ProgSnap2Event event, String currentCodeStateId) {
     	event.setCodeStateId(currentCodeStateId);

@@ -29,6 +29,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.cloudcoder.app.server.persist.Database;
 import org.cloudcoder.app.server.persist.IDatabase;
@@ -37,23 +38,29 @@ import org.cloudcoder.app.shared.model.Change;
 import org.cloudcoder.app.shared.model.ChangeType;
 import org.cloudcoder.app.shared.model.Course;
 import org.cloudcoder.app.shared.model.Event;
-import org.cloudcoder.app.shared.model.ICallback;
 import org.cloudcoder.app.shared.model.NamedTestResult;
 import org.cloudcoder.app.shared.model.Problem;
 import org.cloudcoder.app.shared.model.ProblemList;
-import org.cloudcoder.app.shared.model.SnapshotSelectionCriteria;
 import org.cloudcoder.app.shared.model.SubmissionReceipt;
 import org.cloudcoder.app.shared.model.SubmissionStatus;
 import org.cloudcoder.app.shared.model.TestResult;
 import org.cloudcoder.app.shared.model.TextDocument;
 import org.cloudcoder.app.shared.model.Triple;
 import org.cloudcoder.app.shared.model.User;
-import org.cloudcoder.app.shared.model.WorkSession;
 import org.cloudcoder.dataanalysis.Util;
 
 public class Export {
 	private Properties config;
 	private MainTableWriter mainTableWriter;
+	
+	private static Export theInstance;
+	
+	public static Export getExport() {
+		if (theInstance == null) {
+			throw new IllegalStateException("No thread local Export object");
+		}
+		return theInstance;
+	}
 
 	public void setConfig(Properties config) {
 		this.config = config;
@@ -70,20 +77,10 @@ public class Export {
 		Course course = findCourse(instructor, getCourseId());
 		List<User> students = findUsers(course);
 		ProblemList problems = findProblems(instructor, course);
-
-		/*
-		//writeSessionEvents(course);
-
-		for (User student : students) {
-			for (Problem problem : problems.getProblemList()) {
-				writeCompileAndSubmitEvents(instructor, student, problem);
-				writeEditEvents(instructor, student, problem);
-			}
-		}
-		*/
 		
 		IDatabase db = Database.getInstance();
 		
+		// Write main event table
 		for (User student : students) {
 			for (Problem problem : problems.getProblemList()) {
 				System.out.printf("Retrieving events for student %d, problem %d\n", student.getId(), problem.getProblemId());
@@ -93,6 +90,9 @@ public class Export {
 				writeEvents(instructor, problem, student, events);
 			}
 		}
+		
+		// Write README.txt
+		FileUtils.copyFile(new File(this.getReadmePath()), new File(mainTableWriter.getBaseDir(), "README.txt"));
 	}
 
 	private void writeEvents(User instructor, Problem problem, User student,
@@ -138,6 +138,9 @@ public class Export {
 						currentCodeStateId = "u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId();
 						evt.setCodeStateId(currentCodeStateId);
 						
+						String sourceFileName = "code" + problem.getProblemType().getLanguage().getFileExtension();
+						evt.setCodeStateSection(currentCodeStateId + "/" + sourceFileName);
+
 						// TODO: term id
 
 						// Write the event to the main table
@@ -148,7 +151,7 @@ public class Export {
 							throw new RuntimeException("Could not create code state directory " + codeStateDir);
 						}
 
-						File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
+						File codeFile = new File(codeStateDir, sourceFileName);
 						try (FileWriter fw = new FileWriter(codeFile)) {
 							fw.write(doc.getText());
 						}
@@ -194,27 +197,27 @@ public class Export {
 	}
 	*/
 
-	@Deprecated
-	private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
-		IDatabase db = Database.getInstance();
-		SubmissionReceipt[] receipts = db.getAllSubmissionReceiptsForUser(problem, student);
-
-		// Because all receipts have the same eventId, it is unclear how to assign eventIds
-		// for all derived events (Submit, Compile, Compile.Error, Run.Test) without
-		// assigning duplicates. One option may be to decouple the retrieved from the database
-		// and the eventId assigned to a ProgSnap2 Event. We could write arbitrary values (from a
-		// counter, guid, etc) as long as they maintain referential integrity.
-		for (SubmissionReceipt receipt : receipts) {
-			writeSubmission(student, problem, receipt, "unknown code state");
-		}
-	}
+//	@Deprecated
+//	private void writeCompileAndSubmitEvents(User instructor, User student, Problem problem) {
+//		IDatabase db = Database.getInstance();
+//		SubmissionReceipt[] receipts = db.getAllSubmissionReceiptsForUser(problem, student);
+//
+//		// Because all receipts have the same eventId, it is unclear how to assign eventIds
+//		// for all derived events (Submit, Compile, Compile.Error, Run.Test) without
+//		// assigning duplicates. One option may be to decouple the retrieved from the database
+//		// and the eventId assigned to a ProgSnap2 Event. We could write arbitrary values (from a
+//		// counter, guid, etc) as long as they maintain referential integrity.
+//		for (SubmissionReceipt receipt : receipts) {
+//			writeSubmission(student, problem, receipt, "unknown code state");
+//		}
+//	}
 
 	private void writeSubmission(User student, Problem problem, SubmissionReceipt receipt, String currentCodeStateId) {
 		IDatabase db = Database.getInstance();
 
 		SubmissionStatus status = receipt.getStatus();
 
-		File codeStates = mainTableWriter.makeSubdir("CodeStates");
+		mainTableWriter.makeSubdir("CodeStates");
 
 		// Not a real submission
 		if (status == SubmissionStatus.NOT_STARTED) {
@@ -314,88 +317,96 @@ public class Export {
 		}
 	}
 
-	// TODO: need to think of a general way to ensure that code state ids are
-	// applied to all events.  Maybe this should be done as a post-processing
-	// step.
-	private void writeEditEvents(User instructor, User student, Problem problem) throws IOException {
-		IDatabase db = Database.getInstance();
+//	// TODO: need to think of a general way to ensure that code state ids are
+//	// applied to all events.  Maybe this should be done as a post-processing
+//	// step.
+//	private void writeEditEvents(User instructor, User student, Problem problem) throws IOException {
+//		IDatabase db = Database.getInstance();
+//
+//		final List<Change> changes = new ArrayList<>();
+//
+//		ICallback<Change> visitor = new ICallback<Change>() {
+//			@Override
+//			public void call(Change value) {
+//				changes.add(value);
+//			}
+//		};
+//
+//		db.visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
+//
+//		File codeStates = mainTableWriter.makeSubdir("CodeStates");
+//
+//		TextDocument doc = new TextDocument();
+//		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+//
+//		boolean lastEditTextGood = true;
+//		for (Change c : changes) {
+//			ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
+//			//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
+//			evt.setCourseId(problem.getCourseId());
+//			// TODO: course section id
+//			evt.setEventInitiator(EventInitiator.User);
+//			evt.setProblemId(problem.getProblemId());
+//			evt.setServerTimestamp(c.getEvent().getTimestamp());
+//			
+//			//evt.setCodeStateId("c" + c.getEventId());
+//			
+//			// To avoid having a huge number of immediate subdirectories in the CodeStates
+//			// directory, generate CodeStateID values as a hierarchy, user id then
+//			// edit event id.
+//			evt.setCodeStateId("u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId());
+//			
+//			// TODO: term id
+//
+//			// Write the event to the main table
+//			mainTableWriter.writeEvent(evt);
+//
+//			if (c.getType() == ChangeType.FULL_TEXT) {
+//				// If a delta failed to apply, a full text change will allow us to resync
+//				lastEditTextGood = true;
+//			}
+//
+//			if (lastEditTextGood) {
+//				try {
+//					// Write the code state
+//					applicator.apply(c, doc);
+//
+//					File codeStateDir = new File(codeStates, evt.getCodeStateId());
+//					if (!codeStateDir.mkdirs()) {
+//						throw new RuntimeException("Could not create code state directory " + codeStateDir);
+//					}
+//
+//					File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
+//					try (FileWriter fw = new FileWriter(codeFile)) {
+//						fw.write(doc.getText());
+//					}
+//				} catch (Exception e) {
+//					// delta failed to apply, blargh
+//					lastEditTextGood = false;
+//				}
+//			}
+//		}
+//	}
 
-		final List<Change> changes = new ArrayList<>();
-
-		ICallback<Change> visitor = new ICallback<Change>() {
-			@Override
-			public void call(Change value) {
-				changes.add(value);
-			}
-		};
-
-		db.visitAllChangesNewerThan(student, problem.getProblemId(), -1, visitor, IDatabase.RetrieveChangesMode.RETRIEVE_CHANGES_AND_EDIT_EVENTS);
-
-		File codeStates = mainTableWriter.makeSubdir("CodeStates");
-
-		TextDocument doc = new TextDocument();
-		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-
-		boolean lastEditTextGood = true;
-		for (Change c : changes) {
-			ProgSnap2Event evt = new ProgSnap2Event(EventType.FileEdit, c.getEventId(), student.getId(), TOOL_INSTANCES);
-			//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
-			evt.setCourseId(problem.getCourseId());
-			// TODO: course section id
-			evt.setEventInitiator(EventInitiator.User);
-			evt.setProblemId(problem.getProblemId());
-			evt.setServerTimestamp(c.getEvent().getTimestamp());
-			
-			//evt.setCodeStateId("c" + c.getEventId());
-			
-			// To avoid having a huge number of immediate subdirectories in the CodeStates
-			// directory, generate CodeStateID values as a hierarchy, user id then
-			// edit event id.
-			evt.setCodeStateId("u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId());
-			
-			// TODO: term id
-
-			// Write the event to the main table
-			mainTableWriter.writeEvent(evt);
-
-			if (c.getType() == ChangeType.FULL_TEXT) {
-				// If a delta failed to apply, a full text change will allow us to resync
-				lastEditTextGood = true;
-			}
-
-			if (lastEditTextGood) {
-				try {
-					// Write the code state
-					applicator.apply(c, doc);
-
-					File codeStateDir = new File(codeStates, evt.getCodeStateId());
-					if (!codeStateDir.mkdirs()) {
-						throw new RuntimeException("Could not create code state directory " + codeStateDir);
-					}
-
-					File codeFile = new File(codeStateDir, "code" + problem.getProblemType().getLanguage().getFileExtension());
-					try (FileWriter fw = new FileWriter(codeFile)) {
-						fw.write(doc.getText());
-					}
-				} catch (Exception e) {
-					// delta failed to apply, blargh
-					lastEditTextGood = false;
-				}
-			}
-		}
-	}
-
-	private String getUsername() {
+	public String getUsername() {
 		return config.getProperty("username");
 	}
 
-	private int getCourseId() {
+	public int getCourseId() {
 		return Integer.valueOf(config.getProperty("courseId"));
 	}
-
-	private int getSeparationSeconds() {
-		return Integer.valueOf(config.getProperty("separationSeconds"));
+	
+	public String getServerTimezone() {
+		return config.getProperty("serverTimezone");
 	}
+	
+	public String getReadmePath() {
+		return config.getProperty("readmePath");
+	}
+
+//	private int getSeparationSeconds() {
+//		return Integer.valueOf(config.getProperty("separationSeconds"));
+//	}
 
 	private ProblemList findProblems(User user, Course course) {
 		IDatabase db = Database.getInstance();
@@ -443,6 +454,7 @@ public class Export {
 
 	public static void main(String[] args) throws IOException {
 		Export exporter = new Export();
+		theInstance = exporter;
 
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
@@ -458,7 +470,7 @@ public class Export {
 			} else if (arg.startsWith("--spec=")) {
 				// A "spec" file is properties defining what data should be pulled,
 				// what the dataset metadata are, etc. It can also override
-				// cloudcoder.properties configuration values, if desirned (e.g.,
+				// cloudcoder.properties configuration values, if desired (e.g.,
 				// database access credentials.) The idea is to allow repeatable
 				// non-interactive exports.
 				specFile = arg.substring("--spec=".length());
@@ -506,6 +518,8 @@ public class Export {
 		askIfMissing(config, "username", "Instructor username: ", keyboard);
 		askIfMissing(config, "separationSeconds", "Session separation in seconds: ", keyboard);
 		askIfMissing(config, "dest", "Progsnap2 output directory: ", keyboard);
+		askIfMissing(config, "serverTimezone", "Server timezone", keyboard);
+		askIfMissing(config, "readmePath", "Path of README.txt file", keyboard);
 
 		exporter.setConfig(config);
 

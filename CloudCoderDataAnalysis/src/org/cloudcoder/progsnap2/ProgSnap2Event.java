@@ -27,11 +27,11 @@ import java.util.TimeZone;
 public class ProgSnap2Event {
 	private static final int EVENT_ID_SPACING = 20;
 	
-	/**
-	 * Server timezone, which is hard-coded.
-	 * FIXME This should be configurable!
-	 */
-	public static final String SERVER_TIMEZONE = "-0500";
+//	/**
+//	 * Server timezone, which is hard-coded.
+//	 * FIXME This should be configurable!
+//	 */
+//	public static final String SERVER_TIMEZONE = "-0500";
 
 	/**
 	 * Metadata for a main event table column: specifically, its name
@@ -84,8 +84,11 @@ public class ProgSnap2Event {
 				public String convertToString(Object value) {
 					Long serverTimestamp = (Long) value;
 
-					DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-					df.setTimeZone(TimeZone.getTimeZone(SERVER_TIMEZONE));
+					DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+					// note that timezone won't be part of the output; it's just
+					// used to generate the correct local time from the absolute
+					// numeric timestamp value
+					df.setTimeZone(TimeZone.getTimeZone(Export.getExport().getServerTimezone()));
 					return df.format(new Date(serverTimestamp));
 				}
 			},
@@ -148,8 +151,7 @@ public class ProgSnap2Event {
 		this.setFieldValue("EventID", ((long)eventId) * EVENT_ID_SPACING);
 		this.setFieldValue("SubjectID", subjectId);
 		this.setFieldValue("ToolInstances", toolInstances);
-		
-		this.setFieldValue("ServerTimezone", SERVER_TIMEZONE);
+		this.setFieldValue("ServerTimezone", Export.getExport().getServerTimezone());
 	}
 	
 	public<E> void setFieldValue(String fieldName, E value) {
@@ -246,6 +248,10 @@ public class ProgSnap2Event {
 
 	public void setExecutionId(String executionId) {
 		setFieldValue("ExecutionID", executionId);
+	}
+	
+	public void setCodeStateSection(String codeStateSection) {
+		setFieldValue("CodeStateSection", codeStateSection);
 	}
 
 	public String getCodeStateId() {
