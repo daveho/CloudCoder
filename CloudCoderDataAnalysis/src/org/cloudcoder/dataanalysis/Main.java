@@ -18,6 +18,7 @@
 package org.cloudcoder.dataanalysis;
 
 import org.cloudcoder.progsnap2.Export;
+import org.cloudcoder.progsnap2.GatherCompileErrors;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
@@ -46,6 +47,8 @@ public class Main {
 			ProgsnapExport.main(rest);
 		} else if (app.equals("export2")) {
 			Export.main(rest);
+		} else if (app.equals("compileEvents")) {
+			GatherCompileErrors.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);

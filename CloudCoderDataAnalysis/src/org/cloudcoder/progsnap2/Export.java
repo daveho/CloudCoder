@@ -18,6 +18,7 @@
 package org.cloudcoder.progsnap2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -184,8 +185,10 @@ public class Export {
 						currentCodeStateId = "u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId();
 						evt.setCodeStateId(currentCodeStateId);
 						
-						String sourceFileName = "code" + problem.getProblemType().getLanguage().getFileExtension();
-						evt.setCodeStateSection(currentCodeStateId + "/" + sourceFileName);
+						String codeStateSection;
+						String sourceFileName = getSourceFileName(problem);
+						codeStateSection = getCodeStateSection(currentCodeStateId, sourceFileName);
+						evt.setCodeStateSection(codeStateSection);
 
 						// TODO: term id
 
@@ -212,6 +215,17 @@ public class Export {
 				writeSubmission(eventId, student, problem, termId, triple.getThird(), currentCodeStateId);
 			}
 		}
+	}
+
+	private String getCodeStateSection(String currentCodeStateId, String sourceFileName) {
+		String codeStateSection;
+		codeStateSection = currentCodeStateId + "/" + sourceFileName;
+		return codeStateSection;
+	}
+
+	private String getSourceFileName(Problem problem) {
+		String sourceFileName = "code" + problem.getProblemType().getLanguage().getFileExtension();
+		return sourceFileName;
 	}
 
 	/*
@@ -289,6 +303,9 @@ public class Export {
 			ProgSnap2Event compileError = null;
 			NamedTestResult[] tests = null;
 			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
+			
+			// Determine CodeStateSection
+			String codeStateSection = getCodeStateSection(currentCodeStateId, getSourceFileName(problem));
 
 			// Record Submit event
 			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), termId, TOOL_INSTANCES);
@@ -304,6 +321,7 @@ public class Export {
 				// Tests were apparently executed, so record an executionID
 				submit.setExecutionId(executionId);
 			}
+			submit.setCodeStateSection(codeStateSection);
 			// It would be nice to have sessionId
 			//mainTableWriter.writeEvent(submit, currentCodeStateId);
 
@@ -322,6 +340,7 @@ public class Export {
 			compile.setEventInitiator(EventInitiator.User);
 			// It would be nice to have sessionId
 			compile.setProgramResult(programResult);
+			compile.setCodeStateSection(codeStateSection);
 			//mainTableWriter.writeEvent(compile, currentCodeStateId);
 
 			// Record Compile.Error if necessary
@@ -331,6 +350,7 @@ public class Export {
 				compileError.setParentEventId(compileEventId);
 				compileError.setServerTimestamp(receipt.getEvent().getTimestamp());
 				compileError.setProgramResult(programResult);
+				compileError.setCodeStateSection(codeStateSection);
 				// No compile message ):
 			} else {
 				// Record Run.Test events
@@ -498,9 +518,30 @@ public class Export {
 		@SuppressWarnings("resource")
 		Scanner keyboard = new Scanner(System.in);
 
+		Properties config = getExportConfig(args, keyboard);
+
+		exporter.setConfig(config);
+
+		File destDir = new File(config.getProperty("ps2.dest"));
+		MainTableWriter mainTableWriter = new MainTableWriter(destDir);
+		exporter.setMainTableWriter(mainTableWriter);
+		
+		exporter.createEventFactory();
+
+		// Do the export
+		try {
+			exporter.execute();
+		} finally {
+			IOUtils.closeQuietly(mainTableWriter);
+		}
+	}
+
+	public static Properties getExportConfig(String[] args, Scanner keyboard)
+			throws FileNotFoundException, IOException {
+		Properties config;
+		config = new Properties();
 		boolean interactiveConfig = false;
 		String specFile = null;
-		Properties config = new Properties();
 
 		for (String arg : args) {
 			if (arg.equals("--interactiveConfig")) {
@@ -559,24 +600,10 @@ public class Export {
 		askIfMissing(config, "ps2.dest", "Progsnap2 output directory: ", keyboard);
 		askIfMissing(config, "ps2.serverTimezone", "Server timezone", keyboard);
 		askIfMissing(config, "ps2.readmePath", "Path of README.txt file", keyboard);
-
-		exporter.setConfig(config);
-
-		File destDir = new File(config.getProperty("ps2.dest"));
-		MainTableWriter mainTableWriter = new MainTableWriter(destDir);
-		exporter.setMainTableWriter(mainTableWriter);
-		
-		exporter.createEventFactory();
-
-		// Do the export
-		try {
-			exporter.execute();
-		} finally {
-			IOUtils.closeQuietly(mainTableWriter);
-		}
+		return config;
 	}
 
-	private static void askIfMissing(Properties config, String propName, String prompt, Scanner keyboard) {
+	public static void askIfMissing(Properties config, String propName, String prompt, Scanner keyboard) {
 		if (!config.containsKey(propName)) {
 			config.setProperty(propName, Util.ask(keyboard, prompt));
 		}
