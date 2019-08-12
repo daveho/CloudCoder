@@ -19,6 +19,7 @@ package org.cloudcoder.dataanalysis;
 
 import org.cloudcoder.progsnap2.Export;
 import org.cloudcoder.progsnap2.GatherCompileErrors;
+import org.cloudcoder.progsnap2.MergeCompileErrors;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
@@ -49,6 +50,8 @@ public class Main {
 			Export.main(rest);
 		} else if (app.equals("compileEvents")) {
 			GatherCompileErrors.main(rest);
+		} else if (app.equals("mergeCompileEvents")) {
+			MergeCompileErrors.main(rest);
 		} else {
 			System.out.println("Unknown app name: " + app);
 			System.exit(1);

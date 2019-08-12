@@ -56,6 +56,8 @@ import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class Export {
+	public static final long EVENT_SPACING = 200L;
+	
 	private Properties config;
 	private EventFactory eventFactory;
 	private long nextEventOrderValue;
@@ -83,7 +85,14 @@ public class Export {
 			@Override
 			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String termId, String[] toolInstances) {
 				ProgSnap2Event evt = ProgSnap2Event.create(eventType, eventId, subjectId, toolInstances);
-				evt.setOrder(nextEventOrderValue);
+
+				// Order values are spaced out for the same reason as event ids:
+				// it allows us to generate new events in the created space.
+				// This is important, for example, for incorporating compiler
+				// diagnostics (which have to be reconstructed, since CloudCoder
+				// doesn't record them.)
+				evt.setOrder(nextEventOrderValue * EVENT_SPACING);
+				
 				nextEventOrderValue++;
 				evt.setTermId(termId);
 				return evt;
@@ -151,7 +160,7 @@ public class Export {
 			// out to allow for child events (e.g., in the case of a CloudCoder
 			// submission receipt, which will generate Compile and Run.Test
 			// ProgSnap2 events.)
-			long eventId = (long)triple.getFirst().getId() * 40L;
+			long eventId = (long)triple.getFirst().getId() * EVENT_SPACING;
 			
 			if (triple.getSecond() != null) {
 				// This is a Change (i.e., an Edit event)
@@ -300,7 +309,7 @@ public class Export {
 		} else {
 			ProgSnap2Event submit = null;
 			ProgSnap2Event compile = null;
-			ProgSnap2Event compileError = null;
+			//ProgSnap2Event compileError = null;
 			NamedTestResult[] tests = null;
 			List<ProgSnap2Event> runTests = new ArrayList<ProgSnap2Event>();
 			
@@ -345,6 +354,7 @@ public class Export {
 
 			// Record Compile.Error if necessary
 			if (programResult == ProgramResult.Error) {
+				/*
 				long compileErrorEventId = compileEventId + 1L;
 				compileError = eventFactory.createEvent(EventType.CompileError, compileErrorEventId, student.getId(), termId, TOOL_INSTANCES);
 				compileError.setParentEventId(compileEventId);
@@ -352,6 +362,11 @@ public class Export {
 				compileError.setProgramResult(programResult);
 				compileError.setCodeStateSection(codeStateSection);
 				// No compile message ):
+				 */
+				
+				// Note: we do NOT add a Compile.Error event.
+				// That should be done as a separate step by, e.g.,
+				// GatherCompileErrors and MergeCompileErrors.
 			} else {
 				// Record Run.Test events
 				if (status == SubmissionStatus.TESTS_PASSED || status == SubmissionStatus.TESTS_FAILED) {
@@ -438,9 +453,6 @@ public class Export {
 			// we can write all of the events related to this submission
 			mainTableWriter.writeEvent(submit, currentCodeStateId);
 			mainTableWriter.writeEvent(compile, currentCodeStateId);
-			if (compileError != null) {
-				mainTableWriter.writeEvent(compileError, currentCodeStateId);
-			}
 			for (ProgSnap2Event runTest : runTests) {
 				mainTableWriter.writeEvent(runTest, currentCodeStateId);
 			}

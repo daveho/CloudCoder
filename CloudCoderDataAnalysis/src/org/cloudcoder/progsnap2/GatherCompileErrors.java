@@ -88,11 +88,6 @@ public class GatherCompileErrors {
 		
 		String baseDir = config.getProperty("ps2.dest");
 		
-		File updatedMainEventTable = new File(baseDir + "/UpdatedMainTable.csv");
-		if (updatedMainEventTable.exists()) {
-			throw new IllegalStateException(updatedMainEventTable.getAbsolutePath() + " already exists!");
-		}
-		
 		// Create a directory where compiler diagnostics can be written
 		this.diagDir = new File(baseDir, "diag");
 		diagDir.mkdirs();
