@@ -8,4 +8,5 @@
 /t[0-9]*
 /demo.properties
 /demo-README.txt
-/demo.zip
+/demo*.zip
+/cs101*
