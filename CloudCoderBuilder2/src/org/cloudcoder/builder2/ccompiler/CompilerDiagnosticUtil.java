@@ -1,6 +1,6 @@
 // CloudCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
-// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
+// Copyright (C) 2011-2019, David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -34,7 +34,7 @@ public class CompilerDiagnosticUtil {
 	private static final Pattern GCC_ERROR_MSG_PATTERN =
 			Pattern.compile("^[^\\:]+:(\\d+)(:(\\d+))?: (error|warning): (.*)$");
 	private static final int LINE_NUMBER_GROUP = 1;
-//	private static final int COLUMN_NUMBER_GROUP = 3; // could be empty
+	private static final int COLUMN_NUMBER_GROUP = 3; // could be empty
 	private static final int ERROR_OR_WARNING_GROUP = 4;
 	private static final int ERROR_MESSAGE_GROUP = 5;
 
@@ -51,7 +51,9 @@ public class CompilerDiagnosticUtil {
 			int lineNum = Integer.parseInt(m.group(LINE_NUMBER_GROUP));
 			String errorOrWarning = m.group(ERROR_OR_WARNING_GROUP);
 			String message = m.group(ERROR_MESSAGE_GROUP);
-			return new CompilerDiagnostic(lineNum, lineNum, -1, -1, errorOrWarning + ": " + message);
+			String column = m.group(COLUMN_NUMBER_GROUP);
+			int colNum = (column != null && !column.isEmpty()) ? Integer.parseInt(column) : -1;
+			return new CompilerDiagnostic(lineNum, lineNum, colNum, -1, errorOrWarning + ": " + message);
 		} else {
 			return null;
 		}
