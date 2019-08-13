@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -19,7 +21,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class MergeCompileErrors {
-
 	public void execute(String[] args) throws FileNotFoundException, IOException {
 		Scanner keyboard = new Scanner(System.in);
 		Properties config = Export.getExportConfig(args, keyboard);
@@ -60,17 +61,37 @@ public class MergeCompileErrors {
 					}
 					RowView origView = origHeader.asRowView(origRow);
 					
+					List<String[]> updatedRowsToWrite = new ArrayList<String[]>();
+					
 					// Copy the original record, extending it with the additional columns
-					// (which will be empty)
+					// (which will be empty).
 					String[] updatedRow = updatedHeader.createRow();
 					updatedHeader.copyValues(origRow, updatedRow);
-					w.writeNext(updatedRow);
+					//w.writeNext(updatedRow);
+					updatedRowsToWrite.add(updatedRow); // schedule updated row to be written eventually
+					RowView updatedRowView = updatedHeader.asRowView(updatedRow);
 					
 					// See if this event is a Compile event
 					String eventType = origView.get("EventType");
 					
 					if (eventType.equals("Compile")) {
 						String eventId = origHeader.getValue("EventID", origRow);
+						
+						// See if there is an updated Compile event recorded
+						File updatedCompileRow = new File(baseDir + "/diag/" + eventId + "-compile.csv");
+						if (updatedCompileRow.exists()) {
+							System.out.println("  Updating record for compile event " + eventId);
+							// We assume the row read will have the same schema as
+							// the main event table we're reading from
+							try (InputStream eis = new FileInputStream(updatedCompileRow)) {
+								InputStreamReader eisr = new InputStreamReader(eis, StandardCharsets.UTF_8);
+								@SuppressWarnings("resource")
+								CSVReader rr = new CSVReader(eisr);
+								String[] rec = rr.readNext();
+								updatedHeader.copyValues(rec, updatedRow);
+							}
+						}
+						
 						long eventIdAsLong = Long.parseLong(eventId);
 						File diagEvents = new File(baseDir + "/diag/" + eventId + ".csv");
 						System.out.printf("  Diagnostics '%s' -> %s\n", diagEvents.getPath(), diagEvents.exists() ? "yes" : "no");
@@ -119,12 +140,20 @@ public class MergeCompileErrors {
 									outRowView.copyFrom(diagRowView, "SourceLocation");
 									outRowView.copyFrom(diagRowView, "CompileMessageType");
 									outRowView.copyFrom(diagRowView, "CompileMessageData");
+									outRowView.copyFrom(diagRowView, "ToolInstances");
 									
-									// Write the diagnostic event to the updated main event table
-									w.writeNext(outRow);
+									// Schedule the diagnostic event to be written to
+									// the updated main event table
+									//w.writeNext(outRow);
+									updatedRowsToWrite.add(outRow);
 								}
 							}
 						}
+					}
+					
+					// Write updated row(s)
+					for (String[] ur : updatedRowsToWrite) {
+						w.writeNext(ur);
 					}
 				}
 				w.flush();

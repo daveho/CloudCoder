@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,7 +31,6 @@ import org.cloudcoder.app.shared.model.ProblemAndTestCaseList;
 import org.cloudcoder.app.shared.model.SubmissionException;
 import org.cloudcoder.app.shared.model.SubmissionResult;
 import org.cloudcoder.app.shared.model.TestCase;
-import org.cloudcoder.dataanalysis.Retest;
 import org.cloudcoder.dataanalysis.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,12 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class GatherCompileErrors {
-	private static final Logger logger = LoggerFactory.getLogger(Retest.class);
+	private static final Logger logger = LoggerFactory.getLogger(GatherCompileErrors.class);
+
+	// Really, we shouldn't hard-code this, but there's no
+	// straightforward way of determining which gcc version
+	// the builder was using when it compiled the student submissions.
+	private static final String GCC_VERSION = "gcc 4.8";
 
 	//private Map<Integer, Problem> problemMap;
 	private Map<Integer, ProblemAndTestCaseList> problemMap;
@@ -98,34 +103,55 @@ public class GatherCompileErrors {
 			CSVReader r = new CSVReader(rd);
 			
 			// read header
-			String[] header = r.readNext();
+			String[] headerRow = r.readNext();
+			Header header = new Header();
+			header.init(headerRow);
 			
 			// TODO: header for output CSV (add column(s) for source location, error text) 
 			
 			for (;;) {
 				String[] row = r.readNext();
 				if (row == null) { break; }
-				Map<String, String> rowValues = new HashMap<String, String>();
-				for (int i = 0; i < row.length; i++) {
-					rowValues.put(header[i], row[i] != null ? row[i] : "");
-				}
+				RowView rowView = header.asRowView(row);
 				
-				if (rowValues.get("EventType").equals("Compile")) {
-					int problemId = Integer.parseInt(rowValues.get("ProblemID"));
+				if (rowView.get("EventType").equals("Compile")) {
+					int problemId = Integer.parseInt(rowView.get("ProblemID"));
 					ProblemAndTestCaseList p = getProblem(problemId);
 					
 					if (p.getProblem().getProblemType().getLanguage() == Language.C) {
 						// Is a C problem!
 						
-						System.out.printf("Event %s is a C compilation\n", rowValues.get("EventID"));
+						System.out.printf("Event %s is a C compilation\n", rowView.get("EventID"));
 						
-						if (rowValues.get("ProgramResult").equals("Error")) {
+						// Get the updated ToolInstances value (include the gcc version)
+						StringBuilder toolInstances = new StringBuilder();
+						toolInstances.append(rowView.get("ToolInstances"));
+						if (toolInstances.length() > 0) {
+							toolInstances.append("; ");
+						}
+						toolInstances.append(GCC_VERSION);
+						String updatedToolInstances = toolInstances.toString();
+
+						// Write an updated version of the Compile event to include
+						// a ToolInstances value that specifies the compiler version
+						try (OutputStream os = new FileOutputStream(new File(this.diagDir, rowView.get("EventID") +"-compile.csv"))) {
+							OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+							CSVWriter ww = new CSVWriter(osw);
+							String[] updatedCompileRow = header.createRow();
+							header.copyValues(row, updatedCompileRow);
+							RowView updatedCompileRowView = header.asRowView(updatedCompileRow);
+							updatedCompileRowView.put("ToolInstances", updatedToolInstances);
+							ww.writeNext(updatedCompileRow);
+							ww.flush();
+						}
+						
+						if (rowView.get("ProgramResult").equals("Error")) {
 							// This submission failed to compile!
-							System.out.printf("  ==> Event %s is a failed C compilation\n", rowValues.get("EventID"));
+							System.out.printf("  ==> Event %s is a failed C compilation\n", rowView.get("EventID"));
 							
 							// Get the code
 							String code;
-							String codeFileName = baseDir + "/CodeStates/" + rowValues.get("CodeStateSection");
+							String codeFileName = baseDir + "/CodeStates/" + rowView.get("CodeStateSection");
 							System.out.printf("  Code file name is %s\n", codeFileName);
 							try (InputStream in = new FileInputStream(codeFileName)) {
 								code = IOUtils.toString(in);
@@ -133,19 +159,19 @@ public class GatherCompileErrors {
 							
 							// Submit the crud
 							try {
-								System.out.printf("  Recompiling event %s\n", rowValues.get("EventID"));
+								System.out.printf("  Recompiling event %s\n", rowView.get("EventID"));
 								IFutureSubmissionResult future = svc.submitAsync(p.getProblem(), p.getTestCaseData(), code);
 								SubmissionResult result = null;
 								do {
 									result = future.waitFor(100L);
 								} while (result == null);
-								System.out.printf("  Successfully recompiled event %s\n", rowValues.get("EventID"));
+								System.out.printf("  Successfully recompiled event %s\n", rowView.get("EventID"));
 								
 								CompilationResult cr = result.getCompilationResult();
 								if (cr.getOutcome() != CompilationOutcome.FAILURE) {
 									logger.warn("Compilation outcome wasn't failure?");
 								} else {
-									String eventId = rowValues.get("EventID");
+									String eventId = rowView.get("EventID");
 									File diagOut = new File(this.diagDir, eventId + ".csv");
 									if (diagOut.exists()) {
 										System.out.println("Diagnostic file for event " + eventId + " already exists");
@@ -155,7 +181,7 @@ public class GatherCompileErrors {
 											OutputStreamWriter pw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
 											CSVWriter dw = new CSVWriter(pw);
 											dw.writeNext("EventType", "ParentEventID", "CodeStateSection", "SourceLocation",
-													"CompileMessageType", "CompileMessageData");
+													"CompileMessageType", "CompileMessageData", "ToolInstances");
 											
 											for (CompilerDiagnostic d : cr.getCompilerDiagnosticList()) {
 												String message = d.getMessage();
@@ -174,10 +200,11 @@ public class GatherCompileErrors {
 												dw.writeNext(
 														eventType,
 														eventId,
-														rowValues.get("CodeStateSection"),
+														rowView.get("CodeStateSection"),
 														loc.toString(),
 														compileMessageType,
-														message);
+														message,
+														updatedToolInstances);
 											}
 											
 											dw.flush();
