@@ -10,3 +10,6 @@
 /demo-README.txt
 /demo*.zip
 /cs101*
+/SAVE*
+/courseGrades.rb
+/makeFakeData.rb

@@ -23,11 +23,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
@@ -82,9 +86,11 @@ public class Export {
 		// in the "correct" order, i.e., our best-guess chronological order.
 		//
 		eventFactory = new EventFactory() {
+			private long sessionId = 1L;
+			
 			@Override
-			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String termId, String[] toolInstances) {
-				ProgSnap2Event evt = ProgSnap2Event.create(eventType, eventId, subjectId, toolInstances);
+			public ProgSnap2Event createEvent(EventType eventType, long eventId, int subjectId, String termId, long sessionId, String[] toolInstances) {
+				ProgSnap2Event evt = ProgSnap2Event.create(eventType, eventId, subjectId, sessionId, toolInstances);
 
 				// Order values are spaced out for the same reason as event ids:
 				// it allows us to generate new events in the created space.
@@ -96,6 +102,11 @@ public class Export {
 				nextEventOrderValue++;
 				evt.setTermId(termId);
 				return evt;
+			}
+
+			@Override
+			public long nextSessionId() {
+				return sessionId++;
 			}
 		};
 	}
@@ -110,6 +121,12 @@ public class Export {
 		User instructor = findUser(getUsername());
 		Course course = findCourse(instructor, getCourseId());
 		List<User> students = findUsers(course);
+		
+		System.out.printf("Students for course %d\n", course.getId());
+		for (User student : students) {
+			System.out.printf("  %d\n", student.getId());
+		}
+		
 		ProblemList problems = findProblems(instructor, course);
 		
 		IDatabase db = Database.getInstance();
@@ -142,6 +159,7 @@ public class Export {
 
 	private void writeEvents(User instructor, Course course, Problem problem, User student,
 			List<Triple<Event, Change, SubmissionReceipt>> events) {
+		long sessionSep = getSeparationSeconds() * 1000L;
 
 		File codeStates = mainTableWriter.makeSubdir("CodeStates");
 
@@ -155,12 +173,37 @@ public class Export {
 		Database.getInstance().reloadModelObject(term);
 		String termId = term.getName() + " " + course.getYear();
 		
+		long lastEventTs = -1L;
+		long curSessionID = -1L;
+		long lastEventId = -1L;
+		
 		for (Triple<Event, Change, SubmissionReceipt> triple : events) {
 			// Generate ProgSnap2 EventId based on CloudCoder event id, but spaced
 			// out to allow for child events (e.g., in the case of a CloudCoder
 			// submission receipt, which will generate Compile and Run.Test
 			// ProgSnap2 events.)
 			long eventId = (long)triple.getFirst().getId() * EVENT_SPACING;
+			
+			long curEventTs = triple.getFirst().getTimestamp();
+			
+			// Generate Session.Start/Session.End?
+			if (lastEventTs == -1L || (curEventTs - lastEventTs) > sessionSep) {
+				if (lastEventTs > -1L) {
+					// Generate Session.End
+					long sessionEndEventId = eventId - 2L;
+					ProgSnap2Event endEvt = eventFactory.createEvent(
+							EventType.SessionEnd, sessionEndEventId, student.getId(), termId, curSessionID, TOOL_INSTANCES);
+					populateBasicEventInfo(endEvt, problem.getCourseId(), problem.getProblemId(), lastEventTs + 1L); 
+					mainTableWriter.writeEvent(endEvt, currentCodeStateId);
+				}
+				// Generate Session.Start
+				curSessionID = eventFactory.nextSessionId();
+				long sessionStartEventId = eventId - 1L;
+				ProgSnap2Event startEvt = eventFactory.createEvent(
+						EventType.SessionStart, sessionStartEventId, student.getId(), termId, curSessionID, TOOL_INSTANCES);
+				populateBasicEventInfo(startEvt, problem.getCourseId(), problem.getProblemId(), curEventTs);
+				mainTableWriter.writeEvent(startEvt, currentCodeStateId);
+			}
 			
 			if (triple.getSecond() != null) {
 				// This is a Change (i.e., an Edit event)
@@ -178,28 +221,27 @@ public class Export {
 						applicator.apply(c, doc);
 						
 						// Create the edit event
-						ProgSnap2Event evt = eventFactory.createEvent(EventType.FileEdit, eventId, student.getId(), termId, TOOL_INSTANCES);
+						ProgSnap2Event evt = eventFactory.createEvent(EventType.FileEdit, eventId, student.getId(), termId, curSessionID, TOOL_INSTANCES);
 						//evt.setAssignmentId(0); // CloudCoder doesn't really have the concept of assignments
-						evt.setCourseId(problem.getCourseId());
-						// TODO: course section id
-						evt.setEventInitiator(EventInitiator.User);
-						evt.setProblemId(problem.getProblemId());
-						evt.setServerTimestamp(c.getEvent().getTimestamp());
-						
-						//evt.setCodeStateId("c" + c.getEventId());
+//						evt.setCourseId(problem.getCourseId());
+//						// TODO: course section id
+//						evt.setEventInitiator(EventInitiator.User);
+//						evt.setProblemId(problem.getProblemId());
+//						evt.setServerTimestamp(c.getEvent().getTimestamp());
+//						
+//						//evt.setCodeStateId("c" + c.getEventId());
 						
 						// To avoid having a huge number of immediate subdirectories in the CodeStates
 						// directory, generate CodeStateID values as a hierarchy, user id then
 						// edit event id.
 						currentCodeStateId = "u" + student.getId() + "/p" + problem.getProblemId() + "/c" + c.getEventId();
 						evt.setCodeStateId(currentCodeStateId);
+						populateBasicEventInfo(evt, problem.getCourseId(), problem.getProblemId(), c.getEvent().getTimestamp());
 						
 						String codeStateSection;
 						String sourceFileName = getSourceFileName(problem);
 						codeStateSection = getCodeStateSection(currentCodeStateId, sourceFileName);
 						evt.setCodeStateSection(codeStateSection);
-
-						// TODO: term id
 
 						// Write the event to the main table
 						mainTableWriter.writeEvent(evt);
@@ -221,9 +263,29 @@ public class Export {
 			}
 			if (triple.getThird() != null) {
 				// Submission event
-				writeSubmission(eventId, student, problem, termId, triple.getThird(), currentCodeStateId);
+				writeSubmission(eventId, student, problem, termId, triple.getThird(), currentCodeStateId, curSessionID);
 			}
+			
+			lastEventId = eventId;
+			lastEventTs = curEventTs;
 		}
+		
+		// Generate Session.End, if necessary
+		if (curSessionID > -1L) {
+			// Generate Session.End
+			long sessionStartEventId = lastEventId + EVENT_SPACING - 1L;
+			ProgSnap2Event endEvt = eventFactory.createEvent(
+					EventType.SessionEnd, sessionStartEventId, student.getId(), termId, curSessionID, TOOL_INSTANCES);
+			populateBasicEventInfo(endEvt, problem.getCourseId(), problem.getProblemId(), lastEventTs + 1L);
+			mainTableWriter.writeEvent(endEvt, currentCodeStateId);
+		}
+	}
+
+	private void populateBasicEventInfo(ProgSnap2Event evt, Integer courseId, Integer problemId, long timestamp) {
+		evt.setCourseId(courseId);
+		evt.setEventInitiator(EventInitiator.User);
+		evt.setProblemId(problemId);
+		evt.setServerTimestamp(timestamp);
 	}
 
 	private String getCodeStateSection(String currentCodeStateId, String sourceFileName) {
@@ -281,7 +343,7 @@ public class Export {
 //		}
 //	}
 
-	private void writeSubmission(long submitEventId, User student, Problem problem, String termId, SubmissionReceipt receipt, String currentCodeStateId) {
+	private void writeSubmission(long submitEventId, User student, Problem problem, String termId, SubmissionReceipt receipt, String currentCodeStateId, long curSessionId) {
 		IDatabase db = Database.getInstance();
 
 		SubmissionStatus status = receipt.getStatus();
@@ -317,7 +379,7 @@ public class Export {
 			String codeStateSection = getCodeStateSection(currentCodeStateId, getSourceFileName(problem));
 
 			// Record Submit event
-			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), termId, TOOL_INSTANCES);
+			submit = eventFactory.createEvent(EventType.Submit, submitEventId, student.getId(), termId, curSessionId, TOOL_INSTANCES);
 			
 			// Create an ExecutionID to link Run.Test events associated
 			// with this submission.
@@ -341,7 +403,7 @@ public class Export {
 
 			// Record Compile event
 			long compileEventId = submitEventId + 1L;
-			compile = eventFactory.createEvent(EventType.Compile, compileEventId, student.getId(), termId, TOOL_INSTANCES);
+			compile = eventFactory.createEvent(EventType.Compile, compileEventId, student.getId(), termId, curSessionId, TOOL_INSTANCES);
 			compile.setParentEventId(submitEventId);
 			compile.setServerTimestamp(receipt.getEvent().getTimestamp());
 			compile.setProblemId(problem.getProblemId());
@@ -378,7 +440,7 @@ public class Export {
 						
 						long runTestEventId = compileEventId + (long)testCount;
 
-						ProgSnap2Event runTestEvent = eventFactory.createEvent(EventType.RunTest, runTestEventId, student.getId(), termId, TOOL_INSTANCES);
+						ProgSnap2Event runTestEvent = eventFactory.createEvent(EventType.RunTest, runTestEventId, student.getId(), termId, curSessionId, TOOL_INSTANCES);
 						// note that TestID is qualified with problem id, to ensure uniqueness
 						runTestEvent.setTestId("p" + problem.getProblemId() + "/" + test.getTestCaseName());
 						runTestEvent.setParentEventId(submitEventId);
@@ -475,9 +537,22 @@ public class Export {
 		return config.getProperty("ps2.readmePath");
 	}
 
-//	private int getSeparationSeconds() {
-//		return Integer.valueOf(config.getProperty("separationSeconds"));
-//	}
+	public Set<Integer> getExcludeIds() {
+		if (!config.containsKey("ps2.excludeIds")) {
+			return Collections.emptySet();
+		}
+		String excludeList = config.getProperty("ps2.excludeIds");
+		StringTokenizer tok = new StringTokenizer(excludeList, ",");
+		Set<Integer> result = new HashSet<Integer>();
+		while (tok.hasMoreTokens()) {
+			result.add(Integer.parseInt(tok.nextToken()));
+		}
+		return result;
+	}
+
+	private int getSeparationSeconds() {
+		return Integer.valueOf(config.getProperty("ps2.separationSeconds"));
+	}
 
 	private ProblemList findProblems(User user, Course course) {
 		IDatabase db = Database.getInstance();
@@ -516,6 +591,18 @@ public class Export {
 			}
 		});
 		userSet.addAll(rawUsers);
+
+		// Remove users in the excluded set
+		Set<Integer> excludedSet = getExcludeIds();
+		if (!excludedSet.isEmpty()) {
+			System.out.println("Excluding users " + excludedSet.toString());
+		}
+		for (Iterator<User> i = userSet.iterator(); i.hasNext(); ) {
+			User u = i.next();
+			if (excludedSet.contains(u.getId())) {
+				i.remove();
+			}
+		}
 
 		List<User> result = new ArrayList<>();
 		result.addAll(userSet);
@@ -610,8 +697,9 @@ public class Export {
 		askIfMissing(config, "ps2.username", "Instructor username: ", keyboard);
 		askIfMissing(config, "ps2.separationSeconds", "Session separation in seconds: ", keyboard);
 		askIfMissing(config, "ps2.dest", "Progsnap2 output directory: ", keyboard);
-		askIfMissing(config, "ps2.serverTimezone", "Server timezone", keyboard);
-		askIfMissing(config, "ps2.readmePath", "Path of README.txt file", keyboard);
+		askIfMissing(config, "ps2.serverTimezone", "Server timezone: ", keyboard);
+		askIfMissing(config, "ps2.readmePath", "Path of README.txt file: ", keyboard);
+		askIfMissing(config, "ps2.excludeIds", "Set of user ids to exclude: ", keyboard);
 		return config;
 	}
 

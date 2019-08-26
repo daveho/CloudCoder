@@ -76,6 +76,10 @@ public class ProgSnap2Event {
 			new Field("ServerTimestamp", Long.class) {
 				@Override
 				public String convertToString(Object value) {
+					if (value == null) {
+						throw new IllegalStateException("WTF?");
+					}
+					
 					Long serverTimestamp = (Long) value;
 
 					DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -87,7 +91,7 @@ public class ProgSnap2Event {
 				}
 			},
 			new Field("ServerTimezone", String.class),
-			//new Field("SessionID", Integer.class),
+			new Field("SessionID", Long.class),
 			new Field("CourseID", Integer.class),
 			new Field("CourseSectionID", Integer.class),
 			new Field("TermID", String.class),
@@ -129,7 +133,7 @@ public class ProgSnap2Event {
 		}
 	}
 
-	private ProgSnap2Event(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
+	private ProgSnap2Event(EventType eventType, long eventId, int subjectId, long sessionId, String[] toolInstances) {
 		this.fieldValues = new HashMap<String, Object>();
 
 		this.setFieldValue("EventType", eventType);
@@ -138,6 +142,7 @@ public class ProgSnap2Event {
 		// CloudCoder event.
 		this.setFieldValue("EventID", eventId);
 		this.setFieldValue("SubjectID", subjectId);
+		this.setFieldValue("SessionID", sessionId);
 		this.setFieldValue("ToolInstances", toolInstances);
 		this.setFieldValue("ServerTimezone", Export.getExport().getServerTimezone());
 	}
@@ -150,8 +155,8 @@ public class ProgSnap2Event {
 	 * @param subjectId      the subject id
 	 * @param toolInstances  the tool instances
 	 */
-	public static ProgSnap2Event create(EventType eventType, long eventId, int subjectId, String[] toolInstances) {
-		return new ProgSnap2Event(eventType, eventId, subjectId, toolInstances);
+	public static ProgSnap2Event create(EventType eventType, long eventId, int subjectId, long sessionId, String[] toolInstances) {
+		return new ProgSnap2Event(eventType, eventId, subjectId, sessionId, toolInstances);
 	}
 	
 	public<E> void setFieldValue(String fieldName, E value) {
