@@ -48,12 +48,16 @@ import org.cloudcoder.app.shared.util.SubscriptionRegistrar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 
@@ -121,7 +125,8 @@ public class PlaygroundPage extends CloudCoderPage
         private Mode mode;
         private Timer checkPendingSubmissionTimer;
         private Runnable onCleanCallback;
-
+        private ListBox listBox;
+        
         public UI() {
             SplitLayoutPanel dockLayoutPanel = new SplitLayoutPanel();
 
@@ -412,8 +417,64 @@ public class PlaygroundPage extends CloudCoderPage
             // based on programming language used in the Problem,
             // choose an editor mode
             setEditorLanguage(language);
+            
+            
+            
+            listBox = new ListBox();
+            listBox.addItem("AMBIANCE");
+            listBox.addItem("CHAOS");
+            listBox.addItem("CHROME");
+            listBox.addItem("CLOUDS");
+            listBox.addItem("CLOUDS_MIDNIGHT");
+            listBox.addItem("COBALT");
+            listBox.addItem("CRIMSON_EDITOR");
+            listBox.addItem("DAWN");
+            listBox.addItem("DREAMWEAVER");
+            listBox.addItem("ECLIPSE");
+            listBox.addItem("GITHUB");
+            listBox.addItem("IDLE_FINGERS");
+            listBox.addItem("KATZENMILCH");
+            listBox.addItem("KR_THEME");
+            listBox.addItem("KR");
+            listBox.addItem("KUROIR");
+            listBox.addItem("MERBIVORE");
+            listBox.addItem("MERBIVORE_SOFT");
+            listBox.addItem("MONO_INDUSTRIAL");
+            listBox.addItem("MONOKAI");
+            listBox.addItem("PASTEL_ON_DARK");
+            listBox.addItem("SOLARIZED_DARK");
+            listBox.addItem("SOLARIZED_LIGHT");
+            listBox.addItem("TERMINAL");
+            listBox.addItem("TEXTMATE");
+            listBox.addItem("TOMORROW_NIGHT_BLUE");
+            listBox.addItem("TOMORROW_NIGHT_BRIGHT");
+            listBox.addItem("TOMORROW_NIGHT_EIGHTIES");
+            listBox.addItem("TOMORROW_NIGHT");
+            listBox.addItem("TOMORROW");
+            listBox.addItem("TWILIGHT");
+            listBox.addItem("VIBRANT_INK");
+            listBox.addItem("XCODE");
+            
+            northLayoutPanel.add(listBox);
+            listBox.addChangeHandler(new ChangeHandler()
+            {
+            public void onChange(ChangeEvent event)
+            {
+            int selectedIndex = listBox.getSelectedIndex();
+            String name = listBox.getValue(selectedIndex);
+            if (selectedIndex >= 0)
+            {
+            	aceEditor.setTheme(AceEditorTheme.valueOf(name));
+            }
+            
+            }
+            });
+            
 
-            aceEditor.setTheme(AceEditorTheme.VIBRANT_INK);
+            northLayoutPanel.setWidgetTopHeight(listBox,0.0,Unit.PX,30.0,Unit.PX);
+            northLayoutPanel.setWidgetRightWidth(listBox,180.0,Unit.PX,120.0,Unit.PX);
+
+           
             aceEditor.setShowPrintMargin(false);
         }
         
